@@ -1,0 +1,93 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="utf-8" />
+</head>
+<body>
+    <button onclick="CreateRecord()">Create Record</button>
+    <button onclick="UpdateRecord()">Update Record</button>
+    <button onclick="RetrieveRecord()">Retrieve Record</button>
+    <button onclick="CountRecords()">Count Records</button>
+    <button onclick="DeleteRecord()">Delete Record</button>
+    <button onclick="RetrieveMultipleRecordsExtended()">Multiple Records Extended</button>
+    <script src="../../clientGlobalcontext.js.aspx"></script>
+    <script src="../Scripts/CrmWebApi.js"></script>
+    <script>
+        var accountId;
+        CrmWebApi.crmWebApiVersion = "8.1";
+
+        function CreateRecord() {
+            var lead = {
+                subject: "Test WebAPI",
+                firstname: "Test",
+                lastname: "WebAPI",
+                jobtitle: "Title"
+            };
+            CrmWebApi.createRecord(lead, "lead").then(function (id) {
+                alert(id);
+                accountId = id;
+            }).catch(function (error) {
+                debugger;
+            })
+        }
+        function RetrieveRecord() {
+            CrmWebApi.retrieveRecord(accountId, "lead", "fullname,subject", null).then(function (object) {
+                debugger;
+            })
+            .catch(function (error) {
+                debugger;
+                console.trace(error.message);
+            });
+        }
+        function CountRecords() {
+            CrmWebApi.countRecords("lead", "statecode eq 0").then(function (count) {
+                alert(count);
+            })
+            .catch(function (error) {
+                debugger;
+                console.trace(error.message);
+            });
+        }
+        function RetrieveMultipleRecordsExtended() {
+            var request = {
+                type: "lead",
+                select: ["fullname", "subject"],
+                filter: "statecode eq 0",
+                maxPageSize: 5
+            };
+
+            CrmWebApi.retrieveMultipleRecordsExtended(request).then(function (object) {
+                debugger;
+            })
+            .catch(function (error) {
+                debugger;
+                console.trace(error.message);
+            });
+        }
+        function DeleteRecord() {
+            CrmWebApi.deleteRecord(accountId, "lead").then(function () {
+                alert("success!");
+            })
+            .catch(function (error) {
+                debugger;
+                console.trace(error.message);
+            });
+        }
+        function UpdateRecord() {
+            var lead = {
+                subject: "Test update"
+            }
+
+            CrmWebApi.updateRecord(accountId, lead, "lead").then(function () {
+                alert("updated!");
+            })
+            .catch(function (error) {
+                debugger;
+                console.trace(error.message);
+            });
+        }
+    </script>
+</body>
+
+</html>
