@@ -135,7 +135,7 @@ Thank you for your patience!
 CrmWebApi uses [ES6 Promise](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise) instead of callbacks and [Yaku](https://github.com/ysmood/yaku) as a Promise polyfill.
 A library version with callbacks is [under a consideraion](https://github.com/o4u/CrmWebApi/issues/1).
 
-#### Dependencies
+## Dependencies
 * [Yaku](https://github.com/ysmood/yaku)
 * [Axios](https://github.com/mzabriskie/axios)
 
