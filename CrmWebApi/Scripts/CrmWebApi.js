@@ -275,7 +275,7 @@ var CrmWebApi = function () {
 
         if (select != null || expand != null) {
             systemQueryOptions = "?";
-            if (select != null) {
+            if (select != null && select.length > 0) {
                 var selectString = "$select=" + select.join(',');
                 if (expand != null) {
                     selectString = selectString + "," + expand;
