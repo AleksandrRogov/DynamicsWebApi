@@ -66,7 +66,7 @@ CrmWebApi.deleteRecord(leadId, "lead").then(function () {
 
 ```js
 //perform a retrieve operaion
-CrmWebApi.retrieveRecord(accountId, "lead", "fullname,subject", null).then(function (object) {
+CrmWebApi.retrieveRecord(accountId, "lead", ["fullname", "subject"]).then(function (object) {
     //do something with an object here
 })
 .catch(function (error) {
