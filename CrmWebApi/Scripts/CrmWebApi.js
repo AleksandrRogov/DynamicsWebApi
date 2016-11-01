@@ -252,9 +252,9 @@ var CrmWebApi = function () {
         /// The Schema Name of the Entity type record to retrieve.
         /// For an Account record, use "Account"
         ///</param>
-        ///<param name="select" type="String">
-        /// A String representing the $select OData System Query Option to control which
-        /// attributes will be returned. This is a comma separated list of Attribute names that are valid for retrieve.
+        ///<param name="select" type="Array">
+        /// An Array representing the $select OData System Query Option to control which
+        /// attributes will be returned. This is a list of Attribute names that are valid for retrieve.
         /// If null all properties for the record will be returned
         ///</param>
         ///<param name="expand" type="String">
@@ -267,7 +267,7 @@ var CrmWebApi = function () {
         _stringParameterCheck(id, "CrmWebApi.retrieveRecord requires the id parameter is a string.");
         _stringParameterCheck(type, "CrmWebApi.retrieveRecord requires the type parameter is a string.");
         if (select != null)
-            _stringParameterCheck(select, "CrmWebApi.retrieveRecord requires the select parameter is a string.");
+            _arrayParameterCheck(select, "CrmWebApi.retrieveRecord requires the select parameter is an array.");
         if (expand != null)
             _stringParameterCheck(expand, "CrmWebApi.retrieveRecord requires the expand parameter is a string.");
 
@@ -276,7 +276,7 @@ var CrmWebApi = function () {
         if (select != null || expand != null) {
             systemQueryOptions = "?";
             if (select != null) {
-                var selectString = "$select=" + select;
+                var selectString = "$select=" + select.join(',');
                 if (expand != null) {
                     selectString = selectString + "," + expand;
                 }
