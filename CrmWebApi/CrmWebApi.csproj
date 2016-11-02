@@ -75,7 +75,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Pages\testPage.html" />
+    <Content Include="Pages\TestPage.html" />
     <Content Include="Scripts\axios.js" />
     <Content Include="Scripts\axios.min.js" />
     <Content Include="Scripts\CrmWebApi.js" />
