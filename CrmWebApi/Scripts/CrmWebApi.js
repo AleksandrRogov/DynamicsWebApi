@@ -205,6 +205,16 @@ var CrmWebApi = function () {
     };
 
     var _guidParameterCheck = function (parameter, message) {
+        ///<summary>
+        /// Private function used to check whether required parameter is a valid GUID
+        ///</summary>
+        ///<param name="parameter" type="String">
+        /// The GUID parameter to check;
+        ///</param>
+        ///<param name="message" type="String">
+        /// The error message text to include when the error is thrown.
+        ///</param>
+        /// <returns type="String" />
 
         try{
             var match = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(parameter)[0];
