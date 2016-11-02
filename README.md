@@ -93,7 +93,7 @@ CrmWebApi.retrieveMultipleRecords("lead", ["fullname", "subject"], "statecode eq
 
 ```js
 //initialize call options object
-var callOptions = {
+var operationOptions = {
     type: "lead",
     select: ["fullname", "subject"],
     filter: "statecode eq 0",
@@ -102,7 +102,7 @@ var callOptions = {
 };
 
 //perform a multiple records retrieve operation
-CrmWebApi.retrieveMultipleRecordsExtended(callOptions).then(function (records) {
+CrmWebApi.retrieveMultipleRecordsExtended(operationOptions).then(function (records) {
     var count = records.oDataCount;
     var nextLink = records.oDataNextLink;
     
