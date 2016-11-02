@@ -10,11 +10,12 @@
     <button onclick="RetrieveRecord()">Retrieve Record</button>
     <button onclick="CountRecords()">Count Records</button>
     <button onclick="DeleteRecord()">Delete Record</button>
+    <button onclick="UpsertRecord()">Upsert Record</button>
     <button onclick="RetrieveMultipleRecordsExtended()">Multiple Records Extended</button>
     <script src="../../clientGlobalcontext.js.aspx"></script>
     <script src="../Scripts/CrmWebApi.js"></script>
     <script>
-        var accountId;
+        var recordId = "115a8970-d788-4bf6-b064-d1574dbe6930";
         CrmWebApi.crmWebApiVersion = "8.1";
 
         function CreateRecord() {
@@ -26,13 +27,13 @@
             };
             CrmWebApi.createRecord(lead, "lead").then(function (id) {
                 alert(id);
-                accountId = id;
+                recordId = id;
             }).catch(function (error) {
                 debugger;
             })
         }
         function RetrieveRecord() {
-            CrmWebApi.retrieveRecord(accountId, "lead", ["fullname", "subject"], null).then(function (object) {
+            CrmWebApi.retrieveRecord(recordId, "lead", ["fullname", "subject"], null).then(function (object) {
                 debugger;
             })
             .catch(function (error) {
@@ -66,7 +67,7 @@
             });
         }
         function DeleteRecord() {
-            CrmWebApi.deleteRecord(accountId, "lead").then(function () {
+            CrmWebApi.deleteRecord(recordId, "lead").then(function () {
                 alert("success!");
             })
             .catch(function (error) {
@@ -79,8 +80,23 @@
                 subject: "Test update"
             }
 
-            CrmWebApi.updateRecord(accountId, lead, "lead").then(function () {
+            CrmWebApi.updateRecord(recordId, lead, "lead").then(function () {
                 alert("updated!");
+            })
+            .catch(function (error) {
+                debugger;
+                console.trace(error.message);
+            });
+        }
+        function UpsertRecord() {
+            var lead = {
+                subject: "Upsert!!"
+            };
+
+            CrmWebApi.upsertRecord(recordId, lead, "lead", "*").then(function (id) {
+                if (id != null) {
+                    recordId = id;
+                }
             })
             .catch(function (error) {
                 debugger;
