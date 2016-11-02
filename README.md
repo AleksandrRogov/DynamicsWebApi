@@ -102,7 +102,7 @@ var operationOptions = {
 };
 
 //perform a multiple records retrieve operation
-CrmWebApi.retrieveMultipleRecordsExtended(operationOptions).then(function (records) {
+CrmWebApi.retrieveMultipleRecordsAdvanced(operationOptions).then(function (records) {
     var count = records.oDataCount;
     var nextLink = records.oDataNextLink;
     

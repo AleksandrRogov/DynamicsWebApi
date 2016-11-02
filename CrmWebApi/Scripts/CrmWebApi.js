@@ -424,7 +424,7 @@ var CrmWebApi = function () {
         /// <param name="filter" type="String">Use the $filter system query option to set criteria for which entities will be returned.</param>
         /// <returns type="Promise" />
 
-        return retrieveMultipleRecordsExtended({
+        return retrieveMultipleRecordsAdvanced({
             type: type,
             select: [type.toLowerCase() + "id"],
             filter: filter,
@@ -434,6 +434,7 @@ var CrmWebApi = function () {
                 return response.oDataCount != null ? response.oDataCount : 0;
             });
     }
+
 
     var retrieveMultipleRecords = function (type, select, filter, nextPageLink) {
         ///<summary>
@@ -445,14 +446,14 @@ var CrmWebApi = function () {
         /// <param name="nextPageLink" type="String">Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.</param>
         /// <returns type="Promise" />
 
-        return retrieveMultipleRecordsExtended({
+        return retrieveMultipleRecordsAdvanced({
             type: type,
             select: select,
             filter: filter
         }, nextPageLink);
     }
 
-    var retrieveMultipleRecordsExtended = function (retrieveMultipleOptions, nextPageLink) {
+    var retrieveMultipleRecordsAdvanced = function (retrieveMultipleOptions, nextPageLink) {
         ///<summary>
         /// Sends an asynchronous request to retrieve records.
         ///</summary>
@@ -472,8 +473,6 @@ var CrmWebApi = function () {
         ///             Limit the number of results returned by using the $top system query option. Do not use $top with $count!</para>
         ///<para>   object.orderBy (Array). 
         ///             Use the order in which items are returned using the $orderby system query option. Use the asc or desc suffix to specify ascending or descending order respectively. The default is ascending if the suffix isn't applied.</para>
-        ///<para>   object.includeAnnotations (String). 
-        ///             Values can be "OData.Community.Display.V1.FormattedValue"; "*" - for lookups.</para>
         ///<para>   object.includeAnnotations (String). 
         ///             Values can be "OData.Community.Display.V1.FormattedValue"; "*" - for lookups.</para>
         ///</param>
@@ -517,7 +516,7 @@ var CrmWebApi = function () {
         countRecords: countRecords,
         retrieveRecord: retrieveRecord,
         retrieveMultipleRecords: retrieveMultipleRecords,
-        retrieveMultipleRecordsExtended: retrieveMultipleRecordsExtended,
+        retrieveMultipleRecordsAdvanced: retrieveMultipleRecordsAdvanced,
         updateRecord: updateRecord,
         deleteRecord: deleteRecord,
         crmWebApiVersion: crmWebApiVersion
