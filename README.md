@@ -39,7 +39,28 @@ var lead = {
     subject: "Test update"
 }
 //perform an update operation
-CrmWebApi.updateRecord(leadId, lead, "lead").then(function () {
+CrmWebApi.updateRecord(leadId, "lead", lead).then(function () {
+    //do something after a succesful operation
+})
+.catch(function (error) {
+    //catch an error
+});
+```
+
+#### Update a single property value
+
+```js
+//lead id is needed for an update single property operation
+var leadId = '7d577253-3ef0-4a0a-bb7f-8335c2596e70';
+
+//initialize key value pair object
+var keyValuePair = {
+    key: "subject",
+	value: "Update Single"
+};
+
+//perform an update single property operation
+CrmWebApi.UpdateSingleProperty(leadId, "lead", keyValuePair).then(function () {
     //do something after a succesful operation
 })
 .catch(function (error) {
@@ -55,7 +76,7 @@ var leadId = '7d577253-3ef0-4a0a-bb7f-8335c2596e70';
 
 //initialize a CRM entity record object
 //and specify fields with values that need to be upserted
-CrmWebApi.upsertRecord(leadId, lead, "lead", "*").then(function (id) {
+CrmWebApi.upsertRecord(leadId, "lead", lead, "*").then(function (id) {
     if (id != null) {
         //record has been created
     }

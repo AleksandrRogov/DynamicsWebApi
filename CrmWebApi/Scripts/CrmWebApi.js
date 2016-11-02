@@ -228,6 +228,12 @@ var CrmWebApi = function () {
             includeAnnotations: ""
         }
     };
+    var keyValuePairObject = function () {
+        return {
+            key: "",
+            value: ""
+        }
+    };
 
     var convertOptionsToLink = function (options) {
         /// <summary>Builds the Web Api query string based on a passed options object parameter.</summary>
@@ -324,9 +330,6 @@ var CrmWebApi = function () {
                 var id = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(entityUrl)[0];
                 return id;
             });
-        //    .catch(function (error) {
-        //    return error;
-        //});
     };
 
     var retrieveRecord = function (id, type, select, expand) {
@@ -353,6 +356,7 @@ var CrmWebApi = function () {
         /// <returns type="Promise" />
 
         _stringParameterCheck(id, "CrmWebApi.retrieveRecord requires the id parameter is a string.");
+        id = _guidParameterCheck(id, "CrmWebApi.retrieveRecord requires the id is GUID.")
         _stringParameterCheck(type, "CrmWebApi.retrieveRecord requires the type parameter is a string.");
         if (select != null)
             _arrayParameterCheck(select, "CrmWebApi.retrieveRecord requires the select parameter is an array.");
@@ -379,7 +383,7 @@ var CrmWebApi = function () {
             return response.data;
         });
     };
-    var updateRecord = function (id, object, type) {
+    var updateRecord = function (id, type, object) {
         ///<summary>
         /// Sends an asynchronous request to update a record.
         ///</summary>
@@ -396,10 +400,35 @@ var CrmWebApi = function () {
         ///</param>
         /// <returns type="Promise" />
         _stringParameterCheck(id, "CrmWebApi.updateRecord requires the id parameter.");
+        id = _guidParameterCheck(id, "CrmWebApi.updateRecord requires the id is GUID.")
         _parameterCheck(object, "CrmWebApi.updateRecord requires the object parameter.");
         _stringParameterCheck(type, "CrmWebApi.updateRecord requires the type parameter.");
 
         return axiosCrm.patch(type.toLowerCase() + "s" + "(" + id + ")", object);
+    };
+    var updateSingleProperty = function (id, type, keyValuePair) {
+        ///<summary>
+        /// Sends an asynchronous request to update a single value in the record.
+        ///</summary>
+        ///<param name="id" type="String">
+        /// A String representing the GUID value for the record to retrieve.
+        ///</param>
+        ///<param name="keyValuePair" type="keyValuePairObject">
+        /// keyValuePair object with a name of the field as a key and a value. Example:
+        /// <para>{key: "subject", value: "Update Record"}</para>
+        ///</param>
+        ///<param name="type" type="String">
+        /// The Logical Name of the Entity type record to retrieve.
+        /// For an Account record, use "account"
+        ///</param>
+        /// <returns type="Promise" />
+
+        _stringParameterCheck(id, "CrmWebApi.updateSingleProperty requires the id parameter.");
+        id = _guidParameterCheck(id, "CrmWebApi.updateSingleProperty requires the id is GUID.")
+        _parameterCheck(keyValuePair, "CrmWebApi.updateSingleProperty requires the keyValuePair parameter.");
+        _stringParameterCheck(type, "CrmWebApi.updateSingleProperty requires the type parameter.");
+
+        return axiosCrm.put(type.toLowerCase() + "s" + "(" + id + ")/" + keyValuePair.key, { value: keyValuePair.value });
     };
     var deleteRecord = function (id, type) {
         ///<summary>
@@ -415,12 +444,13 @@ var CrmWebApi = function () {
         /// <returns type="Promise" />
 
         _stringParameterCheck(id, "CrmWebApi.deleteRecord requires the id parameter.");
+        id = _guidParameterCheck(id, "CrmWebApi.deleteRecord requires the id is GUID.")
         _stringParameterCheck(type, "CrmWebApi.deleteRecord requires the type parameter.");
 
         return axiosCrm.delete(type.toLowerCase() + "s(" + id + ")");
     };
 
-    var upsertRecord = function (id, object, type, ifmatch, ifnonematch) {
+    var upsertRecord = function (id, type, object, ifmatch, ifnonematch) {
         ///<summary>
         /// Sends an asynchronous request to Upsert a record.
         ///</summary>
@@ -441,12 +471,13 @@ var CrmWebApi = function () {
         ///<param name="ifnonematch" type="String" optional="true">
         /// To prevents update of the record use "*". Sets header "If-None-Match".
         ///</param>
+        /// <returns type="Promise" />
 
-        _stringParameterCheck(id, "CrmWebApi.upsert requires the id parameter.");
-        id = _guidParameterCheck(id, "CrmWebApi.upsert requires the id is GUID.")
+        _stringParameterCheck(id, "CrmWebApi.upsertRecord requires the id parameter.");
+        id = _guidParameterCheck(id, "CrmWebApi.upsertRecord requires the id is GUID.")
 
-        _parameterCheck(object, "CrmWebApi.upsert requires the object parameter.");
-        _stringParameterCheck(type, "CrmWebApi.upsert requires the type parameter.");
+        _parameterCheck(object, "CrmWebApi.upsertRecord requires the object parameter.");
+        _stringParameterCheck(type, "CrmWebApi.upsertRecord requires the type parameter.");
 
         if (ifmatch != null && ifnonematch != null) {
             throw Error("Either one of ifmatch or ifnonematch parameters shoud be used in a call, not both.")
@@ -593,6 +624,7 @@ var CrmWebApi = function () {
         retrieveMultipleRecordsAdvanced: retrieveMultipleRecordsAdvanced,
         updateRecord: updateRecord,
         upsertRecord: upsertRecord,
+        updateSingleProperty: updateSingleProperty,
         deleteRecord: deleteRecord,
         crmWebApiVersion: crmWebApiVersion
     }

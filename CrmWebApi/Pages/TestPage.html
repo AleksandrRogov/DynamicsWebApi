@@ -80,7 +80,7 @@
                 subject: "Test update"
             }
 
-            CrmWebApi.updateRecord(recordId, lead, "lead").then(function () {
+            CrmWebApi.updateRecord(recordId, "lead", lead).then(function () {
                 alert("updated!");
             })
             .catch(function (error) {
@@ -93,10 +93,19 @@
                 subject: "Upsert!!"
             };
 
-            CrmWebApi.upsertRecord(recordId, lead, "lead", "*").then(function (id) {
+            CrmWebApi.upsertRecord(recordId, "lead", lead, "*").then(function (id) {
                 if (id != null) {
                     recordId = id;
                 }
+            })
+            .catch(function (error) {
+                debugger;
+                console.trace(error.message);
+            });
+        }
+        function UpdateSingleProperty() {
+            CrmWebApi.updateSingleProperty(recordId, "lead", { key: "subject", value: "Update Single" }).then(function () {
+                alert("success!");
             })
             .catch(function (error) {
                 debugger;
