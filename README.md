@@ -19,8 +19,8 @@ var lead = {
     lastname: "WebAPI",
     jobtitle: "Title"
 };
-//call CrmWebApi.createRecord function
-CrmWebApi.createRecord(lead, "lead").then(function (id) {
+//call CrmWebApi.createRequest function
+CrmWebApi.createRequest(lead, "lead").then(function (id) {
     //do something with id here
 }).catch(function (error) {
     //catch error here
@@ -36,10 +36,11 @@ var leadId = '7d577253-3ef0-4a0a-bb7f-8335c2596e70';
 //initialize a CRM entity record object
 //and specify fields with values that need to be updated
 var lead = {
-    subject: "Test update"
+    subject: "Test update",
+	jobtitle: "Developer"
 }
 //perform an update operation
-CrmWebApi.updateRecord(leadId, "lead", lead).then(function () {
+CrmWebApi.updateRequest(leadId, "lead", lead).then(function () {
     //do something after a succesful operation
 })
 .catch(function (error) {
@@ -74,9 +75,13 @@ CrmWebApi.UpdateSingleProperty(leadId, "lead", keyValuePair).then(function () {
 //lead id is needed for an upsert operation
 var leadId = '7d577253-3ef0-4a0a-bb7f-8335c2596e70';
 
+var lead = {
+    subject: "Test Upsert"
+};
+
 //initialize a CRM entity record object
 //and specify fields with values that need to be upserted
-CrmWebApi.upsertRecord(leadId, "lead", lead, "*").then(function (id) {
+CrmWebApi.upsertRequest(leadId, "lead", lead, "*").then(function (id) {
     if (id != null) {
         //record has been created
     }
@@ -96,7 +101,22 @@ CrmWebApi.upsertRecord(leadId, "lead", lead, "*").then(function (id) {
 var leadId = '7d577253-3ef0-4a0a-bb7f-8335c2596e70';
 
 //perform a delete
-CrmWebApi.deleteRecord(leadId, "lead").then(function () {
+CrmWebApi.deleteRequest(leadId, "lead").then(function () {
+    //do something after a succesful operation
+})
+.catch(function (error) {
+    //catch an error
+});
+```
+
+##### Delete a single property value
+
+```js
+//record id is needed to perform a delete a single property value operation
+var leadId = '7d577253-3ef0-4a0a-bb7f-8335c2596e70';
+
+//perform a delete of a single property value
+CrmWebApi.deleteRequest(leadId, "lead", "subject").then(function () {
     //do something after a succesful operation
 })
 .catch(function (error) {
@@ -123,7 +143,7 @@ Retrieve multiple records can be called differently depending on what level of o
 ##### Simple call
 
 ```js
-CrmWebApi.retrieveMultipleRecords("lead", ["fullname", "subject"], "statecode eq 0", null).then(function (records) {
+CrmWebApi.retrieveMultiple("lead", ["fullname", "subject"], "statecode eq 0", null).then(function (records) {
     //do something with retrieved records here
 })
 .catch(function (error) {
@@ -144,7 +164,7 @@ var operationOptions = {
 };
 
 //perform a multiple records retrieve operation
-CrmWebApi.retrieveMultipleRecordsAdvanced(operationOptions).then(function (records) {
+CrmWebApi.retrieveMultipleAdvanced(operationOptions).then(function (records) {
     var count = records.oDataCount;
     var nextLink = records.oDataNextLink;
     

@@ -25,7 +25,7 @@
                 lastname: "WebAPI",
                 jobtitle: "Title"
             };
-            CrmWebApi.createRecord(lead, "lead").then(function (id) {
+            CrmWebApi.createRequest(lead, "lead").then(function (id) {
                 alert(id);
                 recordId = id;
             }).catch(function (error) {
@@ -58,7 +58,7 @@
                 maxPageSize: 5
             };
 
-            CrmWebApi.retrieveMultipleRecordsExtended(request).then(function (object) {
+            CrmWebApi.retrieveMultipleAdvanced(request).then(function (object) {
                 debugger;
             })
             .catch(function (error) {
@@ -67,7 +67,7 @@
             });
         }
         function DeleteRecord() {
-            CrmWebApi.deleteRecord(recordId, "lead").then(function () {
+            CrmWebApi.deleteRequest(recordId, "lead").then(function () {
                 alert("success!");
             })
             .catch(function (error) {
@@ -80,7 +80,7 @@
                 subject: "Test update"
             }
 
-            CrmWebApi.updateRecord(recordId, "lead", lead).then(function () {
+            CrmWebApi.updateRequest(recordId, "lead", lead).then(function () {
                 alert("updated!");
             })
             .catch(function (error) {
@@ -93,7 +93,7 @@
                 subject: "Upsert!!"
             };
 
-            CrmWebApi.upsertRecord(recordId, "lead", lead, "*").then(function (id) {
+            CrmWebApi.upsertRequest(recordId, "lead", lead, "*").then(function (id) {
                 if (id != null) {
                     recordId = id;
                 }

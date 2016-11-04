@@ -216,12 +216,12 @@ var CrmWebApi = function () {
         ///</param>
         /// <returns type="String" />
 
-        try{
+        try {
             var match = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(parameter)[0];
 
             return match;
         }
-        catch(error){
+        catch (error) {
             throw new Error(message);
         }
     }
@@ -330,8 +330,8 @@ var CrmWebApi = function () {
         ///</param>
         /// <returns type="Promise" />
 
-        _parameterCheck(object, "CrmWebApi.createRecord requires the object parameter.");
-        _stringParameterCheck(type, "CrmWebApi.createRecord requires the type parameter is a string.");
+        _parameterCheck(object, "CrmWebApi.createRequest requires the object parameter.");
+        _stringParameterCheck(type, "CrmWebApi.createRequest requires the type parameter is a string.");
 
         return axiosCrm
             .post(type.toLowerCase() + "s", object)
@@ -393,7 +393,7 @@ var CrmWebApi = function () {
             return response.data;
         });
     };
-    var updateRecord = function (id, type, object) {
+    var updateRecord = function (id, type, object, returnData, select) {
         ///<summary>
         /// Sends an asynchronous request to update a record.
         ///</summary>
@@ -408,13 +408,36 @@ var CrmWebApi = function () {
         /// The Logical Name of the Entity type record to retrieve.
         /// For an Account record, use "account"
         ///</param>
+        ///<param name="returnData" type="Boolean" optional="true">
+        /// If indicated and "true" the operation returns an updated object
+        ///</param>
+        //<param name="select" type="Array" optional="true">
+        /// Limits returned properties with updateRequest when returnData equals "true". 
+        ///</param>
         /// <returns type="Promise" />
-        _stringParameterCheck(id, "CrmWebApi.updateRecord requires the id parameter.");
-        id = _guidParameterCheck(id, "CrmWebApi.updateRecord requires the id is GUID.")
-        _parameterCheck(object, "CrmWebApi.updateRecord requires the object parameter.");
-        _stringParameterCheck(type, "CrmWebApi.updateRecord requires the type parameter.");
+        _stringParameterCheck(id, "CrmWebApi.updateRequest requires the id parameter.");
+        id = _guidParameterCheck(id, "CrmWebApi.updateRequest requires the id is GUID.")
+        _parameterCheck(object, "CrmWebApi.updateRequest requires the object parameter.");
+        _stringParameterCheck(type, "CrmWebApi.updateRequest requires the type parameter.");
 
-        return axiosCrm.patch(type.toLowerCase() + "s" + "(" + id + ")", object);
+        var additionalConfig = null;
+
+        if (returnData != null) {
+            _boolParameterCheck(returnData, "CrmWebApi.updateRequest requires the returnData parameter a boolean.");
+            additionalConfig = { headers: { "Prefer": "return=representation" } };
+        }
+
+        var systemQueryOptions = null;
+
+        if (select != null) {
+            _arrayParameterCheck(select, "CrmWebApi.updateRequest requires the select parameter an array.");
+
+            if (select != null && select.length > 0) {
+                systemQueryOptions = "?" + select.join(",");
+            }
+        }
+
+        return axiosCrm.patch(type.toLowerCase() + "s" + "(" + id + ")" + systemQueryOptions, object, additionalConfig);
     };
     var updateSingleProperty = function (id, type, keyValuePair) {
         ///<summary>
@@ -440,7 +463,7 @@ var CrmWebApi = function () {
 
         return axiosCrm.put(type.toLowerCase() + "s" + "(" + id + ")/" + keyValuePair.key, { value: keyValuePair.value });
     };
-    var deleteRecord = function (id, type) {
+    var deleteRequest = function (id, type, propertyName) {
         ///<summary>
         /// Sends an asynchronous request to delete a record.
         ///</summary>
@@ -451,13 +474,25 @@ var CrmWebApi = function () {
         /// The Logical Name of the Entity type record to delete.
         /// For an Account record, use "account"
         ///</param>
+        ///<param name="propertyName" type="String" optional="true">
+        /// The name of the property which needs to be emptied. Instead of removing a whole record
+        /// only the specified property will be cleared.
+        ///</param>
         /// <returns type="Promise" />
 
-        _stringParameterCheck(id, "CrmWebApi.deleteRecord requires the id parameter.");
-        id = _guidParameterCheck(id, "CrmWebApi.deleteRecord requires the id is GUID.")
-        _stringParameterCheck(type, "CrmWebApi.deleteRecord requires the type parameter.");
+        _stringParameterCheck(id, "CrmWebApi.deleteRequest requires the id parameter.");
+        id = _guidParameterCheck(id, "CrmWebApi.deleteRequest requires the id is GUID.")
+        _stringParameterCheck(type, "CrmWebApi.deleteRequest requires the type parameter.");
 
-        return axiosCrm.delete(type.toLowerCase() + "s(" + id + ")");
+        if (propertyName != null)
+            _stringParameterCheck(propertyName, "CrmWebApi.deleteRequest requires the propertyName parameter.");
+
+        var url = type.toLowerCase() + "s(" + id + ")";
+
+        if (propertyName != null)
+            url += "/" + propertyName;
+
+        return axiosCrm.delete(url);
     };
 
     var upsertRecord = function (id, type, object, ifmatch, ifnonematch) {
@@ -483,11 +518,11 @@ var CrmWebApi = function () {
         ///</param>
         /// <returns type="Promise" />
 
-        _stringParameterCheck(id, "CrmWebApi.upsertRecord requires the id parameter.");
-        id = _guidParameterCheck(id, "CrmWebApi.upsertRecord requires the id is GUID.")
+        _stringParameterCheck(id, "CrmWebApi.upsertRequest requires the id parameter.");
+        id = _guidParameterCheck(id, "CrmWebApi.upsertRequest requires the id is GUID.")
 
-        _parameterCheck(object, "CrmWebApi.upsertRecord requires the object parameter.");
-        _stringParameterCheck(type, "CrmWebApi.upsertRecord requires the type parameter.");
+        _parameterCheck(object, "CrmWebApi.upsertRequest requires the object parameter.");
+        _stringParameterCheck(type, "CrmWebApi.upsertRequest requires the type parameter.");
 
         if (ifmatch != null && ifnonematch != null) {
             throw Error("Either one of ifmatch or ifnonematch parameters shoud be used in a call, not both.")
@@ -496,13 +531,13 @@ var CrmWebApi = function () {
         var additionalConfig = null;
 
         if (ifmatch != null) {
-            _stringParameterCheck(ifmatch, "CrmWebApi.upsert requires the ifmatch parameter is a string.");
+            _stringParameterCheck(ifmatch, "CrmWebApi.upsertRequest requires the ifmatch parameter is a string.");
 
             additionalConfig = { headers: { 'If-Match': ifmatch } };
         }
 
         if (ifnonematch != null) {
-            _stringParameterCheck(ifmatch, "CrmWebApi.upsert requires the ifnonematch parameter is a string.");
+            _stringParameterCheck(ifmatch, "CrmWebApi.upsertRequest requires the ifnonematch parameter is a string.");
 
             additionalConfig = { headers: { 'If-None-Match': ifnonematch } };
         }
@@ -596,7 +631,7 @@ var CrmWebApi = function () {
         ///</param>
 
         if (nextPageLink != null)
-            _stringParameterCheck(nextPageLink, "CrmWebApi.retrieveMultipleRecords requires the nextPageLink parameter is a string.");
+            _stringParameterCheck(nextPageLink, "CrmWebApi.retrieveMultiple requires the nextPageLink parameter is a string.");
 
         var url = nextPageLink == null
             ? convertOptionsToLink(retrieveMultipleOptions)
@@ -627,15 +662,15 @@ var CrmWebApi = function () {
     }
 
     return {
-        createRecord: createRecord,
+        createRequest: createRecord,
+        updateRequest: updateRecord,
+        upsertRequest: upsertRecord,
+        deleteRequest: deleteRequest,
         countRecords: countRecords,
         retrieveRecord: retrieveRecord,
-        retrieveMultipleRecords: retrieveMultipleRecords,
-        retrieveMultipleRecordsAdvanced: retrieveMultipleRecordsAdvanced,
-        updateRecord: updateRecord,
-        upsertRecord: upsertRecord,
+        retrieveMultiple: retrieveMultipleRecords,
+        retrieveMultipleAdvanced: retrieveMultipleRecordsAdvanced,
         updateSingleProperty: updateSingleProperty,
-        deleteRecord: deleteRecord,
         crmWebApiVersion: crmWebApiVersion
     }
 }();
