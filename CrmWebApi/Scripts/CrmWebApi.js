@@ -411,7 +411,7 @@ var CrmWebApi = function () {
         ///<param name="returnData" type="Boolean" optional="true">
         /// If indicated and "true" the operation returns an updated object
         ///</param>
-        //<param name="select" type="Array" optional="true">
+        ///<param name="select" type="Array" optional="true">
         /// Limits returned properties with updateRequest when returnData equals "true". 
         ///</param>
         /// <returns type="Promise" />

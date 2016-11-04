@@ -48,6 +48,27 @@ CrmWebApi.updateRequest(leadId, "lead", lead).then(function () {
 });
 ```
 
+##### Update a record and it
+
+```js
+//lead id is needed for an update operation
+var leadId = '7d577253-3ef0-4a0a-bb7f-8335c2596e70';
+
+//initialize a CRM entity record object
+//and specify fields with values that need to be updated
+var lead = {
+    subject: "Test update",
+	jobtitle: "Developer"
+}
+//perform an update operation
+CrmWebApi.updateRequest(leadId, "lead", lead, true).then(function (updatedRecord) {
+    //do something with updatedRecord
+})
+.catch(function (error) {
+    //catch an error
+});
+```
+
 #### Update a single property value
 
 ```js
