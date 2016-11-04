@@ -48,7 +48,7 @@ CrmWebApi.updateRequest(leadId, "lead", lead).then(function () {
 });
 ```
 
-##### Update a record and it
+##### Update a record and return it
 
 ```js
 //lead id is needed for an update operation
