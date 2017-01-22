@@ -304,7 +304,7 @@ var CrmWebApi = function () {
         }
 
         if (options.includeAnnotations != null) {
-            _stringParameterCheck(options.includeAnnotations, "CrmWebApi.retrieveMultipleRecords requires the object.includeAnnotations parameter is a boolean.");
+            _stringParameterCheck(options.includeAnnotations, "CrmWebApi.retrieveMultipleRecords requires the object.includeAnnotations parameter is a string.");
         }
 
         var url = options.type.toLowerCase() + "s";
@@ -348,7 +348,7 @@ var CrmWebApi = function () {
                 if (returnData) {
                     return response;
                 }
-                
+
                 var entityUrl = response.headers['odata-entityid'];
                 var id = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(entityUrl)[0];
                 return id;
@@ -657,7 +657,7 @@ var CrmWebApi = function () {
                 additionalConfig = { headers: { 'Prefer': 'odata.maxpagesize=' + retrieveMultipleOptions.maxPageSize } };
             }
             if (retrieveMultipleOptions.includeAnnotations != null) {
-                additionalConfig = { headers: { 'Prefer': 'odata.include-annotations="' + includeAnnotations + '"' } };
+                additionalConfig = { headers: { 'Prefer': 'odata.include-annotations="' + retrieveMultipleOptions.includeAnnotations + '"' } };
             }
         }
 
@@ -674,11 +674,74 @@ var CrmWebApi = function () {
             });
     }
 
+    var getPagingCookie = function (pageCokies) {
+        var pagingInfo = {};
+        var pageNumber = null;
+ 
+        try {
+            //get the page cokies
+            pageCokies = unescape(unescape(pageCokies));
+ 
+            //get the pageNumber
+            pageNumber = parseInt(pageCokies.substring(pageCokies.indexOf("=") + 1, pageCokies.indexOf("pagingcookie")).replace(/\"/g, '').trim());
+ 
+            // this line is used to get the cookie part
+            pageCokies = pageCokies.substring(pageCokies.indexOf("pagingcookie"), (pageCokies.indexOf("/>") + 12));
+            pageCokies = pageCokies.substring(pageCokies.indexOf("=") + 1, pageCokies.length);
+            pageCokies = pageCokies.substring(1, pageCokies.length - 1);
+ 
+            //replace special character 
+            pageCokies = pageCokies.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '\'').replace(/\'/g, '&' + 'quot;');
+ 
+            //append paging-cookie
+            pageCokies = "paging-cookie ='" + pageCokies + "'";
+ 
+            //set the parameter
+            pagingInfo.pageCokies = pageCokies;
+            pagingInfo.pageNumber = pageNumber;
+ 
+        } catch (e) {
+            throw new Error(e);
+        }
+ 
+        return pagingInfo;
+    }
+
+    var fetchXmlRequest = function (type, fetchXml, includeAnnotations) {
+        ///<summary>
+        /// Sends an asynchronous request to count records.
+        ///</summary>
+        /// <param name="type" type="String">The Logical Name of the Entity to retrieve. For an Account record, use "account".</param>
+        /// <param name="fetchXml" type="String">FetchXML is a proprietary query language that provides capabilities to perform aggregation.</param>
+        /// <param name="includeAnnotations" type="String" optional="true">Use this parameter to include annotations to a result.<para>For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie</para></param>
+        /// <returns type="Promise" />
+
+        _stringParameterCheck(type, "CrmWebApi.fetchXmlRequest requires the type parameter.");
+        _stringParameterCheck(fetchXml, "CrmWebApi.fetchXmlRequest requires the fetchXml parameter.");
+
+        var additionalConfig = null;
+        if (includeAnnotations != null) {
+            _stringParameterCheck(includeAnnotations, "CrmWebApi.fetchXmlRequest requires the includeAnnotations as a string.");
+            additionalConfig = { headers: { 'Prefer': 'odata.include-annotations="' + includeAnnotations + '"' } };
+        }
+
+        var encodedFetchXml = encodeURI(fetchXml);
+
+        return axiosCrm.get(type.toLowerCase() + "s" + "?fetchXml=" + encodedFetchXml, additionalConfig)
+            .then(function (response) {
+                if (response.data['@Microsoft.Dynamics.CRM.fetchxmlpagingcookie'] != null) {
+                    response.data.value.fetchXmlPagingCookie = getPagingCookie(response.data['@Microsoft.Dynamics.CRM.fetchxmlpagingcookie']);
+                }
+                return response.data.value;
+            });
+    }
+
     return {
         createRequest: createRecord,
         updateRequest: updateRecord,
         upsertRequest: upsertRecord,
         deleteRequest: deleteRequest,
+        fetchXmlRequest: fetchXmlRequest,
         countRecords: countRecords,
         retrieveRecord: retrieveRecord,
         retrieveMultiple: retrieveMultipleRecords,

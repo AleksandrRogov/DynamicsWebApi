@@ -3,6 +3,12 @@
 <head>
     <title></title>
     <meta charset="utf-8" />
+    <style>
+        button{
+            display:block;
+            margin-bottom:10px;
+        }
+    </style>
 </head>
 <body>
     <button onclick="CreateRecord()">Create Record</button>
@@ -12,6 +18,7 @@
     <button onclick="DeleteRecord()">Delete Record</button>
     <button onclick="UpsertRecord()">Upsert Record</button>
     <button onclick="RetrieveMultipleRecordsExtended()">Multiple Records Extended</button>
+    <button onclick="FetchXmlTest()">Fetch XML Test</button>
     <script src="../../clientGlobalcontext.js.aspx"></script>
     <script src="../Scripts/CrmWebApi.js"></script>
     <script>
@@ -111,6 +118,25 @@
                 debugger;
                 console.trace(error.message);
             });
+        }
+        function FetchXmlTest() {
+            var fetchXml = "<fetch mapping='logical'>" +
+                               "<entity name='account'>" +
+                                  "<attribute name='accountid'/>" +
+                                  "<attribute name='name'/>" +
+                                "</entity>" +
+                            "</fetch>";
+
+            CrmWebApi.fetchXmlRequest("account", fetchXml).then(function (records) {
+                /// <param name="records" type="Array">Array of FetchXml results</param>
+                for (var i = 0; i < records.length; i++) {
+                    console.trace("accountid: " + records[i].accountid + ", name: " + records[i].name);
+                }
+            })
+            .catch(function (error) {
+                debugger;
+                console.trace(error.message);
+            })
         }
     </script>
 </body>

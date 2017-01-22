@@ -209,6 +209,32 @@ CrmWebApi.countRecords("lead", "statecode eq 0").then(function (count) {
 });
 ```
 
+#### Fetch XML Request
+
+Current operation is in a development. Adding a paging.
+
+```js
+//build a fetch xml
+var fetchXml = "<fetch mapping='logical'>" +
+					"<entity name='account'>" +
+						"<attribute name='accountid'/>" +
+						"<attribute name='name'/>" +
+					"</entity>" +
+				"</fetch>";
+
+CrmWebApi.fetchXmlRequest("account", fetchXml).then(function (records) {
+    /// <param name="records" type="Array">Array of FetchXml results</param>
+	//do something with results here. For example:
+    for (var i = 0; i < records.length; i++) {
+        console.trace("accountid: " + records[i].accountid + ", name: " + records[i].name);
+    }
+})
+.catch(function (error) {
+    debugger;
+    console.trace(error.message);
+})
+```
+
 ### In Progress
 All the rest operations that can be performed using CRM Web API are in a work progress.
 
