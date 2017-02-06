@@ -37,13 +37,15 @@
                 recordId = id;
             }).catch(function (error) {
                 debugger;
-            })
+            });
         }
         function RetrieveRecord() {
             CrmWebApi.retrieveRecord(recordId, "lead", ["fullname", "subject"], null).then(function (object) {
+                var fullname = object.fullname;
                 debugger;
             })
             .catch(function (error) {
+                //if the record has not been found it will throw an error
                 debugger;
                 console.trace(error.message);
             });
@@ -57,15 +59,19 @@
                 console.trace(error.message);
             });
         }
-        function retrieveMultipleRecordsAdvanced() {
+        function RetrieveMultipleRecordsExtended() {
             var request = {
                 type: "lead",
                 select: ["fullname", "subject"],
-                filter: "statecode eq 0",
-                maxPageSize: 5
+                filter: "leadid eq " + recordId,
+                maxPageSize: 1
             };
 
             CrmWebApi.retrieveMultipleAdvanced(request).then(function (object) {
+                /// <param name="object" type="Array">Array of the results</param>
+
+                //get a field value here (check first whether object (array) contains any element)
+                var fullname = object.length ? object[0].fullname : "-1";
                 debugger;
             })
             .catch(function (error) {

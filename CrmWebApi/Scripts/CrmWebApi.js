@@ -228,6 +228,7 @@ var CrmWebApi = function () {
     var retrieveMultipleOptions = function () {
         return {
             type: "",
+            id: "",
             select: [],
             filter: "",
             maxPageSize: 1,
@@ -308,6 +309,11 @@ var CrmWebApi = function () {
         }
 
         var url = options.type.toLowerCase() + "s";
+
+        if (options.id != null) {
+            _guidParameterCheck(options.id, "CrmWebApi.retrieveMultipleRecords requires object.id parameter is a guid");
+            url += "(" + options.id + ")"
+        }
 
         if (optionString != null)
             url += "?" + optionString;
@@ -624,6 +630,8 @@ var CrmWebApi = function () {
         /// Retrieve multiple request options
         ///<para>   object.type (String). 
         ///             The Logical Name of the Entity to retrieve. For an Account record, use "account".</para>
+        ///<para>   object.id (String).
+        ///             A String representing the GUID value for the record to retrieve.
         ///<para>   object.select (Array). 
         ///             Use the $select system query option to limit the properties returned as shown in the following example.</para>
         ///<para>   object.filter (String). 
