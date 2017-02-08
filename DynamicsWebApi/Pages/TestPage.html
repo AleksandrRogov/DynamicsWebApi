@@ -1,0 +1,268 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="utf-8" />
+    <style>
+        button {
+            display: block;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <button onclick="CreateRecord()">Create Record</button>
+    <button onclick="UpdateRecord()">Update Record</button>
+    <button onclick="UpdateSingleProperty()">Update Single Property</button>
+    <button onclick="RetrieveRecord()">Retrieve Record</button>
+    <button onclick="CountRecords()">Count Records</button>
+    <button onclick="DeleteRecord()">Delete Record</button>
+    <button onclick="UpsertRecord()">Upsert Record</button>
+    <button onclick="RetrieveMultipleRecordsExtended()">Multiple Records Extended</button>
+    <button onclick="FetchXmlTest()">Fetch XML Test</button>
+    <script src="../../clientGlobalcontext.js.aspx"></script>
+    <script src="../../int_jquery.js"></script>
+    <script src="../Scripts/DynamicsWebApi.jQuery.js"></script>
+    <script>
+        var recordId = "115a8970-d788-4bf6-b064-d1574dbe6930";
+        DynamicsWebApi.webApiVersion = "8.1";
+
+        function CreateRecord() {
+            var lead = {
+                subject: "Test WebAPI",
+                firstname: "Test",
+                lastname: "WebAPI",
+                jobtitle: "Title"
+            };
+            DynamicsWebApi.createRequest(lead, "lead", false, function(id){
+                alert(id);
+                recordId = id;
+            }, function(error){
+                debugger;
+            });
+        }
+        function RetrieveRecord() {
+            DynamicsWebApi.retrieveRecord(recordId, "lead", ["fullname", "subject"], null, function (record) {
+                var fullname = record.fullname;
+                debugger;
+            }, function (error) {
+                //if the record has not been found it will throw an error
+                debugger;
+                console.trace(error.message);
+            });
+        }
+        function CountRecords() {
+            DynamicsWebApi.countRecords("lead", "statecode eq 0").then(function (count) {
+                alert(count);
+            })
+            .catch(function (error) {
+                debugger;
+                console.trace(error.message);
+            });
+        }
+        function RetrieveMultipleRecordsExtended() {
+            var request = {
+                type: "lead",
+                select: ["fullname", "subject"],
+                filter: "leadid eq " + recordId,
+                maxPageSize: 1
+            };
+
+            DynamicsWebApi.retrieveMultipleAdvanced(request, null,
+                function (object) {
+                    /// <param name="object" type="Array">Array of the results</param>
+
+                    //get a field value here (check first whether object (array) contains any element)
+                    var fullname = object.length ? object[0].fullname : "-1";
+                    debugger;
+                }, function (error) {
+                    debugger;
+                    console.trace(error.message);
+                });
+        }
+        function DeleteRecord() {
+            DynamicsWebApi.deleteRequest(recordId, "lead", null, function () {
+                alert("success!");
+            }, function (error) {
+                debugger;
+                console.trace(error.message);
+            });
+        }
+        function UpdateRecord() {
+            var lead = {
+                subject: "Test update"
+            }
+
+            DynamicsWebApi.updateRequest(recordId, "lead", lead, true, null, function (record) {
+                alert("updated!");
+            }, function (error) {
+                debugger;
+                console.trace(error.message);
+            });
+        }
+        function UpsertRecord() {
+            var lead = {
+                subject: "Upsert!!"
+            };
+
+            DynamicsWebApi.upsertRequest(recordId, "lead", lead, "*", null, function (id) {
+                if (id != null) {
+                    debugger;
+                    recordId = id;
+                }
+            }, function (error) {
+                debugger;
+                console.trace(error.message);
+            });
+        }
+        function UpdateSingleProperty() {
+            DynamicsWebApi.updateSingleProperty(recordId, "lead", { key: "subject", value: "Update Single" }, function () {
+                alert("success!");
+            }, function (error) {
+                debugger;
+                console.trace(error.message);
+            });
+        }
+        function FetchXmlTest() {
+            var fetchXml = "<fetch mapping='logical'>" +
+                               "<entity name='account'>" +
+                                  "<attribute name='accountid'/>" +
+                                  "<attribute name='name'/>" +
+                                "</entity>" +
+                            "</fetch>";
+
+            DynamicsWebApi.fetchXmlRequest("account", fetchXml).then(function (records) {
+                /// <param name="records" type="Array">Array of FetchXml results</param>
+                for (var i = 0; i < records.length; i++) {
+                    console.trace("accountid: " + records[i].accountid + ", name: " + records[i].name);
+                }
+            })
+            .catch(function (error) {
+                debugger;
+                console.trace(error.message);
+            })
+        }
+
+        //function CreateRecord() {
+        //    var lead = {
+        //        subject: "Test WebAPI",
+        //        firstname: "Test",
+        //        lastname: "WebAPI",
+        //        jobtitle: "Title"
+        //    };
+        //    DynamicsWebApi.createRequest(lead, "lead").then(function (id) {
+        //        alert(id);
+        //        recordId = id;
+        //    }).catch(function (error) {
+        //        debugger;
+        //    });
+        //}
+        //function RetrieveRecord() {
+        //    DynamicsWebApi.retrieveRecord(recordId, "lead", ["fullname", "subject"], null).then(function (object) {
+        //        var fullname = object.fullname;
+        //        debugger;
+        //    })
+        //    .catch(function (error) {
+        //        //if the record has not been found it will throw an error
+        //        debugger;
+        //        console.trace(error.message);
+        //    });
+        //}
+        //function CountRecords() {
+        //    DynamicsWebApi.countRecords("lead", "statecode eq 0").then(function (count) {
+        //        alert(count);
+        //    })
+        //    .catch(function (error) {
+        //        debugger;
+        //        console.trace(error.message);
+        //    });
+        //}
+        //function RetrieveMultipleRecordsExtended() {
+        //    var request = {
+        //        type: "lead",
+        //        select: ["fullname", "subject"],
+        //        filter: "leadid eq " + recordId,
+        //        maxPageSize: 1
+        //    };
+
+        //    DynamicsWebApi.retrieveMultipleAdvanced(request).then(function (object) {
+        //        /// <param name="object" type="Array">Array of the results</param>
+
+        //        //get a field value here (check first whether object (array) contains any element)
+        //        var fullname = object.length ? object[0].fullname : "-1";
+        //        debugger;
+        //    })
+        //    .catch(function (error) {
+        //        debugger;
+        //        console.trace(error.message);
+        //    });
+        //}
+        //function DeleteRecord() {
+        //    DynamicsWebApi.deleteRequest(recordId, "lead").then(function () {
+        //        alert("success!");
+        //    })
+        //    .catch(function (error) {
+        //        debugger;
+        //        console.trace(error.message);
+        //    });
+        //}
+        //function UpdateRecord() {
+        //    var lead = {
+        //        subject: "Test update"
+        //    }
+
+        //    DynamicsWebApi.updateRequest(recordId, "lead", lead).then(function () {
+        //        alert("updated!");
+        //    })
+        //    .catch(function (error) {
+        //        debugger;
+        //        console.trace(error.message);
+        //    });
+        //}
+        //function UpsertRecord() {
+        //    var lead = {
+        //        subject: "Upsert!!"
+        //    };
+
+        //    DynamicsWebApi.upsertRequest(recordId, "lead", lead, "*").then(function (id) {
+        //        if (id != null) {
+        //            recordId = id;
+        //        }
+        //    })
+        //    .catch(function (error) {
+        //        debugger;
+        //        console.trace(error.message);
+        //    });
+        //}
+        //function UpdateSingleProperty() {
+        //    DynamicsWebApi.updateSingleProperty(recordId, "lead", { key: "subject", value: "Update Single" }).then(function () {
+        //        alert("success!");
+        //    })
+        //    .catch(function (error) {
+        //        debugger;
+        //        console.trace(error.message);
+        //    });
+        //}
+        //function FetchXmlTest() {
+        //    var fetchXml = "<fetch mapping='logical'>" +
+        //                       "<entity name='account'>" +
+        //                          "<attribute name='accountid'/>" +
+        //                          "<attribute name='name'/>" +
+        //                        "</entity>" +
+        //                    "</fetch>";
+
+        //    DynamicsWebApi.fetchXmlRequest("account", fetchXml).then(function (records) {
+        //        /// <param name="records" type="Array">Array of FetchXml results</param>
+        //        for (var i = 0; i < records.length; i++) {
+        //            console.trace("accountid: " + records[i].accountid + ", name: " + records[i].name);
+        //        }
+        //    })
+        //    .catch(function (error) {
+        //        debugger;
+        //        console.trace(error.message);
+        //    })
+        //}
+    </script>
+</body>
+
+</html>

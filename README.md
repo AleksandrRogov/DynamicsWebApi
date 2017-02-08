@@ -1,12 +1,12 @@
-# CrmWebApi
-CrmWebApi is a javascript Microsoft Dynamics CRM Web API helper library.
+# DynamicsWebApi
+DynamicsWebApi is a javascript Microsoft Dynamics CRM Web API helper library.
 
 The project is currently under development.
 
 Any suggestions are welcome!
 
 ## Quick Start
-In order to use a library CrmWebApi.js needs to be added as a Web Resource in CRM.
+In order to use a library DynamicsWebApi.js needs to be added as a Web Resource in CRM.
 
 ### Examples
 #### Create a record
@@ -19,8 +19,8 @@ var lead = {
     lastname: "WebAPI",
     jobtitle: "Title"
 };
-//call CrmWebApi.createRequest function
-CrmWebApi.createRequest(lead, "lead").then(function (id) {
+//call DynamicsWebApi.createRequest function
+DynamicsWebApi.createRequest(lead, "lead").then(function (id) {
     //do something with id here
 }).catch(function (error) {
     //catch error here
@@ -40,7 +40,7 @@ var lead = {
 	jobtitle: "Developer"
 }
 //perform an update operation
-CrmWebApi.updateRequest(leadId, "lead", lead).then(function () {
+DynamicsWebApi.updateRequest(leadId, "lead", lead).then(function () {
     //do something after a succesful operation
 })
 .catch(function (error) {
@@ -61,7 +61,7 @@ var lead = {
 	jobtitle: "Developer"
 }
 //perform an update operation
-CrmWebApi.updateRequest(leadId, "lead", lead, true).then(function (updatedRecord) {
+DynamicsWebApi.updateRequest(leadId, "lead", lead, true).then(function (updatedRecord) {
     //do something with updatedRecord
 })
 .catch(function (error) {
@@ -82,7 +82,7 @@ var keyValuePair = {
 };
 
 //perform an update single property operation
-CrmWebApi.UpdateSingleProperty(leadId, "lead", keyValuePair).then(function () {
+DynamicsWebApi.UpdateSingleProperty(leadId, "lead", keyValuePair).then(function () {
     //do something after a succesful operation
 })
 .catch(function (error) {
@@ -102,7 +102,7 @@ var lead = {
 
 //initialize a CRM entity record object
 //and specify fields with values that need to be upserted
-CrmWebApi.upsertRequest(leadId, "lead", lead, "*").then(function (id) {
+DynamicsWebApi.upsertRequest(leadId, "lead", lead, "*").then(function (id) {
     if (id != null) {
         //record has been created
     }
@@ -122,7 +122,7 @@ CrmWebApi.upsertRequest(leadId, "lead", lead, "*").then(function (id) {
 var leadId = '7d577253-3ef0-4a0a-bb7f-8335c2596e70';
 
 //perform a delete
-CrmWebApi.deleteRequest(leadId, "lead").then(function () {
+DynamicsWebApi.deleteRequest(leadId, "lead").then(function () {
     //do something after a succesful operation
 })
 .catch(function (error) {
@@ -137,7 +137,7 @@ CrmWebApi.deleteRequest(leadId, "lead").then(function () {
 var leadId = '7d577253-3ef0-4a0a-bb7f-8335c2596e70';
 
 //perform a delete of a single property value
-CrmWebApi.deleteRequest(leadId, "lead", "subject").then(function () {
+DynamicsWebApi.deleteRequest(leadId, "lead", "subject").then(function () {
     //do something after a succesful operation
 })
 .catch(function (error) {
@@ -149,7 +149,7 @@ CrmWebApi.deleteRequest(leadId, "lead", "subject").then(function () {
 
 ```js
 //perform a retrieve operaion
-CrmWebApi.retrieveRecord(accountId, "lead", ["fullname", "subject"]).then(function (object) {
+DynamicsWebApi.retrieveRecord(accountId, "lead", ["fullname", "subject"]).then(function (object) {
     //do something with an object here
 })
 .catch(function (error) {
@@ -164,7 +164,7 @@ Retrieve multiple records can be called differently depending on what level of o
 ##### Simple call
 
 ```js
-CrmWebApi.retrieveMultiple("lead", ["fullname", "subject"], "statecode eq 0", null).then(function (records) {
+DynamicsWebApi.retrieveMultiple("lead", ["fullname", "subject"], "statecode eq 0", null).then(function (records) {
     //do something with retrieved records here
 })
 .catch(function (error) {
@@ -185,7 +185,7 @@ var operationOptions = {
 };
 
 //perform a multiple records retrieve operation
-CrmWebApi.retrieveMultipleAdvanced(operationOptions).then(function (records) {
+DynamicsWebApi.retrieveMultipleAdvanced(operationOptions).then(function (records) {
     var count = records.oDataCount;
     var nextLink = records.oDataNextLink;
     
@@ -201,7 +201,7 @@ CrmWebApi.retrieveMultipleAdvanced(operationOptions).then(function (records) {
 It is possible to count records separately from RetrieveMultiple call. In order to do that use the following snippet:
 
 ```js
-CrmWebApi.countRecords("lead", "statecode eq 0").then(function (count) {
+DynamicsWebApi.countRecords("lead", "statecode eq 0").then(function (count) {
     //do something with count here
 })
 .catch(function (error) {
@@ -222,7 +222,7 @@ var fetchXml = "<fetch mapping='logical'>" +
 					"</entity>" +
 				"</fetch>";
 
-CrmWebApi.fetchXmlRequest("account", fetchXml).then(function (records) {
+DynamicsWebApi.fetchXmlRequest("account", fetchXml).then(function (records) {
     /// <param name="records" type="Array">Array of FetchXml results</param>
 	//do something with results here. For example:
     for (var i = 0; i < records.length; i++) {
@@ -241,11 +241,11 @@ All the rest operations that can be performed using CRM Web API are in a work pr
 Thank you for your patience!
 
 ## Javascript Promises
-CrmWebApi uses [ES6 Promise](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise) instead of callbacks and [Yaku](https://github.com/ysmood/yaku) as a Promise polyfill.
-A library version with callbacks is [under a consideraion](https://github.com/o4u/CrmWebApi/issues/1).
+DynamicsWebApi uses [ES6 Promise](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise) instead of callbacks and [Yaku](https://github.com/ysmood/yaku) as a Promise polyfill.
+A library version with callbacks is [under a consideraion](https://github.com/o4u/DynamicsWebApi/issues/1).
 
 ## Dependencies
 * [Yaku](https://github.com/ysmood/yaku)
 * [Axios](https://github.com/mzabriskie/axios)
 
-CrmWebApi.js contains minified code of listed libraries.
+DynamicsWebApi.js contains minified code of listed libraries.
