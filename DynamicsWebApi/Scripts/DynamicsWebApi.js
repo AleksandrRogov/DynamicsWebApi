@@ -65,16 +65,13 @@ var DynamicsWebApi = function () {
     };
 
     var _webApiVersion = "8.0";
-    var _webApiUrl = _getClientUrl() + "/api/data/v" + _webApiVersion + "/";
+    var _webApiUrl = null;
 
-    //var _webApiPath = function () {
-    //    ///<summary>
-    //    /// Private function to return the path to the Web API endpoint.
-    //    ///</summary>
-    //    ///<returns>String</returns>
+    var _initUrl = function(){
+        _webApiUrl = _getClientUrl() + "/api/data/v" + _webApiVersion + "/";
+    }
 
-    //    return _webApiUrl == null ? _getClientUrl() + "/api/data/v" + webApiVersion + "/" : _webApiUrl;
-    //};
+    _initUrl();
 
     var _dateReviver = function (key, value) {
         ///<summary>
@@ -256,6 +253,7 @@ var DynamicsWebApi = function () {
         if (config.webApiVersion != null) {
             _stringParameterCheck(config.webApiVersion, "DynamicsWebApi.setConfig requires config.webApiVersion is a string.");
             _webApiVersion = config.webApiVersion;
+            _initUrl();
         }
 
         if (config.webApiUrl != null) {
