@@ -8,6 +8,15 @@ Any suggestions are welcome!
 ## Quick Start
 In order to use a library DynamicsWebApi.js needs to be added as a Web Resource in CRM.
 
+## Configuration
+Please use the following function to set a configuration for DynamicsWebApi helper.
+
+```js
+DynamicsWebApi.setConfig({ webApiVersion: "8.2" });
+```
+
+At this moment the library only works inside CRM.
+
 ### Examples
 #### Create a record
 

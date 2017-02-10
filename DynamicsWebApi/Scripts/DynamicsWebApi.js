@@ -64,15 +64,17 @@ var DynamicsWebApi = function () {
         return clientUrl;
     };
 
-    var webApiVersion = "8.0";
+    var _webApiVersion = "8.0";
+    var _webApiUrl = _getClientUrl() + "/api/data/v" + _webApiVersion + "/";
 
-    var _webApiPath = function () {
-        ///<summary>
-        /// Private function to return the path to the Web API endpoint.
-        ///</summary>
-        ///<returns>String</returns>
-        return _getClientUrl() + "/api/data/v" + webApiVersion + "/";
-    };
+    //var _webApiPath = function () {
+    //    ///<summary>
+    //    /// Private function to return the path to the Web API endpoint.
+    //    ///</summary>
+    //    ///<returns>String</returns>
+
+    //    return _webApiUrl == null ? _getClientUrl() + "/api/data/v" + webApiVersion + "/" : _webApiUrl;
+    //};
 
     var _dateReviver = function (key, value) {
         ///<summary>
@@ -97,7 +99,7 @@ var DynamicsWebApi = function () {
     var PROTECTION_PREFIX = /^\)\]\}',?\n/;
 
     var axiosCrm = axios.create({
-        baseURL: _webApiPath(),
+        baseURL: _webApiUrl,
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json; charset=utf-8',
@@ -240,6 +242,27 @@ var DynamicsWebApi = function () {
             value: ""
         }
     };
+
+    var setConfig = function (config) {
+        ///<summary>Sets the configuration parameters for DynamicsWebApi helper.</summary>
+        ///<param name="config" type="Object">
+        /// Retrieve multiple request options
+        ///<para>   config.webApiVersion (String). 
+        ///             The version of Web API to use, for example: "8.1"</para>
+        ///<para>   config.webApiUrl (String).
+        ///             A String representing a URL to Web API (webApiVersion not required if webApiUrl specified) [optional, if used inside of CRM]
+        ///</param>
+
+        if (config.webApiVersion != null) {
+            _stringParameterCheck(config.webApiVersion, "DynamicsWebApi.setConfig requires config.webApiVersion is a string.");
+            _webApiVersion = config.webApiVersion;
+        }
+
+        if (config.webApiUrl != null) {
+            _stringParameterCheck(config.webApiUrl, "DynamicsWebApi.setConfig requires config.webApiUrl is a string.");
+            _webApiUrl = config.webApiUrl;
+        }
+    }
 
     var convertOptionsToLink = function (options) {
         /// <summary>Builds the Web Api query string based on a passed options object parameter.</summary>
@@ -751,7 +774,7 @@ var DynamicsWebApi = function () {
         retrieveMultiple: retrieveMultipleRecords,
         retrieveMultipleAdvanced: retrieveMultipleRecordsAdvanced,
         updateSingleProperty: updateSingleProperty,
-        webApiVersion: webApiVersion
+        setConfig: setConfig
     }
 }();
 
