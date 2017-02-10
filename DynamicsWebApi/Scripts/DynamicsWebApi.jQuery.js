@@ -1,6 +1,6 @@
 ﻿/// <reference path="jQuery.js" />
 /*
- DynamicsWebApi.jQuery v0.1.0 (for Microsoft Dynamics CRM 2016)
+ DynamicsWebApi.jQuery v0.1.0 (for Dynamics 365 (online), Dynamics 365 (on-premises), Dynamics CRM 2016, Dynamics CRM Online)
  
  Project references the following javascript libraries:
   > jQuery (jQuery.js) - https://github.com/jquery/jquery
