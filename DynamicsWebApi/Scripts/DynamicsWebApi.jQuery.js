@@ -803,25 +803,30 @@ var DynamicsWebApi = function () {
         });
     }
 
-    var countRecords = function (type, filter) {
+    var countRecords = function (type, filter, successCallback, errorCallback) {
         ///<summary>
         /// Sends an asynchronous request to count records.
         ///</summary>
         /// <param name="type" type="String">The Logical Name of the Entity to retrieve. For an Account record, use "account".</param>
         /// <param name="filter" type="String">Use the $filter system query option to set criteria for which entities will be returned.</param>
-        /// <returns type="Promise" />
+        ///<param name="successCallback" type="Function">
+        /// The function that will be passed through and be called by a successful response. 
+        /// This function must accept the returned record as a parameter.
+        /// </param>
+        ///<param name="errorCallback" type="Function">
+        /// The function that will be passed through and be called by a failed response. 
+        /// This function must accept an Error object as a parameter.
+        /// </param>
 
         return retrieveMultipleRecordsAdvanced({
             type: type,
             select: [type.toLowerCase() + "id"],
             filter: filter,
             count: true
-        }, null)
-            .then(function (response) {
-                return response.oDataCount != null ? response.oDataCount : 0;
-            });
+        }, null, function (response) {
+            successCallback(response.oDataCount != null ? response.oDataCount : 0);
+        }, errorCallback);
     }
-
 
     var retrieveMultipleRecords = function (type, select, filter, nextPageLink, successCallback, errorCallback) {
         ///<summary>
@@ -930,10 +935,10 @@ var DynamicsWebApi = function () {
 
                     var response = JSON.parse(xhr.responseText, _dateReviver);
                     if (response['@odata.nextLink'] != null) {
-                        response.value.oDataNextLink = response.d['@odata.nextLink'];
+                        response.value.oDataNextLink = response['@odata.nextLink'];
                     }
                     if (response['@odata.count'] != null) {
-                        response.value.oDataCount = response.d['@odata.count'];
+                        response.value.oDataCount = response['@odata.count'];
                     }
 
                     successCallback(response.value);
@@ -945,50 +950,59 @@ var DynamicsWebApi = function () {
         });
     }
 
-    var getPagingCookie = function (pageCokies) {
+    var getPagingCookie = function (pageCookies) {
         var pagingInfo = {};
         var pageNumber = null;
- 
+
         try {
             //get the page cokies
-            pageCokies = unescape(unescape(pageCokies));
- 
+            pageCookies = unescape(unescape(pageCookies));
+
             //get the pageNumber
-            pageNumber = parseInt(pageCokies.substring(pageCokies.indexOf("=") + 1, pageCokies.indexOf("pagingcookie")).replace(/\"/g, '').trim());
- 
+            pageNumber = parseInt(pageCookies.substring(pageCookies.indexOf("=") + 1, pageCookies.indexOf("pagingcookie")).replace(/\"/g, '').trim());
+
             // this line is used to get the cookie part
-            pageCokies = pageCokies.substring(pageCokies.indexOf("pagingcookie"), (pageCokies.indexOf("/>") + 12));
-            pageCokies = pageCokies.substring(pageCokies.indexOf("=") + 1, pageCokies.length);
-            pageCokies = pageCokies.substring(1, pageCokies.length - 1);
- 
+            pageCookies = pageCookies.substring(pageCookies.indexOf("pagingcookie"), (pageCookies.indexOf("/>") + 12));
+            pageCookies = pageCookies.substring(pageCookies.indexOf("=") + 1, pageCookies.length);
+            pageCookies = pageCookies.substring(1, pageCookies.length - 1);
+
             //replace special character 
-            pageCokies = pageCokies.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '\'').replace(/\'/g, '&' + 'quot;');
- 
+            pageCookies = pageCookies.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '\'').replace(/\'/g, '&' + 'quot;');
+
             //append paging-cookie
-            pageCokies = "paging-cookie ='" + pageCokies + "'";
- 
+            pageCookies = "paging-cookie ='" + pageCookies + "'";
+
             //set the parameter
-            pagingInfo.pageCokies = pageCokies;
+            pagingInfo.pageCookies = pageCookies;
             pagingInfo.pageNumber = pageNumber;
- 
+
         } catch (e) {
             throw new Error(e);
         }
- 
+
         return pagingInfo;
     }
 
-    var fetchXmlRequest = function (type, fetchXml, includeAnnotations) {
+    var fetchXmlRequest = function (type, fetchXml, includeAnnotations, successCallback, errorCallback) {
         ///<summary>
         /// Sends an asynchronous request to count records.
         ///</summary>
         /// <param name="type" type="String">The Logical Name of the Entity to retrieve. For an Account record, use "account".</param>
         /// <param name="fetchXml" type="String">FetchXML is a proprietary query language that provides capabilities to perform aggregation.</param>
         /// <param name="includeAnnotations" type="String" optional="true">Use this parameter to include annotations to a result.<para>For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie</para></param>
-        /// <returns type="Promise" />
+        ///<param name="successCallback" type="Function">
+        /// The function that will be passed through and be called by a successful response. 
+        /// This function must accept the returned record as a parameter.
+        /// </param>
+        ///<param name="errorCallback" type="Function">
+        /// The function that will be passed through and be called by a failed response. 
+        /// This function must accept an Error object as a parameter.
+        /// </param>
 
         _stringParameterCheck(type, "DynamicsWebApi.fetchXmlRequest requires the type parameter.");
         _stringParameterCheck(fetchXml, "DynamicsWebApi.fetchXmlRequest requires the fetchXml parameter.");
+        _callbackParameterCheck(successCallback, "DynamicsWebApi.fetchXmlRequest requires the successCallback parameter is a function.");
+        _callbackParameterCheck(errorCallback, "DynamicsWebApi.fetchXmlRequest requires the errorCallback parameter is a function.");
 
         var additionalConfig = null;
         if (includeAnnotations != null) {
@@ -998,13 +1012,36 @@ var DynamicsWebApi = function () {
 
         var encodedFetchXml = encodeURI(fetchXml);
 
-        return axiosCrm.get(type.toLowerCase() + "s" + "?fetchXml=" + encodedFetchXml, additionalConfig)
-            .then(function (response) {
-                if (response.data['@Microsoft.Dynamics.CRM.fetchxmlpagingcookie'] != null) {
-                    response.data.value.fetchXmlPagingCookie = getPagingCookie(response.data['@Microsoft.Dynamics.CRM.fetchxmlpagingcookie']);
+        $.ajax({
+            type: "GET",
+            contentType: "application/json; charset=utf-8",
+            datatype: "json",
+            url: _webApiPath() + type.toLowerCase() + "s" + "?fetchXml=" + encodedFetchXml,
+            beforeSend: function (xhr) {
+                //Specifying this header ensures that the results will be returned as JSON.             
+                xhr.setRequestHeader("Accept", "application/json");
+                xhr.setRequestHeader("OData-Version", "4.0");
+                xhr.setRequestHeader("OData-MaxVersion", "4.0");
+
+                if (includeAnnotations != null) {
+                    xhr.setRequestHeader("Prefer", 'odata.include-annotations="' + includeAnnotations + '"');
                 }
-                return response.data.value;
-            });
+            },
+            success: function (data, textStatus, xhr) {
+                if (data && data.value) {
+                    var response = JSON.parse(xhr.responseText, _dateReviver);
+
+                    if (response['@Microsoft.Dynamics.CRM.fetchxmlpagingcookie'] != null) {
+                        response.value.fetchXmlPagingCookie = getPagingCookie(response['@Microsoft.Dynamics.CRM.fetchxmlpagingcookie']);
+                    }
+
+                    successCallback(response.value);
+                }
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                errorCallback(_errorHandler(xhr));
+            }
+        });
     }
 
     return {

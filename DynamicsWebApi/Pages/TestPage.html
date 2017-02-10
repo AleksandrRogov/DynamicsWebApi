@@ -52,10 +52,9 @@
             });
         }
         function CountRecords() {
-            DynamicsWebApi.countRecords("lead", "statecode eq 0").then(function (count) {
+            DynamicsWebApi.countRecords("lead", "statecode eq 0", function (count) {
                 alert(count);
-            })
-            .catch(function (error) {
+            }, function (error) {
                 debugger;
                 console.trace(error.message);
             });
@@ -105,7 +104,7 @@
                 subject: "Upsert!!"
             };
 
-            DynamicsWebApi.upsertRequest(recordId, "lead", lead, "*", null, function (id) {
+            DynamicsWebApi.upsertRequest(recordId, "lead", lead, null, null, function (id) {
                 if (id != null) {
                     debugger;
                     recordId = id;
@@ -131,13 +130,12 @@
                                 "</entity>" +
                             "</fetch>";
 
-            DynamicsWebApi.fetchXmlRequest("account", fetchXml).then(function (records) {
+            DynamicsWebApi.fetchXmlRequest("account", fetchXml, null, function (records) {
                 /// <param name="records" type="Array">Array of FetchXml results</param>
                 for (var i = 0; i < records.length; i++) {
                     console.trace("accountid: " + records[i].accountid + ", name: " + records[i].name);
                 }
-            })
-            .catch(function (error) {
+            }, function (error) {
                 debugger;
                 console.trace(error.message);
             })

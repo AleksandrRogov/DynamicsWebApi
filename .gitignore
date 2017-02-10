@@ -240,5 +240,5 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
-/DynamicsWebApi/CRMDeveloperExtensions.config
+**/CRMDeveloperExtensions.config
 /bfg.jar

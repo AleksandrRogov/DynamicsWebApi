@@ -82,7 +82,6 @@
     <Content Include="Scripts\DynamicsWebApi.js" />
     <Content Include="Scripts\jQuery.js" />
     <Content Include="Scripts\jQuery.min.js" />
-    <Content Include="Scripts\SDK.JQuery.js" />
     <Content Include="Scripts\yaku.browser.global.min.js" />
     <Content Include="Scripts\yaku.js" />
     <Content Include="Web.config" />
