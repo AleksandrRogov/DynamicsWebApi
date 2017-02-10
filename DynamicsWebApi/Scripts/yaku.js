@@ -1,5 +1,5 @@
 /*
- Yaku v0.16.7
+ Yaku v0.17.8
  (c) 2015 Yad Smood. http://ysmood.org
  License MIT
 */
@@ -14,9 +14,9 @@
     , Arr = Array
     , Err = Error
 
-    , $rejected = 0
-    , $resolved = 1
-    , $pending = 2
+    , $rejected = 1
+    , $resolved = 2
+    , $pending = 3
 
     , $Symbol = "Symbol"
     , $iterator = "iterator"
@@ -39,7 +39,7 @@
     , $tryCatchFn
     , $tryCatchThis
     , $tryErr = { e: $null }
-    , $noop = function () {}
+    , $noop = function () { }
     , $cleanStackReg = /^.+\/node_modules\/yaku\/.+\n?/mg
     ;
 
@@ -51,7 +51,7 @@
      * The first argument fulfills the promise, the second argument rejects it.
      * We can call these functions, once our operation is completed.
      */
-    var Yaku = module.exports = function Promise (executor) {
+    var Yaku = module.exports = function (executor) {
         var self = this,
             err;
 
@@ -81,7 +81,7 @@
 
     Yaku["default"] = Yaku;
 
-    extendPrototype(Yaku, {
+    extend(Yaku.prototype, {
         /**
          * Appends fulfillment and rejection handlers to the promise,
          * and returns a new promise resolving to the return value of the called handler.
@@ -99,7 +99,7 @@
          * });
          * ```
          */
-        then: function then (onFulfilled, onRejected) {
+        then: function (onFulfilled, onRejected) {
             if (this._s === undefined) throw genTypeError();
 
             return addHandler(
@@ -130,14 +130,37 @@
             return this.then($undefined, onRejected);
         },
 
+        /**
+         * Register a callback to be invoked when a promise is settled (either fulfilled or rejected).
+         * Similar with the try-catch-finally, it's often used for cleanup.
+         * @param  {Function} onFinally A Function called when the Promise is settled.
+         * It will not receive any argument.
+         * @return {Yaku} A Promise that will reject if onFinally throws an error or returns a rejected promise.
+         * Else it will resolve previous promise's final state (either fulfilled or rejected).
+         * @example
+         * ```js
+         * var Promise = require('yaku');
+         * var p = Math.random() > 0.5 ? Promise.resolve() : Promise.reject();
+         * p.finally(() => {
+         *     console.log('finally');
+         * });
+         * ```
+         */
+        "finally": function (onFinally) {
+            function eventually(value) {
+                return Yaku.resolve(onFinally()).then(function () {
+                    return value;
+                });
+            }
+
+            return this.then(eventually, eventually);
+        },
+
         // The number of current promises that attach to this Yaku instance.
-        _pCount: 0,
+        _c: 0,
 
         // The parent Yaku.
-        _pre: $null,
-
-        // A unique type flag, it helps different versions of Yaku know each other.
-        _Yaku: 1
+        _p: $null
     });
 
     /**
@@ -153,7 +176,7 @@
      * var p = Promise.resolve(10);
      * ```
      */
-    Yaku.resolve = function resolve (val) {
+    Yaku.resolve = function (val) {
         return isYaku(val) ? val : settleWithX(newCapablePromise(this), val);
     };
 
@@ -167,7 +190,7 @@
      * var p = Promise.reject(new Error("ERR"));
      * ```
      */
-    Yaku.reject = function reject (reason) {
+    Yaku.reject = function (reason) {
         return settlePromise(newCapablePromise(this), $rejected, reason);
     };
 
@@ -191,7 +214,7 @@
      * });
      * ```
      */
-    Yaku.race = function race (iterable) {
+    Yaku.race = function (iterable) {
         var self = this
         , p = newCapablePromise(self)
 
@@ -247,14 +270,14 @@
      * });
      * ```
      */
-    Yaku.all = function all (iterable) {
+    Yaku.all = function (iterable) {
         var self = this
         , p1 = newCapablePromise(self)
         , res = []
         , ret
         ;
 
-        function reject (reason) {
+        function reject(reason) {
             settlePromise(p1, $rejected, reason);
         }
 
@@ -313,7 +336,7 @@
      * @example
      * ```js
      * var Promise = require('yaku');
-     * Promise.onUnhandledRejection = (reason) => {
+     * Promise.unhandledRejection = (reason) => {
      *     console.error(reason);
      * };
      *
@@ -321,7 +344,7 @@
      * Promise.reject('my reason');
      *
      * // The below won't log the unhandled rejection error message.
-     * Promise.reject('v').catch(() => {});
+     * Promise.reject('v')["catch"](() => {});
      * ```
      */
     Yaku.unhandledRejection = function (reason, p) {
@@ -330,12 +353,12 @@
                 $unhandledRejectionMsg,
                 isLongStackTrace ? p.longStack : genStackInfo(reason, p)
             );
-        } catch (e) {} // eslint-disable-line
+        } catch (e) { } // eslint-disable-line
     };
 
     /**
      * Emitted whenever a Promise was rejected and an error handler was
-     * attached to it (for example with `.catch()`) later than after an event loop turn.
+     * attached to it (for example with `["catch"]()`) later than after an event loop turn.
      * @param {Any} reason The rejection reason.
      * @param {Yaku} p The promise that was rejected.
      */
@@ -352,7 +375,7 @@
      * ```js
      * var Promise = require('yaku');
      * Promise.enableLongStackTrace();
-     * Promise.reject(new Error("err")).catch((err) => {
+     * Promise.reject(new Error("err"))["catch"]((err) => {
      *     console.log(err.longStack);
      * });
      * ```
@@ -365,13 +388,13 @@
      * Only Node has `process.nextTick` function. For browser there are
      * so many ways to polyfill it. Yaku won't do it for you, instead you
      * can choose what you prefer. For example, this project
-     * [setImmediate](https://github.com/YuzuJS/setImmediate).
+     * [next-tick](https://github.com/medikoo/next-tick).
      * By default, Yaku will use `process.nextTick` on Node, `setTimeout` on browser.
      * @type {Function}
      * @example
      * ```js
      * var Promise = require('yaku');
-     * Promise.nextTick = fn => window.setImmediate(fn);
+     * Promise.nextTick = require('next-tick');
      * ```
      * @example
      * You can even use sync resolution if you really know what you are doing.
@@ -386,7 +409,7 @@
 
     // ********************** Private **********************
 
-    Yaku._Yaku = 1;
+    Yaku._s = 1;
 
     /**
      * All static variable name will begin with `$`. Such as `$rejected`.
@@ -395,34 +418,33 @@
 
     // ******************************* Utils ********************************
 
-    function getSpecies () {
+    function getSpecies() {
         return Yaku[$Symbol][$species] || $speciesKey;
     }
 
-    function extendPrototype (src, target) {
+    function extend(src, target) {
         for (var k in target) {
-            src.prototype[k] = target[k];
+            src[k] = target[k];
         }
-        return src;
     }
 
-    function isObject (obj) {
+    function isObject(obj) {
         return obj && typeof obj === "object";
     }
 
-    function isFunction (obj) {
+    function isFunction(obj) {
         return typeof obj === "function";
     }
 
-    function isInstanceOf (a, b) {
+    function isInstanceOf(a, b) {
         return a instanceof b;
     }
 
-    function isError (obj) {
+    function isError(obj) {
         return isInstanceOf(obj, Err);
     }
 
-    function ensureType (obj, fn, msg) {
+    function ensureType(obj, fn, msg) {
         if (!fn(obj)) throw genTypeError(msg);
     }
 
@@ -431,7 +453,7 @@
      * @private
      * @return {Any | $tryErr}
      */
-    function tryCatcher () {
+    function tryCatcher() {
         try {
             return $tryCatchFn.apply($tryCatchThis, arguments);
         } catch (e) {
@@ -446,7 +468,7 @@
      * @param  {Function} fn
      * @return {Function}
      */
-    function genTryCatcher (fn, self) {
+    function genTryCatcher(fn, self) {
         $tryCatchFn = fn;
         $tryCatchThis = self;
         return tryCatcher;
@@ -459,7 +481,7 @@
      * @param  {Function} fn `(Yaku, Value) ->` The schedule handler.
      * @return {Function} `(Yaku, Value) ->` The scheduler.
      */
-    function genScheduler (initQueueSize, fn) {
+    function genScheduler(initQueueSize, fn) {
         /**
          * All async promise will be scheduled in
          * here, so that they can be execute on the next tick.
@@ -472,7 +494,7 @@
          * Run all queued functions.
          * @private
          */
-        function flush () {
+        function flush() {
             var i = 0;
             while (i < fnQueueLen) {
                 fn(fnQueue[i], fnQueue[i + 1]);
@@ -498,7 +520,7 @@
      * @private
      * @return {Object || TypeError}
      */
-    function each (iterable, fn) {
+    function each(iterable, fn) {
         var len
         , i = 0
         , iter
@@ -540,11 +562,11 @@
      * @param  {String} msg
      * @return {TypeError}
      */
-    function genTypeError (msg) {
+    function genTypeError(msg) {
         return new TypeError(msg);
     }
 
-    function genTraceInfo (noTitle) {
+    function genTraceInfo(noTitle) {
         return (noTitle ? "" : $fromPrevious) + new Err().stack;
     }
 
@@ -562,7 +584,7 @@
 
         // 2.2.2
         // 2.2.3
-        handler = p1._s ? p2._onFulfilled : p2._onRejected;
+        handler = p1._s !== $rejected ? p2._onFulfilled : p2._onRejected;
 
         // 2.2.7.3
         // 2.2.7.4
@@ -589,7 +611,7 @@
         }
     });
 
-    function emitEvent (name, p) {
+    function emitEvent(name, p) {
         var browserEventName = "on" + name.toLowerCase()
             , browserHandler = root[browserEventName];
 
@@ -602,9 +624,9 @@
             Yaku[name](p._v, p);
     }
 
-    function isYaku (val) { return val && val._Yaku; }
+    function isYaku(val) { return val && val._s; }
 
-    function newCapablePromise (Constructor) {
+    function newCapablePromise(Constructor) {
         if (isYaku(Constructor)) return new Constructor($noop);
 
         var p, r, j;
@@ -629,7 +651,7 @@
      * @param  {Integer} state The value is one of `$pending`, `$resolved` or `$rejected`.
      * @return {Function} `(value) -> undefined` A resolve or reject function.
      */
-    function genSettler (self, state) {
+    function genSettler(self, state) {
         return function (value) {
             if (isLongStackTrace)
                 self[$settlerTrace] = genTraceInfo(true);
@@ -649,7 +671,7 @@
      * @param {Function} onFulfilled
      * @param {Function} onRejected
      */
-    function addHandler (p1, p2, onFulfilled, onRejected) {
+    function addHandler(p1, p2, onFulfilled, onRejected) {
         // 2.2.1
         if (isFunction(onFulfilled))
             p2._onFulfilled = onFulfilled;
@@ -659,8 +681,8 @@
             p2._onRejected = onRejected;
         }
 
-        if (isLongStackTrace) p2._pre = p1;
-        p1[p1._pCount++] = p2;
+        if (isLongStackTrace) p2._p = p1;
+        p1[p1._c++] = p2;
 
         // 2.2.6
         if (p1._s !== $pending)
@@ -671,7 +693,7 @@
     }
 
     // iterate tree
-    function hashOnRejected (node) {
+    function hashOnRejected(node) {
         // A node shouldn't be checked twice.
         if (node._umark)
             return true;
@@ -679,7 +701,7 @@
             node._umark = true;
 
         var i = 0
-        , len = node._pCount
+        , len = node._c
         , child;
 
         while (i < len) {
@@ -688,10 +710,10 @@
         }
     }
 
-    function genStackInfo (reason, p) {
+    function genStackInfo(reason, p) {
         var stackInfo = [];
 
-        function push (trace) {
+        function push(trace) {
             return stackInfo.push(trace.replace(/^\s+|\s+$/g, ""));
         }
 
@@ -701,11 +723,11 @@
 
             // Hope you guys could understand how the back trace works.
             // We only have to iterate through the tree from the bottom to root.
-            (function iter (node) {
+            (function iter(node) {
                 if (node && $promiseTrace in node) {
                     iter(node._next);
                     push(node[$promiseTrace] + "");
-                    iter(node._pre);
+                    iter(node._p);
                 }
             })(p);
         }
@@ -714,7 +736,7 @@
             ("\n" + stackInfo.join("\n")).replace($cleanStackReg, "");
     }
 
-    function callHanler (handler, value) {
+    function callHanler(handler, value) {
         // 2.2.5
         return handler(value);
     }
@@ -726,9 +748,9 @@
      * @param  {Integer} state
      * @param  {Any} value
      */
-    function settlePromise (p, state, value) {
+    function settlePromise(p, state, value) {
         var i = 0
-        , len = p._pCount;
+        , len = p._c;
 
         // 2.1.2
         // 2.1.3
@@ -760,7 +782,7 @@
      * @param {Yaku} p
      * @param {Any | Thenable} x A normal value or a thenable.
      */
-    function settleWithX (p, x) {
+    function settleWithX(p, x) {
         // 2.3.1
         if (x === p && x) {
             settlePromise(p, $rejected, genTypeError($promiseCircularChain));
@@ -806,7 +828,7 @@
      * @param  {Thenable} x
      * @return {Function}
      */
-    function getThen (x) { return x.then; }
+    function getThen(x) { return x.then; }
 
     /**
      * Resolve then with its promise.
@@ -815,7 +837,7 @@
      * @param  {Thenable} x
      * @param  {Function} xthen
      */
-    function settleXthen (p, x, xthen) {
+    function settleXthen(p, x, xthen) {
         // 2.3.3.3
         var err = genTryCatcher(xthen, x)(function (y) {
             // 2.3.3.3.3
