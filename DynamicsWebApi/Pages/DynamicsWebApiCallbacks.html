@@ -22,13 +22,14 @@
     <button onclick="UpsertRecord()">Upsert Record</button>
     <button onclick="RetrieveMultipleRecordsExtended()">Multiple Records Extended</button>
     <button onclick="FetchXmlTest()">Fetch XML Test</button>
+    <button onclick="TestAnotherInstance()">Another instance test</button>
 
     <script src="../../clientGlobalcontext.js.aspx"></script>
     <script src="../../int_jquery.js"></script>
     <script src="../Scripts/DynamicsWebApi.jQuery.js"></script>
     <script>
         var recordId = "115a8970-d788-4bf6-b064-d1574dbe6930";
-        DynamicsWebApi.setConfig({ webApiVersion: "8.2" });
+        dynamicsWebApi.setConfig({ webApiVersion: "8.2" });
 
         function CreateRecord() {
             var lead = {
@@ -37,7 +38,7 @@
                 lastname: "WebAPI",
                 jobtitle: "Title"
             };
-            DynamicsWebApi.createRequest(lead, "lead", false, function (id) {
+            dynamicsWebApi.createRequest(lead, "lead", false, function (id) {
                 alert(id);
                 recordId = id;
             }, function (error) {
@@ -45,7 +46,7 @@
             });
         }
         function RetrieveRecord() {
-            DynamicsWebApi.retrieveRecord(recordId, "lead", ["fullname", "subject"], null, function (record) {
+            dynamicsWebApi.retrieveRecord(recordId, "lead", ["fullname", "subject"], null, function (record) {
                 var fullname = record.fullname;
                 debugger;
             }, function (error) {
@@ -55,7 +56,7 @@
             });
         }
         function CountRecords() {
-            DynamicsWebApi.countRecords("lead", "statecode eq 0", function (count) {
+            dynamicsWebApi.countRecords("lead", "statecode eq 0", function (count) {
                 alert(count);
             }, function (error) {
                 debugger;
@@ -70,7 +71,7 @@
                 maxPageSize: 1
             };
 
-            DynamicsWebApi.retrieveMultipleAdvanced(request, null,
+            dynamicsWebApi.retrieveMultipleAdvanced(request, null,
                 function (object) {
                     /// <param name="object" type="Array">Array of the results</param>
 
@@ -83,7 +84,7 @@
                 });
         }
         function DeleteRecord() {
-            DynamicsWebApi.deleteRequest(recordId, "lead", null, function () {
+            dynamicsWebApi.deleteRequest(recordId, "lead", null, function () {
                 alert("success!");
             }, function (error) {
                 debugger;
@@ -95,7 +96,7 @@
                 subject: "Test update"
             }
 
-            DynamicsWebApi.updateRequest(recordId, "lead", lead, true, null, function (record) {
+            dynamicsWebApi.updateRequest(recordId, "lead", lead, true, null, function (record) {
                 alert("updated!");
             }, function (error) {
                 debugger;
@@ -107,7 +108,7 @@
                 subject: "Upsert!!"
             };
 
-            DynamicsWebApi.upsertRequest(recordId, "lead", lead, null, null, function (id) {
+            dynamicsWebApi.upsertRequest(recordId, "lead", lead, null, null, function (id) {
                 if (id != null) {
                     debugger;
                     recordId = id;
@@ -118,7 +119,7 @@
             });
         }
         function UpdateSingleProperty() {
-            DynamicsWebApi.updateSingleProperty(recordId, "lead", { key: "subject", value: "Update Single" }, function () {
+            dynamicsWebApi.updateSingleProperty(recordId, "lead", { key: "subject", value: "Update Single" }, function () {
                 alert("success!");
             }, function (error) {
                 debugger;
@@ -133,11 +134,22 @@
                                 "</entity>" +
                             "</fetch>";
 
-            DynamicsWebApi.fetchXmlRequest("account", fetchXml, null, function (records) {
+            dynamicsWebApi.fetchXmlRequest("account", fetchXml, null, function (records) {
                 /// <param name="records" type="Array">Array of FetchXml results</param>
                 for (var i = 0; i < records.length; i++) {
                     console.trace("accountid: " + records[i].accountid + ", name: " + records[i].name);
                 }
+            }, function (error) {
+                debugger;
+                console.trace(error.message);
+            })
+        }
+        function TestAnotherInstance() {
+
+            var instance = dynamicsWebApi.initializeInstance({ webApiVersion: "8.0" });
+
+            instance.countRecords("account", null, function (count) {
+                alert(count);
             }, function (error) {
                 debugger;
                 console.trace(error.message);

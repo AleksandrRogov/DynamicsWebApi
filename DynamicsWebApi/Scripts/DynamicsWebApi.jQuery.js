@@ -6,12 +6,20 @@
   > jQuery (jQuery.js) - https://github.com/jquery/jquery
 
  Copyright (c) 2017. 
- Author: Aleksandr Rogov (https://github.com/o4u)
+ Author: Aleksandr Rogov (https://github.com/AleksandrRogov)
  MIT License
 
 */
 
-var DynamicsWebApi = function () {
+var DynamicsWebApi = function (config) {
+    /// <summary>DynamicsWebApi - a Microsoft Dynamics CRM Web API helper library. Current version uses Callbacks instead of Promises.</summary>
+    ///<param name="config" type="Object">
+    /// DynamicsWebApi Configuration object
+    ///<para>   config.webApiVersion (String).
+    ///             The version of Web API to use, for example: "8.1"</para>
+    ///<para>   config.webApiUrl (String).
+    ///             A String representing a URL to Web API (webApiVersion not required if webApiUrl specified) [optional, if used inside of CRM]</para>
+    ///</param>
 
     var _context = function () {
         ///<summary>
@@ -80,28 +88,6 @@ var DynamicsWebApi = function () {
         }
         return value;
     };
-
-    var PROTECTION_PREFIX = /^\)\]\}',?\n/;
-
-    //var axiosCrm = axios.create({
-    //    baseURL: _webApiUrl,
-    //    headers: {
-    //        'Accept': 'application/json',
-    //        'Content-Type': 'application/json; charset=utf-8',
-    //        'OData-Version': '4.0',
-    //        'OData-MaxVersion': '4.0'
-    //    },
-    //    transformResponse: [function transformResponse(data) {
-    //        /*eslint no-param-reassign:0*/
-    //        if (typeof data === 'string') {
-    //            data = data.replace(PROTECTION_PREFIX, '');
-    //            try {
-    //                data = JSON.parse(data, _dateReviver);
-    //            } catch (e) { /* Ignore */ }
-    //        }
-    //        return data;
-    //    }]
-    //});
 
     var _errorHandler = function (req) {
         ///<summary>
@@ -248,7 +234,7 @@ var DynamicsWebApi = function () {
     var setConfig = function (config) {
         ///<summary>Sets the configuration parameters for DynamicsWebApi helper.</summary>
         ///<param name="config" type="Object">
-        /// Retrieve multiple request options
+        /// DynamicsWebApi Configuration object
         ///<para>   config.webApiVersion (String). 
         ///             The version of Web API to use, for example: "8.1"</para>
         ///<para>   config.webApiUrl (String).
@@ -266,6 +252,9 @@ var DynamicsWebApi = function () {
             _webApiUrl = config.webApiUrl;
         }
     }
+
+    if (config != null)
+        setConfig(config);
 
     var convertOptionsToLink = function (options) {
         /// <summary>Builds the Web Api query string based on a passed options object parameter.</summary>
@@ -1065,6 +1054,19 @@ var DynamicsWebApi = function () {
         });
     }
 
+    var createInstance = function (config) {
+        ///<summary>Creates another instance of DynamicsWebApi helper.</summary>
+        ///<param name="config" type="Object">
+        /// DynamicsWebApi Configuration object
+        ///<para>   config.webApiVersion (String).
+        ///             The version of Web API to use, for example: "8.1"</para>
+        ///<para>   config.webApiUrl (String).
+        ///             A String representing a URL to Web API (webApiVersion not required if webApiUrl specified) [optional, if used inside of CRM]</para>
+        ///</param>
+        /// <returns type="DynamicsWebApi" />
+        return new DynamicsWebApi(config);
+    }
+
     return {
         createRequest: createRecord,
         updateRequest: updateRecord,
@@ -1076,8 +1078,9 @@ var DynamicsWebApi = function () {
         retrieveMultiple: retrieveMultipleRecords,
         retrieveMultipleAdvanced: retrieveMultipleRecordsAdvanced,
         updateSingleProperty: updateSingleProperty,
-        setConfig: setConfig
+        setConfig: setConfig,
+        initializeInstance: createInstance
     }
-}();
+};
 
-//DynamicsWebApi.webApiVersion = "8.0";
+var dynamicsWebApi = new DynamicsWebApi();
