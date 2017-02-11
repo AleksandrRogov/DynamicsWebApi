@@ -75,6 +75,8 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Pages\DynamicsWebApiCallbacks.html" />
+    <Content Include="Pages\DynamicsWebApiPromises.html" />
     <Content Include="Pages\TestPage.html" />
     <Content Include="Scripts\axios.js" />
     <Content Include="Scripts\axios.min.js" />
