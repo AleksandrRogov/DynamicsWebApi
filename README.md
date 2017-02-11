@@ -259,14 +259,14 @@ Thank you for your patience!
 ## JavaScript Promises
 Please use the following library that implements [ES6 Promises](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise): [DynamicsWebApi with Promises](https://github.com/AleksandrRogov/DynamicsWebApi/blob/master/DynamicsWebApi/Scripts/DynamicsWebApi.js).
 
-[Yaku](https://github.com/ysmood/yaku) - a Promise polyfill added at the top of the file.
+### Dependencies
+* [Yaku](https://github.com/ysmood/yaku) - Promise polyfill added at the top of the file while the project is under development.
+* [Axios](https://github.com/mzabriskie/axios) - Added at the top of the library while the project is under development.
 
 ## JavaScript Callbacks
 Please use the following library that implements Callbacks : [DynamicsWebApi with Callbacks](https://github.com/AleksandrRogov/DynamicsWebApi/blob/master/DynamicsWebApi/Scripts/DynamicsWebApi.jQuery.js).
 
 At this moment a Callbacks version of the library depends on [jQuery](https://github.com/jquery/jquery)
 
-## Dependencies
-* [Yaku](https://github.com/ysmood/yaku) - Promise polyfill
-* [Axios](https://github.com/mzabriskie/axios)
-* [jQuery](https://github.com/jquery/jquery) - if a Callbacks version of the library is being used
+### Dependencies
+* [jQuery](https://github.com/jquery/jquery)
