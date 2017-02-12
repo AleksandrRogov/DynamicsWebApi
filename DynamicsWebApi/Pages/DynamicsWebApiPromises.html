@@ -71,11 +71,11 @@
                 maxPageSize: 1
             };
 
-            dynamicsWebApi.retrieveMultipleAdvanced(request).then(function (object) {
-                /// <param name="object" type="Array">Array of the results</param>
+            dynamicsWebApi.retrieveMultipleAdvanced(request).then(function (response) {
+                /// <param name="response" type="DWA.Types.MultipleResponse">Request response</param>
 
                 //get a field value here (check first whether object (array) contains any element)
-                var fullname = object.length ? object[0].fullname : "-1";
+                var fullname = response.value.length ? response.value[0].fullname : "-1";
                 debugger;
             })
             .catch(function (error) {
@@ -137,11 +137,13 @@
                                 "</entity>" +
                             "</fetch>";
 
-            dynamicsWebApi.fetchXmlRequest("account", fetchXml).then(function (records) {
-                /// <param name="records" type="Array">Array of FetchXml results</param>
-                for (var i = 0; i < records.length; i++) {
-                    console.trace("accountid: " + records[i].accountid + ", name: " + records[i].name);
+            dynamicsWebApi.fetchXmlRequest("account", fetchXml).then(function (response) {
+                /// <param name="response" type="DWA.Types.FetchXmlResponse">Request response</param>
+                
+                for (var i = 0; i < response.value.length; i++) {
+                    console.trace("accountid: " + response.value[i].accountid + ", name: " + response.value[i].name);
                 }
+                debugger;
             })
             .catch(function (error) {
                 debugger;

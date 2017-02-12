@@ -191,8 +191,8 @@ dynamicsWebApi.retrieveMultiple("lead", ["fullname", "subject"], "statecode eq 0
 ##### Advanced call
 
 ```js
-//initialize call options object
-var operationOptions = {
+//set the request parameters
+var requestParameters = {
     type: "lead",
     select: ["fullname", "subject"],
     filter: "statecode eq 0",
@@ -201,11 +201,13 @@ var operationOptions = {
 };
 
 //perform a multiple records retrieve operation
-dynamicsWebApi.retrieveMultipleAdvanced(operationOptions).then(function (records) {
-    var count = records.oDataCount;
-    var nextLink = records.oDataNextLink;
-    
-    //do something else with a records object
+dynamicsWebApi.retrieveMultipleAdvanced(requestParameters).then(function (response) {
+    /// <param name="response" type="DWA.Types.MultipleResponse">Request response</param>
+
+    var count = response.oDataCount;
+    var nextLink = response.oDataNextLink;
+    var records = response.value;
+    //do something else with a records array. Access a record: response.value[0];
 })
 .catch(function (error){
     //catch an error
@@ -215,6 +217,10 @@ dynamicsWebApi.retrieveMultipleAdvanced(operationOptions).then(function (records
 ##### Count
 
 It is possible to count records separately from RetrieveMultiple call. In order to do that use the following snippet:
+
+IMPORTANT! The count value does not represent the total number of entities in the system. It is limited by the maximum number of entities that can be returned.
+
+For now please use dynamicsWebApi.retrieveMultipleAdvanced function to loop through all pages and rollup all the records. dynamicsWebApi.countAllRecords will be available soon.
 
 ```js
 dynamicsWebApi.countRecords("lead", "statecode eq 0").then(function (count) {
@@ -238,11 +244,12 @@ var fetchXml = "<fetch mapping='logical'>" +
 					"</entity>" +
 				"</fetch>";
 
-dynamicsWebApi.fetchXmlRequest("account", fetchXml).then(function (records) {
-    /// <param name="records" type="Array">Array of FetchXml results</param>
+dynamicsWebApi.fetchXmlRequest("account", fetchXml).then(function (response) {
+    /// <param name="response" type="DWA.Types.FetchXmlResponse">Request response</param>
+
 	//do something with results here. For example:
-    for (var i = 0; i < records.length; i++) {
-        console.trace("accountid: " + records[i].accountid + ", name: " + records[i].name);
+    for (var i = 0; i < response.value.length; i++) {
+        console.trace("accountid: " + response.value[i].accountid + ", name: " + response.value[i].name);
     }
 })
 .catch(function (error) {

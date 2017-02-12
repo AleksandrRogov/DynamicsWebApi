@@ -11,6 +11,42 @@
 
 */
 
+var DWA = {
+    Types: {
+        ResponseBase: function () {
+            /// <field name='oDataContext' type='String'>The context URL (see [OData-Protocol]) for the payload.</field>  
+            this.oDataContext = "";
+        },
+        Response: function () {
+            /// <field name='value' type='Object'>Response value returned from the request.</field>  
+            DWA.Types.ResponseBase.call(this);
+
+            this.value = {};
+        },
+        MultipleResponse: function () {
+            /// <field name='oDataNextLink' type='String'>The link to the next page.</field>  
+            /// <field name='oDataCount' type='Number'>The count of the records.</field>  
+            /// <field name='value' type='Array'>The array of the records returned from the request.</field>  
+            DWA.Types.ResponseBase.call(this);
+
+            this.oDataNextLink = "";
+            this.oDataCount = 0;
+            this.value = [];
+        },
+        FetchXmlResponse: function () {
+            /// <field name='value' type='Array'>The array of the records returned from the request.</field>  
+            /// <field name='fetchXmlPagingCookie' type='Object'>Paging Cookie object</field>  
+            DWA.Types.ResponseBase.call(this);
+
+            this.value = [];
+            this.fetchXmlPagingCookie = {
+                pageCookies: "",
+                pageNumber: 0
+            }
+        }
+    }
+}
+
 var DynamicsWebApi = function (config) {
     /// <summary>DynamicsWebApi - a Microsoft Dynamics CRM Web API helper library. Current version uses Callbacks instead of Promises.</summary>
     ///<param name="config" type="Object">
@@ -279,7 +315,7 @@ var DynamicsWebApi = function (config) {
         if (options.filter != null) {
             _stringParameterCheck(options.filter, "DynamicsWebApi.retrieveMultipleRecords requires the object.filter parameter is a string.");
 
-            if (optionString != null)
+            if (optionString.length > 0)
                 optionString += "&";
 
             optionString += "$filter=" + options.filter;
@@ -292,7 +328,7 @@ var DynamicsWebApi = function (config) {
         if (options.count != null) {
             _boolParameterCheck(options.count, "DynamicsWebApi.retrieveMultipleRecords requires the object.count parameter is a boolean.");
 
-            if (optionString != null)
+            if (optionString.length > 0)
                 optionString += "&";
 
             optionString += "$count=" + options.count;
@@ -301,7 +337,7 @@ var DynamicsWebApi = function (config) {
         if (options.top != null) {
             _intParameterCheck(options.top, "DynamicsWebApi.retrieveMultipleRecords requires the object.top parameter is a number.");
 
-            if (optionString != null)
+            if (optionString.length > 0)
                 optionString += "&";
 
             optionString += "$top=" + options.top;
@@ -326,7 +362,7 @@ var DynamicsWebApi = function (config) {
             url += "(" + options.id + ")"
         }
 
-        if (optionString != null)
+        if (optionString.length > 0)
             url += "?" + optionString;
 
         return url;
@@ -818,7 +854,7 @@ var DynamicsWebApi = function (config) {
         /// Sends an asynchronous request to count records.
         ///</summary>
         /// <param name="type" type="String">The Logical Name of the Entity to retrieve. For an Account record, use "account".</param>
-        /// <param name="filter" type="String">Use the $filter system query option to set criteria for which entities will be returned.</param>
+        /// <param name="filter" type="String" optional="true">Use the $filter system query option to set criteria for which entities will be returned.</param>
         ///<param name="successCallback" type="Function">
         /// The function that will be passed through and be called by a successful response. 
         /// This function must accept the returned record as a parameter.
@@ -828,14 +864,41 @@ var DynamicsWebApi = function (config) {
         /// This function must accept an Error object as a parameter.
         /// </param>
 
-        return retrieveMultipleRecordsAdvanced({
-            type: type,
-            select: [type.toLowerCase() + "id"],
-            filter: filter,
-            count: true
-        }, null, function (response) {
-            successCallback(response.oDataCount != null ? response.oDataCount : 0);
-        }, errorCallback);
+        if (filter == null || (filter != null && !filter.length)) {
+            _stringParameterCheck(type, "DynamicsWebApi.countRecords requires the type parameter is a string.");
+            _callbackParameterCheck(successCallback, "DynamicsWebApi.countRecords requires the successCallback parameter is a function.");
+            _callbackParameterCheck(errorCallback, "DynamicsWebApi.countRecords requires the errorCallback parameter is a function.");
+
+            //if filter has not been specified then simplify the request
+
+            $.ajax({
+                type: "GET",
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                url: _webApiUrl + type.toLowerCase() + "s" + "/$count",
+                beforeSend: function (xhr) {
+                    //Specifying this header ensures that the results will be returned as JSON.             
+                    xhr.setRequestHeader("Accept", "application/json");
+                    xhr.setRequestHeader("OData-Version", "4.0");
+                    xhr.setRequestHeader("OData-MaxVersion", "4.0");
+                },
+                success: function (data, textStatus, xhr) {
+                    successCallback(data ? parseInt(data) : 0);
+                },
+                error: function (xhr, textStatus, errorThrown) {
+                    errorCallback(_errorHandler(xhr));
+                }
+            });
+        }
+        else {
+            return retrieveMultipleRecordsAdvanced({
+                type: type,
+                filter: filter,
+                count: true
+            }, null, function (response) {
+                successCallback(response.oDataCount ? response.oDataCount : 0);
+            }, errorCallback);
+        }
     }
 
     var retrieveMultipleRecords = function (type, select, filter, nextPageLink, successCallback, errorCallback) {
@@ -945,13 +1008,16 @@ var DynamicsWebApi = function (config) {
 
                     var response = JSON.parse(xhr.responseText, _dateReviver);
                     if (response['@odata.nextLink'] != null) {
-                        response.value.oDataNextLink = response['@odata.nextLink'];
+                        response.oDataNextLink = response['@odata.nextLink'];
                     }
                     if (response['@odata.count'] != null) {
-                        response.value.oDataCount = response['@odata.count'];
+                        response.oDataCount = response['@odata.count'];
+                    }
+                    if (response['@odata.context'] != null) {
+                        response.oDataContext = response['@odata.context'];
                     }
 
-                    successCallback(response.value);
+                    successCallback(response);
                 }
             },
             error: function (xhr, textStatus, errorThrown) {
@@ -1045,7 +1111,11 @@ var DynamicsWebApi = function (config) {
                         response.value.fetchXmlPagingCookie = getPagingCookie(response['@Microsoft.Dynamics.CRM.fetchxmlpagingcookie']);
                     }
 
-                    successCallback(response.value);
+                    if (response['@odata.context'] != null) {
+                        response.oDataContext = response['@odata.context'];
+                    }
+
+                    successCallback(response);
                 }
             },
             error: function (xhr, textStatus, errorThrown) {

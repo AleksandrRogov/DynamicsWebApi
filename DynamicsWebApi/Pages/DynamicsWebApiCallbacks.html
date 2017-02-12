@@ -56,7 +56,7 @@
             });
         }
         function CountRecords() {
-            dynamicsWebApi.countRecords("lead", "statecode eq 0", function (count) {
+            dynamicsWebApi.countRecords("lead", null, function (count) {
                 alert(count);
             }, function (error) {
                 debugger;
@@ -72,11 +72,11 @@
             };
 
             dynamicsWebApi.retrieveMultipleAdvanced(request, null,
-                function (object) {
-                    /// <param name="object" type="Array">Array of the results</param>
+                function (response) {
+                    /// <param name="response" type="DWA.Types.MultipleResponse">Request response</param>
 
                     //get a field value here (check first whether object (array) contains any element)
-                    var fullname = object.length ? object[0].fullname : "-1";
+                    var fullname = response.value.length ? response.value[0].fullname : "-1";
                     debugger;
                 }, function (error) {
                     debugger;
@@ -134,11 +134,13 @@
                                 "</entity>" +
                             "</fetch>";
 
-            dynamicsWebApi.fetchXmlRequest("account", fetchXml, null, function (records) {
-                /// <param name="records" type="Array">Array of FetchXml results</param>
-                for (var i = 0; i < records.length; i++) {
-                    console.trace("accountid: " + records[i].accountid + ", name: " + records[i].name);
+            dynamicsWebApi.fetchXmlRequest("account", fetchXml, null, function (response) {
+                /// <param name="response" type="DWA.Types.FetchXmlResponse">Request response</param>
+
+                for (var i = 0; i < response.value.length; i++) {
+                    console.trace("accountid: " + response.value[i].accountid + ", name: " + response.value[i].name);
                 }
+                debugger;
             }, function (error) {
                 debugger;
                 console.trace(error.message);
