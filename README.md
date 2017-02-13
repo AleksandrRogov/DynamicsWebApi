@@ -9,18 +9,38 @@ Any suggestions are welcome!
 ## Quick Start
 In order to use a library DynamicsWebApi.js needs to be added as a Web Resource in CRM.
 
-## Configuration
+### Configuration
 Please use the following function to set a configuration for a default DynamicsWebApi helper object.
 
 ```js
 dynamicsWebApi.setConfig({ webApiVersion: "8.2" });
 ```
 
-If it is needed to initialize a new instance of DynamicsWebApi helper with a different configuration, please use the following code:
+To initialize a new instance of DynamicsWebApi helper with a different configuration, please use the following code:
 
 ```js
 var dynamicsWebApi81 = dynamicsWebApi.initializeInstance({ webApiVersion: "8.1" });
+//or
+var dynamicsWebApi81 = new DynamicsWebApi({ webApiVersion: "8.1" });
 ```
+
+In case if you are using [DynamicsWebApi with Callbacks](https://github.com/AleksandrRogov/DynamicsWebApi#javascript-callbacks) and create a new object using `new` keyword, use the following snippet:
+```js
+//in the case below you will need to manually provide a sendRequest function (because it will not be copied automatically)
+var dynamicsWebApi81 = new DynamicsWebApi({
+	webApiVersion: "8.1", 
+	sendRequest: function(){
+		//code here....
+	}
+});
+```
+
+#### Configuration Object Properties
+Property Name | Type | Description
+------------ | ------------- | -------------
+__webApiVersion__ | String | Version of the Web API. By default version "8.0" used.
+__webApiUrl__ | String | A complete URL string to Web API. Example of the URL: "https:/myorg.crm.dynamics.com/api/data/v8.2/". If it is specified then webApiVersion property will not be used even if it is not empty. 
+__sendRequest__ | Function | __Exists only for the version with Callbacks__. A custom Request Function to Web API. More info: [here](https://github.com/AleksandrRogov/DynamicsWebApi#custom-request-function-to-web-api)
 
 At this moment the library only works inside CRM.
 
@@ -92,13 +112,10 @@ dynamicsWebApi.updateRequest(leadId, "lead", lead, true).then(function (updatedR
 var leadId = '7d577253-3ef0-4a0a-bb7f-8335c2596e70';
 
 //initialize key value pair object
-var keyValuePair = {
-    key: "subject",
-	value: "Update Single"
-};
+var keyValuePair = { subject: "Update Single" };
 
 //perform an update single property operation
-dynamicsWebApi.UpdateSingleProperty(leadId, "lead", keyValuePair).then(function () {
+dynamicsWebApi.updateSingleProperty(leadId, "lead", keyValuePair).then(function () {
     //do something after a succesful operation
 })
 .catch(function (error) {
@@ -271,9 +288,68 @@ Please use the following library that implements [ES6 Promises](https://develope
 * [Axios](https://github.com/mzabriskie/axios) - Added at the top of the library while the project is under development.
 
 ## JavaScript Callbacks
-Please use the following library that implements Callbacks : [DynamicsWebApi with Callbacks](https://github.com/AleksandrRogov/DynamicsWebApi/blob/master/DynamicsWebApi/Scripts/DynamicsWebApi.jQuery.js).
+Please use the following library that implements Callbacks : [DynamicsWebApi with Callbacks](https://github.com/AleksandrRogov/DynamicsWebApi/blob/master/DynamicsWebApi/Scripts/DynamicsWebApi.Callbacks.js).
 
-At this moment a Callbacks version of the library depends on [jQuery](https://github.com/jquery/jquery). Eventually this dependency will be removed, this change should not impact any part of the code written using the pre-release version of the DynamicsWebApi.
+### Custom Request Function to Web API
+
+It is possible to implement a custom request function for a DynamicsWebApi Callbacks library. Then it can be specified in the configuration object of the DynamicsWebApi. The example can be seen below.
+
+Current DynamicsWebApi.Callbacks.js includes a function that uses jQuery to send Web API requests, its implementation can be found at the bottom of the file.
+
+```js
+var dynamicsWebApi = new DynamicsWebApi({
+    sendRequest: function (method, url, successCallback, errorCallback, data, additionalHeaders) {
+        /// <summary>Sends a request to given URL with given parameters</summary>
+        /// <param name="method" type="String">Method of the request</param>
+        /// <param name="url" type="String">The request URL</param>
+        /// <param name="successCallback" type="Function">A callback called on success of the request</param>
+        /// <param name="errorCallback" type="Function">A callback called when a request failed</param>
+        /// <param name="data" type="Object" optional="true">Data to send in the request</param>
+        /// <param name="additionalHeaders" type="Object" optional="true">Object with additional headers.<para>IMPORTANT! This object does not contain default headers needed for every request.</para></param>
+
+        var request = {
+            type: method,
+            contentType: "application/json; charset=utf-8",
+            datatype: "json",
+            url: url,
+            beforeSend: function (xhr) {
+
+                //Specifying this header ensures that the results will be returned as JSON.             
+                xhr.setRequestHeader("Accept", "application/json");
+                xhr.setRequestHeader("OData-Version", "4.0");
+                xhr.setRequestHeader("OData-MaxVersion", "4.0");
+
+                //set additional headers
+                if (additionalHeaders != null) {
+                    var headerKeys = Object.keys(additionalHeaders);
+
+                    for (var i = 0; i < headerKeys.length; i++) {
+                        xhr.setRequestHeader(headerKeys[i], additionalHeaders[headerKeys[i]]);
+                    }
+                }
+            },
+            success: function (data, testStatus, xhr) {
+                successCallback(xhr);
+            },
+            error: errorCallback
+        };
+
+        if (data != null) {
+            request.data = window.JSON.stringify(data);
+        }
+
+        $.ajax(request);
+    }
+});
+```
+
+It is important to note the following:
+
+* Both `successCallback` and `errorCallback` passed to the `sendRequest` function must be called with XMLHttpRequest object as a parameter.
+* `data` parameter will not be stringified.
+* `additionalHeaders` does not contain default headers needed for every request as it can be seen by its name.
+
+When another DynamicsWebApi object with different configuration created using `initializeInstance` function, the `sendRequest` function will be copied, no need to specify it in the configuration object for every instance of the Wep API helper library.
 
 ### Dependencies
-* [jQuery](https://github.com/jquery/jquery)
+* [jQuery](https://github.com/jquery/jquery) - optional. Custom `sendRequest` function can be implemented that uses a native XMLHttpRequest.

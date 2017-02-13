@@ -80,7 +80,7 @@
     <Content Include="Pages\TestPage.html" />
     <Content Include="Scripts\axios.js" />
     <Content Include="Scripts\axios.min.js" />
-    <Content Include="Scripts\DynamicsWebApi.jQuery.js" />
+    <Content Include="Scripts\DynamicsWebApi.Callbacks.js" />
     <Content Include="Scripts\DynamicsWebApi.js" />
     <Content Include="Scripts\jQuery.js" />
     <Content Include="Scripts\jQuery.min.js" />

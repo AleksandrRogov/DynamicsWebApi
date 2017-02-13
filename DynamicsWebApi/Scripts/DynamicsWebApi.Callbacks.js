@@ -1,4 +1,5 @@
-﻿/// <reference path="jQuery.js" />
+﻿/// <reference path="c:\GitHub\DynamicsWebApi\DynamicsWebApi\Pages/TestPage.html" />
+/// <reference path="jQuery.js" />
 /*
  DynamicsWebApi.jQuery v0.1.0 (for Dynamics 365 (online), Dynamics 365 (on-premises), Dynamics CRM 2016, Dynamics CRM Online)
  
@@ -247,6 +248,18 @@ var DynamicsWebApi = function (config) {
         }
     }
 
+    var _sendRequest = function (method, url, successCallback, errorCallback, data, additionalHeaders) {
+        /// <summary>Sends a request to given URL with given parameters</summary>
+        /// <param name="method" type="String">Method of the request</param>
+        /// <param name="url" type="String">The request URL</param>
+        /// <param name="successCallback" type="Function">A callback called on success of the request</param>
+        /// <param name="errorCallback" type="Function">A callback called when a request failed</param>
+        /// <param name="data" type="String" optional="true">JSON stringified object to send as a data in the request</param>
+        /// <param name="additionalHeaders" type="Object" optional="true">Object with additional headers.<para>IMPORTANT! This object does not contain default headers needed for every request.</para></param>
+
+        throw Error("sendRequest is not implemented. Please use configuration object to set it (config.sendRequest).");
+    }
+
     var retrieveMultipleOptions = function () {
         return {
             type: "",
@@ -258,12 +271,6 @@ var DynamicsWebApi = function (config) {
             top: 1,
             orderBy: [],
             includeAnnotations: ""
-        }
-    };
-    var keyValuePairObject = function () {
-        return {
-            key: "",
-            value: ""
         }
     };
 
@@ -286,6 +293,10 @@ var DynamicsWebApi = function (config) {
         if (config.webApiUrl != null) {
             _stringParameterCheck(config.webApiUrl, "DynamicsWebApi.setConfig requires config.webApiUrl is a string.");
             _webApiUrl = config.webApiUrl;
+        }
+
+        if (config.sendRequest != null) {
+            _sendRequest = config.sendRequest;
         }
     }
 
@@ -368,43 +379,6 @@ var DynamicsWebApi = function (config) {
         return url;
     };
 
-    var jqueryAjax = function (method, url, successCallback, errorCallback, data, additionalReuqestConfig) {
-        var request = {
-            type: method,
-            contentType: "application/json; charset=utf-8",
-            datatype: "json",
-            url: _webApiUrl + url,
-            beforeSend: function (xhr) {
-                //Specifying this header ensures that the results will be returned as JSON.             
-                xhr.setRequestHeader("Accept", "application/json");
-                xhr.setRequestHeader("OData-Version", "4.0");
-                xhr.setRequestHeader("OData-MaxVersion", "4.0");
-
-                if (additionalReuqestConfig != null) {
-                    if (additionalReuqestConfig.headers != null) {
-                        for (var i = 0; i < additionalReuqestConfig.headers.length; i++) {
-                            xhr.setRequestHeader()
-                        }
-                    }
-                }
-            },
-            success: successCallback,
-            error: function (xhr, textStatus, errorThrown) {
-                errorCallback(_errorHandler(xhr));
-            }
-        };
-
-        if (data != null) {
-            request.data = data;
-        }
-
-        if (additionalReuqestConfig != null) {
-
-        }
-
-        $.ajax(request);
-    };
-
     var createRecord = function (object, type, returnData, successCallback, errorCallback) {
         ///<summary>
         /// Sends an asynchronous request to create a new record.
@@ -435,43 +409,29 @@ var DynamicsWebApi = function (config) {
         _callbackParameterCheck(successCallback, "DynamicsWebApi.createRecord requires the successCallback is a function.");
         _callbackParameterCheck(errorCallback, "DynamicsWebApi.createRecord requires the errorCallback is a function.");
 
-        var additionalConfig = null;
+        var headers = null;
 
-        if (returnData != null) {
+        if (returnData) {
             _boolParameterCheck(returnData, "DynamicsWebApi.createRecord requires the returnData parameter a boolean.");
-            additionalConfig = { headers: { "Prefer": "return=representation" } };
+            headers = { "Prefer": "return=representation" };
         }
 
-        var jsonEntity = window.JSON.stringify(object);
-
-        $.ajax({
-            type: "POST",
-            contentType: "application/json; charset=utf-8",
-            datatype: "json",
-            url: _webApiUrl + type.toLowerCase() + "s",
-            data: jsonEntity,
-            beforeSend: function (xhr) {
-                //Specifying this header ensures that the results will be returned as JSON.             
-                xhr.setRequestHeader("Accept", "application/json");
-                xhr.setRequestHeader("OData-Version", "4.0");
-                xhr.setRequestHeader("OData-MaxVersion", "4.0");
-                if (returnData)
-                    xhr.setRequestHeader("Prefer", "return=representation");
-            },
-            success: function (data, textStatus, xhr) {
-                if (returnData) {
-                    successCallback(data);
-                }
-                else {
-                    var entityUrl = xhr.getResponseHeader('odata-entityid');
-                    var id = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(entityUrl)[0];
-                    successCallback(id);
-                }
-            },
-            error: function (xhr, textStatus, errorThrown) {
-                errorCallback(_errorHandler(xhr));
+        var onSuccess = function (xhr) {
+            if (returnData) {
+                successCallback(data);
             }
-        });
+            else {
+                var entityUrl = xhr.getResponseHeader('odata-entityid');
+                var id = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(entityUrl)[0];
+                successCallback(id);
+            }
+        }
+
+        var onError = function (xhr) {
+            errorCallback(_errorHandler(xhr));
+        }
+
+        _sendRequest("POST", _webApiUrl + type.toLowerCase() + "s", onSuccess, onError, object, headers);
     };
 
     var updateRecord = function (id, type, object, returnData, select, successCallback, errorCallback) {
@@ -511,11 +471,11 @@ var DynamicsWebApi = function (config) {
         _callbackParameterCheck(successCallback, "DynamicsWebApi.updateRecord requires the successCallback parameter is a function.");
         _callbackParameterCheck(errorCallback, "DynamicsWebApi.updateRecord requires the errorCallback parameter is a function.");
 
-        var additionalConfig = null;
+        var headers = null;
 
         if (returnData != null) {
             _boolParameterCheck(returnData, "DynamicsWebApi.updateRecord requires the returnData parameter a boolean.");
-            additionalConfig = { headers: { "Prefer": "return=representation" } };
+            headers = { "Prefer": "return=representation" };
         }
 
         var systemQueryOptions = "";
@@ -528,31 +488,17 @@ var DynamicsWebApi = function (config) {
             }
         }
 
-        var jsonEntity = window.JSON.stringify(object);
+        var onSuccess = function (xhr) {
+            returnData
+                ? successCallback(JSON.parse(xhr.responseText, _dateReviver))
+                : successCallback();
+        };
 
-        $.ajax({
-            type: "PATCH",
-            contentType: "application/json; charset=utf-8",
-            datatype: "json",
-            url: _webApiUrl + type.toLowerCase() + "s" + "(" + id + ")" + systemQueryOptions,
-            data: jsonEntity,
-            beforeSend: function (xhr) {
-                //Specifying this header ensures that the results will be returned as JSON.             
-                xhr.setRequestHeader("Accept", "application/json");
-                xhr.setRequestHeader("OData-Version", "4.0");
-                xhr.setRequestHeader("OData-MaxVersion", "4.0");
-                if (returnData)
-                    xhr.setRequestHeader("Prefer", "return=representation");
-            },
-            success: function (data, textStatus, xhr) {
-                returnData
-                    ? successCallback(JSON.parse(xhr.responseText, _dateReviver))
-                    : successCallback();
-            },
-            error: function (xhr, textStatus, errorThrown) {
-                errorCallback(_errorHandler(xhr));
-            }
-        });
+        var onError = function (xhr) {
+            errorCallback(_errorHandler(xhr));
+        }
+
+        _sendRequest("PATCH", _webApiUrl + type.toLowerCase() + "s" + "(" + id + ")" + systemQueryOptions, onSuccess, onError, object, headers);
     };
     var updateSingleProperty = function (id, type, keyValuePair, successCallback, errorCallback) {
         ///<summary>
@@ -561,9 +507,9 @@ var DynamicsWebApi = function (config) {
         ///<param name="id" type="String">
         /// A String representing the GUID value for the record to retrieve.
         ///</param>
-        ///<param name="keyValuePair" type="keyValuePairObject">
-        /// keyValuePair object with a name of the field as a key and a value. Example:
-        /// <para>{key: "subject", value: "Update Record"}</para>
+        ///<param name="keyValuePair" type="Object">
+        /// keyValuePair object with a logical name of the field as a key and a value. Example:
+        /// <para>{subject: "Update Record"}</para>
         ///</param>
         ///<param name="type" type="String">
         /// The Logical Name of the Entity type record to retrieve.
@@ -585,26 +531,18 @@ var DynamicsWebApi = function (config) {
         _callbackParameterCheck(successCallback, "DynamicsWebApi.updateSingleProperty requires the successCallback parameter is a function.");
         _callbackParameterCheck(errorCallback, "DynamicsWebApi.updateSingleProperty requires the errorCallback parameter is a function.");
 
-        var jsonEntity = window.JSON.stringify({ value: keyValuePair.value });
+        var onSuccess = function (xhr) {
+            successCallback();
+        };
 
-        $.ajax({
-            type: "PUT",
-            contentType: "application/json; charset=utf-8",
-            datatype: "json",
-            url: _webApiUrl + type.toLowerCase() + "s" + "(" + id + ")/" + keyValuePair.key,
-            data: jsonEntity,
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader("Accept", "application/json");
-                xhr.setRequestHeader("OData-Version", "4.0");
-                xhr.setRequestHeader("OData-MaxVersion", "4.0");
-            },
-            success: function (data, textStatus, xhr) {
-                successCallback();
-            },
-            error: function (xhr, textStatus, errorThrown) {
-                errorCallback(_errorHandler(xhr));
-            }
-        });
+        var onError = function (xhr) {
+            errorCallback(_errorHandler(xhr));
+        }
+
+        var key = Object.keys(keyValuePair)[0];
+        var keyValue = keyValuePair[key];
+
+        _sendRequest("PUT", _webApiUrl + type.toLowerCase() + "s" + "(" + id + ")/" + key, onSuccess, onError, { value: keyValue });
     };
 
     var deleteRequest = function (id, type, propertyName, successCallback, errorCallback) {
@@ -645,27 +583,16 @@ var DynamicsWebApi = function (config) {
         if (propertyName != null)
             url += "/" + propertyName;
 
-        $.ajax({
-            type: "DELETE",
-            contentType: "application/json; charset=utf-8",
-            datatype: "json",
-            url: _webApiUrl + url,
-            beforeSend: function (xhr) {
-                //Specifying this header ensures that the results will be returned as JSON.                 
-                xhr.setRequestHeader("Accept", "application/json");
-                //Specify the HTTP method DELETE to perform a delete operation.                 
-                //xhr.setRequestHeader("X-HTTP-Method", "DELETE");
-                xhr.setRequestHeader("OData-Version", "4.0");
-                xhr.setRequestHeader("OData-MaxVersion", "4.0");
-            },
-            success: function (data, textStatus, xhr) {
-                // Nothing is returned to the success function.
-                successCallback();
-            },
-            error: function (xhr, textStatus, errorThrown) {
-                errorCallback(_errorHandler(xhr));
-            }
-        });
+        var onSuccess = function (xhr) {
+            // Nothing is returned to the success function.
+            successCallback();
+        };
+
+        var onError = function (xhr) {
+            errorCallback(_errorHandler(xhr));
+        }
+
+        _sendRequest("DELETE", _webApiUrl + url, onSuccess, onError);
     };
 
     var retrieveRecord = function (id, type, select, expand, successCallback, errorCallback) {
@@ -724,26 +651,17 @@ var DynamicsWebApi = function (config) {
             }
         }
 
-        jQuery.ajax({
-            type: "GET",
-            contentType: "application/json; charset=utf-8",
-            datatype: "json",
-            url: _webApiUrl + type.toLowerCase() + "s" + "(" + id + ")" + systemQueryOptions,
-            beforeSend: function (xhr) {
-                //Specifying this header ensures that the results will be returned as JSON.             
-                xhr.setRequestHeader("Accept", "application/json");
-                xhr.setRequestHeader("OData-Version", "4.0");
-                xhr.setRequestHeader("OData-MaxVersion", "4.0");
-            },
-            success: function (data, textStatus, xhr) {
-                //JQuery does not provide an opportunity to specify a date reviver so this code
-                // parses the xhr.responseText rather than use the data parameter passed by JQuery.
-                successCallback(JSON.parse(xhr.responseText, _dateReviver));
-            },
-            error: function (xhr, textStatus, errorThrown) {
-                errorCallback(_errorHandler(xhr));
-            }
-        });
+        var onSuccess = function (xhr) {
+            //JQuery does not provide an opportunity to specify a date reviver so this code
+            // parses the xhr.responseText rather than use the data parameter passed by JQuery.
+            successCallback(JSON.parse(xhr.responseText, _dateReviver));
+        };
+
+        var onError = function (xhr) {
+            errorCallback(_errorHandler(xhr));
+        }
+
+        _sendRequest("GET", _webApiUrl + type.toLowerCase() + "s" + "(" + id + ")" + systemQueryOptions, onSuccess, onError);
     };
 
     var upsertRecord = function (id, type, object, ifmatch, ifnonematch, successCallback, errorCallback) {
@@ -789,64 +707,89 @@ var DynamicsWebApi = function (config) {
             throw Error("Either one of ifmatch or ifnonematch parameters shoud be used in a call, not both.")
         }
 
-        var additionalConfig = null;
+        var headers = null;
 
         if (ifmatch != null) {
             _stringParameterCheck(ifmatch, "DynamicsWebApi.upsertRecord requires the ifmatch parameter is a string.");
 
-            additionalConfig = { headers: { 'If-Match': ifmatch } };
+            headers = { 'If-Match': ifmatch };
         }
 
         if (ifnonematch != null) {
             _stringParameterCheck(ifmatch, "DynamicsWebApi.upsertRecord requires the ifnonematch parameter is a string.");
 
-            additionalConfig = { headers: { 'If-None-Match': ifnonematch } };
+            headers = { 'If-None-Match': ifnonematch };
         }
 
-        var jsonEntity = window.JSON.stringify(object);
-
-        $.ajax({
-            type: "PATCH",
-            contentType: "application/json; charset=utf-8",
-            datatype: "json",
-            url: _webApiUrl + type.toLowerCase() + "s" + "(" + id + ")",
-            data: jsonEntity,
-            beforeSend: function (xhr) {
-                //Specifying this header ensures that the results will be returned as JSON.             
-                xhr.setRequestHeader("Accept", "application/json");
-                xhr.setRequestHeader("OData-Version", "4.0");
-                xhr.setRequestHeader("OData-MaxVersion", "4.0");
-                if (ifmatch != null) {
-                    xhr.setRequestHeader('If-Match', ifmatch);
-                }
-                if (ifnonematch != null) {
-                    xhr.setRequestHeader('If-None-Match', ifnonematch);
-                }
-            },
-            success: function (data, textStatus, xhr) {
-                if (xhr.status == 204) {
-                    var entityUrl = xhr.getResponseHeader('odata-entityid');
-                    var id = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(entityUrl)[0];
-                    successCallback(id);
-                }
-                else
-                    successCallback();
-            },
-            error: function (xhr, textStatus, errorThrown) {
-                if (ifnonematch != null && xhr.status == 412) {
-                    //if prevent update
-                    successCallback();
-                }
-                else if (ifmatch != null && xhr.status == 404) {
-                    //if prevent create
-                    successCallback();
-                }
-                else {
-                    //rethrow error otherwise
-                    errorCallback(_errorHandler(xhr));
-                }
+        var onSuccess = function (xhr) {
+            if (xhr.status == 204) {
+                var entityUrl = xhr.getResponseHeader('odata-entityid');
+                var id = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(entityUrl)[0];
+                successCallback(id);
             }
-        });
+            else
+                successCallback();
+        };
+
+        var onError = function (xhr) {
+            if (ifnonematch != null && xhr.status == 412) {
+                //if prevent update
+                successCallback();
+            }
+            else if (ifmatch != null && xhr.status == 404) {
+                //if prevent create
+                successCallback();
+            }
+            else {
+                //rethrow error otherwise
+                errorCallback(_errorHandler(xhr));
+            }
+        };
+
+        _sendRequest("PATCH", _webApiUrl + type.toLowerCase() + "s" + "(" + id + ")", onSuccess, onError, object, headers);
+
+        //$.ajax({
+        //    type: "PATCH",
+        //    contentType: "application/json; charset=utf-8",
+        //    datatype: "json",
+        //    url: _webApiUrl + type.toLowerCase() + "s" + "(" + id + ")",
+        //    data: jsonEntity,
+        //    beforeSend: function (xhr) {
+        //        //Specifying this header ensures that the results will be returned as JSON.             
+        //        xhr.setRequestHeader("Accept", "application/json");
+        //        xhr.setRequestHeader("OData-Version", "4.0");
+        //        xhr.setRequestHeader("OData-MaxVersion", "4.0");
+        //        if (ifmatch != null) {
+        //            xhr.setRequestHeader('If-Match', ifmatch);
+        //        }
+        //        if (ifnonematch != null) {
+        //            xhr.setRequestHeader('If-None-Match', ifnonematch);
+        //        }
+        //    },
+        //    success: function (data, textStatus, xhr) {
+        //        if (xhr.status == 204) {
+        //            var entityUrl = xhr.getResponseHeader('odata-entityid');
+        //            var id = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(entityUrl)[0];
+        //            successCallback(id);
+        //        }
+        //        else
+        //            successCallback();
+        //    },
+        //    error: function (xhr, textStatus, errorThrown) {
+        //        if (ifnonematch != null && xhr.status == 412) {
+        //            //if prevent update
+        //            successCallback();
+        //        }
+        //        else if (ifmatch != null && xhr.status == 404) {
+        //            //if prevent create
+        //            successCallback();
+        //        }
+        //        else {
+        //            //rethrow error otherwise
+        //            errorCallback(_errorHandler(xhr));
+        //        }
+        //    }
+        //});
     }
 
     var countRecords = function (type, filter, successCallback, errorCallback) {
@@ -871,24 +814,17 @@ var DynamicsWebApi = function (config) {
 
             //if filter has not been specified then simplify the request
 
-            $.ajax({
-                type: "GET",
-                contentType: "application/json; charset=utf-8",
-                datatype: "json",
-                url: _webApiUrl + type.toLowerCase() + "s" + "/$count",
-                beforeSend: function (xhr) {
-                    //Specifying this header ensures that the results will be returned as JSON.             
-                    xhr.setRequestHeader("Accept", "application/json");
-                    xhr.setRequestHeader("OData-Version", "4.0");
-                    xhr.setRequestHeader("OData-MaxVersion", "4.0");
-                },
-                success: function (data, textStatus, xhr) {
-                    successCallback(data ? parseInt(data) : 0);
-                },
-                error: function (xhr, textStatus, errorThrown) {
-                    errorCallback(_errorHandler(xhr));
-                }
-            });
+            var onSuccess = function (xhr) {
+                var response = JSON.parse(xhr.responseText);
+
+                successCallback(response ? parseInt(response) : 0);
+            };
+
+            var onError = function (xhr) {
+                errorCallback(_errorHandler(xhr));
+            };
+
+            _sendRequest("GET", _webApiUrl + type.toLowerCase() + "s" + "/$count", onSuccess, onError)
         }
         else {
             return retrieveMultipleRecordsAdvanced({
@@ -972,58 +908,38 @@ var DynamicsWebApi = function (config) {
             ? convertOptionsToLink(retrieveMultipleOptions)
             : nextPageLink;
 
-        var additionalConfig = null;
+        var headers = null;
 
         if (nextPageLink == null) {
             if (retrieveMultipleOptions.maxPageSize != null) {
-                additionalConfig = { headers: { 'Prefer': 'odata.maxpagesize=' + retrieveMultipleOptions.maxPageSize } };
+                headers = { 'Prefer': 'odata.maxpagesize=' + retrieveMultipleOptions.maxPageSize };
             }
             if (retrieveMultipleOptions.includeAnnotations != null) {
-                additionalConfig = { headers: { 'Prefer': 'odata.include-annotations="' + retrieveMultipleOptions.includeAnnotations + '"' } };
+                headers = { 'Prefer': 'odata.include-annotations="' + retrieveMultipleOptions.includeAnnotations + '"' };
             }
         }
 
-        $.ajax({
-            type: "GET",
-            contentType: "application/json; charset=utf-8",
-            datatype: "json",
-            url: _webApiUrl + url,
-            beforeSend: function (xhr) {
-                //Specifying this header ensures that the results will be returned as JSON.             
-                xhr.setRequestHeader("Accept", "application/json");
-                xhr.setRequestHeader("OData-Version", "4.0");
-                xhr.setRequestHeader("OData-MaxVersion", "4.0");
+        var onSuccess = function (xhr) {
 
-                if (nextPageLink == null) {
-                    if (retrieveMultipleOptions.maxPageSize != null) {
-                        xhr.setRequestHeader("Prefer", 'odata.maxpagesize=' + retrieveMultipleOptions.maxPageSize);
-                    }
-                    if (retrieveMultipleOptions.includeAnnotations != null) {
-                        xhr.setRequestHeader("Prefer", 'odata.include-annotations=' + retrieveMultipleOptions.includeAnnotations + '"');
-                    }
-                }
-            },
-            success: function (data, textStatus, xhr) {
-                if (data && data.value) {
-
-                    var response = JSON.parse(xhr.responseText, _dateReviver);
-                    if (response['@odata.nextLink'] != null) {
-                        response.oDataNextLink = response['@odata.nextLink'];
-                    }
-                    if (response['@odata.count'] != null) {
-                        response.oDataCount = response['@odata.count'];
-                    }
-                    if (response['@odata.context'] != null) {
-                        response.oDataContext = response['@odata.context'];
-                    }
-
-                    successCallback(response);
-                }
-            },
-            error: function (xhr, textStatus, errorThrown) {
-                errorCallback(_errorHandler(xhr));
+            var response = JSON.parse(xhr.responseText, _dateReviver);
+            if (response['@odata.nextLink'] != null) {
+                response.oDataNextLink = response['@odata.nextLink'];
             }
-        });
+            if (response['@odata.count'] != null) {
+                response.oDataCount = response['@odata.count'];
+            }
+            if (response['@odata.context'] != null) {
+                response.oDataContext = response['@odata.context'];
+            }
+
+            successCallback(response);
+        };
+
+        var onError = function (xhr) {
+            errorCallback(_errorHandler(xhr));
+        };
+
+        _sendRequest("GET", _webApiUrl + url, onSuccess, onError, null, headers);
     }
 
     var getPagingCookie = function (pageCookies) {
@@ -1080,48 +996,33 @@ var DynamicsWebApi = function (config) {
         _callbackParameterCheck(successCallback, "DynamicsWebApi.fetchXmlRequest requires the successCallback parameter is a function.");
         _callbackParameterCheck(errorCallback, "DynamicsWebApi.fetchXmlRequest requires the errorCallback parameter is a function.");
 
-        var additionalConfig = null;
+        var headers = null;
         if (includeAnnotations != null) {
             _stringParameterCheck(includeAnnotations, "DynamicsWebApi.fetchXmlRequest requires the includeAnnotations as a string.");
-            additionalConfig = { headers: { 'Prefer': 'odata.include-annotations="' + includeAnnotations + '"' } };
+            headers = { 'Prefer': 'odata.include-annotations="' + includeAnnotations + '"' };
         }
 
         var encodedFetchXml = encodeURI(fetchXml);
 
-        $.ajax({
-            type: "GET",
-            contentType: "application/json; charset=utf-8",
-            datatype: "json",
-            url: _webApiUrl + type.toLowerCase() + "s" + "?fetchXml=" + encodedFetchXml,
-            beforeSend: function (xhr) {
-                //Specifying this header ensures that the results will be returned as JSON.             
-                xhr.setRequestHeader("Accept", "application/json");
-                xhr.setRequestHeader("OData-Version", "4.0");
-                xhr.setRequestHeader("OData-MaxVersion", "4.0");
+        var onSuccess = function (xhr) {
+            var response = JSON.parse(xhr.responseText, _dateReviver);
 
-                if (includeAnnotations != null) {
-                    xhr.setRequestHeader("Prefer", 'odata.include-annotations="' + includeAnnotations + '"');
-                }
-            },
-            success: function (data, textStatus, xhr) {
-                if (data && data.value) {
-                    var response = JSON.parse(xhr.responseText, _dateReviver);
-
-                    if (response['@Microsoft.Dynamics.CRM.fetchxmlpagingcookie'] != null) {
-                        response.value.fetchXmlPagingCookie = getPagingCookie(response['@Microsoft.Dynamics.CRM.fetchxmlpagingcookie']);
-                    }
-
-                    if (response['@odata.context'] != null) {
-                        response.oDataContext = response['@odata.context'];
-                    }
-
-                    successCallback(response);
-                }
-            },
-            error: function (xhr, textStatus, errorThrown) {
-                errorCallback(_errorHandler(xhr));
+            if (response['@Microsoft.Dynamics.CRM.fetchxmlpagingcookie'] != null) {
+                response.value.fetchXmlPagingCookie = getPagingCookie(response['@Microsoft.Dynamics.CRM.fetchxmlpagingcookie']);
             }
-        });
+
+            if (response['@odata.context'] != null) {
+                response.oDataContext = response['@odata.context'];
+            }
+
+            successCallback(response);
+        };
+
+        var onError = function (xhr) {
+            errorCallback(_errorHandler(xhr));
+        };
+
+        _sendRequest("GET", _webApiUrl + type.toLowerCase() + "s" + "?fetchXml=" + encodedFetchXml, onSuccess, onError, null, headers);
     }
 
     var createInstance = function (config) {
@@ -1132,8 +1033,18 @@ var DynamicsWebApi = function (config) {
         ///             The version of Web API to use, for example: "8.1"</para>
         ///<para>   config.webApiUrl (String).
         ///             A String representing a URL to Web API (webApiVersion not required if webApiUrl specified) [optional, if used inside of CRM]</para>
+        ///<para>   config.sendRequest (Function).
+        ///             A function that sends a request to Web API</para>
         ///</param>
         /// <returns type="DynamicsWebApi" />
+
+        if (config == null)
+            config = {};
+
+        if (config.sendRequest == null) {
+            config.sendRequest = _sendRequest;
+        }
+
         return new DynamicsWebApi(config);
     }
 
@@ -1153,4 +1064,47 @@ var DynamicsWebApi = function (config) {
     }
 };
 
-var dynamicsWebApi = new DynamicsWebApi();
+var dynamicsWebApi = new DynamicsWebApi({
+    sendRequest: function (method, url, successCallback, errorCallback, data, additionalHeaders) {
+        /// <summary>Sends a request to given URL with given parameters</summary>
+        /// <param name="method" type="String">Method of the request</param>
+        /// <param name="url" type="String">The request URL</param>
+        /// <param name="successCallback" type="Function">A callback called on success of the request</param>
+        /// <param name="errorCallback" type="Function">A callback called when a request failed</param>
+        /// <param name="data" type="Object" optional="true">Data to send in the request</param>
+        /// <param name="additionalHeaders" type="Object" optional="true">Object with additional headers.<para>IMPORTANT! This object does not contain default headers needed for every request.</para></param>
+
+        var request = {
+            type: method,
+            contentType: "application/json; charset=utf-8",
+            datatype: "json",
+            url: url,
+            beforeSend: function (xhr) {
+
+                //Specifying this header ensures that the results will be returned as JSON.             
+                xhr.setRequestHeader("Accept", "application/json");
+                xhr.setRequestHeader("OData-Version", "4.0");
+                xhr.setRequestHeader("OData-MaxVersion", "4.0");
+
+                //set additional headers
+                if (additionalHeaders != null) {
+                    var headerKeys = Object.keys(additionalHeaders);
+
+                    for (var i = 0; i < headerKeys.length; i++) {
+                        xhr.setRequestHeader(headerKeys[i], additionalHeaders[headerKeys[i]]);
+                    }
+                }
+            },
+            success: function (data, testStatus, xhr) {
+                successCallback(xhr);
+            },
+            error: errorCallback
+        };
+
+        if (data != null) {
+            request.data = window.JSON.stringify(data);
+        }
+
+        $.ajax(request);
+    }
+});

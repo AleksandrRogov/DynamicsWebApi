@@ -277,12 +277,6 @@ var DynamicsWebApi = function (config) {
             includeAnnotations: ""
         }
     };
-    var keyValuePairObject = function () {
-        return {
-            key: "",
-            value: ""
-        }
-    };
 
     var setConfig = function (config) {
         ///<summary>Sets the configuration parameters for DynamicsWebApi helper.</summary>
@@ -407,7 +401,7 @@ var DynamicsWebApi = function (config) {
 
         var additionalConfig = null;
 
-        if (returnData != null) {
+        if (returnData) {
             _boolParameterCheck(returnData, "DynamicsWebApi.createRecord requires the returnData parameter a boolean.");
             additionalConfig = { headers: { "Prefer": "return=representation" } };
         }
@@ -530,8 +524,8 @@ var DynamicsWebApi = function (config) {
         /// A String representing the GUID value for the record to retrieve.
         ///</param>
         ///<param name="keyValuePair" type="keyValuePairObject">
-        /// keyValuePair object with a name of the field as a key and a value. Example:
-        /// <para>{key: "subject", value: "Update Record"}</para>
+        /// keyValuePair object with a logical name of the field as a key and a value. Example:
+        /// <para>{subject: "Update Record"}</para>
         ///</param>
         ///<param name="type" type="String">
         /// The Logical Name of the Entity type record to retrieve.
@@ -544,7 +538,10 @@ var DynamicsWebApi = function (config) {
         _parameterCheck(keyValuePair, "DynamicsWebApi.updateSingleProperty requires the keyValuePair parameter.");
         _stringParameterCheck(type, "DynamicsWebApi.updateSingleProperty requires the type parameter.");
 
-        return axiosCrm.put(type.toLowerCase() + "s" + "(" + id + ")/" + keyValuePair.key, { value: keyValuePair.value });
+        var key = Object.keys(keyValuePair)[0];
+        var keyValue = keyValuePair[key];
+
+        return axiosCrm.put(type.toLowerCase() + "s" + "(" + id + ")/" + key, { value: keyValue });
     };
     var deleteRequest = function (id, type, propertyName) {
         ///<summary>

@@ -121,7 +121,7 @@
             });
         }
         function UpdateSingleProperty() {
-            dynamicsWebApi.updateSingleProperty(recordId, "lead", { key: "subject", value: "Update Single" }).then(function () {
+            dynamicsWebApi.updateSingleProperty(recordId, "lead", { subject: "Update Single" }).then(function () {
                 alert("success!");
             })
             .catch(function (error) {
