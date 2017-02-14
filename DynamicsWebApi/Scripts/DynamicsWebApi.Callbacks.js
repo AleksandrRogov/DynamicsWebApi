@@ -48,6 +48,49 @@ var DWA = {
     }
 }
 
+var sendRequestDefault = function (method, url, successCallback, errorCallback, data, additionalHeaders) {
+    /// <summary>Sends a request to given URL with given parameters</summary>
+    /// <param name="method" type="String">Method of the request</param>
+    /// <param name="url" type="String">The request URL</param>
+    /// <param name="successCallback" type="Function">A callback called on success of the request</param>
+    /// <param name="errorCallback" type="Function">A callback called when a request failed</param>
+    /// <param name="data" type="Object" optional="true">Data to send in the request</param>
+    /// <param name="additionalHeaders" type="Object" optional="true">Object with additional headers.<para>IMPORTANT! This object does not contain default headers needed for every request.</para></param>
+
+    var request = {
+        type: method,
+        contentType: "application/json; charset=utf-8",
+        datatype: "json",
+        url: url,
+        beforeSend: function (xhr) {
+
+            //Specifying this header ensures that the results will be returned as JSON.             
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("OData-Version", "4.0");
+            xhr.setRequestHeader("OData-MaxVersion", "4.0");
+
+            //set additional headers
+            if (additionalHeaders != null) {
+                var headerKeys = Object.keys(additionalHeaders);
+
+                for (var i = 0; i < headerKeys.length; i++) {
+                    xhr.setRequestHeader(headerKeys[i], additionalHeaders[headerKeys[i]]);
+                }
+            }
+        },
+        success: function (data, testStatus, xhr) {
+            successCallback(xhr);
+        },
+        error: errorCallback
+    };
+
+    if (data != null) {
+        request.data = window.JSON.stringify(data);
+    }
+
+    $.ajax(request);
+}
+
 var DynamicsWebApi = function (config) {
     /// <summary>DynamicsWebApi - a Microsoft Dynamics CRM Web API helper library. Current version uses Callbacks instead of Promises.</summary>
     ///<param name="config" type="Object">
@@ -248,17 +291,7 @@ var DynamicsWebApi = function (config) {
         }
     }
 
-    var _sendRequest = function (method, url, successCallback, errorCallback, data, additionalHeaders) {
-        /// <summary>Sends a request to given URL with given parameters</summary>
-        /// <param name="method" type="String">Method of the request</param>
-        /// <param name="url" type="String">The request URL</param>
-        /// <param name="successCallback" type="Function">A callback called on success of the request</param>
-        /// <param name="errorCallback" type="Function">A callback called when a request failed</param>
-        /// <param name="data" type="String" optional="true">JSON stringified object to send as a data in the request</param>
-        /// <param name="additionalHeaders" type="Object" optional="true">Object with additional headers.<para>IMPORTANT! This object does not contain default headers needed for every request.</para></param>
-
-        throw Error("sendRequest is not implemented. Please use configuration object to set it (config.sendRequest).");
-    }
+    var _sendRequest = sendRequestDefault;
 
     var retrieveMultipleOptions = function () {
         return {
@@ -1064,47 +1097,4 @@ var DynamicsWebApi = function (config) {
     }
 };
 
-var dynamicsWebApi = new DynamicsWebApi({
-    sendRequest: function (method, url, successCallback, errorCallback, data, additionalHeaders) {
-        /// <summary>Sends a request to given URL with given parameters</summary>
-        /// <param name="method" type="String">Method of the request</param>
-        /// <param name="url" type="String">The request URL</param>
-        /// <param name="successCallback" type="Function">A callback called on success of the request</param>
-        /// <param name="errorCallback" type="Function">A callback called when a request failed</param>
-        /// <param name="data" type="Object" optional="true">Data to send in the request</param>
-        /// <param name="additionalHeaders" type="Object" optional="true">Object with additional headers.<para>IMPORTANT! This object does not contain default headers needed for every request.</para></param>
-
-        var request = {
-            type: method,
-            contentType: "application/json; charset=utf-8",
-            datatype: "json",
-            url: url,
-            beforeSend: function (xhr) {
-
-                //Specifying this header ensures that the results will be returned as JSON.             
-                xhr.setRequestHeader("Accept", "application/json");
-                xhr.setRequestHeader("OData-Version", "4.0");
-                xhr.setRequestHeader("OData-MaxVersion", "4.0");
-
-                //set additional headers
-                if (additionalHeaders != null) {
-                    var headerKeys = Object.keys(additionalHeaders);
-
-                    for (var i = 0; i < headerKeys.length; i++) {
-                        xhr.setRequestHeader(headerKeys[i], additionalHeaders[headerKeys[i]]);
-                    }
-                }
-            },
-            success: function (data, testStatus, xhr) {
-                successCallback(xhr);
-            },
-            error: errorCallback
-        };
-
-        if (data != null) {
-            request.data = window.JSON.stringify(data);
-        }
-
-        $.ajax(request);
-    }
-});
+var dynamicsWebApi = new DynamicsWebApi();

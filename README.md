@@ -26,7 +26,7 @@ var dynamicsWebApi81 = new DynamicsWebApi({ webApiVersion: "8.1" });
 
 In case if you are using [DynamicsWebApi with Callbacks](https://github.com/AleksandrRogov/DynamicsWebApi#javascript-callbacks) and create a new object using `new` keyword, use the following snippet:
 ```js
-//in the case below you will need to manually provide a sendRequest function (because it will not be copied automatically)
+//in the case below you will need to manually provide a sendRequest function if you are not using a default function (it will not be copied automatically)
 var dynamicsWebApi81 = new DynamicsWebApi({
 	webApiVersion: "8.1", 
 	sendRequest: function(){
@@ -34,6 +34,8 @@ var dynamicsWebApi81 = new DynamicsWebApi({
 	}
 });
 ```
+
+If an "out of the box" functionality (jQuery) is used in the code or when a new DynamicsWebApi instance is created by using `dynamicsWebApi.initializeInstance()` there is no need to provide a sendRequest function.
 
 #### Configuration Object Properties
 Property Name | Type | Description
@@ -292,9 +294,9 @@ Please use the following library that implements Callbacks : [DynamicsWebApi wit
 
 ### Custom Request Function to Web API
 
-It is possible to implement a custom request function for a DynamicsWebApi Callbacks library. Then it can be specified in the configuration object of the DynamicsWebApi. The example can be seen below.
+It is possible to provide a custom request function for a DynamicsWebApi Callbacks library. Then it can be specified in the configuration object of the DynamicsWebApi. The example can be seen below.
 
-Current DynamicsWebApi.Callbacks.js includes a function that uses jQuery to send Web API requests, its implementation can be found at the bottom of the file.
+Current DynamicsWebApi.Callbacks.js includes a function that uses jQuery to send Web API requests, its implementation can be found at the top of the file.
 
 ```js
 var dynamicsWebApi = new DynamicsWebApi({
@@ -347,9 +349,9 @@ It is important to note the following:
 
 * Both `successCallback` and `errorCallback` passed to the `sendRequest` function must be called with XMLHttpRequest object as a parameter.
 * `data` parameter will not be stringified.
-* `additionalHeaders` does not contain default headers needed for every request as it can be seen by its name.
+* `additionalHeaders` does not contain default headers needed for every request as the parameter name suggests.
 
-When another DynamicsWebApi object with different configuration created using `initializeInstance` function, the `sendRequest` function will be copied, no need to specify it in the configuration object for every instance of the Wep API helper library.
+When another DynamicsWebApi object with a different configuration created using `initializeInstance` function, the `sendRequest` function will be copied, no need to specify it in the configuration object for every instance of the Wep API helper library.
 
 ### Dependencies
 * [jQuery](https://github.com/jquery/jquery) - optional. Custom `sendRequest` function can be implemented that uses a native XMLHttpRequest.
