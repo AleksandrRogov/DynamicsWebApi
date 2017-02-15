@@ -343,10 +343,10 @@ var DynamicsWebApi = function (config) {
 
         var optionString = "";
 
-        if (options.type == null)
-            _parameterCheck(options.type, "DynamicsWebApi.retrieveMultipleRecords requires object.type parameter");
+        if (options.collectionName == null)
+            _parameterCheck(options.collectionName, "DynamicsWebApi.retrieveMultipleRecords requires object.collectionName parameter");
         else
-            _stringParameterCheck(options.type, "DynamicsWebApi.retrieveMultipleRecords requires the object.type parameter is a string.");
+            _stringParameterCheck(options.collectionName, "DynamicsWebApi.retrieveMultipleRecords requires the object.collectionName parameter is a string.");
 
         if (options.select != null) {
             _arrayParameterCheck(options.select, "DynamicsWebApi.retrieveMultipleRecords requires the object.select parameter is an array.");
@@ -399,7 +399,7 @@ var DynamicsWebApi = function (config) {
             _stringParameterCheck(options.includeAnnotations, "DynamicsWebApi.retrieveMultipleRecords requires the object.includeAnnotations parameter is a string.");
         }
 
-        var url = options.type.toLowerCase() + "s";
+        var url = options.collectionName.toLowerCase();
 
         if (options.id != null) {
             _guidParameterCheck(options.id, "DynamicsWebApi.retrieveMultipleRecords requires object.id parameter is a guid");
@@ -412,7 +412,7 @@ var DynamicsWebApi = function (config) {
         return url;
     };
 
-    var createRecord = function (object, type, returnData, successCallback, errorCallback) {
+    var createRecord = function (object, collectionName, returnData, successCallback, errorCallback) {
         ///<summary>
         /// Sends an asynchronous request to create a new record.
         ///</summary>
@@ -420,9 +420,9 @@ var DynamicsWebApi = function (config) {
         /// A JavaScript object with properties corresponding to the Schema name of
         /// entity attributes that are valid for create operations.
         ///</param>
-        ///<param name="type" type="String">
-        /// The Logical Name of the Entity type record to create.
-        /// For an Account record, use "account"
+        ///<param name="collectionName" type="String">
+        /// The Logical Name of the Entity Collection name to create.
+        /// For an Account record, use "accounts"
         ///</param>
         ///<param name="returnData" type="Boolean" optional="true">
         /// If indicated and "true" the operation returns a created object
@@ -438,7 +438,7 @@ var DynamicsWebApi = function (config) {
         /// </param>
 
         _parameterCheck(object, "DynamicsWebApi.createRecord requires the object parameter.");
-        _stringParameterCheck(type, "DynamicsWebApi.createRecord requires the type parameter is a string.");
+        _stringParameterCheck(collectionName, "DynamicsWebApi.createRecord requires the collectionName parameter is a string.");
         _callbackParameterCheck(successCallback, "DynamicsWebApi.createRecord requires the successCallback is a function.");
         _callbackParameterCheck(errorCallback, "DynamicsWebApi.createRecord requires the errorCallback is a function.");
 
@@ -464,10 +464,10 @@ var DynamicsWebApi = function (config) {
             errorCallback(_errorHandler(xhr));
         }
 
-        _sendRequest("POST", _webApiUrl + type.toLowerCase() + "s", onSuccess, onError, object, headers);
+        _sendRequest("POST", _webApiUrl + collectionName.toLowerCase(), onSuccess, onError, object, headers);
     };
 
-    var updateRecord = function (id, type, object, returnData, select, successCallback, errorCallback) {
+    var updateRecord = function (id, collectionName, object, returnData, select, successCallback, errorCallback) {
         ///<summary>
         /// Sends an asynchronous request to update a record.
         ///</summary>
@@ -478,9 +478,9 @@ var DynamicsWebApi = function (config) {
         /// A JavaScript object with properties corresponding to the logical names for
         /// entity attributes that are valid for update operations.
         ///</param>
-        ///<param name="type" type="String">
-        /// The Logical Name of the Entity type record to retrieve.
-        /// For an Account record, use "account"
+        ///<param name="collectionName" type="String">
+        /// The Logical Name of the Entity Collection name to retrieve.
+        /// For an Account record, use "accounts"
         ///</param>
         ///<param name="returnData" type="Boolean" optional="true">
         /// If indicated and "true" the operation returns an updated object
@@ -500,7 +500,7 @@ var DynamicsWebApi = function (config) {
         _stringParameterCheck(id, "DynamicsWebApi.updateRecord requires the id parameter.");
         id = _guidParameterCheck(id, "DynamicsWebApi.updateRecord requires the id is GUID.")
         _parameterCheck(object, "DynamicsWebApi.updateRecord requires the object parameter.");
-        _stringParameterCheck(type, "DynamicsWebApi.updateRecord requires the type parameter.");
+        _stringParameterCheck(collectionName, "DynamicsWebApi.updateRecord requires the collectionName parameter.");
         _callbackParameterCheck(successCallback, "DynamicsWebApi.updateRecord requires the successCallback parameter is a function.");
         _callbackParameterCheck(errorCallback, "DynamicsWebApi.updateRecord requires the errorCallback parameter is a function.");
 
@@ -531,9 +531,9 @@ var DynamicsWebApi = function (config) {
             errorCallback(_errorHandler(xhr));
         }
 
-        _sendRequest("PATCH", _webApiUrl + type.toLowerCase() + "s" + "(" + id + ")" + systemQueryOptions, onSuccess, onError, object, headers);
+        _sendRequest("PATCH", _webApiUrl + collectionName.toLowerCase() + "(" + id + ")" + systemQueryOptions, onSuccess, onError, object, headers);
     };
-    var updateSingleProperty = function (id, type, keyValuePair, successCallback, errorCallback) {
+    var updateSingleProperty = function (id, collectionName, keyValuePair, successCallback, errorCallback) {
         ///<summary>
         /// Sends an asynchronous request to update a single value in the record.
         ///</summary>
@@ -544,9 +544,9 @@ var DynamicsWebApi = function (config) {
         /// keyValuePair object with a logical name of the field as a key and a value. Example:
         /// <para>{subject: "Update Record"}</para>
         ///</param>
-        ///<param name="type" type="String">
-        /// The Logical Name of the Entity type record to retrieve.
-        /// For an Account record, use "account"
+        ///<param name="collectionName" type="String">
+        /// The Logical Name of the Entity Collection name to retrieve.
+        /// For an Account record, use "accounts"
         ///</param>
         ///<param name="successCallback" type="Function">
         /// The function that will be passed through and be called by a successful response. 
@@ -560,7 +560,7 @@ var DynamicsWebApi = function (config) {
         _stringParameterCheck(id, "DynamicsWebApi.updateSingleProperty requires the id parameter.");
         id = _guidParameterCheck(id, "DynamicsWebApi.updateSingleProperty requires the id is GUID.")
         _parameterCheck(keyValuePair, "DynamicsWebApi.updateSingleProperty requires the keyValuePair parameter.");
-        _stringParameterCheck(type, "DynamicsWebApi.updateSingleProperty requires the type parameter.");
+        _stringParameterCheck(collectionName, "DynamicsWebApi.updateSingleProperty requires the collectionName parameter.");
         _callbackParameterCheck(successCallback, "DynamicsWebApi.updateSingleProperty requires the successCallback parameter is a function.");
         _callbackParameterCheck(errorCallback, "DynamicsWebApi.updateSingleProperty requires the errorCallback parameter is a function.");
 
@@ -575,19 +575,19 @@ var DynamicsWebApi = function (config) {
         var key = Object.keys(keyValuePair)[0];
         var keyValue = keyValuePair[key];
 
-        _sendRequest("PUT", _webApiUrl + type.toLowerCase() + "s" + "(" + id + ")/" + key, onSuccess, onError, { value: keyValue });
+        _sendRequest("PUT", _webApiUrl + collectionName.toLowerCase() + "(" + id + ")/" + key, onSuccess, onError, { value: keyValue });
     };
 
-    var deleteRequest = function (id, type, propertyName, successCallback, errorCallback) {
+    var deleteRequest = function (id, collectionName, propertyName, successCallback, errorCallback) {
         ///<summary>
         /// Sends an asynchronous request to delete a record.
         ///</summary>
         ///<param name="id" type="String">
         /// A String representing the GUID value for the record to delete.
         ///</param>
-        ///<param name="type" type="String">
-        /// The Logical Name of the Entity type record to delete.
-        /// For an Account record, use "account"
+        ///<param name="collectionName" type="String">
+        /// The Logical Name of the Entity Collection name to delete.
+        /// For an Account record, use "accounts"
         ///</param>
         ///<param name="propertyName" type="String" optional="true">
         /// The name of the property which needs to be emptied. Instead of removing a whole record
@@ -604,14 +604,14 @@ var DynamicsWebApi = function (config) {
 
         _stringParameterCheck(id, "DynamicsWebApi.deleteRequest requires the id parameter.");
         id = _guidParameterCheck(id, "DynamicsWebApi.deleteRequest requires the id is GUID.")
-        _stringParameterCheck(type, "DynamicsWebApi.deleteRequest requires the type parameter.");
+        _stringParameterCheck(collectionName, "DynamicsWebApi.deleteRequest requires the collectionName parameter.");
         _callbackParameterCheck(successCallback, "DynamicsWebApi.deleteRequest requires the successCallback parameter is a function.");
         _callbackParameterCheck(errorCallback, "DynamicsWebApi.deleteRequest requires the errorCallback parameter is a function.");
 
         if (propertyName != null)
             _stringParameterCheck(propertyName, "DynamicsWebApi.deleteRequest requires the propertyName parameter.");
 
-        var url = type.toLowerCase() + "s(" + id + ")";
+        var url = collectionName.toLowerCase() + "(" + id + ")";
 
         if (propertyName != null)
             url += "/" + propertyName;
@@ -628,16 +628,16 @@ var DynamicsWebApi = function (config) {
         _sendRequest("DELETE", _webApiUrl + url, onSuccess, onError);
     };
 
-    var retrieveRecord = function (id, type, select, expand, successCallback, errorCallback) {
+    var retrieveRecord = function (id, collectionName, select, expand, successCallback, errorCallback) {
         ///<summary>
         /// Sends an asynchronous request to retrieve a record.
         ///</summary>
         ///<param name="id" type="String">
         /// A String representing the GUID value for the record to retrieve.
         ///</param>
-        ///<param name="type" type="String">
-        /// The Logical Name of the Entity type record to retrieve.
-        /// For an Account record, use "account"
+        ///<param name="collectionName" type="String">
+        /// The Logical Name of the Entity Collection name to retrieve.
+        /// For an Account record, use "accounts"
         ///</param>
         ///<param name="select" type="Array">
         /// An Array representing the $select OData System Query Option to control which
@@ -660,7 +660,7 @@ var DynamicsWebApi = function (config) {
 
         _stringParameterCheck(id, "DynamicsWebApi.retrieveRecord requires the id parameter is a string.");
         id = _guidParameterCheck(id, "DynamicsWebApi.retrieveRecord requires the id is GUID.")
-        _stringParameterCheck(type, "DynamicsWebApi.retrieveRecord requires the type parameter is a string.");
+        _stringParameterCheck(collectionName, "DynamicsWebApi.retrieveRecord requires the collectionName parameter is a string.");
         if (select != null)
             _arrayParameterCheck(select, "DynamicsWebApi.retrieveRecord requires the select parameter is an array.");
         if (expand != null)
@@ -694,10 +694,10 @@ var DynamicsWebApi = function (config) {
             errorCallback(_errorHandler(xhr));
         }
 
-        _sendRequest("GET", _webApiUrl + type.toLowerCase() + "s" + "(" + id + ")" + systemQueryOptions, onSuccess, onError);
+        _sendRequest("GET", _webApiUrl + collectionName.toLowerCase()+ "(" + id + ")" + systemQueryOptions, onSuccess, onError);
     };
 
-    var upsertRecord = function (id, type, object, ifmatch, ifnonematch, successCallback, errorCallback) {
+    var upsertRecord = function (id, collectionName, object, ifmatch, ifnonematch, successCallback, errorCallback) {
         ///<summary>
         /// Sends an asynchronous request to Upsert a record.
         ///</summary>
@@ -708,9 +708,9 @@ var DynamicsWebApi = function (config) {
         /// A JavaScript object with properties corresponding to the logical names for
         /// entity attributes that are valid for upsert operations.
         ///</param>
-        ///<param name="type" type="String">
-        /// The Logical Name of the Entity type record to Upsert.
-        /// For an Account record, use "account".
+        ///<param name="collectionName" type="String">
+        /// The Logical Name of the Entity Collection name record to Upsert.
+        /// For an Account record, use "accounts".
         ///</param>
         ///<param name="ifmatch" type="String" optional="true">
         /// To prevent a creation of the record use "*". Sets header "If-Match".
@@ -731,7 +731,7 @@ var DynamicsWebApi = function (config) {
         id = _guidParameterCheck(id, "DynamicsWebApi.upsertRecord requires the id is GUID.")
 
         _parameterCheck(object, "DynamicsWebApi.upsertRecord requires the object parameter.");
-        _stringParameterCheck(type, "DynamicsWebApi.upsertRecord requires the type parameter.");
+        _stringParameterCheck(collectionName, "DynamicsWebApi.upsertRecord requires the collectionName parameter.");
 
         _callbackParameterCheck(successCallback, "DynamicsWebApi.upsertRecord requires the successCallback parameter is a function.");
         _callbackParameterCheck(errorCallback, "DynamicsWebApi.upsertRecord requires the errorCallback parameter is a function.");
@@ -779,7 +779,7 @@ var DynamicsWebApi = function (config) {
             }
         };
 
-        _sendRequest("PATCH", _webApiUrl + type.toLowerCase() + "s" + "(" + id + ")", onSuccess, onError, object, headers);
+        _sendRequest("PATCH", _webApiUrl + collectionName.toLowerCase() + "(" + id + ")", onSuccess, onError, object, headers);
 
         //$.ajax({
         //    type: "PATCH",
@@ -825,11 +825,11 @@ var DynamicsWebApi = function (config) {
         //});
     }
 
-    var countRecords = function (type, filter, successCallback, errorCallback) {
+    var countRecords = function (collectionName, filter, successCallback, errorCallback) {
         ///<summary>
         /// Sends an asynchronous request to count records.
         ///</summary>
-        /// <param name="type" type="String">The Logical Name of the Entity to retrieve. For an Account record, use "account".</param>
+        /// <param name="collectionName" type="String">The Logical Name of the Entity Collection to retrieve. For an Account record, use "accounts".</param>
         /// <param name="filter" type="String" optional="true">Use the $filter system query option to set criteria for which entities will be returned.</param>
         ///<param name="successCallback" type="Function">
         /// The function that will be passed through and be called by a successful response. 
@@ -841,7 +841,7 @@ var DynamicsWebApi = function (config) {
         /// </param>
 
         if (filter == null || (filter != null && !filter.length)) {
-            _stringParameterCheck(type, "DynamicsWebApi.countRecords requires the type parameter is a string.");
+            _stringParameterCheck(collectionName, "DynamicsWebApi.countRecords requires the collectionName parameter is a string.");
             _callbackParameterCheck(successCallback, "DynamicsWebApi.countRecords requires the successCallback parameter is a function.");
             _callbackParameterCheck(errorCallback, "DynamicsWebApi.countRecords requires the errorCallback parameter is a function.");
 
@@ -857,11 +857,11 @@ var DynamicsWebApi = function (config) {
                 errorCallback(_errorHandler(xhr));
             };
 
-            _sendRequest("GET", _webApiUrl + type.toLowerCase() + "s" + "/$count", onSuccess, onError)
+            _sendRequest("GET", _webApiUrl + collectionName.toLowerCase() + "s" + "/$count", onSuccess, onError)
         }
         else {
             return retrieveMultipleRecordsAdvanced({
-                type: type,
+                collectionName: collectionName,
                 filter: filter,
                 count: true
             }, null, function (response) {
@@ -870,11 +870,11 @@ var DynamicsWebApi = function (config) {
         }
     }
 
-    var retrieveMultipleRecords = function (type, select, filter, nextPageLink, successCallback, errorCallback) {
+    var retrieveMultipleRecords = function (collectionName, select, filter, nextPageLink, successCallback, errorCallback) {
         ///<summary>
         /// Sends an asynchronous request to retrieve records.
         ///</summary>
-        /// <param name="type" type="String">The Logical Name of the Entity to retrieve. For an Account record, use "account".</param>
+        /// <param name="collectionName" type="String">The Logical Name of the Entity Collection to retrieve. For an Account record, use "accounts".</param>
         /// <param name="select" type="Array">Use the $select system query option to limit the properties returned as shown in the following example.</param>
         /// <param name="filter" type="String">Use the $filter system query option to set criteria for which entities will be returned.</param>
         /// <param name="nextPageLink" type="String">Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.</param>
@@ -888,7 +888,7 @@ var DynamicsWebApi = function (config) {
         /// </param>
 
         return retrieveMultipleRecordsAdvanced({
-            type: type,
+            collectionName: collectionName,
             select: select,
             filter: filter
         }, nextPageLink, successCallback, errorCallback);
@@ -900,8 +900,8 @@ var DynamicsWebApi = function (config) {
         ///</summary>
         ///<param name="retrieveMultipleOptions" type="Object">
         /// Retrieve multiple request options
-        ///<para>   object.type (String). 
-        ///             The Logical Name of the Entity to retrieve. For an Account record, use "account".</para>
+        ///<para>   object.collectionName (String). 
+        ///             The Logical Name of the Entity Collection to retrieve. For an Account record, use "accounts".</para>
         ///<para>   object.id (String).
         ///             A String representing the GUID value for the record to retrieve.
         ///<para>   object.select (Array). 
@@ -1008,11 +1008,11 @@ var DynamicsWebApi = function (config) {
         return pagingInfo;
     }
 
-    var fetchXmlRequest = function (type, fetchXml, includeAnnotations, successCallback, errorCallback) {
+    var fetchXmlRequest = function (collectionName, fetchXml, includeAnnotations, successCallback, errorCallback) {
         ///<summary>
         /// Sends an asynchronous request to count records.
         ///</summary>
-        /// <param name="type" type="String">The Logical Name of the Entity to retrieve. For an Account record, use "account".</param>
+        /// <param name="collectionName" type="String">The Logical Name of the Entity Collection to retrieve. For an Account record, use "account".</param>
         /// <param name="fetchXml" type="String">FetchXML is a proprietary query language that provides capabilities to perform aggregation.</param>
         /// <param name="includeAnnotations" type="String" optional="true">Use this parameter to include annotations to a result.<para>For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie</para></param>
         ///<param name="successCallback" type="Function">
@@ -1024,7 +1024,7 @@ var DynamicsWebApi = function (config) {
         /// This function must accept an Error object as a parameter.
         /// </param>
 
-        _stringParameterCheck(type, "DynamicsWebApi.fetchXmlRequest requires the type parameter.");
+        _stringParameterCheck(collectionName, "DynamicsWebApi.fetchXmlRequest requires the collectionName parameter.");
         _stringParameterCheck(fetchXml, "DynamicsWebApi.fetchXmlRequest requires the fetchXml parameter.");
         _callbackParameterCheck(successCallback, "DynamicsWebApi.fetchXmlRequest requires the successCallback parameter is a function.");
         _callbackParameterCheck(errorCallback, "DynamicsWebApi.fetchXmlRequest requires the errorCallback parameter is a function.");
@@ -1055,7 +1055,7 @@ var DynamicsWebApi = function (config) {
             errorCallback(_errorHandler(xhr));
         };
 
-        _sendRequest("GET", _webApiUrl + type.toLowerCase() + "s" + "?fetchXml=" + encodedFetchXml, onSuccess, onError, null, headers);
+        _sendRequest("GET", _webApiUrl + collectionName.toLowerCase() + "?fetchXml=" + encodedFetchXml, onSuccess, onError, null, headers);
     }
 
     var createInstance = function (config) {

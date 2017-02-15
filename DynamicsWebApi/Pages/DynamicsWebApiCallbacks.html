@@ -38,7 +38,7 @@
                 lastname: "WebAPI",
                 jobtitle: "Title"
             };
-            dynamicsWebApi.createRequest(lead, "lead", false, function (id) {
+            dynamicsWebApi.createRequest(lead, "leads", false, function (id) {
                 alert(id);
                 recordId = id;
             }, function (error) {
@@ -46,7 +46,7 @@
             });
         }
         function RetrieveRecord() {
-            dynamicsWebApi.retrieveRecord(recordId, "lead", ["fullname", "subject"], null, function (record) {
+            dynamicsWebApi.retrieveRecord(recordId, "leads", ["fullname", "subject"], null, function (record) {
                 var fullname = record.fullname;
                 debugger;
             }, function (error) {
@@ -56,7 +56,7 @@
             });
         }
         function CountRecords() {
-            dynamicsWebApi.countRecords("lead", null, function (count) {
+            dynamicsWebApi.countRecords("leads", null, function (count) {
                 alert(count);
             }, function (error) {
                 debugger;
@@ -65,7 +65,7 @@
         }
         function RetrieveMultipleRecordsExtended() {
             var request = {
-                type: "lead",
+                collectionName: "leads",
                 select: ["fullname", "subject"],
                 filter: "leadid eq " + recordId,
                 maxPageSize: 1
@@ -84,7 +84,7 @@
                 });
         }
         function DeleteRecord() {
-            dynamicsWebApi.deleteRequest(recordId, "lead", null, function () {
+            dynamicsWebApi.deleteRequest(recordId, "leads", null, function () {
                 alert("success!");
             }, function (error) {
                 debugger;
@@ -96,7 +96,7 @@
                 subject: "Test update"
             }
 
-            dynamicsWebApi.updateRequest(recordId, "lead", lead, true, null, function (record) {
+            dynamicsWebApi.updateRequest(recordId, "leads", lead, true, null, function (record) {
                 alert("updated!");
             }, function (error) {
                 debugger;
@@ -108,7 +108,7 @@
                 subject: "Upsert!!"
             };
 
-            dynamicsWebApi.upsertRequest(recordId, "lead", lead, null, null, function (id) {
+            dynamicsWebApi.upsertRequest(recordId, "leads", lead, null, null, function (id) {
                 if (id != null) {
                     debugger;
                     recordId = id;
@@ -119,7 +119,7 @@
             });
         }
         function UpdateSingleProperty() {
-            dynamicsWebApi.updateSingleProperty(recordId, "lead", { subject: "Update Single" }, function () {
+            dynamicsWebApi.updateSingleProperty(recordId, "leads", { subject: "Update Single" }, function () {
                 alert("success!");
             }, function (error) {
                 debugger;
@@ -134,7 +134,7 @@
                                 "</entity>" +
                             "</fetch>";
 
-            dynamicsWebApi.fetchXmlRequest("account", fetchXml, null, function (response) {
+            dynamicsWebApi.fetchXmlRequest("accounts", fetchXml, null, function (response) {
                 /// <param name="response" type="DWA.Types.FetchXmlResponse">Request response</param>
 
                 for (var i = 0; i < response.value.length; i++) {
@@ -150,7 +150,7 @@
 
             var instance = dynamicsWebApi.initializeInstance({ webApiVersion: "8.0" });
 
-            instance.countRecords("account", null, function (count) {
+            instance.countRecords("accounts", null, function (count) {
                 alert(count);
             }, function (error) {
                 debugger;

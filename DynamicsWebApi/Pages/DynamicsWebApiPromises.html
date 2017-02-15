@@ -21,6 +21,9 @@
     <button onclick="UpsertRecord()">Upsert Record</button>
     <button onclick="RetrieveMultipleRecordsExtended()">Multiple Records Extended</button>
     <button onclick="FetchXmlTest()">Fetch XML Test</button>
+    <button onclick="Associate()">Associate</button>
+    <button onclick="AssociateSingleValued()">Associate Single Valued</button>
+    <button onclick="Disassociate()">Disassociate</button>
     <button onclick="TestAnotherInstance()">Another instance test</button>
 
     <script src="../../clientGlobalcontext.js.aspx"></script>
@@ -28,6 +31,21 @@
     <script>
         var recordId = "115a8970-d788-4bf6-b064-d1574dbe6930";
         dynamicsWebApi.setConfig({ webApiVersion: "8.2" });
+        var accountId = null;
+        var testEntityid = null;
+
+        //for association
+        dynamicsWebApi.retrieveMultiple("accounts", ["accountid"], "name eq 'Best For You Organics Company'").then(function (response) {
+            /// <param name="response" type="DWA.Types.MultipleResponse">Response object</param>
+            accountId = response.value[0].accountid;
+        }).catch(function (error) {
+            debugger;
+        });
+        dynamicsWebApi.createRequest({ o4u_name: "Test" }, "o4u_tests").then(function (id) {
+            testEntityid = id;
+        }).catch(function (error) {
+            debugger;
+        });
 
         function CreateRecord() {
             var lead = {
@@ -36,7 +54,7 @@
                 lastname: "WebAPI",
                 jobtitle: "Title"
             };
-            dynamicsWebApi.createRequest(lead, "lead").then(function (id) {
+            dynamicsWebApi.createRequest(lead, "leads").then(function (id) {
                 alert(id);
                 recordId = id;
             }).catch(function (error) {
@@ -44,7 +62,7 @@
             });
         }
         function RetrieveRecord() {
-            dynamicsWebApi.retrieveRecord(recordId, "lead", ["fullname", "subject"], null).then(function (object) {
+            dynamicsWebApi.retrieveRecord(recordId, "leads", ["fullname", "subject"], null).then(function (object) {
                 var fullname = object.fullname;
                 debugger;
             })
@@ -55,7 +73,7 @@
             });
         }
         function CountRecords() {
-            dynamicsWebApi.countRecords("lead", "statecode eq 0").then(function (count) {
+            dynamicsWebApi.countRecords("leads", "statecode eq 0").then(function (count) {
                 alert(count);
             })
             .catch(function (error) {
@@ -65,7 +83,7 @@
         }
         function RetrieveMultipleRecordsExtended() {
             var request = {
-                type: "lead",
+                collectionName: "leads",
                 select: ["fullname", "subject"],
                 filter: "leadid eq " + recordId,
                 maxPageSize: 1
@@ -84,7 +102,7 @@
             });
         }
         function DeleteRecord() {
-            dynamicsWebApi.deleteRequest(recordId, "lead").then(function () {
+            dynamicsWebApi.deleteRequest(recordId, "leads").then(function () {
                 alert("success!");
             })
             .catch(function (error) {
@@ -97,7 +115,7 @@
                 subject: "Test update"
             }
 
-            dynamicsWebApi.updateRequest(recordId, "lead", lead).then(function () {
+            dynamicsWebApi.updateRequest(recordId, "leads", lead).then(function () {
                 alert("updated!");
             })
             .catch(function (error) {
@@ -110,7 +128,7 @@
                 subject: "Upsert!!"
             };
 
-            dynamicsWebApi.upsertRequest(recordId, "lead", lead, "*").then(function (id) {
+            dynamicsWebApi.upsertRequest(recordId, "leads", lead, "*").then(function (id) {
                 if (id != null) {
                     recordId = id;
                 }
@@ -121,7 +139,7 @@
             });
         }
         function UpdateSingleProperty() {
-            dynamicsWebApi.updateSingleProperty(recordId, "lead", { subject: "Update Single" }).then(function () {
+            dynamicsWebApi.updateSingleProperty(recordId, "leadsS", { subject: "Update Single" }).then(function () {
                 alert("success!");
             })
             .catch(function (error) {
@@ -137,9 +155,9 @@
                                 "</entity>" +
                             "</fetch>";
 
-            dynamicsWebApi.fetchXmlRequest("account", fetchXml).then(function (response) {
+            dynamicsWebApi.fetchXmlRequest("accounts", fetchXml).then(function (response) {
                 /// <param name="response" type="DWA.Types.FetchXmlResponse">Request response</param>
-                
+
                 for (var i = 0; i < response.value.length; i++) {
                     console.trace("accountid: " + response.value[i].accountid + ", name: " + response.value[i].name);
                 }
@@ -150,11 +168,35 @@
                 console.trace(error.message);
             })
         }
+        function Associate() {
+            dynamicsWebApi.associateRequest("accounts", accountId, "lead_parent_account", "leads", recordId).then(function () {
+                alert("success!");
+            }).catch(function (error) {
+                debugger;
+                console.trace(error.message);
+            });
+        }
+        function Disassociate() {
+            dynamicsWebApi.disassociateRequest("accounts", accountId, "lead_parent_account", recordId).then(function () {
+                alert("success!");
+            }).catch(function (error) {
+                debugger;
+                console.trace(error.message);
+            });
+        }
+        function AssociateSingleValued() {
+            dynamicsWebApi.associateSingleValuedRequest("o4u_tests", testEntityid, "o4u_lead_o4u_test_LeadTest", "leads", recordId).then(function () {
+                alert("success!");
+            }).catch(function (error) {
+                debugger;
+                console.trace(error.message);
+            });
+        }
         function TestAnotherInstance() {
 
             var instance = dynamicsWebApi.initializeInstance({ webApiVersion: "8.0" });
 
-            instance.countRecords("account").then(function (count) {
+            instance.countRecords("accounts").then(function (count) {
                 alert(count);
             }).catch(function (error) {
                 debugger;

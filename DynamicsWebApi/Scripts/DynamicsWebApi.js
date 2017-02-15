@@ -310,10 +310,10 @@ var DynamicsWebApi = function (config) {
 
         var optionString = "";
 
-        if (options.type == null)
-            _parameterCheck(options.type, "DynamicsWebApi.retrieveMultipleRecords requires object.type parameter");
+        if (options.collectionName == null)
+            _parameterCheck(options.collectionName, "DynamicsWebApi.retrieveMultipleRecords requires object.collectionName parameter");
         else
-            _stringParameterCheck(options.type, "DynamicsWebApi.retrieveMultipleRecords requires the object.type parameter is a string.");
+            _stringParameterCheck(options.collectionName, "DynamicsWebApi.retrieveMultipleRecords requires the object.collectionName parameter is a string.");
 
         if (options.select != null) {
             _arrayParameterCheck(options.select, "DynamicsWebApi.retrieveMultipleRecords requires the object.select parameter is an array.");
@@ -366,7 +366,7 @@ var DynamicsWebApi = function (config) {
             _stringParameterCheck(options.includeAnnotations, "DynamicsWebApi.retrieveMultipleRecords requires the object.includeAnnotations parameter is a string.");
         }
 
-        var url = options.type.toLowerCase() + "s";
+        var url = options.collectionName.toLowerCase();
 
         if (options.id != null) {
             _guidParameterCheck(options.id, "DynamicsWebApi.retrieveMultipleRecords requires object.id parameter is a guid");
@@ -379,7 +379,7 @@ var DynamicsWebApi = function (config) {
         return url;
     };
 
-    var createRecord = function (object, type, returnData) {
+    var createRecord = function (object, collectionName, returnData) {
         ///<summary>
         /// Sends an asynchronous request to create a new record.
         ///</summary>
@@ -387,9 +387,9 @@ var DynamicsWebApi = function (config) {
         /// A JavaScript object with properties corresponding to the Schema name of
         /// entity attributes that are valid for create operations.
         ///</param>
-        ///<param name="type" type="String">
-        /// The Logical Name of the Entity type record to create.
-        /// For an Account record, use "account"
+        ///<param name="collectionName" type="String">
+        /// The Logical Name of the Entity Collection to create.
+        /// For an Account record, use "accounts"
         ///</param>
         ///<param name="returnData" type="Boolean" optional="true">
         /// If indicated and "true" the operation returns a created object
@@ -397,7 +397,7 @@ var DynamicsWebApi = function (config) {
         /// <returns type="Promise" />
 
         _parameterCheck(object, "DynamicsWebApi.createRequest requires the object parameter.");
-        _stringParameterCheck(type, "DynamicsWebApi.createRequest requires the type parameter is a string.");
+        _stringParameterCheck(collectionName, "DynamicsWebApi.createRequest requires the collectionName parameter is a string.");
 
         var additionalConfig = null;
 
@@ -407,7 +407,7 @@ var DynamicsWebApi = function (config) {
         }
 
         return axiosCrm
-            .post(type.toLowerCase() + "s", object, additionalConfig)
+            .post(collectionName.toLowerCase(), object, additionalConfig)
             .then(function (response) {
                 if (returnData) {
                     return response;
@@ -419,16 +419,16 @@ var DynamicsWebApi = function (config) {
             });
     };
 
-    var retrieveRecord = function (id, type, select, expand) {
+    var retrieveRecord = function (id, collectionName, select, expand) {
         ///<summary>
         /// Sends an asynchronous request to retrieve a record.
         ///</summary>
         ///<param name="id" type="String">
         /// A String representing the GUID value for the record to retrieve.
         ///</param>
-        ///<param name="type" type="String">
-        /// The Logical Name of the Entity type record to retrieve.
-        /// For an Account record, use "account"
+        ///<param name="collectionName" type="String">
+        /// The Logical Name of the Entity Collection to retrieve.
+        /// For an Account record, use "accounts"
         ///</param>
         ///<param name="select" type="Array">
         /// An Array representing the $select OData System Query Option to control which
@@ -444,7 +444,7 @@ var DynamicsWebApi = function (config) {
 
         _stringParameterCheck(id, "DynamicsWebApi.retrieveRecord requires the id parameter is a string.");
         id = _guidParameterCheck(id, "DynamicsWebApi.retrieveRecord requires the id is GUID.")
-        _stringParameterCheck(type, "DynamicsWebApi.retrieveRecord requires the type parameter is a string.");
+        _stringParameterCheck(collectionName, "DynamicsWebApi.retrieveRecord requires the collectionName parameter is a string.");
         if (select != null)
             _arrayParameterCheck(select, "DynamicsWebApi.retrieveRecord requires the select parameter is an array.");
         if (expand != null)
@@ -466,11 +466,11 @@ var DynamicsWebApi = function (config) {
             }
         }
 
-        return axiosCrm.get(type.toLowerCase() + "s" + "(" + id + ")" + systemQueryOptions).then(function (response) {
+        return axiosCrm.get(collectionName.toLowerCase() + "(" + id + ")" + systemQueryOptions).then(function (response) {
             return response.data;
         });
     };
-    var updateRecord = function (id, type, object, returnData, select) {
+    var updateRecord = function (id, collectionName, object, returnData, select) {
         ///<summary>
         /// Sends an asynchronous request to update a record.
         ///</summary>
@@ -481,9 +481,9 @@ var DynamicsWebApi = function (config) {
         /// A JavaScript object with properties corresponding to the logical names for
         /// entity attributes that are valid for update operations.
         ///</param>
-        ///<param name="type" type="String">
-        /// The Logical Name of the Entity type record to retrieve.
-        /// For an Account record, use "account"
+        ///<param name="collectionName" type="String">
+        /// The Logical Name of the Entity Collection name to retrieve.
+        /// For an Account record, use "accounts"
         ///</param>
         ///<param name="returnData" type="Boolean" optional="true">
         /// If indicated and "true" the operation returns an updated object
@@ -495,7 +495,7 @@ var DynamicsWebApi = function (config) {
         _stringParameterCheck(id, "DynamicsWebApi.updateRecord requires the id parameter.");
         id = _guidParameterCheck(id, "DynamicsWebApi.updateRecord requires the id is GUID.")
         _parameterCheck(object, "DynamicsWebApi.updateRecord requires the object parameter.");
-        _stringParameterCheck(type, "DynamicsWebApi.updateRecord requires the type parameter.");
+        _stringParameterCheck(collectionName, "DynamicsWebApi.updateRecord requires the collectionName parameter.");
 
         var additionalConfig = null;
 
@@ -514,45 +514,45 @@ var DynamicsWebApi = function (config) {
             }
         }
 
-        return axiosCrm.patch(type.toLowerCase() + "s" + "(" + id + ")" + systemQueryOptions, object, additionalConfig);
+        return axiosCrm.patch(collectionName.toLowerCase() + "s" + "(" + id + ")" + systemQueryOptions, object, additionalConfig);
     };
-    var updateSingleProperty = function (id, type, keyValuePair) {
+    var updateSingleProperty = function (id, collectionName, keyValuePair) {
         ///<summary>
         /// Sends an asynchronous request to update a single value in the record.
         ///</summary>
         ///<param name="id" type="String">
         /// A String representing the GUID value for the record to retrieve.
         ///</param>
-        ///<param name="keyValuePair" type="keyValuePairObject">
+        ///<param name="keyValuePair" type="Object">
         /// keyValuePair object with a logical name of the field as a key and a value. Example:
         /// <para>{subject: "Update Record"}</para>
         ///</param>
-        ///<param name="type" type="String">
-        /// The Logical Name of the Entity type record to retrieve.
-        /// For an Account record, use "account"
+        ///<param name="collectionName" type="String">
+        /// The Logical Name of the Entity Collection name to retrieve.
+        /// For an Account record, use "accounts"
         ///</param>
         /// <returns type="Promise" />
 
         _stringParameterCheck(id, "DynamicsWebApi.updateSingleProperty requires the id parameter.");
         id = _guidParameterCheck(id, "DynamicsWebApi.updateSingleProperty requires the id is GUID.")
         _parameterCheck(keyValuePair, "DynamicsWebApi.updateSingleProperty requires the keyValuePair parameter.");
-        _stringParameterCheck(type, "DynamicsWebApi.updateSingleProperty requires the type parameter.");
+        _stringParameterCheck(collectionName, "DynamicsWebApi.updateSingleProperty requires the collectionName parameter.");
 
         var key = Object.keys(keyValuePair)[0];
         var keyValue = keyValuePair[key];
 
-        return axiosCrm.put(type.toLowerCase() + "s" + "(" + id + ")/" + key, { value: keyValue });
+        return axiosCrm.put(collectionName.toLowerCase() + "(" + id + ")/" + key, { value: keyValue });
     };
-    var deleteRequest = function (id, type, propertyName) {
+    var deleteRequest = function (id, collectionName, propertyName) {
         ///<summary>
         /// Sends an asynchronous request to delete a record.
         ///</summary>
         ///<param name="id" type="String">
         /// A String representing the GUID value for the record to delete.
         ///</param>
-        ///<param name="type" type="String">
-        /// The Logical Name of the Entity type record to delete.
-        /// For an Account record, use "account"
+        ///<param name="collectionName" type="String">
+        /// The Logical Name of the Entity Collection name record to delete.
+        /// For an Account record, use "accounts"
         ///</param>
         ///<param name="propertyName" type="String" optional="true">
         /// The name of the property which needs to be emptied. Instead of removing a whole record
@@ -562,12 +562,12 @@ var DynamicsWebApi = function (config) {
 
         _stringParameterCheck(id, "DynamicsWebApi.deleteRequest requires the id parameter.");
         id = _guidParameterCheck(id, "DynamicsWebApi.deleteRequest requires the id is GUID.")
-        _stringParameterCheck(type, "DynamicsWebApi.deleteRequest requires the type parameter.");
+        _stringParameterCheck(collectionName, "DynamicsWebApi.deleteRequest requires the collectionName parameter.");
 
         if (propertyName != null)
             _stringParameterCheck(propertyName, "DynamicsWebApi.deleteRequest requires the propertyName parameter.");
 
-        var url = type.toLowerCase() + "s(" + id + ")";
+        var url = collectionName.toLowerCase() + "(" + id + ")";
 
         if (propertyName != null)
             url += "/" + propertyName;
@@ -575,7 +575,7 @@ var DynamicsWebApi = function (config) {
         return axiosCrm.delete(url);
     };
 
-    var upsertRecord = function (id, type, object, ifmatch, ifnonematch) {
+    var upsertRecord = function (id, collectionName, object, ifmatch, ifnonematch) {
         ///<summary>
         /// Sends an asynchronous request to Upsert a record.
         ///</summary>
@@ -586,9 +586,9 @@ var DynamicsWebApi = function (config) {
         /// A JavaScript object with properties corresponding to the logical names for
         /// entity attributes that are valid for upsert operations.
         ///</param>
-        ///<param name="type" type="String">
-        /// The Logical Name of the Entity type record to Upsert.
-        /// For an Account record, use "account".
+        ///<param name="collectionName" type="String">
+        /// The Logical Name of the Entity Collection name to Upsert.
+        /// For an Account record, use "accounts".
         ///</param>
         ///<param name="ifmatch" type="String" optional="true">
         /// To prevent a creation of the record use "*". Sets header "If-Match".
@@ -602,7 +602,7 @@ var DynamicsWebApi = function (config) {
         id = _guidParameterCheck(id, "DynamicsWebApi.upsertRecord requires the id is GUID.")
 
         _parameterCheck(object, "DynamicsWebApi.upsertRecord requires the object parameter.");
-        _stringParameterCheck(type, "DynamicsWebApi.upsertRecord requires the type parameter.");
+        _stringParameterCheck(collectionName, "DynamicsWebApi.upsertRecord requires the collectionName parameter.");
 
         if (ifmatch != null && ifnonematch != null) {
             throw Error("Either one of ifmatch or ifnonematch parameters shoud be used in a call, not both.")
@@ -622,7 +622,7 @@ var DynamicsWebApi = function (config) {
             additionalConfig = { headers: { 'If-None-Match': ifnonematch } };
         }
 
-        return axiosCrm.patch(type.toLowerCase() + "s" + "(" + id + ")", object, additionalConfig)
+        return axiosCrm.patch(collectionName.toLowerCase() + "(" + id + ")", object, additionalConfig)
             .then(function (response) {
                 if (response.status == 204) {
                     var entityUrl = response.headers['odata-entityid'];
@@ -646,26 +646,26 @@ var DynamicsWebApi = function (config) {
             });
     }
 
-    var countRecords = function (type, filter) {
+    var countRecords = function (collectionName, filter) {
         ///<summary>
         /// Sends an asynchronous request to count records. IMPORTANT! The count value does not represent the total number of entities in the system. It is limited by the maximum number of entities that can be returned. Returns: Number
         ///</summary>
-        /// <param name="type" type="String">The Logical Name of the Entity to retrieve. For an Account record, use "account".</param>
+        /// <param name="collectionName" type="String">The Logical Name of the Entity Collection to retrieve. For an Account record, use "accounts".</param>
         /// <param name="filter" type="String" optional="true">Use the $filter system query option to set criteria for which entities will be returned.</param>
         /// <returns type="Promise" />
 
         if (filter == null || (filter != null && !filter.length)) {
-            _stringParameterCheck(type, "DynamicsWebApi.countRecords requires the type parameter is a string.");
+            _stringParameterCheck(collectionName, "DynamicsWebApi.countRecords requires the collectionName parameter is a string.");
 
             //if filter has not been specified then simplify the request
-            return axiosCrm.get(type.toLowerCase() + "s" + "/$count")
+            return axiosCrm.get(collectionName.toLowerCase() + "/$count")
                 .then(function (response) {
                     return response.data ? parseInt(response.data) : 0;
                 })
         }
         else {
             return retrieveMultipleRecordsAdvanced({
-                type: type,
+                collectionName: collectionName,
                 filter: filter,
                 count: true
             }, null)
@@ -677,18 +677,18 @@ var DynamicsWebApi = function (config) {
         }
     }
 
-    var retrieveMultipleRecords = function (type, select, filter, nextPageLink) {
+    var retrieveMultipleRecords = function (collectionName, select, filter, nextPageLink) {
         ///<summary>
         /// Sends an asynchronous request to retrieve records.
         ///</summary>
-        /// <param name="type" type="String">The Logical Name of the Entity to retrieve. For an Account record, use "account".</param>
+        /// <param name="collectionName" type="String">The Logical Name of the Entity Collection to retrieve. For an Account record, use "accounts".</param>
         /// <param name="select" type="Array">Use the $select system query option to limit the properties returned as shown in the following example.</param>
         /// <param name="filter" type="String">Use the $filter system query option to set criteria for which entities will be returned.</param>
         /// <param name="nextPageLink" type="String">Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.</param>
         /// <returns type="Promise" />
 
         return retrieveMultipleRecordsAdvanced({
-            type: type,
+            collectionName: collectionName,
             select: select,
             filter: filter
         }, nextPageLink);
@@ -700,8 +700,8 @@ var DynamicsWebApi = function (config) {
         ///</summary>
         ///<param name="retrieveMultipleOptions" type="Object">
         /// Retrieve multiple request options
-        ///<para>   object.type (String). 
-        ///             The Logical Name of the Entity to retrieve. For an Account record, use "account".</para>
+        ///<para>   object.collectionName (String). 
+        ///             The Logical Name of the Entity Collection to retrieve. For an Account record, use "accounts".</para>
         ///<para>   object.id (String).
         ///             A String representing the GUID value for the record to retrieve.
         ///<para>   object.select (Array). 
@@ -790,16 +790,16 @@ var DynamicsWebApi = function (config) {
         return pagingInfo;
     }
 
-    var fetchXmlRequest = function (type, fetchXml, includeAnnotations) {
+    var fetchXmlRequest = function (collectionName, fetchXml, includeAnnotations) {
         ///<summary>
         /// Sends an asynchronous request to count records. Returns: DWA.Types.FetchXmlResponse
         ///</summary>
-        /// <param name="type" type="String">The Logical Name of the Entity to retrieve. For an Account record, use "account".</param>
+        /// <param name="collectionName" type="String">The Logical Name of the Entity Collection to retrieve. For an Account record, use "accounts".</param>
         /// <param name="fetchXml" type="String">FetchXML is a proprietary query language that provides capabilities to perform aggregation.</param>
         /// <param name="includeAnnotations" type="String" optional="true">Use this parameter to include annotations to a result.<para>For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie</para></param>
         /// <returns type="Promise"/>
 
-        _stringParameterCheck(type, "DynamicsWebApi.fetchXmlRequest requires the type parameter.");
+        _stringParameterCheck(collectionName, "DynamicsWebApi.fetchXmlRequest requires the type parameter.");
         _stringParameterCheck(fetchXml, "DynamicsWebApi.fetchXmlRequest requires the fetchXml parameter.");
 
         var additionalConfig = null;
@@ -810,7 +810,7 @@ var DynamicsWebApi = function (config) {
 
         var encodedFetchXml = encodeURI(fetchXml);
 
-        return axiosCrm.get(type.toLowerCase() + "s" + "?fetchXml=" + encodedFetchXml, additionalConfig)
+        return axiosCrm.get(collectionName.toLowerCase() + "?fetchXml=" + encodedFetchXml, additionalConfig)
             .then(function (response) {
 
                 if (response.data['@Microsoft.Dynamics.CRM.fetchxmlpagingcookie'] != null) {
@@ -825,8 +825,61 @@ var DynamicsWebApi = function (config) {
             });
     }
 
+    var associateRequest = function (primaryCollectionName, primaryId, relationshipName, relatedCollectionName, relatedId) {
+        /// <summary>Associate for a collection-valued navigation property. (1:N or N:N)</summary>
+        /// <param name="primaryCollectionName" type="String">Primary entity collection name.</param>
+        /// <param name="primaryId" type="String">Primary entity record id.</param>
+        /// <param name="relationshipName" type="String">Relationship name.</param>
+        /// <param name="relatedCollectionName" type="String">Related colletion name.</param>
+        /// <param name="relatedId" type="String">Related entity record id.</param>
+        /// <returns type="Promise" />
+        _stringParameterCheck(primaryCollectionName, "DynamicsWebApi.associateRequest requires the primaryCollectionName parameter is a string.");
+        _stringParameterCheck(relatedCollectionName, "DynamicsWebApi.associateRequest requires the relatedCollectionName parameter is a string.");
+        _stringParameterCheck(relationshipName, "DynamicsWebApi.associateRequest requires the relationshipName parameter is a string.");
+        primaryId = _guidParameterCheck(primaryId, "DynamicsWebApi.associateRequest requires the primaryId is GUID.")
+        relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.associateRequest requires the relatedId is GUID.")
+
+        return axiosCrm.post(primaryCollectionName + "(" + primaryId + ")/" + relationshipName + "/$ref",
+            { "@odata.id": _initUrl() + relatedCollectionName + "(" + relatedId + ")" });
+    }
+
+    var associateSingleValuedRequest = function (collectionName, id, attributeName, relatedCollectionName, relatedId) {
+        /// <summary>Associate for a single-valued navigation property. (1:N)</summary>
+        /// <param name="collectionName" type="String">Entity collection name that contains an attribute.</param>
+        /// <param name="id" type="String">Entity record id that contains a attribute.</param>
+        /// <param name="propertyName" type="String">Logical name of the attribute.</param>
+        /// <param name="relatedCollectionName" type="String">Related collection name that the lookup (attribute) points to.</param>
+        /// <param name="relatedId" type="String">Related entity record id that needs to be associated.</param>
+        /// <param name="relatedType" type="String">Related entity logical name that the lookup (attribute) points to.</param>
+
+        _stringParameterCheck(collectionName, "DynamicsWebApi.associateSingleValuedRequest requires the collectionName parameter is a string.");
+        id = _guidParameterCheck(id, "DynamicsWebApi.associateSingleValuedRequest requires the id parameter is a string.");
+        relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.associateSingleValuedRequest requires the relatedId is GUID.")
+        _stringParameterCheck(attributeName, "DynamicsWebApi.associateSingleValuedRequest requires the attributeName parameter is a string.");
+        _stringParameterCheck(relatedCollectionName, "DynamicsWebApi.associateSingleValuedRequest requires the relatedCollectionName parameter is a string.");
+        //_stringParameterCheck(relatedType, "DynamicsWebApi.associateSingleValuedRequest requires the v parameter is a string.");
+
+        return axiosCrm.put(collectionName + "(" + id + ")/" + attributeName + "/$ref",
+            { "@odata.id": _initUrl() + relatedCollectionName + "(" + relatedId + ")" });
+    }
+
+    var disassociateRequest = function (primaryCollectionName, primaryId, relationshipName, relatedId) {
+        /// <summary>Disassociate for a collection-valued navigation property.</summary>
+        /// <param name="primaryCollectionName" type="String">Primary entity collection name</param>
+        /// <param name="primaryId" type="String">Primary entity record id</param>
+        /// <param name="relationshipName" type="String">Relationship name</param>
+        /// <param name="relatedId" type="String">Related entity record id</param>
+        /// <returns type="Promise" />
+        _stringParameterCheck(primaryCollectionName, "DynamicsWebApi.disassociateRequest requires the primaryCollectionName parameter is a string.");
+        _stringParameterCheck(relationshipName, "DynamicsWebApi.disassociateRequest requires the relationshipName parameter is a string.");
+        primaryId = _guidParameterCheck(primaryId, "DynamicsWebApi.disassociateRequest requires the primaryId is GUID.")
+        relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.disassociateRequest requires the relatedId is GUID.")
+
+        return axiosCrm.delete(primaryCollectionName + "(" + primaryId + ")/" + relationshipName + "(" + relatedId + ")/$ref");
+    }
+
     var createInstance = function (config) {
-        /// <summary>Creates another instance of DynamicsWebApi helper.</summary>
+        /// <summary>Creates another instance of DynamicsWebApi helper. This function copies sendRequest function into a newly created object.</summary>
         ///<param name="config" type="Object">
         /// DynamicsWebApi Configuration object
         ///<para>   config.webApiVersion (String).
@@ -849,6 +902,9 @@ var DynamicsWebApi = function (config) {
         retrieveMultiple: retrieveMultipleRecords,
         retrieveMultipleAdvanced: retrieveMultipleRecordsAdvanced,
         updateSingleProperty: updateSingleProperty,
+        associateRequest: associateRequest,
+        disassociateRequest: disassociateRequest,
+        associateSingleValuedRequest: associateSingleValuedRequest,
         setConfig: setConfig,
         initializeInstance: createInstance,
     }
