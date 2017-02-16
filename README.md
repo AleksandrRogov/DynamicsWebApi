@@ -291,7 +291,7 @@ dynamicsWebApi.associateRequest("accounts", accountId, "lead_parent_account", "l
 
 #### Associate for a single-valued navigation property
 
-The name of a single-valued navigation property can be retrieved by using a `GET` request with a header `Prefer:odata.include-annotations="*"`, then the response will contain the annotation `@Microsoft.Dynamics.CRM.associatednavigationproperty` which is the name of the needed navigation property. Usually it will be equal to a schema name of the entity attribute.
+The name of a single-valued navigation property can be retrieved by using a `GET` request with a header `Prefer:odata.include-annotations=Microsoft.Dynamics.CRM.associatednavigationproperty`, then individual records in the response will contain the property `@Microsoft.Dynamics.CRM.associatednavigationproperty` which is the name of the needed navigation property. Usually it will be equal to a schema name of the entity attribute.
 
 For example, there is an entity with a logical name `new_test`, it has a lookup attribute to `lead` entity called `new_leadtest` and schema name `new_LeadTest` which is needed single-valued navigation property.
 
