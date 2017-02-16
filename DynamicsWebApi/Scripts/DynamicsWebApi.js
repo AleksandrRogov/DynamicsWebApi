@@ -419,7 +419,7 @@ var DynamicsWebApi = function (config) {
             });
     };
 
-    var retrieveRecord = function (id, collectionName, select, expand) {
+    var retrieveRecord = function (id, collectionName, select, expand, prefer) {
         ///<summary>
         /// Sends an asynchronous request to retrieve a record.
         ///</summary>
@@ -439,6 +439,11 @@ var DynamicsWebApi = function (config) {
         /// A String representing the $expand OData System Query Option value to control which
         /// related records are also returned. This is a comma separated list of of up to 6 entity relationship names
         /// If null no expanded related records will be returned.
+        ///</param>
+        ///<param name="prefer" type="String">
+        /// A String representing the 'Prefer' header value. 
+        /// It can be used to include annotations that will provide additional information about the data in selected properties.
+        /// <para>Example values: odata.include-annotations="*"; odata.include-annotations="OData.Community.Display.V1.FormattedValue" and etc</para>
         ///</param>
         /// <returns type="Promise" />
 
@@ -466,7 +471,14 @@ var DynamicsWebApi = function (config) {
             }
         }
 
-        return axiosCrm.get(collectionName.toLowerCase() + "(" + id + ")" + systemQueryOptions).then(function (response) {
+        var additionalConfig = null;
+
+        if (prefer != null) {
+            _stringParameterCheck(prefer, "DynamicsWebApi.retrieveRecord requires the prefer parameter is a string.");
+            additionalConfig = { headers: { "Prefer": prefer } };
+        }
+
+        return axiosCrm.get(collectionName.toLowerCase() + "(" + id + ")" + systemQueryOptions, null, additionalConfig).then(function (response) {
             return response.data;
         });
     };
@@ -509,7 +521,7 @@ var DynamicsWebApi = function (config) {
         if (select != null) {
             _arrayParameterCheck(select, "DynamicsWebApi.updateRecord requires the select parameter an array.");
 
-            if (select != null && select.length > 0) {
+            if (select.length > 0) {
                 systemQueryOptions = "?" + select.join(",");
             }
         }

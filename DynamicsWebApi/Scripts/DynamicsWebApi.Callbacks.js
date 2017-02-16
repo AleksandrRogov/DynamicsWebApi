@@ -628,7 +628,7 @@ var DynamicsWebApi = function (config) {
         _sendRequest("DELETE", _webApiUrl + url, onSuccess, onError);
     };
 
-    var retrieveRecord = function (id, collectionName, select, expand, successCallback, errorCallback) {
+    var retrieveRecord = function (id, collectionName, select, expand, prefer, successCallback, errorCallback) {
         ///<summary>
         /// Sends an asynchronous request to retrieve a record.
         ///</summary>
@@ -648,6 +648,11 @@ var DynamicsWebApi = function (config) {
         /// A String representing the $expand OData System Query Option value to control which
         /// related records are also returned. This is a comma separated list of of up to 6 entity relationship names
         /// If null no expanded related records will be returned.
+        ///</param>
+        ///<param name="prefer" type="String">
+        /// A String representing the 'Prefer' header value. 
+        /// It can be used to include annotations that will provide additional information about the data in selected properties.
+        /// <para>Example values: odata.include-annotations="*"; odata.include-annotations="OData.Community.Display.V1.FormattedValue" and etc</para>
         ///</param>
         ///<param name="successCallback" type="Function">
         /// The function that will be passed through and be called by a successful response. 
@@ -684,6 +689,13 @@ var DynamicsWebApi = function (config) {
             }
         }
 
+        var headers = null;
+
+        if (prefer != null) {
+            _stringParameterCheck(prefer, "DynamicsWebApi.retrieveRecord requires the prefer parameter is a string.");
+            headers = { Prefer: prefer };
+        }
+
         var onSuccess = function (xhr) {
             //JQuery does not provide an opportunity to specify a date reviver so this code
             // parses the xhr.responseText rather than use the data parameter passed by JQuery.
@@ -694,7 +706,7 @@ var DynamicsWebApi = function (config) {
             errorCallback(_errorHandler(xhr));
         }
 
-        _sendRequest("GET", _webApiUrl + collectionName.toLowerCase()+ "(" + id + ")" + systemQueryOptions, onSuccess, onError);
+        _sendRequest("GET", _webApiUrl + collectionName.toLowerCase() + "(" + id + ")" + systemQueryOptions, onSuccess, onError, null, headers);
     };
 
     var upsertRecord = function (id, collectionName, object, ifmatch, ifnonematch, successCallback, errorCallback) {
