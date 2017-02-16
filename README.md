@@ -6,6 +6,33 @@ The project is currently under development.
 
 Any suggestions are welcome!
 
+## Table of Contents
+
+* [Quick Start](#quick-start)
+  * [Configuration] (#configuration)
+    * [Configuration Object Properties] (#configuration-object-properties)
+  * [Examples] (#examples)
+    * [Create a record] (#create-a-record)
+	* [Update a record] (#update-a-record)
+	  * [Update a record and return it] (#update-a-record-and-return-it)
+	* [Update a single property value] (#update-a-single-property-value)
+	* [Upsert a record] (#upsert-a-record)
+	* [Delete a record] (#delete-a-record)
+	  * [Delete a single property value] (#delete-a-single-property-value)
+	* [Retrieve a record] (#retrieve-a-record)
+	* [Retrieve multiple records] (#retrieve-multiple-records)
+	  * [Simple call] (#simple-call)
+	  * [Advanced call] (#advanced-call)
+	  * [Count] (#count)
+	* [Associate] (#associate)
+	* [Associate for a single-valued navigation property] (#associate-for-a-single-valued-navigation-property)
+	* [Disassociate] (#disassociate)
+	* [Disassociate for a single-valued navigation property] (#disassociate-for-a-single-valued-navigation-property)
+	* [Fetch XML Request] (#fetch-xml-request)
+* [JavaScript Promises] (#javascript-promises)
+* [JavaScript Callbacks] (#javascript-callbacks)
+  * [Custom Request Function to Web API] (#custom-request-function-to-web-api)
+
 ## Quick Start
 In order to use a library DynamicsWebApi.js needs to be added as a Web Resource in CRM.
 
