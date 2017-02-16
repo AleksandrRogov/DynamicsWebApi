@@ -650,9 +650,9 @@ var DynamicsWebApi = function (config) {
         /// If null no expanded related records will be returned.
         ///</param>
         ///<param name="prefer" type="String">
-        /// A String representing the 'Prefer' header value. 
+        /// A String representing the 'Prefer: odata.include-annotations' header value. 
         /// It can be used to include annotations that will provide additional information about the data in selected properties.
-        /// <para>Example values: odata.include-annotations="*"; odata.include-annotations="OData.Community.Display.V1.FormattedValue" and etc</para>
+        /// <para>Example values: "*"; "OData.Community.Display.V1.FormattedValue" and etc.</para>
         ///</param>
         ///<param name="successCallback" type="Function">
         /// The function that will be passed through and be called by a successful response. 
@@ -693,7 +693,7 @@ var DynamicsWebApi = function (config) {
 
         if (prefer != null) {
             _stringParameterCheck(prefer, "DynamicsWebApi.retrieveRecord requires the prefer parameter is a string.");
-            headers = { Prefer: prefer };
+            headers = { Prefer: 'odata.include-annotations=' + prefer };
         }
 
         var onSuccess = function (xhr) {

@@ -441,9 +441,9 @@ var DynamicsWebApi = function (config) {
         /// If null no expanded related records will be returned.
         ///</param>
         ///<param name="prefer" type="String">
-        /// A String representing the 'Prefer' header value. 
+        /// A String representing the 'Prefer: odata.include-annotations' header value. 
         /// It can be used to include annotations that will provide additional information about the data in selected properties.
-        /// <para>Example values: odata.include-annotations="*"; odata.include-annotations="OData.Community.Display.V1.FormattedValue" and etc</para>
+        /// <para>Example values: "*"; "OData.Community.Display.V1.FormattedValue" and etc.</para>
         ///</param>
         /// <returns type="Promise" />
 
@@ -475,7 +475,7 @@ var DynamicsWebApi = function (config) {
 
         if (prefer != null) {
             _stringParameterCheck(prefer, "DynamicsWebApi.retrieveRecord requires the prefer parameter is a string.");
-            additionalConfig = { headers: { "Prefer": prefer } };
+            additionalConfig = { headers: { 'Prefer': 'odata.include-annotations=' + prefer } };
         }
 
         return axiosCrm.get(collectionName.toLowerCase() + "(" + id + ")" + systemQueryOptions, null, additionalConfig).then(function (response) {
