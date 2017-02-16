@@ -843,26 +843,6 @@ var DynamicsWebApi = function (config) {
             { "@odata.id": _initUrl() + relatedCollectionName + "(" + relatedId + ")" });
     }
 
-    var associateSingleValuedRequest = function (collectionName, id, attributeName, relatedCollectionName, relatedId) {
-        /// <summary>Associate for a single-valued navigation property. (1:N)</summary>
-        /// <param name="collectionName" type="String">Entity collection name that contains an attribute.</param>
-        /// <param name="id" type="String">Entity record id that contains a attribute.</param>
-        /// <param name="propertyName" type="String">Logical name of the attribute.</param>
-        /// <param name="relatedCollectionName" type="String">Related collection name that the lookup (attribute) points to.</param>
-        /// <param name="relatedId" type="String">Related entity record id that needs to be associated.</param>
-        /// <param name="relatedType" type="String">Related entity logical name that the lookup (attribute) points to.</param>
-
-        _stringParameterCheck(collectionName, "DynamicsWebApi.associateSingleValuedRequest requires the collectionName parameter is a string.");
-        id = _guidParameterCheck(id, "DynamicsWebApi.associateSingleValuedRequest requires the id parameter is a string.");
-        relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.associateSingleValuedRequest requires the relatedId is GUID.")
-        _stringParameterCheck(attributeName, "DynamicsWebApi.associateSingleValuedRequest requires the attributeName parameter is a string.");
-        _stringParameterCheck(relatedCollectionName, "DynamicsWebApi.associateSingleValuedRequest requires the relatedCollectionName parameter is a string.");
-        //_stringParameterCheck(relatedType, "DynamicsWebApi.associateSingleValuedRequest requires the v parameter is a string.");
-
-        return axiosCrm.put(collectionName + "(" + id + ")/" + attributeName + "/$ref",
-            { "@odata.id": _initUrl() + relatedCollectionName + "(" + relatedId + ")" });
-    }
-
     var disassociateRequest = function (primaryCollectionName, primaryId, relationshipName, relatedId) {
         /// <summary>Disassociate for a collection-valued navigation property.</summary>
         /// <param name="primaryCollectionName" type="String">Primary entity collection name</param>
@@ -876,6 +856,39 @@ var DynamicsWebApi = function (config) {
         relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.disassociateRequest requires the relatedId is GUID.")
 
         return axiosCrm.delete(primaryCollectionName + "(" + primaryId + ")/" + relationshipName + "(" + relatedId + ")/$ref");
+    }
+
+    var associateSingleValuedRequest = function (collectionName, id, singleValuedNavigationPropertyName, relatedCollectionName, relatedId) {
+        /// <summary>Associate for a single-valued navigation property. (1:N)</summary>
+        /// <param name="collectionName" type="String">Entity collection name that contains an attribute.</param>
+        /// <param name="id" type="String">Entity record id that contains a attribute.</param>
+        /// <param name="singleValuedNavigationPropertyName" type="String">Single-valued navigation property name (usually it's a Schema Name of the lookup attribute).</param>
+        /// <param name="relatedCollectionName" type="String">Related collection name that the lookup (attribute) points to.</param>
+        /// <param name="relatedId" type="String">Related entity record id that needs to be associated.</param>
+        /// <returns type="Promise" />
+
+        _stringParameterCheck(collectionName, "DynamicsWebApi.associateSingleValuedRequest requires the collectionName parameter is a string.");
+        id = _guidParameterCheck(id, "DynamicsWebApi.associateSingleValuedRequest requires the id parameter is a string.");
+        relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.associateSingleValuedRequest requires the relatedId is GUID.")
+        _stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.associateSingleValuedRequest requires the singleValuedNavigationPropertyName parameter is a string.");
+        _stringParameterCheck(relatedCollectionName, "DynamicsWebApi.associateSingleValuedRequest requires the relatedCollectionName parameter is a string.");
+
+        return axiosCrm.put(collectionName + "(" + id + ")/" + singleValuedNavigationPropertyName + "/$ref",
+            { "@odata.id": _initUrl() + relatedCollectionName + "(" + relatedId + ")" });
+    }
+
+    var disassociateSingleValuedRequest = function (collectionName, id, singleValuedNavigationPropertyName) {
+        /// <summary>Removes a reference to an entity for a single-valued navigation property. (1:N)</summary>
+        /// <param name="collectionName" type="String">Entity collection name that contains an attribute.</param>
+        /// <param name="id" type="String">Entity record id that contains a attribute.</param>
+        /// <param name="singleValuedNavigationPropertyName" type="String">Single-valued navigation property name (usually it's a Schema Name of the lookup attribute).</param>
+        /// <returns type="Promise" />
+
+        _stringParameterCheck(collectionName, "DynamicsWebApi.associateSingleValuedRequest requires the collectionName parameter is a string.");
+        id = _guidParameterCheck(id, "DynamicsWebApi.associateSingleValuedRequest requires the id parameter is a string.");
+        _stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.associateSingleValuedRequest requires the singleValuedNavigationPropertyName parameter is a string.");
+
+        return axiosCrm.delete(collectionName + "(" + id + ")/" + singleValuedNavigationPropertyName + "/$ref");
     }
 
     var createInstance = function (config) {
@@ -905,6 +918,7 @@ var DynamicsWebApi = function (config) {
         associateRequest: associateRequest,
         disassociateRequest: disassociateRequest,
         associateSingleValuedRequest: associateSingleValuedRequest,
+        disassociateSingleValuedRequest: disassociateSingleValuedRequest,
         setConfig: setConfig,
         initializeInstance: createInstance,
     }

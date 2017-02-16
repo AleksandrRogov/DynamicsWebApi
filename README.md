@@ -262,12 +262,40 @@ dynamicsWebApi.associateRequest("accounts", accountId, "lead_parent_account", "l
 });
 ```
 
+#### Associate for a single-valued navigation property
+
+The name of a single-valued navigation property can be retrieved by using a `GET` request with a header `Prefer:odata.include-annotations="*"`, then the response will contain the annotation `@Microsoft.Dynamics.CRM.associatednavigationproperty` which is the name of the needed navigation property. Usually it will be equal to a schema name of the entity attribute.
+
+For example, there is an entity with a logical name `new_test`, it has a lookup attribute to `lead` entity called `new_leadtest` and schema name `new_LeadTest` which is needed single-valued navigation property.
+
+```js
+var new_testid = '00000000-0000-0000-0000-000000000001';
+var leadId = '00000000-0000-0000-0000-000000000002';
+dynamicsWebApi.associateSingleValuedRequest("new_tests", new_testid, "new_LeadTest", "leads", leadId).then(function () {
+    //success
+}).catch(function (error) {
+    //catch an error
+});
+```
+
 #### Disassociate
 
 ```js
 var accountId = '00000000-0000-0000-0000-000000000001';
 var leadId = '00000000-0000-0000-0000-000000000002';
 dynamicsWebApi.disassociateRequest("accounts", accountId, "lead_parent_account", leadId).then(function () {
+    //success
+}).catch(function (error) {
+    //catch an error
+});
+```
+
+#### Disassociate for a single-valued navigation property
+Current request removes a reference to an entity for a single-valued navigation property. The following code snippet uses an example shown in [Associate for a single-valued navigation property]().
+
+```js
+var new_testid = '00000000-0000-0000-0000-000000000001';
+dynamicsWebApi.disassociateSingleValuedRequest("new_tests", new_testid, "new_LeadTest").then(function () {
     //success
 }).catch(function (error) {
     //catch an error

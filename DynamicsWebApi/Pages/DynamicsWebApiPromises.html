@@ -24,6 +24,7 @@
     <button onclick="Associate()">Associate</button>
     <button onclick="AssociateSingleValued()">Associate Single Valued</button>
     <button onclick="Disassociate()">Disassociate</button>
+    <button onclick="DisassociateSingleValued()">Disassociate Single Valued</button>
     <button onclick="TestAnotherInstance()">Another instance test</button>
 
     <script src="../../clientGlobalcontext.js.aspx"></script>
@@ -185,7 +186,15 @@
             });
         }
         function AssociateSingleValued() {
-            dynamicsWebApi.associateSingleValuedRequest("o4u_tests", testEntityid, "o4u_lead_o4u_test_LeadTest", "leads", recordId).then(function () {
+            dynamicsWebApi.associateSingleValuedRequest("o4u_tests", testEntityid, "o4u_LeadTest", "leads", recordId).then(function () {
+                alert("success!");
+            }).catch(function (error) {
+                debugger;
+                console.trace(error.message);
+            });
+        }
+        function DisassociateSingleValued() {
+            dynamicsWebApi.disassociateSingleValuedRequest("o4u_tests", testEntityid, "o4u_LeadTest").then(function () {
                 alert("success!");
             }).catch(function (error) {
                 debugger;
