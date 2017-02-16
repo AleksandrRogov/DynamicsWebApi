@@ -1058,6 +1058,145 @@ var DynamicsWebApi = function (config) {
         _sendRequest("GET", _webApiUrl + collectionName.toLowerCase() + "?fetchXml=" + encodedFetchXml, onSuccess, onError, null, headers);
     }
 
+    var associateRequest = function (primaryCollectionName, primaryId, relationshipName, relatedCollectionName, relatedId, successCallback, errorCallback) {
+        /// <summary>Associate for a collection-valued navigation property. (1:N or N:N)</summary>
+        /// <param name="primaryCollectionName" type="String">Primary entity collection name.</param>
+        /// <param name="primaryId" type="String">Primary entity record id.</param>
+        /// <param name="relationshipName" type="String">Relationship name.</param>
+        /// <param name="relatedCollectionName" type="String">Related colletion name.</param>
+        /// <param name="relatedId" type="String">Related entity record id.</param>
+        ///<param name="successCallback" type="Function">
+        /// The function that will be passed through and be called by a successful response. 
+        /// This function must accept the returned record as a parameter.
+        /// </param>
+        ///<param name="errorCallback" type="Function">
+        /// The function that will be passed through and be called by a failed response. 
+        /// This function must accept an Error object as a parameter.
+        /// </param>
+        _stringParameterCheck(primaryCollectionName, "DynamicsWebApi.associateRequest requires the primaryCollectionName parameter is a string.");
+        _stringParameterCheck(relatedCollectionName, "DynamicsWebApi.associateRequest requires the relatedCollectionName parameter is a string.");
+        _stringParameterCheck(relationshipName, "DynamicsWebApi.associateRequest requires the relationshipName parameter is a string.");
+        primaryId = _guidParameterCheck(primaryId, "DynamicsWebApi.associateRequest requires the primaryId is GUID.");
+        relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.associateRequest requires the relatedId is GUID.");
+        _callbackParameterCheck(successCallback, "DynamicsWebApi.associateRequest requires the successCallback parameter is a function.");
+        _callbackParameterCheck(errorCallback, "DynamicsWebApi.associateRequest requires the errorCallback parameter is a function.");
+
+        var onSuccess = function (xhr) {
+            successCallback();
+        };
+
+        var onError = function (xhr) {
+            errorCallback(_errorHandler(xhr));
+        };
+
+        _sendRequest("POST",
+            _webApiUrl + primaryCollectionName + "(" + primaryId + ")/" + relationshipName + "/$ref",
+            onSuccess, onError,
+            { "@odata.id": _webApiUrl + relatedCollectionName + "(" + relatedId + ")" });
+    }
+
+    var disassociateRequest = function (primaryCollectionName, primaryId, relationshipName, relatedId, successCallback, errorCallback) {
+        /// <summary>Disassociate for a collection-valued navigation property.</summary>
+        /// <param name="primaryCollectionName" type="String">Primary entity collection name</param>
+        /// <param name="primaryId" type="String">Primary entity record id</param>
+        /// <param name="relationshipName" type="String">Relationship name</param>
+        /// <param name="relatedId" type="String">Related entity record id</param>
+        ///<param name="successCallback" type="Function">
+        /// The function that will be passed through and be called by a successful response. 
+        /// This function must accept the returned record as a parameter.
+        /// </param>
+        ///<param name="errorCallback" type="Function">
+        /// The function that will be passed through and be called by a failed response. 
+        /// This function must accept an Error object as a parameter.
+        /// </param>
+
+        _stringParameterCheck(primaryCollectionName, "DynamicsWebApi.disassociateRequest requires the primaryCollectionName parameter is a string.");
+        _stringParameterCheck(relationshipName, "DynamicsWebApi.disassociateRequest requires the relationshipName parameter is a string.");
+        primaryId = _guidParameterCheck(primaryId, "DynamicsWebApi.disassociateRequest requires the primaryId is GUID.");
+        relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.disassociateRequest requires the relatedId is GUID.");
+        _callbackParameterCheck(successCallback, "DynamicsWebApi.disassociateRequest requires the successCallback parameter is a function.");
+        _callbackParameterCheck(errorCallback, "DynamicsWebApi.disassociateRequest requires the errorCallback parameter is a function.");
+
+        var onSuccess = function (xhr) {
+            successCallback();
+        };
+
+        var onError = function (xhr) {
+            errorCallback(_errorHandler(xhr));
+        };
+
+        _sendRequest("DELETE", _webApiUrl + primaryCollectionName + "(" + primaryId + ")/" + relationshipName + "(" + relatedId + ")/$ref", onSuccess, onError);
+    }
+
+    var associateSingleValuedRequest = function (collectionName, id, singleValuedNavigationPropertyName, relatedCollectionName, relatedId, successCallback, errorCallback) {
+        /// <summary>Associate for a single-valued navigation property. (1:N)</summary>
+        /// <param name="collectionName" type="String">Entity collection name that contains an attribute.</param>
+        /// <param name="id" type="String">Entity record id that contains a attribute.</param>
+        /// <param name="singleValuedNavigationPropertyName" type="String">Single-valued navigation property name (usually it's a Schema Name of the lookup attribute).</param>
+        /// <param name="relatedCollectionName" type="String">Related collection name that the lookup (attribute) points to.</param>
+        /// <param name="relatedId" type="String">Related entity record id that needs to be associated.</param>
+        ///<param name="successCallback" type="Function">
+        /// The function that will be passed through and be called by a successful response. 
+        /// This function must accept the returned record as a parameter.
+        /// </param>
+        ///<param name="errorCallback" type="Function">
+        /// The function that will be passed through and be called by a failed response. 
+        /// This function must accept an Error object as a parameter.
+        /// </param>
+
+        _stringParameterCheck(collectionName, "DynamicsWebApi.associateSingleValuedRequest requires the collectionName parameter is a string.");
+        id = _guidParameterCheck(id, "DynamicsWebApi.associateSingleValuedRequest requires the id parameter is GUID.");
+        relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.associateSingleValuedRequest requires the relatedId is GUID.");
+        _stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.associateSingleValuedRequest requires the singleValuedNavigationPropertyName parameter is a string.");
+        _stringParameterCheck(relatedCollectionName, "DynamicsWebApi.associateSingleValuedRequest requires the relatedCollectionName parameter is a string.");
+        _callbackParameterCheck(successCallback, "DynamicsWebApi.associateSingleValuedRequest requires the successCallback parameter is a function.");
+        _callbackParameterCheck(errorCallback, "DynamicsWebApi.associateSingleValuedRequest requires the errorCallback parameter is a function.");
+
+        var onSuccess = function (xhr) {
+            successCallback();
+        };
+
+        var onError = function (xhr) {
+            errorCallback(_errorHandler(xhr));
+        };
+
+        _sendRequest("PUT",
+            _webApiUrl + collectionName + "(" + id + ")/" + singleValuedNavigationPropertyName + "/$ref",
+            onSuccess, onError,
+            { "@odata.id": _webApiUrl + relatedCollectionName + "(" + relatedId + ")" });
+    }
+
+    var disassociateSingleValuedRequest = function (collectionName, id, singleValuedNavigationPropertyName, successCallback, errorCallback) {
+        /// <summary>Removes a reference to an entity for a single-valued navigation property. (1:N)</summary>
+        /// <param name="collectionName" type="String">Entity collection name that contains an attribute.</param>
+        /// <param name="id" type="String">Entity record id that contains a attribute.</param>
+        /// <param name="singleValuedNavigationPropertyName" type="String">Single-valued navigation property name (usually it's a Schema Name of the lookup attribute).</param>
+        ///<param name="successCallback" type="Function">
+        /// The function that will be passed through and be called by a successful response. 
+        /// This function must accept the returned record as a parameter.
+        /// </param>
+        ///<param name="errorCallback" type="Function">
+        /// The function that will be passed through and be called by a failed response. 
+        /// This function must accept an Error object as a parameter.
+        /// </param>
+
+        _stringParameterCheck(collectionName, "DynamicsWebApi.associateSingleValuedRequest requires the collectionName parameter is a string.");
+        id = _guidParameterCheck(id, "DynamicsWebApi.associateSingleValuedRequest requires the id parameter is GUID.");
+        _stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.associateSingleValuedRequest requires the singleValuedNavigationPropertyName parameter is a string.");
+        _callbackParameterCheck(successCallback, "DynamicsWebApi.disassociateSingleValuedRequest requires the successCallback parameter is a function.");
+        _callbackParameterCheck(errorCallback, "DynamicsWebApi.disassociateSingleValuedRequest requires the errorCallback parameter is a function.");
+
+        var onSuccess = function (xhr) {
+            successCallback();
+        };
+
+        var onError = function (xhr) {
+            errorCallback(_errorHandler(xhr));
+        };
+
+        _sendRequest("DELETE", _webApiUrl + collectionName + "(" + id + ")/" + singleValuedNavigationPropertyName + "/$ref", onSuccess, onError);
+    }
+
     var createInstance = function (config) {
         ///<summary>Creates another instance of DynamicsWebApi helper.</summary>
         ///<param name="config" type="Object">
@@ -1092,6 +1231,10 @@ var DynamicsWebApi = function (config) {
         retrieveMultiple: retrieveMultipleRecords,
         retrieveMultipleAdvanced: retrieveMultipleRecordsAdvanced,
         updateSingleProperty: updateSingleProperty,
+        associateRequest: associateRequest,
+        disassociateRequest: disassociateRequest,
+        associateSingleValuedRequest: associateSingleValuedRequest,
+        disassociateSingleValuedRequest: disassociateSingleValuedRequest,
         setConfig: setConfig,
         initializeInstance: createInstance
     }

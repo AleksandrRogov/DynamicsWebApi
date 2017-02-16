@@ -836,8 +836,8 @@ var DynamicsWebApi = function (config) {
         _stringParameterCheck(primaryCollectionName, "DynamicsWebApi.associateRequest requires the primaryCollectionName parameter is a string.");
         _stringParameterCheck(relatedCollectionName, "DynamicsWebApi.associateRequest requires the relatedCollectionName parameter is a string.");
         _stringParameterCheck(relationshipName, "DynamicsWebApi.associateRequest requires the relationshipName parameter is a string.");
-        primaryId = _guidParameterCheck(primaryId, "DynamicsWebApi.associateRequest requires the primaryId is GUID.")
-        relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.associateRequest requires the relatedId is GUID.")
+        primaryId = _guidParameterCheck(primaryId, "DynamicsWebApi.associateRequest requires the primaryId is GUID.");
+        relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.associateRequest requires the relatedId is GUID.");
 
         return axiosCrm.post(primaryCollectionName + "(" + primaryId + ")/" + relationshipName + "/$ref",
             { "@odata.id": _initUrl() + relatedCollectionName + "(" + relatedId + ")" });
@@ -852,8 +852,8 @@ var DynamicsWebApi = function (config) {
         /// <returns type="Promise" />
         _stringParameterCheck(primaryCollectionName, "DynamicsWebApi.disassociateRequest requires the primaryCollectionName parameter is a string.");
         _stringParameterCheck(relationshipName, "DynamicsWebApi.disassociateRequest requires the relationshipName parameter is a string.");
-        primaryId = _guidParameterCheck(primaryId, "DynamicsWebApi.disassociateRequest requires the primaryId is GUID.")
-        relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.disassociateRequest requires the relatedId is GUID.")
+        primaryId = _guidParameterCheck(primaryId, "DynamicsWebApi.disassociateRequest requires the primaryId is GUID.");
+        relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.disassociateRequest requires the relatedId is GUID.");
 
         return axiosCrm.delete(primaryCollectionName + "(" + primaryId + ")/" + relationshipName + "(" + relatedId + ")/$ref");
     }
@@ -868,8 +868,8 @@ var DynamicsWebApi = function (config) {
         /// <returns type="Promise" />
 
         _stringParameterCheck(collectionName, "DynamicsWebApi.associateSingleValuedRequest requires the collectionName parameter is a string.");
-        id = _guidParameterCheck(id, "DynamicsWebApi.associateSingleValuedRequest requires the id parameter is a string.");
-        relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.associateSingleValuedRequest requires the relatedId is GUID.")
+        id = _guidParameterCheck(id, "DynamicsWebApi.associateSingleValuedRequest requires the id parameter is GUID.");
+        relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.associateSingleValuedRequest requires the relatedId is GUID.");
         _stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.associateSingleValuedRequest requires the singleValuedNavigationPropertyName parameter is a string.");
         _stringParameterCheck(relatedCollectionName, "DynamicsWebApi.associateSingleValuedRequest requires the relatedCollectionName parameter is a string.");
 
@@ -885,7 +885,7 @@ var DynamicsWebApi = function (config) {
         /// <returns type="Promise" />
 
         _stringParameterCheck(collectionName, "DynamicsWebApi.associateSingleValuedRequest requires the collectionName parameter is a string.");
-        id = _guidParameterCheck(id, "DynamicsWebApi.associateSingleValuedRequest requires the id parameter is a string.");
+        id = _guidParameterCheck(id, "DynamicsWebApi.associateSingleValuedRequest requires the id parameter is GUID.");
         _stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.associateSingleValuedRequest requires the singleValuedNavigationPropertyName parameter is a string.");
 
         return axiosCrm.delete(collectionName + "(" + id + ")/" + singleValuedNavigationPropertyName + "/$ref");

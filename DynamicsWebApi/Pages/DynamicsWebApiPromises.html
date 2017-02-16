@@ -26,6 +26,7 @@
     <button onclick="Disassociate()">Disassociate</button>
     <button onclick="DisassociateSingleValued()">Disassociate Single Valued</button>
     <button onclick="TestAnotherInstance()">Another instance test</button>
+    <button onclick="DeleteTestData()">Delete Test Data</button>
 
     <script src="../../clientGlobalcontext.js.aspx"></script>
     <script src="../Scripts/DynamicsWebApi.js"></script>
@@ -202,7 +203,6 @@
             });
         }
         function TestAnotherInstance() {
-
             var instance = dynamicsWebApi.initializeInstance({ webApiVersion: "8.0" });
 
             instance.countRecords("accounts").then(function (count) {
@@ -211,6 +211,13 @@
                 debugger;
                 console.trace(error.message);
             })
+        }
+        function DeleteTestData() {
+            dynamicsWebApi.deleteRequest(testEntityid, "o4u_tests").then(function () {
+                alert("success!");
+            }).catch(function (error) {
+                debugger;
+            });
         }
     </script>
 </body>

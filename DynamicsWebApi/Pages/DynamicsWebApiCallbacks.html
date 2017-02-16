@@ -22,14 +22,34 @@
     <button onclick="UpsertRecord()">Upsert Record</button>
     <button onclick="RetrieveMultipleRecordsExtended()">Multiple Records Extended</button>
     <button onclick="FetchXmlTest()">Fetch XML Test</button>
+    <button onclick="Associate()">Associate</button>
+    <button onclick="AssociateSingleValued()">Associate Single Valued</button>
+    <button onclick="Disassociate()">Disassociate</button>
+    <button onclick="DisassociateSingleValued()">Disassociate Single Valued</button>
     <button onclick="TestAnotherInstance()">Another instance test</button>
+    <button onclick="DeleteTestData()">Delete Test Data</button>
 
     <script src="../../clientGlobalcontext.js.aspx"></script>
     <script src="../../int_jquery.js"></script>
-    <script src="../Scripts/DynamicsWebApi.jQuery.js"></script>
+    <script src="../Scripts/DynamicsWebApi.Callbacks.js"></script>
     <script>
         var recordId = "115a8970-d788-4bf6-b064-d1574dbe6930";
         dynamicsWebApi.setConfig({ webApiVersion: "8.2" });
+        var accountId = null;
+        var testEntityid = null;
+
+        //for association
+        dynamicsWebApi.retrieveMultiple("accounts", ["accountid"], "name eq 'Best For You Organics Company'", null, function (response) {
+            /// <param name="response" type="DWA.Types.MultipleResponse">Response object</param>
+            accountId = response.value[0].accountid;
+        }, function (error) {
+            debugger;
+        });
+        dynamicsWebApi.createRequest({ o4u_name: "Test" }, "o4u_tests", false, function (id) {
+            testEntityid = id;
+        }, function (error) {
+            debugger;
+        });
 
         function CreateRecord() {
             var lead = {
@@ -146,6 +166,38 @@
                 console.trace(error.message);
             })
         }
+        function Associate() {
+            dynamicsWebApi.associateRequest("accounts", accountId, "lead_parent_account", "leads", recordId, function () {
+                alert("success!");
+            }, function (error) {
+                debugger;
+                console.trace(error.message);
+            });
+        }
+        function Disassociate() {
+            dynamicsWebApi.disassociateRequest("accounts", accountId, "lead_parent_account", recordId, function () {
+                alert("success!");
+            }, function (error) {
+                debugger;
+                console.trace(error.message);
+            });
+        }
+        function AssociateSingleValued() {
+            dynamicsWebApi.associateSingleValuedRequest("o4u_tests", testEntityid, "o4u_LeadTest", "leads", recordId, function () {
+                alert("success!");
+            }, function (error) {
+                debugger;
+                console.trace(error.message);
+            });
+        }
+        function DisassociateSingleValued() {
+            dynamicsWebApi.disassociateSingleValuedRequest("o4u_tests", testEntityid, "o4u_LeadTest", function () {
+                alert("success!");
+            }, function (error) {
+                debugger;
+                console.trace(error.message);
+            });
+        }
         function TestAnotherInstance() {
 
             var instance = dynamicsWebApi.initializeInstance({ webApiVersion: "8.0" });
@@ -156,6 +208,13 @@
                 debugger;
                 console.trace(error.message);
             })
+        }
+        function DeleteTestData() {
+            dynamicsWebApi.deleteRequest(testEntityid, "o4u_tests", null, function () {
+                alert("success!");
+            }, function (error) {
+                debugger;
+            });
         }
     </script>
 </body>

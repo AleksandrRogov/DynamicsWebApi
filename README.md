@@ -291,7 +291,7 @@ dynamicsWebApi.disassociateRequest("accounts", accountId, "lead_parent_account",
 ```
 
 #### Disassociate for a single-valued navigation property
-Current request removes a reference to an entity for a single-valued navigation property. The following code snippet uses an example shown in [Associate for a single-valued navigation property]().
+Current request removes a reference to an entity for a single-valued navigation property. The following code snippet uses an example shown in [Associate for a single-valued navigation property](#associate-for-a-single-valued-navigation-property).
 
 ```js
 var new_testid = '00000000-0000-0000-0000-000000000001';
