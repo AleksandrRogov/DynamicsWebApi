@@ -24,7 +24,7 @@ var dynamicsWebApi81 = dynamicsWebApi.initializeInstance({ webApiVersion: "8.1" 
 var dynamicsWebApi81 = new DynamicsWebApi({ webApiVersion: "8.1" });
 ```
 
-In case if you are using [DynamicsWebApi with Callbacks](https://github.com/AleksandrRogov/DynamicsWebApi#javascript-callbacks) and create a new object using `new` keyword, use the following snippet:
+In case if you are using [DynamicsWebApi with Callbacks](#javascript-callbacks) and create a new object using `new` keyword, use the following snippet:
 ```js
 //in the case below you will need to manually provide a sendRequest function if you are not using a default function (it will not be copied automatically)
 var dynamicsWebApi81 = new DynamicsWebApi({
@@ -42,7 +42,7 @@ Property Name | Type | Description
 ------------ | ------------- | -------------
 __webApiVersion__ | String | Version of the Web API. By default version "8.0" used.
 __webApiUrl__ | String | A complete URL string to Web API. Example of the URL: "https:/myorg.crm.dynamics.com/api/data/v8.2/". If it is specified then webApiVersion property will not be used even if it is not empty. 
-__sendRequest__ | Function | __Exists only for the version with Callbacks__. A custom Request Function to Web API. More info: [here](https://github.com/AleksandrRogov/DynamicsWebApi#custom-request-function-to-web-api)
+__sendRequest__ | Function | __Exists only for the version with Callbacks__. A custom Request Function to Web API. More info: [here](#custom-request-function-to-web-api)
 
 At this moment the library only works inside CRM.
 
