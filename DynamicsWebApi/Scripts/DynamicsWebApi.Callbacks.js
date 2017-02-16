@@ -395,8 +395,8 @@ var DynamicsWebApi = function (config) {
             }
         }
 
-        if (options.includeAnnotations != null) {
-            _stringParameterCheck(options.includeAnnotations, "DynamicsWebApi.retrieveMultipleRecords requires the object.includeAnnotations parameter is a string.");
+        if (options.prefer != null) {
+            _stringParameterCheck(options.prefer, "DynamicsWebApi.retrieveMultipleRecords requires the object.prefer parameter is a string.");
         }
 
         var url = options.collectionName.toLowerCase();
@@ -928,8 +928,8 @@ var DynamicsWebApi = function (config) {
         ///             Limit the number of results returned by using the $top system query option. Do not use $top with $count!</para>
         ///<para>   object.orderBy (Array). 
         ///             Use the order in which items are returned using the $orderby system query option. Use the asc or desc suffix to specify ascending or descending order respectively. The default is ascending if the suffix isn't applied.</para>
-        ///<para>   object.includeAnnotations (String). 
-        ///             Values can be "OData.Community.Display.V1.FormattedValue"; "*" - for lookups.</para>
+        ///<para>   object.prefer (String). 
+        ///             Values can be "OData.Community.Display.V1.FormattedValue"; "*" and other - for lookups.</para>
         ///</param>
         ///<param name="select" type="nextPageLink" optional="true">
         /// Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
