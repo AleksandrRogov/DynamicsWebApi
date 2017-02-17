@@ -358,9 +358,9 @@ dynamicsWebApi.fetchXmlRequest("accounts", fetchXml).then(function (response) {
 
 ### In Progress
 
-[ ] - execute fetch xml request using POST method.
-[ ] - get all pages requests, such as: countAllRecords, retrieveMultipleAll, fetchXmlAll and etc.
-[ ] - "formatted" values in responses. For instance: Web API splits information about lookup fields into separate properties, the config option "formatted" will enable developers to retrieve all information about such fields in a single requests and access it through DynamicsWebApi custom response objects.
+- [ ] execute fetch xml request using POST method.
+- [ ] get all pages requests, such as: countAllRecords, retrieveMultipleAll, fetchXmlAll and etc.
+- [ ] "formatted" values in responses. For instance: Web API splits information about lookup fields into separate properties, the config option "formatted" will enable developers to retrieve all information about such fields in a single requests and access it through DynamicsWebApi custom response objects.
 
 Many more features to come!
 
