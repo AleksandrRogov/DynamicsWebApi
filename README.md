@@ -239,7 +239,7 @@ dynamicsWebApi.retrieveMultiple("leads", ["fullname", "subject"], "statecode eq 
 ```js
 //set the request parameters
 var requestParameters = {
-    collectionName: "leads",
+    collection: "leads",
     select: ["fullname", "subject"],
     filter: "statecode eq 0",
     maxPageSize: 5,

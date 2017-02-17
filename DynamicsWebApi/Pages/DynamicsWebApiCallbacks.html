@@ -17,6 +17,7 @@
     <button onclick="UpdateRecord()">Update Record</button>
     <button onclick="UpdateSingleProperty()">Update Single Property</button>
     <button onclick="RetrieveRecord()">Retrieve Record</button>
+    <button onclick="RetrieveRequest()">Retrieve Request</button>
     <button onclick="CountRecords()">Count Records</button>
     <button onclick="DeleteRecord()">Delete Record</button>
     <button onclick="UpsertRecord()">Upsert Record</button>
@@ -69,6 +70,24 @@
             dynamicsWebApi.retrieve(recordId, "leads", ["fullname", "subject"], null, null, function (record) {
                 var fullname = record.fullname;
                 debugger;
+            }, function (error) {
+                //if the record has not been found it will throw an error
+                debugger;
+                console.trace(error.message);
+            });
+        }
+        function RetrieveRequest() {
+            var request = {
+                id: recordId,
+                collection: "leads",
+                select: ["fullname", "subject"],
+
+                //ETag value with the If-None-Match header to request data to be retrieved only if it has changed since the last time it was retrieved
+                ifnonematch: "W/\"468026\""
+            };
+
+            dynamicsWebApi.retrieveRequest(request, function (response) {
+                alert(response.subject);
             }, function (error) {
                 //if the record has not been found it will throw an error
                 debugger;

@@ -14,8 +14,10 @@
     <h3>DynamicsWebApi Promises</h3>
     <button onclick="CreateRecord()">Create Record</button>
     <button onclick="UpdateRecord()">Update Record</button>
+    <button onclick="UpdateRequest()">Update Request</button>
     <button onclick="UpdateSingleProperty()">Update Single Property</button>
     <button onclick="RetrieveRecord()">Retrieve Record</button>
+    <button onclick="RetrieveRequest()">Retrieve Request</button>
     <button onclick="CountRecords()">Count Records</button>
     <button onclick="DeleteRecord()">Delete Record</button>
     <button onclick="UpsertRecord()">Upsert Record</button>
@@ -64,9 +66,28 @@
             });
         }
         function RetrieveRecord() {
-            dynamicsWebApi.retrieve(recordId, "leads", ["fullname", "subject"], null).then(function (object) {
+            dynamicsWebApi.retrieve(recordId, "leads", ["fullname", "subject"]).then(function (object) {
                 var fullname = object.fullname;
                 debugger;
+            })
+            .catch(function (error) {
+                //if the record has not been found it will throw an error
+                debugger;
+                console.trace(error.message);
+            });
+        }
+        function RetrieveRequest() {
+            var request = {
+                id: recordId,
+                collection: "leads",
+                select: ["fullname", "subject"],
+
+                //ETag value with the If-None-Match header to request data to be retrieved only if it has changed since the last time it was retrieved
+                ifnonematch: "W/\"468026\""
+            };
+
+            dynamicsWebApi.retrieveRequest(request).then(function (response) {
+                alert(response.subject);
             })
             .catch(function (error) {
                 //if the record has not been found it will throw an error
@@ -85,7 +106,7 @@
         }
         function RetrieveMultipleRecordsExtended() {
             var request = {
-                collectionName: "leads",
+                collection: "leads",
                 select: ["fullname", "subject"],
                 filter: "leadid eq " + recordId,
                 maxPageSize: 1
@@ -118,6 +139,23 @@
             }
 
             dynamicsWebApi.update(recordId, "leads", lead).then(function () {
+                alert("updated!");
+            })
+            .catch(function (error) {
+                debugger;
+                console.trace(error.message);
+            });
+        }
+        function UpdateRequest() {
+            var request = {
+                id: recordId,
+                collection: "leads",
+                object: {
+                    subject: "Test update"
+                }
+            };
+
+            dynamicsWebApi.updateRequest(request).then(function () {
                 alert("updated!");
             })
             .catch(function (error) {
