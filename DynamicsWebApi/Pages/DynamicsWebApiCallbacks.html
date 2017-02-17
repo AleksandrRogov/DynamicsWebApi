@@ -104,7 +104,7 @@
                 });
         }
         function DeleteRecord() {
-            dynamicsWebApi.delete(recordId, "leads", null, function () {
+            dynamicsWebApi.deleteRequest(recordId, "leads", null, function () {
                 alert("success!");
             }, function (error) {
                 debugger;
@@ -210,7 +210,7 @@
             })
         }
         function DeleteTestData() {
-            dynamicsWebApi.delete(testEntityid, "o4u_tests", null, function () {
+            dynamicsWebApi.deleteRequest(testEntityid, "o4u_tests", null, function () {
                 alert("success!");
             }, function (error) {
                 debugger;

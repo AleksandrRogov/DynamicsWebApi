@@ -602,14 +602,14 @@ var DynamicsWebApi = function (config) {
         /// This function must accept an Error object as a parameter.
         /// </param>
 
-        _stringParameterCheck(id, "DynamicsWebApi.delete requires the id parameter.");
-        id = _guidParameterCheck(id, "DynamicsWebApi.delete requires the id is GUID.")
-        _stringParameterCheck(collectionName, "DynamicsWebApi.delete requires the collectionName parameter.");
-        _callbackParameterCheck(successCallback, "DynamicsWebApi.delete requires the successCallback parameter is a function.");
-        _callbackParameterCheck(errorCallback, "DynamicsWebApi.delete requires the errorCallback parameter is a function.");
+        _stringParameterCheck(id, "DynamicsWebApi.deleteRequest requires the id parameter.");
+        id = _guidParameterCheck(id, "DynamicsWebApi.deleteRequest requires the id is GUID.")
+        _stringParameterCheck(collectionName, "DynamicsWebApi.deleteRequest requires the collectionName parameter.");
+        _callbackParameterCheck(successCallback, "DynamicsWebApi.deleteRequest requires the successCallback parameter is a function.");
+        _callbackParameterCheck(errorCallback, "DynamicsWebApi.deleteRequest requires the errorCallback parameter is a function.");
 
         if (propertyName != null)
-            _stringParameterCheck(propertyName, "DynamicsWebApi.delete requires the propertyName parameter.");
+            _stringParameterCheck(propertyName, "DynamicsWebApi.deleteRequest requires the propertyName parameter.");
 
         var url = collectionName.toLowerCase() + "(" + id + ")";
 
@@ -1236,7 +1236,7 @@ var DynamicsWebApi = function (config) {
         create: createRecord,
         update: updateRecord,
         upsert: upsertRecord,
-        delete: deleteRequest,
+        deleteRequest: deleteRequest,
         executeFetchXml: fetchXmlRequest,
         count: countRecords,
         retrieve: retrieveRecord,
