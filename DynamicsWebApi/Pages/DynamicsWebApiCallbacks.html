@@ -45,7 +45,7 @@
         }, function (error) {
             debugger;
         });
-        dynamicsWebApi.createRequest({ o4u_name: "Test" }, "o4u_tests", false, function (id) {
+        dynamicsWebApi.create({ o4u_name: "Test" }, "o4u_tests", false, function (id) {
             testEntityid = id;
         }, function (error) {
             debugger;
@@ -58,7 +58,7 @@
                 lastname: "WebAPI",
                 jobtitle: "Title"
             };
-            dynamicsWebApi.createRequest(lead, "leads", false, function (id) {
+            dynamicsWebApi.create(lead, "leads", false, function (id) {
                 alert(id);
                 recordId = id;
             }, function (error) {
@@ -66,7 +66,7 @@
             });
         }
         function RetrieveRecord() {
-            dynamicsWebApi.retrieveRecord(recordId, "leads", ["fullname", "subject"], null, null, function (record) {
+            dynamicsWebApi.retrieve(recordId, "leads", ["fullname", "subject"], null, null, function (record) {
                 var fullname = record.fullname;
                 debugger;
             }, function (error) {
@@ -76,7 +76,7 @@
             });
         }
         function CountRecords() {
-            dynamicsWebApi.countRecords("leads", null, function (count) {
+            dynamicsWebApi.count("leads", null, function (count) {
                 alert(count);
             }, function (error) {
                 debugger;
@@ -104,7 +104,7 @@
                 });
         }
         function DeleteRecord() {
-            dynamicsWebApi.deleteRequest(recordId, "leads", null, function () {
+            dynamicsWebApi.delete(recordId, "leads", null, function () {
                 alert("success!");
             }, function (error) {
                 debugger;
@@ -116,7 +116,7 @@
                 subject: "Test update"
             }
 
-            dynamicsWebApi.updateRequest(recordId, "leads", lead, true, null, function (record) {
+            dynamicsWebApi.update(recordId, "leads", lead, true, null, function (record) {
                 alert("updated!");
             }, function (error) {
                 debugger;
@@ -128,7 +128,7 @@
                 subject: "Upsert!!"
             };
 
-            dynamicsWebApi.upsertRequest(recordId, "leads", lead, null, null, function (id) {
+            dynamicsWebApi.upsert(recordId, "leads", lead, null, null, function (id) {
                 if (id != null) {
                     debugger;
                     recordId = id;
@@ -154,7 +154,7 @@
                                 "</entity>" +
                             "</fetch>";
 
-            dynamicsWebApi.fetchXmlRequest("accounts", fetchXml, null, function (response) {
+            dynamicsWebApi.executeFetchXml("accounts", fetchXml, null, function (response) {
                 /// <param name="response" type="DWA.Types.FetchXmlResponse">Request response</param>
 
                 for (var i = 0; i < response.value.length; i++) {
@@ -167,7 +167,7 @@
             })
         }
         function Associate() {
-            dynamicsWebApi.associateRequest("accounts", accountId, "lead_parent_account", "leads", recordId, function () {
+            dynamicsWebApi.associate("accounts", accountId, "lead_parent_account", "leads", recordId, function () {
                 alert("success!");
             }, function (error) {
                 debugger;
@@ -175,7 +175,7 @@
             });
         }
         function Disassociate() {
-            dynamicsWebApi.disassociateRequest("accounts", accountId, "lead_parent_account", recordId, function () {
+            dynamicsWebApi.disassociate("accounts", accountId, "lead_parent_account", recordId, function () {
                 alert("success!");
             }, function (error) {
                 debugger;
@@ -183,7 +183,7 @@
             });
         }
         function AssociateSingleValued() {
-            dynamicsWebApi.associateSingleValuedRequest("o4u_tests", testEntityid, "o4u_LeadTest", "leads", recordId, function () {
+            dynamicsWebApi.associateSingleValued("o4u_tests", testEntityid, "o4u_LeadTest", "leads", recordId, function () {
                 alert("success!");
             }, function (error) {
                 debugger;
@@ -191,7 +191,7 @@
             });
         }
         function DisassociateSingleValued() {
-            dynamicsWebApi.disassociateSingleValuedRequest("o4u_tests", testEntityid, "o4u_LeadTest", function () {
+            dynamicsWebApi.disassociateSingleValued("o4u_tests", testEntityid, "o4u_LeadTest", function () {
                 alert("success!");
             }, function (error) {
                 debugger;
@@ -202,7 +202,7 @@
 
             var instance = dynamicsWebApi.initializeInstance({ webApiVersion: "8.0" });
 
-            instance.countRecords("accounts", null, function (count) {
+            instance.count("accounts", null, function (count) {
                 alert(count);
             }, function (error) {
                 debugger;
@@ -210,7 +210,7 @@
             })
         }
         function DeleteTestData() {
-            dynamicsWebApi.deleteRequest(testEntityid, "o4u_tests", null, function () {
+            dynamicsWebApi.delete(testEntityid, "o4u_tests", null, function () {
                 alert("success!");
             }, function (error) {
                 debugger;

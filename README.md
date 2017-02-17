@@ -84,8 +84,8 @@ var lead = {
     lastname: "WebAPI",
     jobtitle: "Title"
 };
-//call dynamicsWebApi.createRequest function
-dynamicsWebApi.createRequest(lead, "leads").then(function (id) {
+//call dynamicsWebApi.create function
+dynamicsWebApi.create(lead, "leads").then(function (id) {
     //do something with id here
 }).catch(function (error) {
     //catch error here
@@ -105,7 +105,7 @@ var lead = {
 	jobtitle: "Developer"
 }
 //perform an update operation
-dynamicsWebApi.updateRequest(leadId, "leads", lead).then(function () {
+dynamicsWebApi.update(leadId, "leads", lead).then(function () {
     //do something after a succesful operation
 })
 .catch(function (error) {
@@ -126,7 +126,7 @@ var lead = {
 	jobtitle: "Developer"
 }
 //perform an update operation
-dynamicsWebApi.updateRequest(leadId, "leads", lead, true).then(function (updatedRecord) {
+dynamicsWebApi.update(leadId, "leads", lead, true).then(function (updatedRecord) {
     //do something with updatedRecord
 })
 .catch(function (error) {
@@ -164,7 +164,7 @@ var lead = {
 
 //initialize a CRM entity record object
 //and specify fields with values that need to be upserted
-dynamicsWebApi.upsertRequest(leadId, "leads", lead, "*").then(function (id) {
+dynamicsWebApi.upsert(leadId, "leads", lead, "*").then(function (id) {
     if (id != null) {
         //record has been created
     }
@@ -184,7 +184,7 @@ dynamicsWebApi.upsertRequest(leadId, "leads", lead, "*").then(function (id) {
 var leadId = '7d577253-3ef0-4a0a-bb7f-8335c2596e70';
 
 //perform a delete
-dynamicsWebApi.deleteRequest(leadId, "leads").then(function () {
+dynamicsWebApi.delete(leadId, "leads").then(function () {
     //do something after a succesful operation
 })
 .catch(function (error) {
@@ -199,7 +199,7 @@ dynamicsWebApi.deleteRequest(leadId, "leads").then(function () {
 var leadId = '7d577253-3ef0-4a0a-bb7f-8335c2596e70';
 
 //perform a delete of a single property value
-dynamicsWebApi.deleteRequest(leadId, "leads", "subject").then(function () {
+dynamicsWebApi.delete(leadId, "leads", "subject").then(function () {
     //do something after a succesful operation
 })
 .catch(function (error) {
@@ -211,7 +211,7 @@ dynamicsWebApi.deleteRequest(leadId, "leads", "subject").then(function () {
 
 ```js
 //perform a retrieve operaion
-dynamicsWebApi.retrieveRecord(accountId, "leads", ["fullname", "subject"]).then(function (object) {
+dynamicsWebApi.retrieve(accountId, "leads", ["fullname", "subject"]).then(function (object) {
     //do something with an object here
 })
 .catch(function (error) {
@@ -266,10 +266,10 @@ It is possible to count records separately from RetrieveMultiple call. In order 
 
 IMPORTANT! The count value does not represent the total number of entities in the system. It is limited by the maximum number of entities that can be returned.
 
-For now please use dynamicsWebApi.retrieveMultipleAdvanced function to loop through all pages and rollup all the records. dynamicsWebApi.countAllRecords will be available soon.
+For now please use dynamicsWebApi.retrieveMultipleAdvanced function to loop through all pages and rollup all the records. dynamicsWebApi.countAll will be available soon.
 
 ```js
-dynamicsWebApi.countRecords("leads", "statecode eq 0").then(function (count) {
+dynamicsWebApi.count("leads", "statecode eq 0").then(function (count) {
     //do something with count here
 })
 .catch(function (error) {
@@ -282,7 +282,7 @@ dynamicsWebApi.countRecords("leads", "statecode eq 0").then(function (count) {
 ```js
 var accountId = '00000000-0000-0000-0000-000000000001';
 var leadId = '00000000-0000-0000-0000-000000000002';
-dynamicsWebApi.associateRequest("accounts", accountId, "lead_parent_account", "leads", leadId).then(function () {
+dynamicsWebApi.associate("accounts", accountId, "lead_parent_account", "leads", leadId).then(function () {
     //success
 }).catch(function (error) {
     //catch an error
@@ -298,7 +298,7 @@ For example, there is an entity with a logical name `new_test`, it has a lookup 
 ```js
 var new_testid = '00000000-0000-0000-0000-000000000001';
 var leadId = '00000000-0000-0000-0000-000000000002';
-dynamicsWebApi.associateSingleValuedRequest("new_tests", new_testid, "new_LeadTest", "leads", leadId).then(function () {
+dynamicsWebApi.associateSingleValued("new_tests", new_testid, "new_LeadTest", "leads", leadId).then(function () {
     //success
 }).catch(function (error) {
     //catch an error
@@ -310,7 +310,7 @@ dynamicsWebApi.associateSingleValuedRequest("new_tests", new_testid, "new_LeadTe
 ```js
 var accountId = '00000000-0000-0000-0000-000000000001';
 var leadId = '00000000-0000-0000-0000-000000000002';
-dynamicsWebApi.disassociateRequest("accounts", accountId, "lead_parent_account", leadId).then(function () {
+dynamicsWebApi.disassociate("accounts", accountId, "lead_parent_account", leadId).then(function () {
     //success
 }).catch(function (error) {
     //catch an error
@@ -322,7 +322,7 @@ Current request removes a reference to an entity for a single-valued navigation 
 
 ```js
 var new_testid = '00000000-0000-0000-0000-000000000001';
-dynamicsWebApi.disassociateSingleValuedRequest("new_tests", new_testid, "new_LeadTest").then(function () {
+dynamicsWebApi.disassociateSingleValued("new_tests", new_testid, "new_LeadTest").then(function () {
     //success
 }).catch(function (error) {
     //catch an error
@@ -342,7 +342,7 @@ var fetchXml = "<fetch mapping='logical'>" +
 					"</entity>" +
 				"</fetch>";
 
-dynamicsWebApi.fetchXmlRequest("accounts", fetchXml).then(function (response) {
+dynamicsWebApi.executeFetchXml("accounts", fetchXml).then(function (response) {
     /// <param name="response" type="DWA.Types.FetchXmlResponse">Request response</param>
 
 	//do something with results here. For example:
@@ -359,7 +359,7 @@ dynamicsWebApi.fetchXmlRequest("accounts", fetchXml).then(function (response) {
 ### In Progress
 
 - [ ] execute fetch xml request using POST method.
-- [ ] get all pages requests, such as: countAllRecords, retrieveMultipleAll, fetchXmlAll and etc.
+- [ ] get all pages requests, such as: countAll, retrieveMultipleAll, fetchXmlAll and etc.
 - [ ] "formatted" values in responses. For instance: Web API splits information about lookup fields into separate properties, the config option "formatted" will enable developers to retrieve all information about such fields in a single requests and access it through DynamicsWebApi custom response objects.
 
 Many more features to come!

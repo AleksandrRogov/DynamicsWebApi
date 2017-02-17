@@ -437,15 +437,15 @@ var DynamicsWebApi = function (config) {
         /// This function must accept an Error object as a parameter.
         /// </param>
 
-        _parameterCheck(object, "DynamicsWebApi.createRecord requires the object parameter.");
-        _stringParameterCheck(collectionName, "DynamicsWebApi.createRecord requires the collectionName parameter is a string.");
-        _callbackParameterCheck(successCallback, "DynamicsWebApi.createRecord requires the successCallback is a function.");
-        _callbackParameterCheck(errorCallback, "DynamicsWebApi.createRecord requires the errorCallback is a function.");
+        _parameterCheck(object, "DynamicsWebApi.create requires the object parameter.");
+        _stringParameterCheck(collectionName, "DynamicsWebApi.create requires the collectionName parameter is a string.");
+        _callbackParameterCheck(successCallback, "DynamicsWebApi.create requires the successCallback is a function.");
+        _callbackParameterCheck(errorCallback, "DynamicsWebApi.create requires the errorCallback is a function.");
 
         var headers = null;
 
         if (returnData) {
-            _boolParameterCheck(returnData, "DynamicsWebApi.createRecord requires the returnData parameter a boolean.");
+            _boolParameterCheck(returnData, "DynamicsWebApi.create requires the returnData parameter a boolean.");
             headers = { "Prefer": "return=representation" };
         }
 
@@ -497,24 +497,24 @@ var DynamicsWebApi = function (config) {
         /// This function must accept an Error object as a parameter.
         /// </param>
 
-        _stringParameterCheck(id, "DynamicsWebApi.updateRecord requires the id parameter.");
-        id = _guidParameterCheck(id, "DynamicsWebApi.updateRecord requires the id is GUID.")
-        _parameterCheck(object, "DynamicsWebApi.updateRecord requires the object parameter.");
-        _stringParameterCheck(collectionName, "DynamicsWebApi.updateRecord requires the collectionName parameter.");
-        _callbackParameterCheck(successCallback, "DynamicsWebApi.updateRecord requires the successCallback parameter is a function.");
-        _callbackParameterCheck(errorCallback, "DynamicsWebApi.updateRecord requires the errorCallback parameter is a function.");
+        _stringParameterCheck(id, "DynamicsWebApi.update requires the id parameter.");
+        id = _guidParameterCheck(id, "DynamicsWebApi.update requires the id is GUID.")
+        _parameterCheck(object, "DynamicsWebApi.update requires the object parameter.");
+        _stringParameterCheck(collectionName, "DynamicsWebApi.update requires the collectionName parameter.");
+        _callbackParameterCheck(successCallback, "DynamicsWebApi.update requires the successCallback parameter is a function.");
+        _callbackParameterCheck(errorCallback, "DynamicsWebApi.update requires the errorCallback parameter is a function.");
 
         var headers = null;
 
         if (returnData != null) {
-            _boolParameterCheck(returnData, "DynamicsWebApi.updateRecord requires the returnData parameter a boolean.");
+            _boolParameterCheck(returnData, "DynamicsWebApi.update requires the returnData parameter a boolean.");
             headers = { "Prefer": "return=representation" };
         }
 
         var systemQueryOptions = "";
 
         if (select != null) {
-            _arrayParameterCheck(select, "DynamicsWebApi.updateRecord requires the select parameter an array.");
+            _arrayParameterCheck(select, "DynamicsWebApi.update requires the select parameter an array.");
 
             if (select != null && select.length > 0) {
                 systemQueryOptions = "?" + select.join(",");
@@ -602,14 +602,14 @@ var DynamicsWebApi = function (config) {
         /// This function must accept an Error object as a parameter.
         /// </param>
 
-        _stringParameterCheck(id, "DynamicsWebApi.deleteRequest requires the id parameter.");
-        id = _guidParameterCheck(id, "DynamicsWebApi.deleteRequest requires the id is GUID.")
-        _stringParameterCheck(collectionName, "DynamicsWebApi.deleteRequest requires the collectionName parameter.");
-        _callbackParameterCheck(successCallback, "DynamicsWebApi.deleteRequest requires the successCallback parameter is a function.");
-        _callbackParameterCheck(errorCallback, "DynamicsWebApi.deleteRequest requires the errorCallback parameter is a function.");
+        _stringParameterCheck(id, "DynamicsWebApi.delete requires the id parameter.");
+        id = _guidParameterCheck(id, "DynamicsWebApi.delete requires the id is GUID.")
+        _stringParameterCheck(collectionName, "DynamicsWebApi.delete requires the collectionName parameter.");
+        _callbackParameterCheck(successCallback, "DynamicsWebApi.delete requires the successCallback parameter is a function.");
+        _callbackParameterCheck(errorCallback, "DynamicsWebApi.delete requires the errorCallback parameter is a function.");
 
         if (propertyName != null)
-            _stringParameterCheck(propertyName, "DynamicsWebApi.deleteRequest requires the propertyName parameter.");
+            _stringParameterCheck(propertyName, "DynamicsWebApi.delete requires the propertyName parameter.");
 
         var url = collectionName.toLowerCase() + "(" + id + ")";
 
@@ -663,15 +663,15 @@ var DynamicsWebApi = function (config) {
         /// This function must accept an Error object as a parameter.
         /// </param>
 
-        _stringParameterCheck(id, "DynamicsWebApi.retrieveRecord requires the id parameter is a string.");
-        id = _guidParameterCheck(id, "DynamicsWebApi.retrieveRecord requires the id is GUID.")
-        _stringParameterCheck(collectionName, "DynamicsWebApi.retrieveRecord requires the collectionName parameter is a string.");
+        _stringParameterCheck(id, "DynamicsWebApi.retrieve requires the id parameter is a string.");
+        id = _guidParameterCheck(id, "DynamicsWebApi.retrieve requires the id is GUID.")
+        _stringParameterCheck(collectionName, "DynamicsWebApi.retrieve requires the collectionName parameter is a string.");
         if (select != null)
-            _arrayParameterCheck(select, "DynamicsWebApi.retrieveRecord requires the select parameter is an array.");
+            _arrayParameterCheck(select, "DynamicsWebApi.retrieve requires the select parameter is an array.");
         if (expand != null)
-            _stringParameterCheck(expand, "DynamicsWebApi.retrieveRecord requires the expand parameter is a string.");
-        _callbackParameterCheck(successCallback, "DynamicsWebApi.retrieveRecord requires the successCallback parameter is a function.");
-        _callbackParameterCheck(errorCallback, "DynamicsWebApi.retrieveRecord requires the errorCallback parameter is a function.");
+            _stringParameterCheck(expand, "DynamicsWebApi.retrieve requires the expand parameter is a string.");
+        _callbackParameterCheck(successCallback, "DynamicsWebApi.retrieve requires the successCallback parameter is a function.");
+        _callbackParameterCheck(errorCallback, "DynamicsWebApi.retrieve requires the errorCallback parameter is a function.");
 
         var systemQueryOptions = "";
 
@@ -692,7 +692,7 @@ var DynamicsWebApi = function (config) {
         var headers = null;
 
         if (prefer != null) {
-            _stringParameterCheck(prefer, "DynamicsWebApi.retrieveRecord requires the prefer parameter is a string.");
+            _stringParameterCheck(prefer, "DynamicsWebApi.retrieve requires the prefer parameter is a string.");
             headers = { Prefer: 'odata.include-annotations=' + prefer };
         }
 
@@ -739,14 +739,14 @@ var DynamicsWebApi = function (config) {
         /// This function must accept an Error object as a parameter.
         /// </param>
 
-        _stringParameterCheck(id, "DynamicsWebApi.upsertRecord requires the id parameter.");
-        id = _guidParameterCheck(id, "DynamicsWebApi.upsertRecord requires the id is GUID.")
+        _stringParameterCheck(id, "DynamicsWebApi.upsert requires the id parameter.");
+        id = _guidParameterCheck(id, "DynamicsWebApi.upsert requires the id is GUID.")
 
-        _parameterCheck(object, "DynamicsWebApi.upsertRecord requires the object parameter.");
-        _stringParameterCheck(collectionName, "DynamicsWebApi.upsertRecord requires the collectionName parameter.");
+        _parameterCheck(object, "DynamicsWebApi.upsert requires the object parameter.");
+        _stringParameterCheck(collectionName, "DynamicsWebApi.upsert requires the collectionName parameter.");
 
-        _callbackParameterCheck(successCallback, "DynamicsWebApi.upsertRecord requires the successCallback parameter is a function.");
-        _callbackParameterCheck(errorCallback, "DynamicsWebApi.upsertRecord requires the errorCallback parameter is a function.");
+        _callbackParameterCheck(successCallback, "DynamicsWebApi.upsert requires the successCallback parameter is a function.");
+        _callbackParameterCheck(errorCallback, "DynamicsWebApi.upsert requires the errorCallback parameter is a function.");
 
         if (ifmatch != null && ifnonematch != null) {
             throw Error("Either one of ifmatch or ifnonematch parameters shoud be used in a call, not both.")
@@ -755,13 +755,13 @@ var DynamicsWebApi = function (config) {
         var headers = null;
 
         if (ifmatch != null) {
-            _stringParameterCheck(ifmatch, "DynamicsWebApi.upsertRecord requires the ifmatch parameter is a string.");
+            _stringParameterCheck(ifmatch, "DynamicsWebApi.upsert requires the ifmatch parameter is a string.");
 
             headers = { 'If-Match': ifmatch };
         }
 
         if (ifnonematch != null) {
-            _stringParameterCheck(ifmatch, "DynamicsWebApi.upsertRecord requires the ifnonematch parameter is a string.");
+            _stringParameterCheck(ifmatch, "DynamicsWebApi.upsert requires the ifnonematch parameter is a string.");
 
             headers = { 'If-None-Match': ifnonematch };
         }
@@ -853,9 +853,9 @@ var DynamicsWebApi = function (config) {
         /// </param>
 
         if (filter == null || (filter != null && !filter.length)) {
-            _stringParameterCheck(collectionName, "DynamicsWebApi.countRecords requires the collectionName parameter is a string.");
-            _callbackParameterCheck(successCallback, "DynamicsWebApi.countRecords requires the successCallback parameter is a function.");
-            _callbackParameterCheck(errorCallback, "DynamicsWebApi.countRecords requires the errorCallback parameter is a function.");
+            _stringParameterCheck(collectionName, "DynamicsWebApi.count requires the collectionName parameter is a string.");
+            _callbackParameterCheck(successCallback, "DynamicsWebApi.count requires the successCallback parameter is a function.");
+            _callbackParameterCheck(errorCallback, "DynamicsWebApi.count requires the errorCallback parameter is a function.");
 
             //if filter has not been specified then simplify the request
 
@@ -869,7 +869,7 @@ var DynamicsWebApi = function (config) {
                 errorCallback(_errorHandler(xhr));
             };
 
-            _sendRequest("GET", _webApiUrl + collectionName.toLowerCase() + "s" + "/$count", onSuccess, onError)
+            _sendRequest("GET", _webApiUrl + collectionName.toLowerCase() + "/$count", onSuccess, onError)
         }
         else {
             return retrieveMultipleRecordsAdvanced({
@@ -1036,14 +1036,14 @@ var DynamicsWebApi = function (config) {
         /// This function must accept an Error object as a parameter.
         /// </param>
 
-        _stringParameterCheck(collectionName, "DynamicsWebApi.fetchXmlRequest requires the collectionName parameter.");
-        _stringParameterCheck(fetchXml, "DynamicsWebApi.fetchXmlRequest requires the fetchXml parameter.");
-        _callbackParameterCheck(successCallback, "DynamicsWebApi.fetchXmlRequest requires the successCallback parameter is a function.");
-        _callbackParameterCheck(errorCallback, "DynamicsWebApi.fetchXmlRequest requires the errorCallback parameter is a function.");
+        _stringParameterCheck(collectionName, "DynamicsWebApi.executeFetchXml requires the collectionName parameter.");
+        _stringParameterCheck(fetchXml, "DynamicsWebApi.executeFetchXml requires the fetchXml parameter.");
+        _callbackParameterCheck(successCallback, "DynamicsWebApi.executeFetchXml requires the successCallback parameter is a function.");
+        _callbackParameterCheck(errorCallback, "DynamicsWebApi.executeFetchXml requires the errorCallback parameter is a function.");
 
         var headers = null;
         if (includeAnnotations != null) {
-            _stringParameterCheck(includeAnnotations, "DynamicsWebApi.fetchXmlRequest requires the includeAnnotations as a string.");
+            _stringParameterCheck(includeAnnotations, "DynamicsWebApi.executeFetchXml requires the includeAnnotations as a string.");
             headers = { 'Prefer': 'odata.include-annotations="' + includeAnnotations + '"' };
         }
 
@@ -1085,13 +1085,13 @@ var DynamicsWebApi = function (config) {
         /// The function that will be passed through and be called by a failed response. 
         /// This function must accept an Error object as a parameter.
         /// </param>
-        _stringParameterCheck(primaryCollectionName, "DynamicsWebApi.associateRequest requires the primaryCollectionName parameter is a string.");
-        _stringParameterCheck(relatedCollectionName, "DynamicsWebApi.associateRequest requires the relatedCollectionName parameter is a string.");
-        _stringParameterCheck(relationshipName, "DynamicsWebApi.associateRequest requires the relationshipName parameter is a string.");
-        primaryId = _guidParameterCheck(primaryId, "DynamicsWebApi.associateRequest requires the primaryId is GUID.");
-        relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.associateRequest requires the relatedId is GUID.");
-        _callbackParameterCheck(successCallback, "DynamicsWebApi.associateRequest requires the successCallback parameter is a function.");
-        _callbackParameterCheck(errorCallback, "DynamicsWebApi.associateRequest requires the errorCallback parameter is a function.");
+        _stringParameterCheck(primaryCollectionName, "DynamicsWebApi.associate requires the primaryCollectionName parameter is a string.");
+        _stringParameterCheck(relatedCollectionName, "DynamicsWebApi.associate requires the relatedCollectionName parameter is a string.");
+        _stringParameterCheck(relationshipName, "DynamicsWebApi.associate requires the relationshipName parameter is a string.");
+        primaryId = _guidParameterCheck(primaryId, "DynamicsWebApi.associate requires the primaryId is GUID.");
+        relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.associate requires the relatedId is GUID.");
+        _callbackParameterCheck(successCallback, "DynamicsWebApi.associate requires the successCallback parameter is a function.");
+        _callbackParameterCheck(errorCallback, "DynamicsWebApi.associate requires the errorCallback parameter is a function.");
 
         var onSuccess = function (xhr) {
             successCallback();
@@ -1122,12 +1122,12 @@ var DynamicsWebApi = function (config) {
         /// This function must accept an Error object as a parameter.
         /// </param>
 
-        _stringParameterCheck(primaryCollectionName, "DynamicsWebApi.disassociateRequest requires the primaryCollectionName parameter is a string.");
-        _stringParameterCheck(relationshipName, "DynamicsWebApi.disassociateRequest requires the relationshipName parameter is a string.");
-        primaryId = _guidParameterCheck(primaryId, "DynamicsWebApi.disassociateRequest requires the primaryId is GUID.");
-        relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.disassociateRequest requires the relatedId is GUID.");
-        _callbackParameterCheck(successCallback, "DynamicsWebApi.disassociateRequest requires the successCallback parameter is a function.");
-        _callbackParameterCheck(errorCallback, "DynamicsWebApi.disassociateRequest requires the errorCallback parameter is a function.");
+        _stringParameterCheck(primaryCollectionName, "DynamicsWebApi.disassociate requires the primaryCollectionName parameter is a string.");
+        _stringParameterCheck(relationshipName, "DynamicsWebApi.disassociate requires the relationshipName parameter is a string.");
+        primaryId = _guidParameterCheck(primaryId, "DynamicsWebApi.disassociate requires the primaryId is GUID.");
+        relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.disassociate requires the relatedId is GUID.");
+        _callbackParameterCheck(successCallback, "DynamicsWebApi.disassociate requires the successCallback parameter is a function.");
+        _callbackParameterCheck(errorCallback, "DynamicsWebApi.disassociate requires the errorCallback parameter is a function.");
 
         var onSuccess = function (xhr) {
             successCallback();
@@ -1156,13 +1156,13 @@ var DynamicsWebApi = function (config) {
         /// This function must accept an Error object as a parameter.
         /// </param>
 
-        _stringParameterCheck(collectionName, "DynamicsWebApi.associateSingleValuedRequest requires the collectionName parameter is a string.");
-        id = _guidParameterCheck(id, "DynamicsWebApi.associateSingleValuedRequest requires the id parameter is GUID.");
-        relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.associateSingleValuedRequest requires the relatedId is GUID.");
-        _stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.associateSingleValuedRequest requires the singleValuedNavigationPropertyName parameter is a string.");
-        _stringParameterCheck(relatedCollectionName, "DynamicsWebApi.associateSingleValuedRequest requires the relatedCollectionName parameter is a string.");
-        _callbackParameterCheck(successCallback, "DynamicsWebApi.associateSingleValuedRequest requires the successCallback parameter is a function.");
-        _callbackParameterCheck(errorCallback, "DynamicsWebApi.associateSingleValuedRequest requires the errorCallback parameter is a function.");
+        _stringParameterCheck(collectionName, "DynamicsWebApi.associateSingleValued requires the collectionName parameter is a string.");
+        id = _guidParameterCheck(id, "DynamicsWebApi.associateSingleValued requires the id parameter is GUID.");
+        relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.associateSingleValued requires the relatedId is GUID.");
+        _stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.associateSingleValued requires the singleValuedNavigationPropertyName parameter is a string.");
+        _stringParameterCheck(relatedCollectionName, "DynamicsWebApi.associateSingleValued requires the relatedCollectionName parameter is a string.");
+        _callbackParameterCheck(successCallback, "DynamicsWebApi.associateSingleValued requires the successCallback parameter is a function.");
+        _callbackParameterCheck(errorCallback, "DynamicsWebApi.associateSingleValued requires the errorCallback parameter is a function.");
 
         var onSuccess = function (xhr) {
             successCallback();
@@ -1192,11 +1192,11 @@ var DynamicsWebApi = function (config) {
         /// This function must accept an Error object as a parameter.
         /// </param>
 
-        _stringParameterCheck(collectionName, "DynamicsWebApi.associateSingleValuedRequest requires the collectionName parameter is a string.");
-        id = _guidParameterCheck(id, "DynamicsWebApi.associateSingleValuedRequest requires the id parameter is GUID.");
-        _stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.associateSingleValuedRequest requires the singleValuedNavigationPropertyName parameter is a string.");
-        _callbackParameterCheck(successCallback, "DynamicsWebApi.disassociateSingleValuedRequest requires the successCallback parameter is a function.");
-        _callbackParameterCheck(errorCallback, "DynamicsWebApi.disassociateSingleValuedRequest requires the errorCallback parameter is a function.");
+        _stringParameterCheck(collectionName, "DynamicsWebApi.disassociateSingleValued requires the collectionName parameter is a string.");
+        id = _guidParameterCheck(id, "DynamicsWebApi.disassociateSingleValued requires the id parameter is GUID.");
+        _stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.disassociateSingleValued requires the singleValuedNavigationPropertyName parameter is a string.");
+        _callbackParameterCheck(successCallback, "DynamicsWebApi.disassociateSingleValued requires the successCallback parameter is a function.");
+        _callbackParameterCheck(errorCallback, "DynamicsWebApi.disassociateSingleValued requires the errorCallback parameter is a function.");
 
         var onSuccess = function (xhr) {
             successCallback();
@@ -1233,20 +1233,20 @@ var DynamicsWebApi = function (config) {
     }
 
     return {
-        createRequest: createRecord,
-        updateRequest: updateRecord,
-        upsertRequest: upsertRecord,
-        deleteRequest: deleteRequest,
-        fetchXmlRequest: fetchXmlRequest,
-        countRecords: countRecords,
-        retrieveRecord: retrieveRecord,
+        create: createRecord,
+        update: updateRecord,
+        upsert: upsertRecord,
+        delete: deleteRequest,
+        executeFetchXml: fetchXmlRequest,
+        count: countRecords,
+        retrieve: retrieveRecord,
         retrieveMultiple: retrieveMultipleRecords,
         retrieveMultipleAdvanced: retrieveMultipleRecordsAdvanced,
         updateSingleProperty: updateSingleProperty,
-        associateRequest: associateRequest,
-        disassociateRequest: disassociateRequest,
-        associateSingleValuedRequest: associateSingleValuedRequest,
-        disassociateSingleValuedRequest: disassociateSingleValuedRequest,
+        associate: associateRequest,
+        disassociate: disassociateRequest,
+        associateSingleValued: associateSingleValuedRequest,
+        disassociateSingleValued: disassociateSingleValuedRequest,
         setConfig: setConfig,
         initializeInstance: createInstance
     }
