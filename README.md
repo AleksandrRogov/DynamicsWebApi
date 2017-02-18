@@ -290,6 +290,7 @@ dynamicsWebApi.retrieve(leadid, "leads", ["fullname", "subject"]).then(function 
 
 ##### Advanced using Request Object
 
+```js
 var request = {
     id: '7d577253-3ef0-4a0a-bb7f-8335c2596e70',
     collection: "leads",
@@ -309,6 +310,7 @@ dynamicsWebApi.retrieveRequest(request).then(function (record) {
 .catch(function (error) {
     //if the record has not been found the error will be thrown
 });
+```
 
 #### Retrieve multiple records
 
