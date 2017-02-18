@@ -334,7 +334,7 @@ var DynamicsWebApi = function (config) {
             ifmatch: "",
             ifnonematch: "",
             returnRepresentation: true,
-            object: {}
+            entity: {}
         }
     };
 
@@ -539,7 +539,7 @@ var DynamicsWebApi = function (config) {
         /// </param>
 
         _parameterCheck(request, "DynamicsWebApi.update", "request");
-        _parameterCheck(request.object, "DynamicsWebApi.update", "request.object");
+        _parameterCheck(request.entity, "DynamicsWebApi.update", "request.entity");
         _callbackParameterCheck(successCallback, "DynamicsWebApi.update", "successCallback");
         _callbackParameterCheck(errorCallback, "DynamicsWebApi.update", "errorCallback");
 
@@ -569,7 +569,7 @@ var DynamicsWebApi = function (config) {
             errorCallback(_errorHandler(xhr));
         }
 
-        _sendRequest("PATCH", _webApiUrl + url, onSuccess, onError, request.object, headers);
+        _sendRequest("PATCH", _webApiUrl + url, onSuccess, onError, request.entity, headers);
     }
 
     var updateRecord = function (id, collection, object, successCallback, errorCallback, prefer, select) {

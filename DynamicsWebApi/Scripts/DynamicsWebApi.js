@@ -307,7 +307,7 @@ var DynamicsWebApi = function (config) {
             ifmatch: "",
             ifnonematch: "",
             returnRepresentation: true,
-            object: {}
+            entity: {}
         }
     };
 
@@ -576,7 +576,7 @@ var DynamicsWebApi = function (config) {
         /// <returns type="Promise" />
 
         _parameterCheck(request, "DynamicsWebApi.update", "request")
-        _parameterCheck(request.object, "DynamicsWebApi.update", "request.object")
+        _parameterCheck(request.entity, "DynamicsWebApi.update", "request.entity")
 
         var url = convertRequestToLink(request, "update");
 
@@ -594,7 +594,7 @@ var DynamicsWebApi = function (config) {
             headers['If-None-Match'] = request.ifnonematch;
         }
 
-        return axiosCrm.patch(url, request.object, { headers: headers }).then(function (response) {
+        return axiosCrm.patch(url, request.entity, { headers: headers }).then(function (response) {
             if (response.data) {
                 return response.data;
             }

@@ -83,7 +83,8 @@
                 select: ["fullname", "subject"],
 
                 //ETag value with the If-None-Match header to request data to be retrieved only if it has changed since the last time it was retrieved
-                ifnonematch: "W/\"468026\""
+                ifnonematch: "W/\"468026\"",
+                includeAnnotations: DWA.Prefer.Annotations.FormattedValue
             };
 
             dynamicsWebApi.retrieveRequest(request).then(function (response) {
@@ -150,9 +151,9 @@
             var request = {
                 id: recordId,
                 collection: "leads",
-                prefer: DWA.Prefer.ReturnRepresentation,
+                returnRepresentation: true,
                 select: ["fullname"],
-                object: {
+                entity: {
                     subject: "Test update"
                 }
             };

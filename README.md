@@ -11,19 +11,17 @@ Any suggestions are welcome!
 * [Quick Start](#quick-start)
   * [Configuration] (#configuration)
     * [Configuration Object Properties] (#configuration-object-properties)
+  * [Intellisense] (#intellisense)
   * [Examples] (#examples)
     * [Create a record] (#create-a-record)
 	* [Update a record] (#update-a-record)
-	  * [Update a record and return it] (#update-a-record-and-return-it)
 	* [Update a single property value] (#update-a-single-property-value)
 	* [Upsert a record] (#upsert-a-record)
 	* [Delete a record] (#delete-a-record)
 	  * [Delete a single property value] (#delete-a-single-property-value)
 	* [Retrieve a record] (#retrieve-a-record)
 	* [Retrieve multiple records] (#retrieve-multiple-records)
-	  * [Simple call] (#simple-call)
-	  * [Advanced call] (#advanced-call)
-	  * [Count] (#count)
+	* [Count] (#count)
 	* [Associate] (#associate)
 	* [Associate for a single-valued navigation property] (#associate-for-a-single-valued-navigation-property)
 	* [Disassociate] (#disassociate)
@@ -73,6 +71,68 @@ __sendRequest__ | Function | __Exists only for the version with Callbacks__. A c
 
 At this moment the library only works inside CRM.
 
+### Intellisense
+
+The work on a rich Intellisense experience is still on going but developers can already use some of the features.
+
+#### DWA Object
+
+DWA is a JavaScript object that is located inside DynamicsWebApi library file. This object enables Intellisense for Visual Studio and therefore improves an overall productivity of a software developer.
+The object contains several child objects which are described below.
+
+##### DWA.Types
+DWA.Types is a JavaScript object that contains various other objects (or so called Types) that are used in DynamicsWebApi and can be used by developers to enable Intellisense for some of the functions.
+At this moment only Reponse objects are described there.
+
+The following example shows how to use DWA.Types in the code:
+Let's assume that we needed to write a retrieveMultipleRequest.
+
+```js
+dynamicsWebApi.retrieveMultipleRequest(request).then(function (response) {
+	//properties of the response object are not known
+})
+```
+
+This function returns an object which properties are not known at the runtime. This problem
+can be easily resolved by using XML Documentation Comments for JavaScript.
+
+```js
+dynamicsWebApi.retrieveMultipleRequest(request).then(function (response) {
+    /// <param name="response" type="DWA.Types.MultipleResponse">Request response</param>
+
+	//now Intellisense is working
+	var count = response.oDataCount;
+    var nextPageLink = response.oDataNextLink;
+    var records = response.value;
+})
+```
+
+The following types are described at this moment: DWA.Types.FetchXmlResponse and DWA.Types.MultipleResponse.
+
+##### DWA.Prefer
+DWA.Prefer contains various values that can header "Prefer" to be set with. Most of the existing operations support such header. The following list describes which
+header values can be used for different operations.
+
+* `DWA.Prefer.ReturnRepresentation` - `create`, `update`, `updateSingleProperty` - allows developers to retrieve just created or updated object in a single request.
+* `DWA.Prefer.Annotations` - `retrieveRequest`, `retrieveMultipleRequest`, `executeFetchXml` - allows to retrieve additional information about lookups, option sets and etc.
+
+Examples:
+
+```js
+
+//DWA.Prefer.ReturnRepresentation ("return=representation")
+dynamicsWebApi.update(recordId, "leads", lead, DWA.Prefer.ReturnRepresentation); // then... catch...
+
+//DWA.Prefer.Annotations.FormattedValue ("OData.Community.Display.V1.FormattedValue")
+var request = {
+    id: recordId,
+    collection: "leads",
+    includeAnnotations: DWA.Prefer.Annotations.FormattedValue
+};
+
+dynamicsWebApi.retrieveRequest(request); //then... catch...
+```
+
 ### Examples
 #### Create a record
 
@@ -85,7 +145,7 @@ var lead = {
     jobtitle: "Title"
 };
 //call dynamicsWebApi.create function
-dynamicsWebApi.createRecord(lead, "leads").then(function (id) {
+dynamicsWebApi.create(lead, "leads").then(function (id) {
     //do something with id here
 }).catch(function (error) {
     //catch error here
@@ -93,6 +153,8 @@ dynamicsWebApi.createRecord(lead, "leads").then(function (id) {
 ```
 
 #### Update a record
+
+##### Basic
 
 ```js
 //lead id is needed for an update operation
@@ -113,21 +175,23 @@ dynamicsWebApi.update(leadId, "leads", lead).then(function () {
 });
 ```
 
-##### Update a record and return its representation
+##### Advanced using Request Object
 
 ```js
-//lead id is needed for an update operation
-var leadId = '7d577253-3ef0-4a0a-bb7f-8335c2596e70';
+var request = {
+    id: '7d577253-3ef0-4a0a-bb7f-8335c2596e70',
+    collection: "leads",
+	entity: {
+        subject: "Test update",
+		jobtitle: "Developer"
+    },
+    returnRepresentation: true,
+    select: ["fullname"]
+};
 
-//initialize a CRM entity record object
-//and specify fields with values that need to be updated
-var lead = {
-    subject: "Test update",
-	jobtitle: "Developer"
-}
-//perform an update operation
-dynamicsWebApi.update(leadId, "leads", lead, "return=representation").then(function (updatedRecord) {
-    //do something with updatedRecord
+dynamicsWebApi.updateRequest(request).then(function (response) {
+    var fullname = response.fullname;
+	//do something with a fullname of a recently updated entity record
 })
 .catch(function (error) {
     //catch an error
@@ -209,21 +273,47 @@ dynamicsWebApi.deleteRecord(leadId, "leads", "subject").then(function () {
 
 #### Retrieve a record
 
+##### Basic
+
 ```js
+var leadId = '7d577253-3ef0-4a0a-bb7f-8335c2596e70';
+
 //perform a retrieve operaion
-dynamicsWebApi.retrieve(accountId, "leads", ["fullname", "subject"]).then(function (object) {
-    //do something with an object here
+dynamicsWebApi.retrieve(leadid, "leads", ["fullname", "subject"]).then(function (record) {
+    //do something with an record here
 })
 .catch(function (error) {
     //catch an error
 });
 ```
 
+##### Advanced using Request Object
+
+var request = {
+    id: '7d577253-3ef0-4a0a-bb7f-8335c2596e70',
+    collection: "leads",
+    select: ["fullname", "subject"],
+
+    //ETag value with the If-None-Match header to request data to be retrieved only if it has changed since the last time it was retrieved.
+    ifnonematch: "W/\"468026\"",
+
+	//DWA object can be found at the top of the library file. It is helpful when used inside Visual Studio for better Intellisense experience.
+	//Retrieved record will contain formatted values
+	includeAnnotations: DWA.Prefer.Annotations.FormattedValue
+};
+
+dynamicsWebApi.retrieveRequest(request).then(function (record) {
+    //do something with a record
+})
+.catch(function (error) {
+    //if the record has not been found the error will be thrown
+});
+
 #### Retrieve multiple records
 
 Retrieve multiple records can be called differently depending on what level of operation is needed.
 
-##### Simple call
+##### Basic
 
 ```js
 dynamicsWebApi.retrieveMultiple("leads", ["fullname", "subject"], "statecode eq 0").then(function (records) {
@@ -234,7 +324,7 @@ dynamicsWebApi.retrieveMultiple("leads", ["fullname", "subject"], "statecode eq 
 });
 ```
 
-##### Advanced call
+##### Advanced using Request Object
 
 ```js
 //set the request parameters
@@ -253,14 +343,14 @@ dynamicsWebApi.retrieveMultipleRequest(request).then(function (response) {
     var count = response.oDataCount;
     var nextLink = response.oDataNextLink;
     var records = response.value;
-    //do something else with a records array. Access a record: response.value[0];
+    //do something else with a records array. Access a record: response.value[0].subject;
 })
 .catch(function (error){
     //catch an error
 });
 ```
 
-##### Count
+#### Count
 
 It is possible to count records separately from RetrieveMultiple call. In order to do that use the following snippet:
 
@@ -358,9 +448,11 @@ dynamicsWebApi.executeFetchXml("accounts", fetchXml).then(function (response) {
 
 ### In Progress
 
+- [ ] overloaded functions with rich request options for all Web API operations.
 - [ ] execute fetch xml request using POST method.
 - [ ] get all pages requests, such as: countAll, retrieveMultipleAll, fetchXmlAll and etc.
 - [ ] "formatted" values in responses. For instance: Web API splits information about lookup fields into separate properties, the config option "formatted" will enable developers to retrieve all information about such fields in a single requests and access it through DynamicsWebApi custom response objects.
+- [ ] Intellisense for request objects.
 
 Many more features to come!
 
