@@ -58,6 +58,20 @@ var DWA = {
                 pageNumber: 0
             }
         }
+    },
+    Prefer: {
+        /// <field type="String">return=representation</field>
+        ReturnRepresentation: "return=representation",
+        Annotations: {
+            /// <field type="String">Microsoft.Dynamics.CRM.associatednavigationproperty</field>
+            AssociatedNavigationProperty: 'Microsoft.Dynamics.CRM.associatednavigationproperty',
+            /// <field type="String">Microsoft.Dynamics.CRM.lookuplogicalname</field>
+            LookupLogicalName: 'Microsoft.Dynamics.CRM.lookuplogicalname',
+            /// <field type="String">*</field>
+            All: '*',
+            /// <field type="String">OData.Community.Display.V1.FormattedValue</field>
+            FormattedValue: 'OData.Community.Display.V1.FormattedValue'
+        }
     }
 }
 
@@ -173,7 +187,7 @@ var DynamicsWebApi = function (config) {
               JSON.parse(req.responseText).error.message);
     };
 
-    var _parameterCheck = function (parameter, message) {
+    var _parameterCheck = function (parameter, functionName, parameterName, type) {
         ///<summary>
         /// Private function used to check whether required parameters are null or undefined
         ///</summary>
@@ -184,10 +198,12 @@ var DynamicsWebApi = function (config) {
         /// The error message text to include when the error is thrown.
         ///</param>
         if ((typeof parameter === "undefined") || parameter === null) {
-            throw new Error(message);
+            throw new Error(type
+                ? functionName + " requires the " + parameterName + " parameter with type: " + type
+                : functionName + " requires the " + parameterName + " parameter.");
         }
     };
-    var _stringParameterCheck = function (parameter, message) {
+    var _stringParameterCheck = function (parameter, functionName, parameterName) {
         ///<summary>
         /// Private function used to check whether required parameters are null or undefined
         ///</summary>
@@ -198,10 +214,10 @@ var DynamicsWebApi = function (config) {
         /// The error message text to include when the error is thrown.
         ///</param>
         if (typeof parameter != "string") {
-            throw new Error(message);
+            throw new Error(functionName + " requires the " + parameterName + " parameter is a String.");
         }
     };
-    var _arrayParameterCheck = function (parameter, message) {
+    var _arrayParameterCheck = function (parameter, functionName, parameterName) {
         ///<summary>
         /// Private function used to check whether required parameters are null or undefined
         ///</summary>
@@ -212,10 +228,10 @@ var DynamicsWebApi = function (config) {
         /// The error message text to include when the error is thrown.
         ///</param>
         if (parameter.constructor !== Array) {
-            throw new Error(message);
+            throw new Error(functionName + " requires the " + parameterName + " parameter is an Array.");
         }
     };
-    var _numberParameterCheck = function (parameter, message) {
+    var _numberParameterCheck = function (parameter, functionName, parameterName) {
         ///<summary>
         /// Private function used to check whether required parameters are null or undefined
         ///</summary>
@@ -226,10 +242,10 @@ var DynamicsWebApi = function (config) {
         /// The error message text to include when the error is thrown.
         ///</param>
         if (typeof parameter != "number") {
-            throw new Error(message);
+            throw new Error(functionName + " requires the " + parameterName + " parameter is a Number.");
         }
     };
-    var _boolParameterCheck = function (parameter, message) {
+    var _boolParameterCheck = function (parameter, functionName, parameterName) {
         ///<summary>
         /// Private function used to check whether required parameters are null or undefined
         ///</summary>
@@ -240,11 +256,11 @@ var DynamicsWebApi = function (config) {
         /// The error message text to include when the error is thrown.
         ///</param>
         if (typeof parameter != "boolean") {
-            throw new Error(message);
+            throw new Error(functionName + " requires the " + parameterName + " parameter is a Boolean.");
         }
     };
 
-    var _guidParameterCheck = function (parameter, message) {
+    var _guidParameterCheck = function (parameter, functionName, parameterName) {
         ///<summary>
         /// Private function used to check whether required parameter is a valid GUID
         ///</summary>
@@ -257,10 +273,12 @@ var DynamicsWebApi = function (config) {
         /// <returns type="String" />
 
         try {
-            return /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(parameter)[0];
+            var match = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(parameter)[0];
+
+            return match;
         }
         catch (error) {
-            throw new Error(message);
+            throw new Error(functionName + " requires the " + parameterName + " parameter is a GUID String.");
         }
     }
 
@@ -288,7 +306,8 @@ var DynamicsWebApi = function (config) {
             includeAnnotations: "",
             ifmatch: "",
             ifnonematch: "",
-            prefer: ""
+            returnRepresentation: true,
+            object: {}
         }
     };
 
@@ -326,41 +345,45 @@ var DynamicsWebApi = function (config) {
         var optionsArray = [];
 
         if (options.collection == null)
-            _parameterCheck(options.collection, "DynamicsWebApi." + methodName + " requires request.collection parameter");
+            _parameterCheck(options.collection, "DynamicsWebApi." + methodName, "request.collection");
         else
-            _stringParameterCheck(options.collection, "DynamicsWebApi." + methodName + " requires the request.collection parameter is a string.");
+            _stringParameterCheck(options.collection, "DynamicsWebApi." + methodName, "request.collection");
 
         if (options.select != null && options.select.length) {
-            _arrayParameterCheck(options.select, "DynamicsWebApi." + methodName + " requires the request.select parameter is an array.");
+            _arrayParameterCheck(options.select, "DynamicsWebApi." + methodName, "request.select");
             optionsArray.push("$select=" + options.select.join(','));
         }
 
         if (options.filter != null && options.filter.length) {
-            _stringParameterCheck(options.filter, "DynamicsWebApi." + methodName + " requires the request.filter parameter is a string.");
+            _stringParameterCheck(options.filter, "DynamicsWebApi." + methodName, "request.filter");
             optionsArray.push("$filter=" + options.filter);
         }
 
         if (options.maxPageSize != null) {
-            _numberParameterCheck(options.maxPageSize, "DynamicsWebApi." + methodName + " requires the request.maxPageSize parameter is a number.");
+            _numberParameterCheck(options.maxPageSize, "DynamicsWebApi." + methodName, "request.maxPageSize");
         }
 
         if (options.count != null) {
-            _boolParameterCheck(options.count, "DynamicsWebApi." + methodName + " requires the request.count parameter is a boolean.");
+            _boolParameterCheck(options.count, "DynamicsWebApi." + methodName, "request.count");
             optionsArray.push("$count=" + options.count);
         }
 
         if (options.top != null) {
-            _intParameterCheck(options.top, "DynamicsWebApi." + methodName + " requires the request.top parameter is a number.");
+            _intParameterCheck(options.top, "DynamicsWebApi." + methodName, "request.top");
             optionsArray.push("$top=" + options.top);
         }
 
         if (options.orderBy != null && options.orderBy.length) {
-            _arrayParameterCheck(options.orderBy, "DynamicsWebApi." + methodName + " requires the request.orderBy parameter is an array.");
+            _arrayParameterCheck(options.orderBy, "DynamicsWebApi." + methodName, "request.orderBy");
             optionsArray.push("$orderBy=" + options.orderBy.join(','));
         }
 
-        if (options.prefer != null) {
-            _stringParameterCheck(options.prefer, "DynamicsWebApi." + methodName + " requires the request.prefer parameter is a string.");
+        if (options.returnRepresentation != null) {
+            _boolParameterCheck(options.returnRepresentation, "DynamicsWebApi." + methodName, "request.returnRepresentation");
+        }
+
+        if (options.includeAnnotations != null) {
+            _stringParameterCheck(options.includeAnnotations, "DynamicsWebApi." + methodName, "request.includeAnnotations")
         }
 
         if (options.ifmatch != null && options.ifnonematch != null) {
@@ -368,15 +391,15 @@ var DynamicsWebApi = function (config) {
         }
 
         if (options.ifmatch != null) {
-            _stringParameterCheck(options.ifmatch, "DynamicsWebApi." + methodName + " requires the request.ifmatch parameter is a string.");
+            _stringParameterCheck(options.ifmatch, "DynamicsWebApi." + methodName, "request.ifmatch");
         }
 
         if (options.ifnonematch != null) {
-            _stringParameterCheck(options.ifnonematch, "DynamicsWebApi." + methodName + " requires the request.ifnonematch parameter is a string.");
+            _stringParameterCheck(options.ifnonematch, "DynamicsWebApi." + methodName, "request.ifnonematch");
         }
 
         if (options.expand != null && options.expand.length) {
-            _arrayParameterCheck(options.expand, "DynamicsWebApi." + methodName + " requires the request.expand parameter is an array.");
+            _arrayParameterCheck(options.expand, "DynamicsWebApi." + methodName, "request.expand");
             var expandOptionsArray = [];
             for (var i = 0; i < options.expand.length; i++) {
                 var expandOptions = convertOptions(options.expand[i], methodName + " $expand", ";");
@@ -402,11 +425,11 @@ var DynamicsWebApi = function (config) {
         var url = options.collection.toLowerCase();
 
         if (options.id != null) {
-            _guidParameterCheck(options.id, "DynamicsWebApi." + methodName + " requires request.id parameter is a guid");
+            _guidParameterCheck(options.id, "DynamicsWebApi." + methodName, "request.id");
             url += "(" + options.id + ")";
         }
 
-        var query = convertOptions(options);
+        var query = convertOptions(options, methodName);
 
         if (query)
             url += "?" + query;
@@ -414,7 +437,7 @@ var DynamicsWebApi = function (config) {
         return url;
     };
 
-    var createRecord = function (object, collection, returnData) {
+    var createRecord = function (object, collection, prefer) {
         ///<summary>
         /// Sends an asynchronous request to create a new record.
         ///</summary>
@@ -426,25 +449,25 @@ var DynamicsWebApi = function (config) {
         /// The Logical Name of the Entity Collection to create.
         /// For an Account record, use "accounts"
         ///</param>
-        ///<param name="returnData" type="Boolean" optional="true">
-        /// If indicated and "true" the operation returns a created object
+        ///<param name="prefer" type="String" optional="true">
+        /// If set to "return=representation" the function will return a newly created object
         ///</param>
         /// <returns type="Promise" />
 
-        _parameterCheck(object, "DynamicsWebApi.create requires the object parameter.");
-        _stringParameterCheck(collection, "DynamicsWebApi.create requires the collection parameter is a string.");
+        _parameterCheck(object, "DynamicsWebApi.create", "object");
+        _stringParameterCheck(collection, "DynamicsWebApi.create", "collection");
 
-        var additionalConfig = null;
+        var headers = {};
 
-        if (returnData) {
-            _boolParameterCheck(returnData, "DynamicsWebApi.create requires the returnData parameter a boolean.");
-            additionalConfig = { headers: { "Prefer": "return=representation" } };
+        if (prefer != null) {
+            _stringParameterCheck(prefer, "DynamicsWebApi.create", "prefer");
+            headers["Prefer"] = prefer;
         }
 
         return axiosCrm
-            .post(collection.toLowerCase(), object, additionalConfig)
+            .post(collection.toLowerCase(), object, { headers: headers })
             .then(function (response) {
-                if (returnData) {
+                if (response.data) {
                     return response;
                 }
 
@@ -463,14 +486,14 @@ var DynamicsWebApi = function (config) {
         ///</param>
         /// <returns type="Promise" />
 
-        _parameterCheck(request, "DynamicsWebApi.retrieve requires the request parameter is an Object.")
+        _parameterCheck(request, "DynamicsWebApi.retrieve", "request")
 
         var url = convertRequestToLink(request, "retrieve");
 
         var headers = {};
 
-        if (request.prefer != null) {
-            headers['Prefer'] = 'odata.include-annotations=' + request.prefer;
+        if (request.includeAnnotations != null) {
+            headers['Prefer'] = 'odata.include-annotations="' + request.includeAnnotations + '"';
         }
 
         if (request.ifmatch != null) {
@@ -484,37 +507,6 @@ var DynamicsWebApi = function (config) {
         return axiosCrm.get(url, { headers: headers }).then(function (response) {
             return response.data;
         });
-    };
-
-    var updateRequest = function (request) {
-        ///<summary>
-        /// Sends an asynchronous request to update a record.
-        ///</summary>
-        ///<param name="request" type="dwaRequest">
-        /// An object that represents all possible options for a current request.
-        ///</param>
-        /// <returns type="Promise" />
-
-        _parameterCheck(request, "DynamicsWebApi.update requires the request parameter is an Object.")
-        _parameterCheck(request.object, "DynamicsWebApi.update requires the request.object parameter is an Object.")
-
-        var url = convertRequestToLink(request, "update");
-
-        var headers = {};
-
-        if (request.prefer != null) {
-            headers['Prefer'] = request.prefer;
-        }
-
-        if (request.ifmatch != null) {
-            headers['If-Match'] = request.ifmatch;
-        }
-
-        if (request.ifnonematch != null) {
-            headers['If-None-Match'] = request.ifnonematch;
-        }
-
-        return axiosCrm.patch(url, request.object, { headers: headers });
     };
 
     var retrieveRecord = function (id, collection, select, expand) {
@@ -545,13 +537,13 @@ var DynamicsWebApi = function (config) {
         ///</param>
         /// <returns type="Promise" />
 
-        _stringParameterCheck(id, "DynamicsWebApi.retrieve requires the id parameter is a string.");
-        id = _guidParameterCheck(id, "DynamicsWebApi.retrieve requires the id is GUID.")
-        _stringParameterCheck(collection, "DynamicsWebApi.retrieve requires the collection parameter is a string.");
+        _stringParameterCheck(id, "DynamicsWebApi.retrieve", "id");
+        id = _guidParameterCheck(id, "DynamicsWebApi.retrieve", "id")
+        _stringParameterCheck(collection, "DynamicsWebApi.retrieve", "collection");
         if (select != null)
-            _arrayParameterCheck(select, "DynamicsWebApi.retrieve requires the select parameter is an array.");
+            _arrayParameterCheck(select, "DynamicsWebApi.retrieve", "select");
         if (expand != null)
-            _stringParameterCheck(expand, "DynamicsWebApi.retrieve requires the expand parameter is a string.");
+            _stringParameterCheck(expand, "DynamicsWebApi.retrieve", "expand");
 
         var systemQueryOptions = "";
 
@@ -569,18 +561,47 @@ var DynamicsWebApi = function (config) {
             }
         }
 
-        var additionalConfig = null;
-
-        if (prefer != null) {
-            _stringParameterCheck(prefer, "DynamicsWebApi.retrieve requires the prefer parameter is a string.");
-            additionalConfig = { headers: { 'Prefer': 'odata.include-annotations=' + prefer } };
-        }
-
-        return axiosCrm.get(collection.toLowerCase() + "(" + id + ")" + systemQueryOptions, null, additionalConfig).then(function (response) {
+        return axiosCrm.get(collection.toLowerCase() + "(" + id + ")" + systemQueryOptions, null).then(function (response) {
             return response.data;
         });
     };
-    var updateRecord = function (id, collection, object, returnData, select) {
+
+    var updateRequest = function (request) {
+        ///<summary>
+        /// Sends an asynchronous request to update a record.
+        ///</summary>
+        ///<param name="request" type="dwaRequest">
+        /// An object that represents all possible options for a current request.
+        ///</param>
+        /// <returns type="Promise" />
+
+        _parameterCheck(request, "DynamicsWebApi.update", "request")
+        _parameterCheck(request.object, "DynamicsWebApi.update", "request.object")
+
+        var url = convertRequestToLink(request, "update");
+
+        var headers = {};
+
+        if (request.returnRepresentation) {
+            headers['Prefer'] = DWA.Prefer.ReturnRepresentation;
+        }
+
+        if (request.ifmatch != null) {
+            headers['If-Match'] = request.ifmatch;
+        }
+
+        if (request.ifnonematch != null) {
+            headers['If-None-Match'] = request.ifnonematch;
+        }
+
+        return axiosCrm.patch(url, request.object, { headers: headers }).then(function (response) {
+            if (response.data) {
+                return response.data;
+            }
+        })
+    };
+
+    var updateRecord = function (id, collection, object, prefer, select) {
         ///<summary>
         /// Sends an asynchronous request to update a record.
         ///</summary>
@@ -595,38 +616,44 @@ var DynamicsWebApi = function (config) {
         /// The Logical Name of the Entity Collection name to retrieve.
         /// For an Account record, use "accounts"
         ///</param>
-        ///<param name="returnData" type="Boolean" optional="true">
-        /// If indicated and "true" the operation returns an updated object
+        ///<param name="prefer" type="String" optional="true">
+        /// If set to "return=representation" the function will return a newly created object
         ///</param>
         ///<param name="select" type="Array" optional="true">
         /// Limits returned properties with updateRequest when returnData equals "true". 
         ///</param>
         /// <returns type="Promise" />
-        _stringParameterCheck(id, "DynamicsWebApi.update requires the id parameter.");
-        id = _guidParameterCheck(id, "DynamicsWebApi.update requires the id is GUID.")
-        _parameterCheck(object, "DynamicsWebApi.update requires the object parameter.");
-        _stringParameterCheck(collection, "DynamicsWebApi.update requires the collection parameter.");
+        _stringParameterCheck(id, "DynamicsWebApi.update", "id");
+        id = _guidParameterCheck(id, "DynamicsWebApi.update", "id")
+        _parameterCheck(object, "DynamicsWebApi.update", "object");
+        _stringParameterCheck(collection, "DynamicsWebApi.update", "collection");
 
         var additionalConfig = null;
 
-        if (returnData != null) {
-            _boolParameterCheck(returnData, "DynamicsWebApi.update requires the returnData parameter a boolean.");
-            additionalConfig = { headers: { "Prefer": "return=representation" } };
+        if (prefer != null) {
+            _stringParameterCheck(prefer, "DynamicsWebApi.update", "prefer");
+            additionalConfig = { headers: { "Prefer": prefer } };
         }
 
         var systemQueryOptions = "";
 
         if (select != null) {
-            _arrayParameterCheck(select, "DynamicsWebApi.update requires the select parameter an array.");
+            _arrayParameterCheck(select, "DynamicsWebApi.update", "select");
 
             if (select.length > 0) {
                 systemQueryOptions = "?" + select.join(",");
             }
         }
 
-        return axiosCrm.patch(collection.toLowerCase() + "(" + id + ")" + systemQueryOptions, object, additionalConfig);
+        return axiosCrm.patch(collection.toLowerCase() + "(" + id + ")" + systemQueryOptions, object, additionalConfig)
+            .then(function (response) {
+                if (response.data) {
+                    return response.data;
+                }
+            });
     };
-    var updateSingleProperty = function (id, collection, keyValuePair) {
+
+    var updateSingleProperty = function (id, collection, keyValuePair, prefer) {
         ///<summary>
         /// Sends an asynchronous request to update a single value in the record.
         ///</summary>
@@ -641,17 +668,32 @@ var DynamicsWebApi = function (config) {
         /// The Logical Name of the Entity Collection name to retrieve.
         /// For an Account record, use "accounts"
         ///</param>
+        ///<param name="prefer" type="String" optional="true">
+        /// If set to "return=representation" the function will return a newly created object
+        ///</param>
         /// <returns type="Promise" />
 
-        _stringParameterCheck(id, "DynamicsWebApi.updateSingleProperty requires the id parameter.");
-        id = _guidParameterCheck(id, "DynamicsWebApi.updateSingleProperty requires the id is GUID.")
-        _parameterCheck(keyValuePair, "DynamicsWebApi.updateSingleProperty requires the keyValuePair parameter.");
-        _stringParameterCheck(collection, "DynamicsWebApi.updateSingleProperty requires the collection parameter.");
+        _stringParameterCheck(id, "DynamicsWebApi.updateSingleProperty", "id");
+        id = _guidParameterCheck(id, "DynamicsWebApi.updateSingleProperty", "id")
+        _parameterCheck(keyValuePair, "DynamicsWebApi.updateSingleProperty", "keyValuePair");
+        _stringParameterCheck(collection, "DynamicsWebApi.updateSingleProperty", "collection");
 
         var key = Object.keys(keyValuePair)[0];
         var keyValue = keyValuePair[key];
 
-        return axiosCrm.put(collection.toLowerCase() + "(" + id + ")/" + key, { value: keyValue });
+        var header = {};
+
+        if (prefer != null) {
+            _stringParameterCheck(prefer, "DynamicsWebApi.updateSingleProperty", "prefer");
+            header["Prefer"] = prefer;
+        }
+
+        return axiosCrm.put(collection.toLowerCase() + "(" + id + ")/" + key, { value: keyValue }, { header: header })
+            .then(function (response) {
+                if (response.data) {
+                    return response.data;
+                }
+            });
     };
     var deleteRequest = function (id, collection, propertyName) {
         ///<summary>
@@ -670,12 +712,12 @@ var DynamicsWebApi = function (config) {
         ///</param>
         /// <returns type="Promise" />
 
-        _stringParameterCheck(id, "DynamicsWebApi.deleteRequest requires the id parameter.");
-        id = _guidParameterCheck(id, "DynamicsWebApi.deleteRequest requires the id is GUID.")
-        _stringParameterCheck(collection, "DynamicsWebApi.deleteRequest requires the collection parameter.");
+        _stringParameterCheck(id, "DynamicsWebApi.deleteRequest", "id");
+        id = _guidParameterCheck(id, "DynamicsWebApi.deleteRequest", "id")
+        _stringParameterCheck(collection, "DynamicsWebApi.deleteRequest", "collection");
 
         if (propertyName != null)
-            _stringParameterCheck(propertyName, "DynamicsWebApi.deleteRequest requires the propertyName parameter.");
+            _stringParameterCheck(propertyName, "DynamicsWebApi.deleteRequest", "propertyName");
 
         var url = collection.toLowerCase() + "(" + id + ")";
 
@@ -708,11 +750,11 @@ var DynamicsWebApi = function (config) {
         ///</param>
         /// <returns type="Promise" />
 
-        _stringParameterCheck(id, "DynamicsWebApi.upsert requires the id parameter.");
-        id = _guidParameterCheck(id, "DynamicsWebApi.upsert requires the id is GUID.")
+        _stringParameterCheck(id, "DynamicsWebApi.upsert", "id");
+        id = _guidParameterCheck(id, "DynamicsWebApi.upsert", "id")
 
-        _parameterCheck(object, "DynamicsWebApi.upsert requires the object parameter.");
-        _stringParameterCheck(collection, "DynamicsWebApi.upsert requires the collection parameter.");
+        _parameterCheck(object, "DynamicsWebApi.upsert", "object");
+        _stringParameterCheck(collection, "DynamicsWebApi.upsert", "collection");
 
         if (ifmatch != null && ifnonematch != null) {
             throw Error("Either one of ifmatch or ifnonematch parameters shoud be used in a call, not both.")
@@ -721,13 +763,13 @@ var DynamicsWebApi = function (config) {
         var additionalConfig = null;
 
         if (ifmatch != null) {
-            _stringParameterCheck(ifmatch, "DynamicsWebApi.upsert requires the ifmatch parameter is a string.");
+            _stringParameterCheck(ifmatch, "DynamicsWebApi.upsert", "ifmatch");
 
             additionalConfig = { headers: { 'If-Match': ifmatch } };
         }
 
         if (ifnonematch != null) {
-            _stringParameterCheck(ifmatch, "DynamicsWebApi.upsert requires the ifnonematch parameter is a string.");
+            _stringParameterCheck(ifmatch, "DynamicsWebApi.upsert", "ifnonematch");
 
             additionalConfig = { headers: { 'If-None-Match': ifnonematch } };
         }
@@ -765,7 +807,7 @@ var DynamicsWebApi = function (config) {
         /// <returns type="Promise" />
 
         if (filter == null || (filter != null && !filter.length)) {
-            _stringParameterCheck(collection, "DynamicsWebApi.count requires the collection parameter is a string.");
+            _stringParameterCheck(collection, "DynamicsWebApi.count", "collection");
 
             //if filter has not been specified then simplify the request
             return axiosCrm.get(collection.toLowerCase() + "/$count")
@@ -808,7 +850,7 @@ var DynamicsWebApi = function (config) {
         ///<summary>
         /// Sends an asynchronous request to retrieve records.
         ///</summary>
-        ///<param name="request" type="Object">
+        ///<param name="request" type="dwaRequest">
         /// An object that represents all possible options for a current request.
         ///<para>   object.collection (String). 
         ///             The Logical Name of the Entity Collection to retrieve. For an Account record, use "accounts".</para>
@@ -834,7 +876,7 @@ var DynamicsWebApi = function (config) {
         ///</param>
 
         if (nextPageLink != null)
-            _stringParameterCheck(nextPageLink, "DynamicsWebApi.retrieveMultiple requires the nextPageLink parameter is a string.");
+            _stringParameterCheck(nextPageLink, "DynamicsWebApi.retrieveMultiple", "nextPageLink");
 
         var url = nextPageLink == null
             ? convertRequestToLink(request, "retrieveMultiple")
@@ -847,7 +889,7 @@ var DynamicsWebApi = function (config) {
                 additionalConfig = { headers: { 'Prefer': 'odata.maxpagesize=' + request.maxPageSize } };
             }
             if (request.includeAnnotations != null) {
-                additionalConfig = { headers: { 'Prefer': 'odata.include-annotations="' + request.includeAnnotations + '"' } };
+                additionalConfig = { headers: { 'Prefer': 'odata.include-annotations = "' + request.includeAnnotations + '"' } };
             }
         }
 
@@ -909,12 +951,12 @@ var DynamicsWebApi = function (config) {
         /// <param name="includeAnnotations" type="String" optional="true">Use this parameter to include annotations to a result.<para>For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie</para></param>
         /// <returns type="Promise"/>
 
-        _stringParameterCheck(collection, "DynamicsWebApi.executeFetchXml requires the type parameter.");
-        _stringParameterCheck(fetchXml, "DynamicsWebApi.executeFetchXml requires the fetchXml parameter.");
+        _stringParameterCheck(collection, "DynamicsWebApi.executeFetchXml", "type");
+        _stringParameterCheck(fetchXml, "DynamicsWebApi.executeFetchXml", "fetchXml");
 
         var additionalConfig = null;
         if (includeAnnotations != null) {
-            _stringParameterCheck(includeAnnotations, "DynamicsWebApi.executeFetchXml requires the includeAnnotations as a string.");
+            _boolParameterCheck(includeAnnotations, "DynamicsWebApi.executeFetchXml", "includeAnnotations");
             additionalConfig = { headers: { 'Prefer': 'odata.include-annotations="' + includeAnnotations + '"' } };
         }
 
@@ -935,68 +977,68 @@ var DynamicsWebApi = function (config) {
             });
     }
 
-    var associateRequest = function (primarycollection, primaryId, relationshipName, relatedcollection, relatedId) {
+    var associateRecords = function (primaryCollection, primaryId, relationshipName, relatedCollection, relatedId) {
         /// <summary>Associate for a collection-valued navigation property. (1:N or N:N)</summary>
-        /// <param name="primarycollection" type="String">Primary entity collection name.</param>
+        /// <param name="primaryCollection" type="String">Primary entity collection name.</param>
         /// <param name="primaryId" type="String">Primary entity record id.</param>
         /// <param name="relationshipName" type="String">Relationship name.</param>
-        /// <param name="relatedcollection" type="String">Related colletion name.</param>
+        /// <param name="relatedCollection" type="String">Related colletion name.</param>
         /// <param name="relatedId" type="String">Related entity record id.</param>
         /// <returns type="Promise" />
-        _stringParameterCheck(primarycollection, "DynamicsWebApi.associate requires the primarycollection parameter is a string.");
-        _stringParameterCheck(relatedcollection, "DynamicsWebApi.associate requires the relatedcollection parameter is a string.");
-        _stringParameterCheck(relationshipName, "DynamicsWebApi.associate requires the relationshipName parameter is a string.");
-        primaryId = _guidParameterCheck(primaryId, "DynamicsWebApi.associate requires the primaryId is GUID.");
-        relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.associate requires the relatedId is GUID.");
+        _stringParameterCheck(primaryCollection, "DynamicsWebApi.associate", "primarycollection");
+        _stringParameterCheck(relatedCollection, "DynamicsWebApi.associate", "relatedcollection");
+        _stringParameterCheck(relationshipName, "DynamicsWebApi.associate", "relationshipName");
+        primaryId = _guidParameterCheck(primaryId, "DynamicsWebApi.associate", "primaryId");
+        relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.associate", "relatedId");
 
-        return axiosCrm.post(primarycollection + "(" + primaryId + ")/" + relationshipName + "/$ref",
-            { "@odata.id": _initUrl() + relatedcollection + "(" + relatedId + ")" });
+        return axiosCrm.post(primaryCollection + "(" + primaryId + ")/" + relationshipName + "/$ref",
+            { "@odata.id": _initUrl() + relatedCollection + "(" + relatedId + ")" });
     }
 
-    var disassociateRequest = function (primarycollection, primaryId, relationshipName, relatedId) {
+    var disassociateRecords = function (primaryCollection, primaryId, relationshipName, relatedId) {
         /// <summary>Disassociate for a collection-valued navigation property.</summary>
-        /// <param name="primarycollection" type="String">Primary entity collection name</param>
+        /// <param name="primaryCollection" type="String">Primary entity collection name</param>
         /// <param name="primaryId" type="String">Primary entity record id</param>
         /// <param name="relationshipName" type="String">Relationship name</param>
         /// <param name="relatedId" type="String">Related entity record id</param>
         /// <returns type="Promise" />
-        _stringParameterCheck(primarycollection, "DynamicsWebApi.disassociate requires the primarycollection parameter is a string.");
-        _stringParameterCheck(relationshipName, "DynamicsWebApi.disassociate requires the relationshipName parameter is a string.");
-        primaryId = _guidParameterCheck(primaryId, "DynamicsWebApi.disassociate requires the primaryId is GUID.");
-        relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.disassociate requires the relatedId is GUID.");
+        _stringParameterCheck(primaryCollection, "DynamicsWebApi.disassociate", "primarycollection");
+        _stringParameterCheck(relationshipName, "DynamicsWebApi.disassociate", "relationshipName");
+        primaryId = _guidParameterCheck(primaryId, "DynamicsWebApi.disassociate", "primaryId");
+        relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.disassociate", "relatedId");
 
-        return axiosCrm.delete(primarycollection + "(" + primaryId + ")/" + relationshipName + "(" + relatedId + ")/$ref");
+        return axiosCrm.delete(primaryCollection + "(" + primaryId + ")/" + relationshipName + "(" + relatedId + ")/$ref");
     }
 
-    var associateSingleValuedRequest = function (collection, id, singleValuedNavigationPropertyName, relatedcollection, relatedId) {
+    var associateRecordsSingleValued = function (collection, id, singleValuedNavigationPropertyName, relatedCollection, relatedId) {
         /// <summary>Associate for a single-valued navigation property. (1:N)</summary>
         /// <param name="collection" type="String">Entity collection name that contains an attribute.</param>
         /// <param name="id" type="String">Entity record id that contains a attribute.</param>
         /// <param name="singleValuedNavigationPropertyName" type="String">Single-valued navigation property name (usually it's a Schema Name of the lookup attribute).</param>
-        /// <param name="relatedcollection" type="String">Related collection name that the lookup (attribute) points to.</param>
+        /// <param name="relatedCollection" type="String">Related collection name that the lookup (attribute) points to.</param>
         /// <param name="relatedId" type="String">Related entity record id that needs to be associated.</param>
         /// <returns type="Promise" />
 
-        _stringParameterCheck(collection, "DynamicsWebApi.associateSingleValued requires the collection parameter is a string.");
-        id = _guidParameterCheck(id, "DynamicsWebApi.associateSingleValued requires the id parameter is GUID.");
-        relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.associateSingleValued requires the relatedId is GUID.");
-        _stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.associateSingleValued requires the singleValuedNavigationPropertyName parameter is a string.");
-        _stringParameterCheck(relatedcollection, "DynamicsWebApi.associateSingleValued requires the relatedcollection parameter is a string.");
+        _stringParameterCheck(collection, "DynamicsWebApi.associateSingleValued", "collection");
+        id = _guidParameterCheck(id, "DynamicsWebApi.associateSingleValued", "id");
+        relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.associateSingleValued", "relatedId");
+        _stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.associateSingleValued", "singleValuedNavigationPropertyName");
+        _stringParameterCheck(relatedCollection, "DynamicsWebApi.associateSingleValued", "relatedcollection");
 
         return axiosCrm.put(collection + "(" + id + ")/" + singleValuedNavigationPropertyName + "/$ref",
-            { "@odata.id": _initUrl() + relatedcollection + "(" + relatedId + ")" });
+            { "@odata.id": _initUrl() + relatedCollection + "(" + relatedId + ")" });
     }
 
-    var disassociateSingleValuedRequest = function (collection, id, singleValuedNavigationPropertyName) {
+    var disassociateRecordsSingleValued = function (collection, id, singleValuedNavigationPropertyName) {
         /// <summary>Removes a reference to an entity for a single-valued navigation property. (1:N)</summary>
         /// <param name="collection" type="String">Entity collection name that contains an attribute.</param>
         /// <param name="id" type="String">Entity record id that contains a attribute.</param>
         /// <param name="singleValuedNavigationPropertyName" type="String">Single-valued navigation property name (usually it's a Schema Name of the lookup attribute).</param>
         /// <returns type="Promise" />
 
-        _stringParameterCheck(collection, "DynamicsWebApi.disassociateSingleValued requires the collection parameter is a string.");
-        id = _guidParameterCheck(id, "DynamicsWebApi.disassociateSingleValued requires the id parameter is GUID.");
-        _stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.disassociateSingleValued requires the singleValuedNavigationPropertyName parameter is a string.");
+        _stringParameterCheck(collection, "DynamicsWebApi.disassociateSingleValued", "collection");
+        id = _guidParameterCheck(id, "DynamicsWebApi.disassociateSingleValued", "id");
+        _stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.disassociateSingleValued", "singleValuedNavigationPropertyName");
 
         return axiosCrm.delete(collection + "(" + id + ")/" + singleValuedNavigationPropertyName + "/$ref");
     }
@@ -1019,18 +1061,18 @@ var DynamicsWebApi = function (config) {
         update: updateRecord,
         updateRequest: updateRequest,
         upsert: upsertRecord,
-        deleteRequest: deleteRequest,
+        deleteRecord: deleteRequest,
         executeFetchXml: fetchXmlRequest,
         count: countRecords,
         retrieve: retrieveRecord,
         retrieveRequest: retrieveRequest,
         retrieveMultiple: retrieveMultipleRecords,
-        retrieveMultipleAdvanced: retrieveMultipleRecordsAdvanced,
+        retrieveMultipleRequest: retrieveMultipleRecordsAdvanced,
         updateSingleProperty: updateSingleProperty,
-        associate: associateRequest,
-        disassociate: disassociateRequest,
-        associateSingleValued: associateSingleValuedRequest,
-        disassociateSingleValued: disassociateSingleValuedRequest,
+        associate: associateRecords,
+        disassociate: disassociateRecords,
+        associateSingleValued: associateRecordsSingleValued,
+        disassociateSingleValued: disassociateRecordsSingleValued,
         setConfig: setConfig,
         initializeInstance: createInstance,
     }

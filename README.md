@@ -85,7 +85,7 @@ var lead = {
     jobtitle: "Title"
 };
 //call dynamicsWebApi.create function
-dynamicsWebApi.create(lead, "leads").then(function (id) {
+dynamicsWebApi.createRecord(lead, "leads").then(function (id) {
     //do something with id here
 }).catch(function (error) {
     //catch error here
@@ -113,7 +113,7 @@ dynamicsWebApi.update(leadId, "leads", lead).then(function () {
 });
 ```
 
-##### Update a record and return it
+##### Update a record and return its representation
 
 ```js
 //lead id is needed for an update operation
@@ -126,7 +126,7 @@ var lead = {
 	jobtitle: "Developer"
 }
 //perform an update operation
-dynamicsWebApi.update(leadId, "leads", lead, true).then(function (updatedRecord) {
+dynamicsWebApi.update(leadId, "leads", lead, "return=representation").then(function (updatedRecord) {
     //do something with updatedRecord
 })
 .catch(function (error) {
@@ -184,7 +184,7 @@ dynamicsWebApi.upsert(leadId, "leads", lead, "*").then(function (id) {
 var leadId = '7d577253-3ef0-4a0a-bb7f-8335c2596e70';
 
 //perform a delete
-dynamicsWebApi.deleteRequest(leadId, "leads").then(function () {
+dynamicsWebApi.delete(leadId, "leads").then(function () {
     //do something after a succesful operation
 })
 .catch(function (error) {
@@ -199,7 +199,7 @@ dynamicsWebApi.deleteRequest(leadId, "leads").then(function () {
 var leadId = '7d577253-3ef0-4a0a-bb7f-8335c2596e70';
 
 //perform a delete of a single property value
-dynamicsWebApi.deleteRequest(leadId, "leads", "subject").then(function () {
+dynamicsWebApi.delete(leadId, "leads", "subject").then(function () {
     //do something after a succesful operation
 })
 .catch(function (error) {
@@ -226,7 +226,7 @@ Retrieve multiple records can be called differently depending on what level of o
 ##### Simple call
 
 ```js
-dynamicsWebApi.retrieveMultiple("leads", ["fullname", "subject"], "statecode eq 0", null).then(function (records) {
+dynamicsWebApi.retrieveMultiple("leads", ["fullname", "subject"], "statecode eq 0").then(function (records) {
     //do something with retrieved records here
 })
 .catch(function (error) {
@@ -238,7 +238,7 @@ dynamicsWebApi.retrieveMultiple("leads", ["fullname", "subject"], "statecode eq 
 
 ```js
 //set the request parameters
-var requestParameters = {
+var request = {
     collection: "leads",
     select: ["fullname", "subject"],
     filter: "statecode eq 0",
@@ -247,8 +247,8 @@ var requestParameters = {
 };
 
 //perform a multiple records retrieve operation
-dynamicsWebApi.retrieveMultipleAdvanced(requestParameters).then(function (response) {
-    /// <param name="response" type="DWA.Types.MultipleResponse">Request response</param>
+dynamicsWebApi.retrieveMultipleRequest(request).then(function (response) {
+    /// <param name="response" type="DWA.Types.MultipleResponse">Response object</param>
 
     var count = response.oDataCount;
     var nextLink = response.oDataNextLink;

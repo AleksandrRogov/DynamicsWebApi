@@ -112,7 +112,7 @@
                 maxPageSize: 1
             };
 
-            dynamicsWebApi.retrieveMultipleAdvanced(request).then(function (response) {
+            dynamicsWebApi.retrieveMultipleRequest(request).then(function (response) {
                 /// <param name="response" type="DWA.Types.MultipleResponse">Request response</param>
 
                 //get a field value here (check first whether object (array) contains any element)
@@ -125,7 +125,7 @@
             });
         }
         function DeleteRecord() {
-            dynamicsWebApi.deleteRequest(recordId, "leads").then(function () {
+            dynamicsWebApi.deleteRecord(recordId, "leads").then(function () {
                 alert("success!");
             })
             .catch(function (error) {
@@ -138,7 +138,7 @@
                 subject: "Test update"
             }
 
-            dynamicsWebApi.update(recordId, "leads", lead).then(function () {
+            dynamicsWebApi.update(recordId, "leads", lead).then(function (response) {
                 alert("updated!");
             })
             .catch(function (error) {
@@ -150,13 +150,15 @@
             var request = {
                 id: recordId,
                 collection: "leads",
+                prefer: DWA.Prefer.ReturnRepresentation,
+                select: ["fullname"],
                 object: {
                     subject: "Test update"
                 }
             };
 
-            dynamicsWebApi.updateRequest(request).then(function () {
-                alert("updated!");
+            dynamicsWebApi.updateRequest(request).then(function (response) {
+                alert(response.fullname);
             })
             .catch(function (error) {
                 debugger;
@@ -251,7 +253,7 @@
             })
         }
         function DeleteTestData() {
-            dynamicsWebApi.deleteRequest(testEntityid, "o4u_tests").then(function () {
+            dynamicsWebApi.deleteRecord(testEntityid, "o4u_tests").then(function () {
                 alert("success!");
             }).catch(function (error) {
                 debugger;

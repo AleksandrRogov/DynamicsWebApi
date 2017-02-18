@@ -15,6 +15,7 @@
     <h3>DynamicsWebApi Callbacks</h3>
     <button onclick="CreateRecord()">Create Record</button>
     <button onclick="UpdateRecord()">Update Record</button>
+    <button onclick="UpdateRequest()">Update Request</button>
     <button onclick="UpdateSingleProperty()">Update Single Property</button>
     <button onclick="RetrieveRecord()">Retrieve Record</button>
     <button onclick="RetrieveRequest()">Retrieve Request</button>
@@ -46,7 +47,7 @@
         }, function (error) {
             debugger;
         });
-        dynamicsWebApi.create({ o4u_name: "Test" }, "o4u_tests", false, function (id) {
+        dynamicsWebApi.create({ o4u_name: "Test" }, "o4u_tests", function (id) {
             testEntityid = id;
         }, function (error) {
             debugger;
@@ -59,7 +60,7 @@
                 lastname: "WebAPI",
                 jobtitle: "Title"
             };
-            dynamicsWebApi.create(lead, "leads", false, function (id) {
+            dynamicsWebApi.create(lead, "leads", function (id) {
                 alert(id);
                 recordId = id;
             }, function (error) {
@@ -67,7 +68,7 @@
             });
         }
         function RetrieveRecord() {
-            dynamicsWebApi.retrieve(recordId, "leads", ["fullname", "subject"], null, null, function (record) {
+            dynamicsWebApi.retrieve(recordId, "leads", ["fullname", "subject"], function (record) {
                 var fullname = record.fullname;
                 debugger;
             }, function (error) {
@@ -95,7 +96,7 @@
             });
         }
         function CountRecords() {
-            dynamicsWebApi.count("leads", null, function (count) {
+            dynamicsWebApi.count("leads", function (count) {
                 alert(count);
             }, function (error) {
                 debugger;
@@ -110,7 +111,7 @@
                 maxPageSize: 1
             };
 
-            dynamicsWebApi.retrieveMultipleAdvanced(request, null,
+            dynamicsWebApi.retrieveMultipleRequest(request, null,
                 function (response) {
                     /// <param name="response" type="DWA.Types.MultipleResponse">Request response</param>
 
@@ -123,8 +124,25 @@
                 });
         }
         function DeleteRecord() {
-            dynamicsWebApi.deleteRequest(recordId, "leads", null, function () {
+            dynamicsWebApi.deleteRecord(recordId, "leads", function () {
                 alert("success!");
+            }, function (error) {
+                debugger;
+                console.trace(error.message);
+            });
+        }
+        function UpdateRequest() {
+            var request = {
+                id: recordId,
+                collection: "leads",
+                object: {
+                    subject: "Test update"
+                },
+                returnRepresentation: true
+            };
+
+            dynamicsWebApi.updateRequest(request, function (response) {
+                alert(response.fullname);
             }, function (error) {
                 debugger;
                 console.trace(error.message);
@@ -135,7 +153,7 @@
                 subject: "Test update"
             }
 
-            dynamicsWebApi.update(recordId, "leads", lead, true, null, function (record) {
+            dynamicsWebApi.update(recordId, "leads", lead, function (response) {
                 alert("updated!");
             }, function (error) {
                 debugger;
@@ -147,7 +165,7 @@
                 subject: "Upsert!!"
             };
 
-            dynamicsWebApi.upsert(recordId, "leads", lead, null, null, function (id) {
+            dynamicsWebApi.upsert(recordId, "leads", lead, function (id) {
                 if (id != null) {
                     debugger;
                     recordId = id;
@@ -173,7 +191,7 @@
                                 "</entity>" +
                             "</fetch>";
 
-            dynamicsWebApi.executeFetchXml("accounts", fetchXml, null, function (response) {
+            dynamicsWebApi.executeFetchXml("accounts", fetchXml, function (response) {
                 /// <param name="response" type="DWA.Types.FetchXmlResponse">Request response</param>
 
                 for (var i = 0; i < response.value.length; i++) {
@@ -221,7 +239,7 @@
 
             var instance = dynamicsWebApi.initializeInstance({ webApiVersion: "8.0" });
 
-            instance.count("accounts", null, function (count) {
+            instance.count("accounts", function (count) {
                 alert(count);
             }, function (error) {
                 debugger;
@@ -229,7 +247,7 @@
             })
         }
         function DeleteTestData() {
-            dynamicsWebApi.deleteRequest(testEntityid, "o4u_tests", null, function () {
+            dynamicsWebApi.deleteRecord(testEntityid, "o4u_tests", function () {
                 alert("success!");
             }, function (error) {
                 debugger;
