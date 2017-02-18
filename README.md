@@ -77,14 +77,15 @@ The work on a rich Intellisense experience is still on going but developers can 
 
 #### DWA Object
 
-DWA is a JavaScript object that is located inside DynamicsWebApi library file. This object enables Intellisense for Visual Studio and therefore improves an overall productivity of a software developer.
+DWA is a JavaScript object located inside DynamicsWebApi library file. This object enables Intellisense for Visual Studio and therefore improves an overall productivity of a software developer.
 The object contains several child objects which are described below.
 
 ##### DWA.Types
-DWA.Types is a JavaScript object that contains various other objects (or so called Types) that are used in DynamicsWebApi and can be used by developers to enable Intellisense for some of the functions.
+`DWA.Types` contains various objects (or so called Types) that are used in DynamicsWebApi and can be used by developers to enable Intellisense for some of the functions.
 At this moment only Reponse objects are described there.
 
-The following example shows how to use DWA.Types in the code:
+The following example shows how to use `DWA.Types` in the code:
+
 Let's assume that we needed to write a retrieveMultipleRequest.
 
 ```js
@@ -107,11 +108,11 @@ dynamicsWebApi.retrieveMultipleRequest(request).then(function (response) {
 })
 ```
 
-The following types are described at this moment: DWA.Types.FetchXmlResponse and DWA.Types.MultipleResponse.
+The following types are described at this moment: `DWA.Types.FetchXmlResponse` and `DWA.Types.MultipleResponse`.
 
 ##### DWA.Prefer
-DWA.Prefer contains various values that can header "Prefer" to be set with. Most of the existing operations support such header. The following list describes which
-header values can be used for different operations.
+`DWA.Prefer` contains various values that can header "Prefer" to be set with. Most of the existing operations support such header. The following list describes which
+header values can be used for which operations.
 
 * `DWA.Prefer.ReturnRepresentation` - `create`, `update`, `updateSingleProperty` - allows developers to retrieve just created or updated object in a single request.
 * `DWA.Prefer.Annotations` - `retrieveRequest`, `retrieveMultipleRequest`, `executeFetchXml` - allows to retrieve additional information about lookups, option sets and etc.
