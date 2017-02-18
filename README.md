@@ -184,7 +184,7 @@ dynamicsWebApi.upsert(leadId, "leads", lead, "*").then(function (id) {
 var leadId = '7d577253-3ef0-4a0a-bb7f-8335c2596e70';
 
 //perform a delete
-dynamicsWebApi.delete(leadId, "leads").then(function () {
+dynamicsWebApi.deleteRecord(leadId, "leads").then(function () {
     //do something after a succesful operation
 })
 .catch(function (error) {
@@ -199,7 +199,7 @@ dynamicsWebApi.delete(leadId, "leads").then(function () {
 var leadId = '7d577253-3ef0-4a0a-bb7f-8335c2596e70';
 
 //perform a delete of a single property value
-dynamicsWebApi.delete(leadId, "leads", "subject").then(function () {
+dynamicsWebApi.deleteRecord(leadId, "leads", "subject").then(function () {
     //do something after a succesful operation
 })
 .catch(function (error) {
