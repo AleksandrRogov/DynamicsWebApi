@@ -15,7 +15,7 @@ Any suggestions are welcome!
 * [Request Examples] (#request-examples)
   * [Create a record] (#create-a-record)
   * [Update a record] (#update-a-record)
-  * [pdate a single property value] (#update-a-single-property-value)
+  * [Update a single property value] (#update-a-single-property-value)
   * [Upsert a record] (#upsert-a-record)
   * [Delete a record] (#delete-a-record)
 	* [Delete a single property value] (#delete-a-single-property-value)
