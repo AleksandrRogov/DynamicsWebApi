@@ -153,20 +153,20 @@ an invalid property you will receive either an error saying that the request is 
 
 Property Name | Type | Operation(s) Supported | Description
 ------------ | ------------- | ------------- | -------------
-id | String | `retrieveRequest`, `updateRequest`, `deleteRequest` | A String representing the GUID value for the record.
+id | String | `retrieveRequest`, `updateRequest`, `upsertRequest`, `deleteRequest` | A String representing the GUID value for the record.
 collection | String | All | The name of the Entity Collection, for example, for `account` use `accounts`, `opportunity` - `opportunities` and etc.
-entity | Object | `updateRequest` | A JavaScript object with properties corresponding to the logical name of entity attributes (exceptions are lookups and single-valued navigation properties).
-select | Array | `retrieveRequest`, `retrieveMultipleRequest`, `updateRequest` | An Array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
-expand | Array | `retrieveRequest`, `updateRequest` | An array of Expand Objects (described below the table) representing the $expand OData System Query Option value to control which related records are also returned.
+entity | Object | `updateRequest`, `upsertRequest` | A JavaScript object with properties corresponding to the logical name of entity attributes (exceptions are lookups and single-valued navigation properties).
+select | Array | `retrieveRequest`, `retrieveMultipleRequest`, `updateRequest`, `upsertRequest` | An Array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
+expand | Array | `retrieveRequest`, `updateRequest`, `upsertRequest` | An array of Expand Objects (described below the table) representing the $expand OData System Query Option value to control which related records are also returned.
 filter | String | `retrieveRequest`, `retrieveMultipleRequest` | Use the $filter system query option to set criteria for which entities will be returned.
 orderBy | Array | `retrieveMultipleRequest` | An Array (of Strings) representing the order in which items are returned using the $orderby system query option. Use the asc or desc suffix to specify ascending or descending order respectively. The default is ascending if the suffix isn't applied.
 count | Boolean | `retrieveMultipleRequest` | Boolean that sets the $count system query option with a value of true to include a count of entities that match the filter criteria up to 5000 (per page). Do not use $top with $count!
 top | Number | `retrieveMultipleRequest` | Limit the number of results returned by using the $top system query option. Do not use $top with $count!
 maxPageSize | Number | `retrieveMultipleRequest` | Sets the odata.maxpagesize preference value to request the number of entities returned in the response.
 includeAnnotations | String | `retrieveRequest`, `retrieveMultipleRequest` | Sets Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
-ifmatch | String | `retrieveRequest`, `updateRequest`, `deleteRequest` | Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests. [More info] (https://msdn.microsoft.com/en-us/library/mt607711.aspx).
-ifnonematch | String | `retrieveRequest` | Sets If-None-Match header value that enables to use conditional retrieval in applicable requests. [More info] (https://msdn.microsoft.com/en-us/library/mt607711.aspx).
-returnRepresentation | Boolean | `updateRequest` | Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
+ifmatch | String | `retrieveRequest`, `updateRequest`, `upsertRequest`, `deleteRequest` | Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests. [More info] (https://msdn.microsoft.com/en-us/library/mt607711.aspx).
+ifnonematch | String | `retrieveRequest`, `upsertRequest` | Sets If-None-Match header value that enables to use conditional retrieval in applicable requests. [More info] (https://msdn.microsoft.com/en-us/library/mt607711.aspx).
+returnRepresentation | Boolean | `updateRequest`, `upsertRequest` | Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
 
 Basic and Advanced functions are also have differences in `expand` parameters. For Basic ones this parameter is a type of String 
 while request.expand property is an Array of Expand Objects for Advanced operations. The following table describes Expand Object properties:
@@ -269,6 +269,8 @@ dynamicsWebApi.updateSingleProperty(leadId, "leads", keyValuePair).then(function
 
 #### Upsert a record
 
+##### Basic
+
 ```js
 //lead id is needed for an upsert operation
 var leadId = '7d577253-3ef0-4a0a-bb7f-8335c2596e70';
@@ -279,13 +281,37 @@ var lead = {
 
 //initialize a CRM entity record object
 //and specify fields with values that need to be upserted
-dynamicsWebApi.upsert(leadId, "leads", lead, "*").then(function (id) {
-    if (id != null) {
-        //record has been created
+dynamicsWebApi.upsert(leadId, "leads", lead).then(function (id) {
+    //do something with id
+})
+.catch(function (error) {
+    //catch an error
+});
+```
+
+##### Advanced using Request Object
+
+```js
+var leadId = '7d577253-3ef0-4a0a-bb7f-8335c2596e70';
+
+var request = {
+    id: leadId,
+    collection: "leads",
+    returnRepresentation: true,
+    select: ["fullname"],
+    entity: {
+        subject: "Test upsert"
+    },
+    ifnonematch: "*" //to prevent update
+};
+
+dynamicsWebApi.upsertRequest(request).then(function (record) {
+    if (record != null) {
+        //record created
     }
-	else{
-		//record has been updated; or ETag header condition was positive
-	}
+    else {
+        //update prevented
+    }
 })
 .catch(function (error) {
     //catch an error
@@ -373,7 +399,7 @@ var request = {
 
     //ETag value with the If-None-Match header to request data to be retrieved only 
 	//if it has changed since the last time it was retrieved.
-    ifnonematch: "W/\"468026\"",
+    ifnonematch: 'W/"468026"',
 
 	//DWA object can be found at the top of the library file. 
 	//It is helpful when used inside Visual Studio for better Intellisense experience.

@@ -580,7 +580,7 @@ var DynamicsWebApi = function (config) {
 
         var url = convertRequestToLink(request, "DynamicsWebApi.update");
 
-        var headers = {};
+        var headers = { 'If-Match': '*' }; //to prevent upsert
 
         if (request.returnRepresentation) {
             headers['Prefer'] = DWA.Prefer.ReturnRepresentation;
@@ -588,10 +588,6 @@ var DynamicsWebApi = function (config) {
 
         if (request.ifmatch != null) {
             headers['If-Match'] = request.ifmatch;
-        }
-
-        if (request.ifnonematch != null) {
-            headers['If-None-Match'] = request.ifnonematch;
         }
 
         return axiosCrm.patch(url, request.entity, { headers: headers }).then(function (response) {
@@ -620,7 +616,7 @@ var DynamicsWebApi = function (config) {
         /// If set to "return=representation" the function will return a newly created object
         ///</param>
         ///<param name="select" type="Array" optional="true">
-        /// Limits returned properties with updateRequest when returnData equals "true". 
+        /// Limits returned properties with update when prefer equals "return=representation". 
         ///</param>
         /// <returns type="Promise" />
         _stringParameterCheck(id, "DynamicsWebApi.update", "id");
@@ -628,11 +624,11 @@ var DynamicsWebApi = function (config) {
         _parameterCheck(object, "DynamicsWebApi.update", "object");
         _stringParameterCheck(collection, "DynamicsWebApi.update", "collection");
 
-        var additionalConfig = null;
+        var headers = { "If-Match": "*" }; //to prevent upsert
 
         if (prefer != null) {
             _stringParameterCheck(prefer, "DynamicsWebApi.update", "prefer");
-            additionalConfig = { headers: { "Prefer": prefer } };
+            headers["Prefer"] = prefer;
         }
 
         var systemQueryOptions = "";
@@ -645,7 +641,7 @@ var DynamicsWebApi = function (config) {
             }
         }
 
-        return axiosCrm.patch(collection.toLowerCase() + "(" + id + ")" + systemQueryOptions, object, additionalConfig)
+        return axiosCrm.patch(collection.toLowerCase() + "(" + id + ")" + systemQueryOptions, object, { headers: headers })
             .then(function (response) {
                 if (response.data) {
                     return response.data;
@@ -726,7 +722,7 @@ var DynamicsWebApi = function (config) {
                 //rethrow error otherwise
                 throw error;
             }
-        });  
+        });
     }
 
     var deleteRecord = function (id, collection, propertyName) {
@@ -761,7 +757,61 @@ var DynamicsWebApi = function (config) {
         return axiosCrm.delete(url);
     };
 
-    var upsertRecord = function (id, collection, object, ifmatch, ifnonematch) {
+    var upsertRequest = function (request) {
+        ///<summary>
+        /// Sends an asynchronous request to Upsert a record.
+        ///</summary>
+        ///<param name="request" type="dwaRequest">
+        /// An object that represents all possible options for a current request.
+        ///</param>
+        /// <returns type="Promise" />
+
+        _parameterCheck(request, "DynamicsWebApi.update", "request")
+        _parameterCheck(request.entity, "DynamicsWebApi.update", "request.entity")
+
+        var url = convertRequestToLink(request, "DynamicsWebApi.update");
+
+        var headers = {};
+
+        if (request.returnRepresentation) {
+            headers['Prefer'] = DWA.Prefer.ReturnRepresentation;
+        }
+
+        if (request.ifmatch != null) {
+            headers['If-Match'] = request.ifmatch;
+        }
+
+        if (request.ifnonematch != null) {
+            headers['If-None-Match'] = request.ifnonematch;
+        }
+
+        return axiosCrm.patch(url, request.entity, { headers: headers })
+            .then(function (response) {
+                if (response.status == 204) {
+                    var entityUrl = response.headers['odata-entityid'];
+                    var id = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(entityUrl)[0];
+                    return id;
+                }
+                else if (response.data) {
+                    return response.data;
+                }
+            }).catch(function (error) {
+                if (request.ifnonematch != null && error.response.status == 412) {
+                    //if prevent update
+                    return;
+                }
+                else if (request.ifmatch != null && error.response.status == 404) {
+                    //if prevent create
+                    return;
+                }
+                else {
+                    //rethrow error otherwise
+                    throw error;
+                }
+            });
+    };
+
+    var upsertRecord = function (id, collection, object, prefer, select) {
         ///<summary>
         /// Sends an asynchronous request to Upsert a record.
         ///</summary>
@@ -776,11 +826,11 @@ var DynamicsWebApi = function (config) {
         /// The Logical Name of the Entity Collection name to Upsert.
         /// For an Account record, use "accounts".
         ///</param>
-        ///<param name="ifmatch" type="String" optional="true">
-        /// To prevent a creation of the record use "*". Sets header "If-Match".
+        ///<param name="prefer" type="String" optional="true">
+        /// If set to "return=representation" the function will return a newly created object
         ///</param>
-        ///<param name="ifnonematch" type="String" optional="true">
-        /// To prevent an update of the record use "*". Sets header "If-None-Match".
+        ///<param name="select" type="Array" optional="true">
+        /// Limits returned properties with upsert when prefer equals "return=representation". 
         ///</param>
         /// <returns type="Promise" />
 
@@ -790,44 +840,32 @@ var DynamicsWebApi = function (config) {
         _parameterCheck(object, "DynamicsWebApi.upsert", "object");
         _stringParameterCheck(collection, "DynamicsWebApi.upsert", "collection");
 
-        if (ifmatch != null && ifnonematch != null) {
-            throw Error("Either one of ifmatch or ifnonematch parameters shoud be used in a call, not both.")
+        var headers = {};
+
+        if (prefer != null) {
+            _stringParameterCheck(prefer, "DynamicsWebApi.upsert", "prefer");
+            headers["Prefer"] = prefer;
         }
 
-        var additionalConfig = null;
+        var systemQueryOptions = "";
 
-        if (ifmatch != null) {
-            _stringParameterCheck(ifmatch, "DynamicsWebApi.upsert", "ifmatch");
+        if (select != null) {
+            _arrayParameterCheck(select, "DynamicsWebApi.upsert", "select");
 
-            additionalConfig = { headers: { 'If-Match': ifmatch } };
+            if (select.length > 0) {
+                systemQueryOptions = "?" + select.join(",");
+            }
         }
 
-        if (ifnonematch != null) {
-            _stringParameterCheck(ifmatch, "DynamicsWebApi.upsert", "ifnonematch");
-
-            additionalConfig = { headers: { 'If-None-Match': ifnonematch } };
-        }
-
-        return axiosCrm.patch(collection.toLowerCase() + "(" + id + ")", object, additionalConfig)
+        return axiosCrm.patch(collection.toLowerCase() + "(" + id + ")" + systemQueryOptions, object, { headers: headers })
             .then(function (response) {
                 if (response.status == 204) {
                     var entityUrl = response.headers['odata-entityid'];
                     var id = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(entityUrl)[0];
                     return id;
                 }
-            })
-            .catch(function (error) {
-                if (ifnonematch != null && error.response.status == 412) {
-                    //if prevent update
-                    return;
-                }
-                else if (ifmatch != null && error.response.status == 404) {
-                    //if prevent create
-                    return;
-                }
-                else {
-                    //rethrow error otherwise
-                    throw error;
+                else if (response.data) {
+                    return response.data;
                 }
             });
     }
@@ -1095,6 +1133,7 @@ var DynamicsWebApi = function (config) {
         update: updateRecord,
         updateRequest: updateRequest,
         upsert: upsertRecord,
+        upsertRequest: upsertRequest,
         deleteRecord: deleteRecord,
         deleteRequest: deleteRequest,
         executeFetchXml: fetchXmlRequest,

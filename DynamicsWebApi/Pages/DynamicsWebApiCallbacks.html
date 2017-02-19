@@ -23,6 +23,7 @@
     <button onclick="DeleteRecord()">Delete Record</button>
     <button onclick="DeleteRequest()">Delete Request</button>
     <button onclick="UpsertRecord()">Upsert Record</button>
+    <button onclick="UpsertRequest()">Upsert Request</button>
     <button onclick="RetrieveMultipleRecordsExtended()">Multiple Records Extended</button>
     <button onclick="FetchXmlTest()">Fetch XML Test</button>
     <button onclick="Associate()">Associate</button>
@@ -85,7 +86,7 @@
                 select: ["fullname", "subject"],
 
                 //ETag value with the If-None-Match header to request data to be retrieved only if it has changed since the last time it was retrieved
-                ifnonematch: "W/\"468026\""
+                ifnonematch: 'W/"468026"'
             };
 
             dynamicsWebApi.retrieveRequest(request, function (response) {
@@ -190,6 +191,30 @@
                 if (id != null) {
                     debugger;
                     recordId = id;
+                }
+            }, function (error) {
+                debugger;
+                console.trace(error.message);
+            });
+        }
+        function UpsertRequest() {
+            var request = {
+                id: recordId,
+                collection: "leads",
+                returnRepresentation: true,
+                select: ["fullname"],
+                entity: {
+                    subject: "Test upsert"
+                },
+                ifnonematch: "*" //to prevent update
+            };
+
+            dynamicsWebApi.upsertRequest(request, function (record) {
+                if (record != null) {
+                    alert(record.fullname);
+                }
+                else {
+                    //update prevented
                 }
             }, function (error) {
                 debugger;

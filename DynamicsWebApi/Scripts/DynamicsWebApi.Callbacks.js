@@ -541,7 +541,7 @@ var DynamicsWebApi = function (config) {
 
         var url = convertRequestToLink(request, "update");
 
-        var headers = {};
+        var headers = { 'If-Match': '*' }; //to prevent upsert
 
         if (request.returnRepresentation) {
             headers['Prefer'] = DWA.Prefer.ReturnRepresentation;
@@ -549,10 +549,6 @@ var DynamicsWebApi = function (config) {
 
         if (request.ifmatch != null) {
             headers['If-Match'] = request.ifmatch;
-        }
-
-        if (request.ifnonematch != null) {
-            headers['If-None-Match'] = request.ifnonematch;
         }
 
         var onSuccess = function (xhr) {
@@ -583,7 +579,7 @@ var DynamicsWebApi = function (config) {
         /// If set to "return=representation" the function will return a newly created object.
         ///</param>
         ///<param name="select" type="Array" optional="true">
-        /// Limits returned properties with updateRequest when returnData equals "true". 
+        /// Limits returned properties with update when prefer equals "return=representation" 
         ///</param>
         ///<param name="successCallback" type="Function">
         /// The function that will be passed through and be called by a successful response. 
@@ -601,11 +597,11 @@ var DynamicsWebApi = function (config) {
         _callbackParameterCheck(successCallback, "DynamicsWebApi.update", "successCallback");
         _callbackParameterCheck(errorCallback, "DynamicsWebApi.update", "errorCallback");
 
-        var headers = null;
+        var headers = { "If-Match": "*" }; //to prevent upsert
 
         if (prefer != null) {
             _stringParameterCheck(prefer, "DynamicsWebApi.update", "prefer");
-            headers = { "Prefer": prefer };
+            headers["Prefer"] = prefer;
         }
 
         var systemQueryOptions = "";
@@ -626,6 +622,7 @@ var DynamicsWebApi = function (config) {
 
         _sendRequest("PATCH", _webApiUrl + collection.toLowerCase() + "(" + id + ")" + systemQueryOptions, onSuccess, errorCallback, object, headers);
     };
+
     var updateSingleProperty = function (id, collection, keyValuePair, successCallback, errorCallback, prefer) {
         ///<summary>
         /// Sends an asynchronous request to update a single value in the record.
@@ -884,7 +881,75 @@ var DynamicsWebApi = function (config) {
         _sendRequest("GET", _webApiUrl + collection.toLowerCase() + "(" + id + ")" + systemQueryOptions, onSuccess, errorCallback);
     };
 
-    var upsertRecord = function (id, collection, object, successCallback, errorCallback, ifmatch, ifnonematch) {
+    var upsertRequest = function (request, successCallback, errorCallback) {
+        ///<summary>
+        /// Sends an asynchronous request to upsert a record.
+        ///</summary>
+        ///<param name="request" type="dwaRequest">
+        /// An object that represents all possible options for a current request.
+        ///</param>
+        ///<param name="successCallback" type="Function">
+        /// The function that will be passed through and be called by a successful response. 
+        /// This function must accept the returned record as a parameter.
+        /// </param>
+        ///<param name="errorCallback" type="Function">
+        /// The function that will be passed through and be called by a failed response. 
+        /// This function must accept an Error object as a parameter.
+        /// </param>
+
+        _parameterCheck(request, "DynamicsWebApi.update", "request");
+        _parameterCheck(request.entity, "DynamicsWebApi.update", "request.entity");
+        _callbackParameterCheck(successCallback, "DynamicsWebApi.update", "successCallback");
+        _callbackParameterCheck(errorCallback, "DynamicsWebApi.update", "errorCallback");
+
+        var url = convertRequestToLink(request, "update");
+
+        var headers = {};
+
+        if (request.returnRepresentation) {
+            headers['Prefer'] = DWA.Prefer.ReturnRepresentation;
+        }
+
+        if (request.ifmatch != null) {
+            headers['If-Match'] = request.ifmatch;
+        }
+
+        if (request.ifnonematch != null) {
+            headers['If-None-Match'] = request.ifnonematch;
+        }
+
+        var onSuccess = function (xhr) {
+            if (xhr.status == 204) {
+                var entityUrl = xhr.getResponseHeader('odata-entityid');
+                var id = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(entityUrl)[0];
+                successCallback(id);
+            }
+            else if (xhr.responseText) {
+                successCallback(JSON.parse(xhr.responseText, _dateReviver));
+            }
+            else
+                successCallback();
+        };
+
+        var onError = function (xhr) {
+            if (request.ifnonematch != null && xhr.status == 412) {
+                //if prevent update
+                successCallback();
+            }
+            else if (request.ifmatch != null && xhr.status == 404) {
+                //if prevent create
+                successCallback();
+            }
+            else {
+                //rethrow error otherwise
+                errorCallback(xhr);
+            }
+        };
+
+        _sendRequest("PATCH", _webApiUrl + url, onSuccess, onError, request.entity, headers);
+    }
+
+    var upsertRecord = function (id, collection, object, successCallback, errorCallback, prefer, select) {
         ///<summary>
         /// Sends an asynchronous request to Upsert a record.
         ///</summary>
@@ -899,11 +964,11 @@ var DynamicsWebApi = function (config) {
         /// The Logical Name of the Entity Collection name record to Upsert.
         /// For an Account record, use "accounts".
         ///</param>
-        ///<param name="ifmatch" type="String" optional="true">
-        /// To prevent a creation of the record use "*". Sets header "If-Match".
+        ///<param name="prefer" type="String" optional="true">
+        /// If set to "return=representation" the function will return a newly created object
         ///</param>
-        ///<param name="ifnonematch" type="String" optional="true">
-        /// To prevent an update of the record use "*". Sets header "If-None-Match".
+        ///<param name="select" type="Array" optional="true">
+        /// Limits returned properties with upsert when prefer equals "return=representation". 
         ///</param>
         ///<param name="successCallback" type="Function">
         /// The function that will be passed through and be called by a successful response. 
@@ -923,22 +988,21 @@ var DynamicsWebApi = function (config) {
         _callbackParameterCheck(successCallback, "DynamicsWebApi.upsert", "successCallback");
         _callbackParameterCheck(errorCallback, "DynamicsWebApi.upsert", "errorCallback");
 
-        if (ifmatch != null && ifnonematch != null) {
-            throw Error("Either one of ifmatch or ifnonematch parameters shoud be used in a call, not both.")
+        var headers = {};
+
+        if (prefer != null) {
+            _stringParameterCheck(prefer, "DynamicsWebApi.upsert", "prefer");
+            headers["Prefer"] = prefer;
         }
 
-        var headers = null;
+        var systemQueryOptions = "";
 
-        if (ifmatch != null) {
-            _stringParameterCheck(ifmatch, "DynamicsWebApi.upsert", "ifmatch");
+        if (select != null) {
+            _arrayParameterCheck(select, "DynamicsWebApi.upsert", "select");
 
-            headers = { 'If-Match': ifmatch };
-        }
-
-        if (ifnonematch != null) {
-            _stringParameterCheck(ifmatch, "DynamicsWebApi.upsert", "ifnonematch");
-
-            headers = { 'If-None-Match': ifnonematch };
+            if (select != null && select.length > 0) {
+                systemQueryOptions = "?" + select.join(",");
+            }
         }
 
         var onSuccess = function (xhr) {
@@ -947,26 +1011,14 @@ var DynamicsWebApi = function (config) {
                 var id = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(entityUrl)[0];
                 successCallback(id);
             }
+            else if (xhr.responseText) {
+                successCallback(JSON.parse(xhr.responseText, _dateReviver));
+            }
             else
                 successCallback();
         };
 
-        var onError = function (xhr) {
-            if (ifnonematch != null && xhr.status == 412) {
-                //if prevent update
-                successCallback();
-            }
-            else if (ifmatch != null && xhr.status == 404) {
-                //if prevent create
-                successCallback();
-            }
-            else {
-                //rethrow error otherwise
-                errorCallback(xhr);
-            }
-        };
-
-        _sendRequest("PATCH", _webApiUrl + collection.toLowerCase() + "(" + id + ")", onSuccess, onError, object, headers);
+        _sendRequest("PATCH", _webApiUrl + collection.toLowerCase() + "(" + id + ")" + systemQueryOptions, onSuccess, errorCallback, object, headers);
     }
 
     var countRecords = function (collection, successCallback, errorCallback, filter) {
@@ -1341,6 +1393,7 @@ var DynamicsWebApi = function (config) {
         update: updateRecord,
         updateRequest: updateRequest,
         upsert: upsertRecord,
+        upsertRequest: upsertRequest,
         deleteRecord: deleteRecord,
         deleteRequest: deleteRequest,
         executeFetchXml: fetchXmlRequest,
