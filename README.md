@@ -167,6 +167,7 @@ includeAnnotations | String | `retrieveRequest`, `retrieveMultipleRequest` | Set
 ifmatch | String | `retrieveRequest`, `updateRequest`, `upsertRequest`, `deleteRequest` | Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests. [More info] (https://msdn.microsoft.com/en-us/library/mt607711.aspx).
 ifnonematch | String | `retrieveRequest`, `upsertRequest` | Sets If-None-Match header value that enables to use conditional retrieval in applicable requests. [More info] (https://msdn.microsoft.com/en-us/library/mt607711.aspx).
 returnRepresentation | Boolean | `updateRequest`, `upsertRequest` | Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
+impersonate | String | All | A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
 
 Basic and Advanced functions are also have differences in `expand` parameters. For Basic ones this parameter is a type of String 
 while request.expand property is an Array of Expand Objects for Advanced operations. The following table describes Expand Object properties:
@@ -550,6 +551,33 @@ dynamicsWebApi.executeFetchXml("accounts", fetchXml).then(function (response) {
     debugger;
     console.trace(error.message);
 })
+```
+
+#### Execute Web API functions
+
+##### Bound functions
+
+```js
+var teamId = "00000000-0000-0000-0000-000000000001";
+dynamicsWebApi.executeBoundFunction(teamId, "teams", "RetrieveTeamPrivileges").then(function (response) {
+    //do something with a response
+}).catch(function (error) {
+    //catch an error
+});
+```
+
+##### Unbound functions
+
+```js
+var parameters = {
+    LocalizedStandardName: 'Pacific Standard Time',
+    LocaleId: 1033
+};
+dynamicsWebApi.executeUnboundFunction("GetTimeZoneCodeByLocalizedName", parameters).then(function (result) {
+    var timeZoneCode = result.TimeZoneCode;
+}).catch(function (error) {
+    //catch an error
+});
 ```
 
 ### In Progress

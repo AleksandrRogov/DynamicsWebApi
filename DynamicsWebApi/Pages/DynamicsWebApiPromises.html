@@ -291,6 +291,26 @@
                 console.trace(error.message);
             });
         }
+        function ExecuteBoundFunction() {
+            var teamId = "";
+            dynamicsWebApi.executeBoundFunction(teamId, "teams", "RetrieveTeamPrivileges").then(function (response) {
+                //do something with a response
+            }).catch(function (error) {
+                //catch an error
+            });
+        }
+        function ExecuteUnboundFunction() {
+            var parameters = {
+                LocalizedStandardName: 'Pacific Standard Time',
+                LocaleId: 1033
+            };
+            dynamicsWebApi.executeUnboundFunction("GetTimeZoneCodeByLocalizedName", parameters).then(function (result) {
+                alert(result.TimeZoneCode);
+            }).catch(function (error) {
+                debugger;
+                console.trace(error.message);
+            });
+        }
         function TestAnotherInstance() {
             var instance = dynamicsWebApi.initializeInstance({ webApiVersion: "8.0" });
 
