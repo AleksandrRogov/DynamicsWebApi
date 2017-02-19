@@ -294,7 +294,7 @@ var DynamicsWebApi = function (config) {
 
     var dwaRequest = function () {
         return {
-            type: "",
+            collection: "",
             id: "",
             select: [],
             expand: [],
@@ -868,7 +868,7 @@ var DynamicsWebApi = function (config) {
         ///             Limit the number of results returned by using the $top system query option. Do not use $top with $count!</para>
         ///<para>   object.orderBy (Array). 
         ///             Use the order in which items are returned using the $orderby system query option. Use the asc or desc suffix to specify ascending or descending order respectively. The default is ascending if the suffix isn't applied.</para>
-        ///<para>   object.prefer (String). 
+        ///<para>   object.includeAnnotations (String). 
         ///             Values can be "OData.Community.Display.V1.FormattedValue"; "*" and etc. - for lookups.</para>
         ///</param>
         ///<param name="nextPageLink" type="String" optional="true">

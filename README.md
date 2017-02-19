@@ -12,7 +12,7 @@ Any suggestions are welcome!
   * [Configuration] (#configuration)
     * [Configuration Object Properties] (#configuration-object-properties)
   * [Intellisense] (#intellisense)
-  * [Examples] (#examples)
+  * [Request Examples] (#request-examples)
     * [Create a record] (#create-a-record)
 	* [Update a record] (#update-a-record)
 	* [Update a single property value] (#update-a-single-property-value)
@@ -134,7 +134,57 @@ var request = {
 dynamicsWebApi.retrieveRequest(request); //then... catch...
 ```
 
-### Examples
+### Request Examples
+
+DynamicsWebApi supports __Basic__ and __Advanced__ calls to Web API. 
+
+Basic calls can be made by using functions with most commonly used input parameters. They are most convenient for simple operations as they do 
+not provide all possible ways of interaction with CRM Web API (for example, [conditional retrievals](https://msdn.microsoft.com/en-us/library/mt607711.aspx#bkmk_DetectIfChanged)
+are not supported in basic functions).
+
+Basic functions are: `create`, `update`, `upsert`, `deleteRecord`, `retrieve`, `retrieveMultiple`, `count`, `executeFetchXml`, 
+`associate`, `disassociate`, `associateSingleValued`, `disassociateSingleValued`.
+
+Advanced functions have a suffix `Request` added to the end of the applicable operation. 
+Most of the functions have a single input parameter which is a `request` object.
+
+The following table describes all properties that are accepted in this object. __Important!__ Not all operaions accept all properties and if you by mistake specified
+an invalid property you will receive either an error saying that the request is invalid or the response will not have expected results.
+
+Property Name | Type | Operation(s) Supported | Description
+------------ | ------------- | ------------- | -------------
+id | GUID String | `retrieveRequest`, `updateRequest` | A String representing the GUID value for the record.
+collection | String | All | The name of the Entity Collection, for example, for `account` use `accounts`, `opportunity` - `opportunities` and etc.
+entity | Object | `updateRequest` | A JavaScript object with properties corresponding to the logical name of entity attributes (exceptions are lookups and single-valued navigation properties).
+select | Array | `retrieveRequest`, `retrieveMultipleRequest`, `updateRequest` | An Array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
+expand | Array | `retrieveRequest`, `updateRequest` | An array of Expand Objects (described below the table) representing the $expand OData System Query Option value to control which related records are also returned.
+filter | String | `retrieveRequest`, `retrieveMultipleRequest` | Use the $filter system query option to set criteria for which entities will be returned.
+orderBy | Array | `retrieveMultipleRequest` | An Array (of Strings) representing the order in which items are returned using the $orderby system query option. Use the asc or desc suffix to specify ascending or descending order respectively. The default is ascending if the suffix isn't applied.
+count | Boolean | `retrieveMultipleRequest` | Boolean that sets the $count system query option with a value of true to include a count of entities that match the filter criteria up to 5000 (per page). Do not use $top with $count!
+top | Number | `retrieveMultipleRequest` | Limit the number of results returned by using the $top system query option. Do not use $top with $count!
+maxPageSize | Number | `retrieveMultipleRequest` | Sets the odata.maxpagesize preference value to request the number of entities returned in the response.
+includeAnnotations | String | `retrieveRequest`, `retrieveMultipleRequest` | Sets Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
+ifmatch | String | `retrieveRequest`, `updateRequest` | Sets If-Match header value that enables to use conditional operations or optimistic concurrency in applicable requests. [More info] (https://msdn.microsoft.com/en-us/library/mt607711.aspx).
+ifnonematch | String | `retrieveRequest`, `updateRequest` | Sets If-None-Match header value that enables to use conditional operations or optimistic concurrency in applicable requests. [More info] (https://msdn.microsoft.com/en-us/library/mt607711.aspx).
+returnRepresentation | Boolean | `updateRequest` | Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
+
+Basic and Advanced functions are also have differences in `expand` parameters. For Basic ones this parameter is a type of String 
+while request.expand property is an Array of Expand Objects for Advanced operations. The follwing table describes Expand Object properties:
+
+Property Name | Type | Description
+------------ | ------------- | -------------
+property | String | A name of a single-valued navigation property which needs to be expanded.
+select | Array | An Array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
+filter | String | Use the $filter system query option to set criteria for which related entities will be returned.
+orderBy | Array | An Array (of Strings) representing the order in which related items are returned using the $orderby system query option. Use the asc or desc suffix to specify ascending or descending order respectively. The default is ascending if the suffix isn't applied.
+top | Number | Limit the number of results returned by using the $top system query option.
+
+According to CRM developers ([here](http://stackoverflow.com/a/34742977/2042071) and [here] (https://community.dynamics.com/crm/b/joegilldynamicscrm/archive/2016/03/23/web-api-querying-with-expand) 
+$expand does not work for retrieveMultiple requests which is claimed as a bug of CRM Web API.
+As well as multi-level expands are not implemented yet. This situation may be changed with the future updates in the platform. Please look for the news!
+
+For complex requests to Web API with multi-level expands use `executeFetchXml` function.
+
 #### Create a record
 
 ```js
@@ -281,7 +331,7 @@ var leadId = '7d577253-3ef0-4a0a-bb7f-8335c2596e70';
 
 //perform a retrieve operaion
 dynamicsWebApi.retrieve(leadid, "leads", ["fullname", "subject"]).then(function (record) {
-    //do something with an record here
+    //do something with a record here
 })
 .catch(function (error) {
     //catch an error
@@ -296,10 +346,12 @@ var request = {
     collection: "leads",
     select: ["fullname", "subject"],
 
-    //ETag value with the If-None-Match header to request data to be retrieved only if it has changed since the last time it was retrieved.
+    //ETag value with the If-None-Match header to request data to be retrieved only 
+	//if it has changed since the last time it was retrieved.
     ifnonematch: "W/\"468026\"",
 
-	//DWA object can be found at the top of the library file. It is helpful when used inside Visual Studio for better Intellisense experience.
+	//DWA object can be found at the top of the library file. 
+	//It is helpful when used inside Visual Studio for better Intellisense experience.
 	//Retrieved record will contain formatted values
 	includeAnnotations: DWA.Prefer.Annotations.FormattedValue
 };
@@ -359,7 +411,7 @@ It is possible to count records separately from RetrieveMultiple call. In order 
 
 IMPORTANT! The count value does not represent the total number of entities in the system. It is limited by the maximum number of entities that can be returned.
 
-For now please use dynamicsWebApi.retrieveMultipleAdvanced function to loop through all pages and rollup all the records. dynamicsWebApi.countAll will be available soon.
+For now please use dynamicsWebApi.retrieveMultipleRequest function and loop through all pages to rollup all records. dynamicsWebApi.countAll will be available soon.
 
 ```js
 dynamicsWebApi.count("leads", "statecode eq 0").then(function (count) {
