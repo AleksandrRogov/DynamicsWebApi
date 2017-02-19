@@ -12,22 +12,22 @@ Any suggestions are welcome!
   * [Configuration] (#configuration)
     * [Configuration Object Properties] (#configuration-object-properties)
   * [Intellisense] (#intellisense)
-  * [Request Examples] (#request-examples)
-    * [Create a record] (#create-a-record)
-	* [Update a record] (#update-a-record)
-	* [Update a single property value] (#update-a-single-property-value)
-	* [Upsert a record] (#upsert-a-record)
-	* [Delete a record] (#delete-a-record)
-	  * [Delete a single property value] (#delete-a-single-property-value)
-	* [Retrieve a record] (#retrieve-a-record)
-	* [Retrieve multiple records] (#retrieve-multiple-records)
-	* [Count] (#count)
-	* [Associate] (#associate)
-	* [Associate for a single-valued navigation property] (#associate-for-a-single-valued-navigation-property)
-	* [Disassociate] (#disassociate)
-	* [Disassociate for a single-valued navigation property] (#disassociate-for-a-single-valued-navigation-property)
-	* [Fetch XML Request] (#fetch-xml-request)
-	* [Execute Web API functions] (#execute-web-api-functions)
+* [Request Examples] (#request-examples)
+  * [Create a record] (#create-a-record)
+  * [Update a record] (#update-a-record)
+  * [pdate a single property value] (#update-a-single-property-value)
+  * [Upsert a record] (#upsert-a-record)
+  * [Delete a record] (#delete-a-record)
+	* [Delete a single property value] (#delete-a-single-property-value)
+  * [Retrieve a record] (#retrieve-a-record)
+  * [Retrieve multiple records] (#retrieve-multiple-records)
+  * [Count] (#count)
+  * [Associate] (#associate)
+  * [Associate for a single-valued navigation property] (#associate-for-a-single-valued-navigation-property)
+  * [Disassociate] (#disassociate)
+  * [Disassociate for a single-valued navigation property] (#disassociate-for-a-single-valued-navigation-property)
+  * [Fetch XML Request] (#fetch-xml-request)
+  * [Execute Web API functions] (#execute-web-api-functions)
 * [JavaScript Promises] (#javascript-promises)
 * [JavaScript Callbacks] (#javascript-callbacks)
   * [Custom Request Function to Web API] (#custom-request-function-to-web-api)
@@ -135,7 +135,7 @@ var request = {
 dynamicsWebApi.retrieveRequest(request); //then... catch...
 ```
 
-### Request Examples
+## Request Examples
 
 DynamicsWebApi supports __Basic__ and __Advanced__ calls to Web API. 
 
@@ -187,7 +187,7 @@ As well as multi-level expands are not implemented yet. This situation may be ch
 
 For complex requests to Web API with multi-level expands use `executeFetchXml` function.
 
-#### Create a record
+### Create a record
 
 ```js
 //initialize a CRM entity record object
@@ -205,9 +205,9 @@ dynamicsWebApi.create(lead, "leads").then(function (id) {
 })
 ```
 
-#### Update a record
+### Update a record
 
-##### Basic
+#### Basic
 
 ```js
 //lead id is needed for an update operation
@@ -228,7 +228,7 @@ dynamicsWebApi.update(leadId, "leads", lead).then(function () {
 });
 ```
 
-##### Advanced using Request Object
+#### Advanced using Request Object
 
 ```js
 var request = {
@@ -251,7 +251,7 @@ dynamicsWebApi.updateRequest(request).then(function (response) {
 });
 ```
 
-#### Update a single property value
+### Update a single property value
 
 ```js
 //lead id is needed for an update single property operation
@@ -269,9 +269,9 @@ dynamicsWebApi.updateSingleProperty(leadId, "leads", keyValuePair).then(function
 });
 ```
 
-#### Upsert a record
+### Upsert a record
 
-##### Basic
+#### Basic
 
 ```js
 //lead id is needed for an upsert operation
@@ -291,7 +291,7 @@ dynamicsWebApi.upsert(leadId, "leads", lead).then(function (id) {
 });
 ```
 
-##### Advanced using Request Object
+#### Advanced using Request Object
 
 ```js
 var leadId = '7d577253-3ef0-4a0a-bb7f-8335c2596e70';
@@ -320,9 +320,9 @@ dynamicsWebApi.upsertRequest(request).then(function (record) {
 });
 ```
 
-#### Delete a record
+### Delete a record
 
-##### Basic
+#### Basic
 
 ```js
 //record id is needed to perform a delete operation
@@ -337,7 +337,7 @@ dynamicsWebApi.deleteRecord(leadId, "leads").then(function () {
 });
 ```
 
-##### Advanced using Request Object
+#### Advanced using Request Object
 
 ```js
 //delete with optimistic concurrency
@@ -360,7 +360,7 @@ dynamicsWebApi.deleteRequest(request).then(function (isDeleted) {
 });
 ```
 
-##### Delete a single property value
+#### Delete a single property value
 
 ```js
 //record id is needed to perform a delete of a single property value operation
@@ -375,9 +375,9 @@ dynamicsWebApi.deleteRecord(leadId, "leads", "subject").then(function () {
 });
 ```
 
-#### Retrieve a record
+### Retrieve a record
 
-##### Basic
+#### Basic
 
 ```js
 var leadId = '7d577253-3ef0-4a0a-bb7f-8335c2596e70';
@@ -391,7 +391,7 @@ dynamicsWebApi.retrieve(leadid, "leads", ["fullname", "subject"]).then(function 
 });
 ```
 
-##### Advanced using Request Object
+#### Advanced using Request Object
 
 ```js
 var request = {
@@ -417,11 +417,11 @@ dynamicsWebApi.retrieveRequest(request).then(function (record) {
 });
 ```
 
-#### Retrieve multiple records
+### Retrieve multiple records
 
 Retrieve multiple records can be called differently depending on what level of operation is needed.
 
-##### Basic
+#### Basic
 
 ```js
 dynamicsWebApi.retrieveMultiple("leads", ["fullname", "subject"], "statecode eq 0").then(function (records) {
@@ -432,7 +432,7 @@ dynamicsWebApi.retrieveMultiple("leads", ["fullname", "subject"], "statecode eq 
 });
 ```
 
-##### Advanced using Request Object
+#### Advanced using Request Object
 
 ```js
 //set the request parameters
@@ -458,7 +458,7 @@ dynamicsWebApi.retrieveMultipleRequest(request).then(function (response) {
 });
 ```
 
-#### Count
+### Count
 
 It is possible to count records separately from RetrieveMultiple call. In order to do that use the following snippet:
 
@@ -475,7 +475,7 @@ dynamicsWebApi.count("leads", "statecode eq 0").then(function (count) {
 });
 ```
 
-#### Associate
+### Associate
 
 ```js
 var accountId = '00000000-0000-0000-0000-000000000001';
@@ -487,7 +487,7 @@ dynamicsWebApi.associate("accounts", accountId, "lead_parent_account", "leads", 
 });
 ```
 
-#### Associate for a single-valued navigation property
+### Associate for a single-valued navigation property
 
 The name of a single-valued navigation property can be retrieved by using a `GET` request with a header `Prefer:odata.include-annotations=Microsoft.Dynamics.CRM.associatednavigationproperty`, then individual records in the response will contain the property `@Microsoft.Dynamics.CRM.associatednavigationproperty` which is the name of the needed navigation property. Usually it will be equal to a schema name of the entity attribute.
 
@@ -503,7 +503,7 @@ dynamicsWebApi.associateSingleValued("new_tests", new_testid, "new_LeadTest", "l
 });
 ```
 
-#### Disassociate
+### Disassociate
 
 ```js
 var accountId = '00000000-0000-0000-0000-000000000001';
@@ -515,7 +515,7 @@ dynamicsWebApi.disassociate("accounts", accountId, "lead_parent_account", leadId
 });
 ```
 
-#### Disassociate for a single-valued navigation property
+### Disassociate for a single-valued navigation property
 Current request removes a reference to an entity for a single-valued navigation property. The following code snippet uses an example shown in [Associate for a single-valued navigation property](#associate-for-a-single-valued-navigation-property).
 
 ```js
@@ -527,7 +527,7 @@ dynamicsWebApi.disassociateSingleValued("new_tests", new_testid, "new_LeadTest")
 });
 ```
 
-#### Fetch XML Request
+### Fetch XML Request
 
 Current operation is in a development. Adding a paging.
 
@@ -554,9 +554,9 @@ dynamicsWebApi.executeFetchXml("accounts", fetchXml).then(function (response) {
 })
 ```
 
-#### Execute Web API functions
+### Execute Web API functions
 
-##### Bound functions
+#### Bound functions
 
 ```js
 var teamId = "00000000-0000-0000-0000-000000000001";
@@ -567,7 +567,7 @@ dynamicsWebApi.executeBoundFunction(teamId, "teams", "RetrieveTeamPrivileges").t
 });
 ```
 
-##### Unbound functions
+#### Unbound functions
 
 ```js
 var parameters = {
