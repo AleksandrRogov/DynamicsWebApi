@@ -20,6 +20,7 @@
     <button onclick="RetrieveRequest()">Retrieve Request</button>
     <button onclick="CountRecords()">Count Records</button>
     <button onclick="DeleteRecord()">Delete Record</button>
+    <button onclick="DeleteRequest()">Delete Request</button>
     <button onclick="UpsertRecord()">Upsert Record</button>
     <button onclick="RetrieveMultipleRecordsExtended()">Multiple Records Extended</button>
     <button onclick="FetchXmlTest()">Fetch XML Test</button>
@@ -128,6 +129,27 @@
         function DeleteRecord() {
             dynamicsWebApi.deleteRecord(recordId, "leads").then(function () {
                 alert("success!");
+            })
+            .catch(function (error) {
+                debugger;
+                console.trace(error.message);
+            });
+        }
+        function DeleteRequest() {
+            //delete with optimistic concurrency
+            var request = {
+                id: recordId,
+                collection: "leads",
+                ifmatch: 'W/"470867"'
+            }
+
+            dynamicsWebApi.deleteRequest(request).then(function (isDeleted) {
+                if (isDeleted) {
+                    alert("success!");
+                }
+                else {
+                    alert("precondition failed!");
+                }
             })
             .catch(function (error) {
                 debugger;

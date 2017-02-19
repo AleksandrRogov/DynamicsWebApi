@@ -153,7 +153,7 @@ an invalid property you will receive either an error saying that the request is 
 
 Property Name | Type | Operation(s) Supported | Description
 ------------ | ------------- | ------------- | -------------
-id | GUID String | `retrieveRequest`, `updateRequest` | A String representing the GUID value for the record.
+id | String | `retrieveRequest`, `updateRequest`, `deleteRequest` | A String representing the GUID value for the record.
 collection | String | All | The name of the Entity Collection, for example, for `account` use `accounts`, `opportunity` - `opportunities` and etc.
 entity | Object | `updateRequest` | A JavaScript object with properties corresponding to the logical name of entity attributes (exceptions are lookups and single-valued navigation properties).
 select | Array | `retrieveRequest`, `retrieveMultipleRequest`, `updateRequest` | An Array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
@@ -164,12 +164,12 @@ count | Boolean | `retrieveMultipleRequest` | Boolean that sets the $count syste
 top | Number | `retrieveMultipleRequest` | Limit the number of results returned by using the $top system query option. Do not use $top with $count!
 maxPageSize | Number | `retrieveMultipleRequest` | Sets the odata.maxpagesize preference value to request the number of entities returned in the response.
 includeAnnotations | String | `retrieveRequest`, `retrieveMultipleRequest` | Sets Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
-ifmatch | String | `retrieveRequest`, `updateRequest` | Sets If-Match header value that enables to use conditional operations or optimistic concurrency in applicable requests. [More info] (https://msdn.microsoft.com/en-us/library/mt607711.aspx).
-ifnonematch | String | `retrieveRequest`, `updateRequest` | Sets If-None-Match header value that enables to use conditional operations or optimistic concurrency in applicable requests. [More info] (https://msdn.microsoft.com/en-us/library/mt607711.aspx).
+ifmatch | String | `retrieveRequest`, `updateRequest`, `deleteRequest` | Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests. [More info] (https://msdn.microsoft.com/en-us/library/mt607711.aspx).
+ifnonematch | String | `retrieveRequest` | Sets If-None-Match header value that enables to use conditional retrieval in applicable requests. [More info] (https://msdn.microsoft.com/en-us/library/mt607711.aspx).
 returnRepresentation | Boolean | `updateRequest` | Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
 
 Basic and Advanced functions are also have differences in `expand` parameters. For Basic ones this parameter is a type of String 
-while request.expand property is an Array of Expand Objects for Advanced operations. The follwing table describes Expand Object properties:
+while request.expand property is an Array of Expand Objects for Advanced operations. The following table describes Expand Object properties:
 
 Property Name | Type | Description
 ------------ | ------------- | -------------
@@ -294,6 +294,8 @@ dynamicsWebApi.upsert(leadId, "leads", lead, "*").then(function (id) {
 
 #### Delete a record
 
+##### Basic
+
 ```js
 //record id is needed to perform a delete operation
 var leadId = '7d577253-3ef0-4a0a-bb7f-8335c2596e70';
@@ -307,10 +309,33 @@ dynamicsWebApi.deleteRecord(leadId, "leads").then(function () {
 });
 ```
 
+##### Advanced using Request Object
+
+```js
+//delete with optimistic concurrency
+var request = {
+    id: recordId,
+    collection: "leads",
+    ifmatch: 'W/"470867"'
+}
+
+dynamicsWebApi.deleteRequest(request).then(function (isDeleted) {
+    if (isDeleted){
+		//the record has been deleted
+	}
+	else{
+		//the record has not been deleted
+	}
+})
+.catch(function (error) {
+	//catch an error
+});
+```
+
 ##### Delete a single property value
 
 ```js
-//record id is needed to perform a delete a single property value operation
+//record id is needed to perform a delete of a single property value operation
 var leadId = '7d577253-3ef0-4a0a-bb7f-8335c2596e70';
 
 //perform a delete of a single property value

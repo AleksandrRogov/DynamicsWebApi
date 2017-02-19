@@ -515,11 +515,7 @@ var DynamicsWebApi = function (config) {
             }
         }
 
-        var onError = function (xhr) {
-            errorCallback(_errorHandler(xhr));
-        }
-
-        _sendRequest("POST", _webApiUrl + collection.toLowerCase(), onSuccess, onError, object, headers);
+        _sendRequest("POST", _webApiUrl + collection.toLowerCase(), onSuccess, errorCallback, object, headers);
     };
 
     var updateRequest = function (request, successCallback, errorCallback) {
@@ -565,11 +561,7 @@ var DynamicsWebApi = function (config) {
                 : successCallback();
         };
 
-        var onError = function (xhr) {
-            errorCallback(_errorHandler(xhr));
-        }
-
-        _sendRequest("PATCH", _webApiUrl + url, onSuccess, onError, request.entity, headers);
+        _sendRequest("PATCH", _webApiUrl + url, onSuccess, errorCallback, request.entity, headers);
     }
 
     var updateRecord = function (id, collection, object, successCallback, errorCallback, prefer, select) {
@@ -632,11 +624,7 @@ var DynamicsWebApi = function (config) {
                 : successCallback();
         };
 
-        var onError = function (xhr) {
-            errorCallback(_errorHandler(xhr));
-        }
-
-        _sendRequest("PATCH", _webApiUrl + collection.toLowerCase() + "(" + id + ")" + systemQueryOptions, onSuccess, onError, object, headers);
+        _sendRequest("PATCH", _webApiUrl + collection.toLowerCase() + "(" + id + ")" + systemQueryOptions, onSuccess, errorCallback, object, headers);
     };
     var updateSingleProperty = function (id, collection, keyValuePair, successCallback, errorCallback, prefer) {
         ///<summary>
@@ -683,17 +671,59 @@ var DynamicsWebApi = function (config) {
             successCallback(JSON.parse(xhr.responseText, _dateReviver));
         };
 
-        var onError = function (xhr) {
-            errorCallback(_errorHandler(xhr));
-        }
-
         var key = Object.keys(keyValuePair)[0];
         var keyValue = keyValuePair[key];
 
-        _sendRequest("PUT", _webApiUrl + collection.toLowerCase() + "(" + id + ")/" + key, onSuccess, onError, { value: keyValue }, headers);
+        _sendRequest("PUT", _webApiUrl + collection.toLowerCase() + "(" + id + ")/" + key, onSuccess, errorCallback, { value: keyValue }, headers);
     };
 
-    var deleteRequest = function (id, collection, successCallback, errorCallback, propertyName) {
+    var deleteRequest = function (request, successCallback, errorCallback) {
+        ///<summary>
+        /// Sends an asynchronous request to delete a record.
+        ///</summary>
+        ///<param name="request" type="dwaRequest">
+        /// An object that represents all possible options for a current request.
+        ///</param>
+        ///<param name="successCallback" type="Function">
+        /// The function that will be passed through and be called by a successful response. 
+        /// This function must accept the returned record as a parameter.
+        /// </param>
+        ///<param name="errorCallback" type="Function">
+        /// The function that will be passed through and be called by a failed response. 
+        /// This function must accept an Error object as a parameter.
+        /// </param>
+
+        _parameterCheck(request, "DynamicsWebApi.delete", "request")
+        _callbackParameterCheck(successCallback, "DynamicsWebApi.delete", "successCallback");
+        _callbackParameterCheck(errorCallback, "DynamicsWebApi.delete", "errorCallback");
+
+        var url = convertRequestToLink(request, "DynamicsWebApi.delete");
+
+        var headers = {};
+
+        if (request.ifmatch != null) {
+            headers['If-Match'] = request.ifmatch;
+        }
+
+        var onSuccess = function () {
+            successCallback(true);
+        };
+
+        var onError = function (xhr) {
+            if (request.ifmatch != null && xhr.status == 412) {
+                //precondition failed - not deleted
+                successCallback(false);
+            }
+            else {
+                //rethrow error otherwise
+                errorCallback(xhr);
+            }
+        };
+
+        _sendRequest("DELETE", _webApiUrl + url, onSuccess, onError, null, headers);
+    }
+
+    var deleteRecord = function (id, collection, successCallback, errorCallback, propertyName) {
         ///<summary>
         /// Sends an asynchronous request to delete a record.
         ///</summary>
@@ -717,14 +747,14 @@ var DynamicsWebApi = function (config) {
         /// This function must accept an Error object as a parameter.
         /// </param>
 
-        _stringParameterCheck(id, "DynamicsWebApi.deleteRequest", "id");
-        id = _guidParameterCheck(id, "DynamicsWebApi.deleteRequest", "id");
-        _stringParameterCheck(collection, "DynamicsWebApi.deleteRequest", "collection");
-        _callbackParameterCheck(successCallback, "DynamicsWebApi.deleteRequest", "successCallback");
-        _callbackParameterCheck(errorCallback, "DynamicsWebApi.deleteRequest", "errorCallback");
+        _stringParameterCheck(id, "DynamicsWebApi.delete", "id");
+        id = _guidParameterCheck(id, "DynamicsWebApi.delete", "id");
+        _stringParameterCheck(collection, "DynamicsWebApi.delete", "collection");
+        _callbackParameterCheck(successCallback, "DynamicsWebApi.delete", "successCallback");
+        _callbackParameterCheck(errorCallback, "DynamicsWebApi.delete", "errorCallback");
 
         if (propertyName != null)
-            _stringParameterCheck(propertyName, "DynamicsWebApi.deleteRequest", "propertyName");
+            _stringParameterCheck(propertyName, "DynamicsWebApi.delete", "propertyName");
 
         var url = collection.toLowerCase() + "(" + id + ")";
 
@@ -736,11 +766,7 @@ var DynamicsWebApi = function (config) {
             successCallback();
         };
 
-        var onError = function (xhr) {
-            errorCallback(_errorHandler(xhr));
-        }
-
-        _sendRequest("DELETE", _webApiUrl + url, onSuccess, onError);
+        _sendRequest("DELETE", _webApiUrl + url, onSuccess, errorCallback);
     };
 
     var retrieveRequest = function (request, successCallback, errorCallback) {
@@ -785,11 +811,7 @@ var DynamicsWebApi = function (config) {
             successCallback(JSON.parse(xhr.responseText, _dateReviver));
         };
 
-        var onError = function (xhr) {
-            errorCallback(_errorHandler(xhr));
-        }
-
-        _sendRequest("GET", _webApiUrl + url, onSuccess, onError, null, headers);
+        _sendRequest("GET", _webApiUrl + url, onSuccess, errorCallback, null, headers);
     }
 
     var retrieveRecord = function (id, collection, successCallback, errorCallback, select, expand) {
@@ -859,11 +881,7 @@ var DynamicsWebApi = function (config) {
             successCallback(JSON.parse(xhr.responseText, _dateReviver));
         };
 
-        var onError = function (xhr) {
-            errorCallback(_errorHandler(xhr));
-        }
-
-        _sendRequest("GET", _webApiUrl + collection.toLowerCase() + "(" + id + ")" + systemQueryOptions, onSuccess, onError);
+        _sendRequest("GET", _webApiUrl + collection.toLowerCase() + "(" + id + ")" + systemQueryOptions, onSuccess, errorCallback);
     };
 
     var upsertRecord = function (id, collection, object, successCallback, errorCallback, ifmatch, ifnonematch) {
@@ -944,7 +962,7 @@ var DynamicsWebApi = function (config) {
             }
             else {
                 //rethrow error otherwise
-                errorCallback(_errorHandler(xhr));
+                errorCallback(xhr);
             }
         };
 
@@ -979,11 +997,7 @@ var DynamicsWebApi = function (config) {
                 successCallback(response ? parseInt(response) : 0);
             };
 
-            var onError = function (xhr) {
-                errorCallback(_errorHandler(xhr));
-            };
-
-            _sendRequest("GET", _webApiUrl + collection.toLowerCase() + "/$count", onSuccess, onError)
+            _sendRequest("GET", _webApiUrl + collection.toLowerCase() + "/$count", onSuccess, errorCallback)
         }
         else {
             return retrieveMultipleRecordsAdvanced({
@@ -1094,11 +1108,7 @@ var DynamicsWebApi = function (config) {
             successCallback(response);
         };
 
-        var onError = function (xhr) {
-            errorCallback(_errorHandler(xhr));
-        };
-
-        _sendRequest("GET", _webApiUrl + url, onSuccess, onError, null, headers);
+        _sendRequest("GET", _webApiUrl + url, onSuccess, errorCallback, null, headers);
     }
 
     var getPagingCookie = function (pageCookies) {
@@ -1177,11 +1187,7 @@ var DynamicsWebApi = function (config) {
             successCallback(response);
         };
 
-        var onError = function (xhr) {
-            errorCallback(_errorHandler(xhr));
-        };
-
-        _sendRequest("GET", _webApiUrl + collection.toLowerCase() + "?fetchXml=" + encodedFetchXml, onSuccess, onError, null, headers);
+        _sendRequest("GET", _webApiUrl + collection.toLowerCase() + "?fetchXml=" + encodedFetchXml, onSuccess, errorCallback, null, headers);
     }
 
     var associateRecords = function (primarycollection, primaryId, relationshipName, relatedcollection, relatedId, successCallback, errorCallback) {
@@ -1211,13 +1217,9 @@ var DynamicsWebApi = function (config) {
             successCallback();
         };
 
-        var onError = function (xhr) {
-            errorCallback(_errorHandler(xhr));
-        };
-
         _sendRequest("POST",
             _webApiUrl + primarycollection + "(" + primaryId + ")/" + relationshipName + "/$ref",
-            onSuccess, onError,
+            onSuccess, errorCallback,
             { "@odata.id": _webApiUrl + relatedcollection + "(" + relatedId + ")" });
     }
 
@@ -1247,11 +1249,7 @@ var DynamicsWebApi = function (config) {
             successCallback();
         };
 
-        var onError = function (xhr) {
-            errorCallback(_errorHandler(xhr));
-        };
-
-        _sendRequest("DELETE", _webApiUrl + primarycollection + "(" + primaryId + ")/" + relationshipName + "(" + relatedId + ")/$ref", onSuccess, onError);
+        _sendRequest("DELETE", _webApiUrl + primarycollection + "(" + primaryId + ")/" + relationshipName + "(" + relatedId + ")/$ref", onSuccess, errorCallback);
     }
 
     var associateRecordsSingleValued = function (collection, id, singleValuedNavigationPropertyName, relatedcollection, relatedId, successCallback, errorCallback) {
@@ -1282,13 +1280,9 @@ var DynamicsWebApi = function (config) {
             successCallback();
         };
 
-        var onError = function (xhr) {
-            errorCallback(_errorHandler(xhr));
-        };
-
         _sendRequest("PUT",
             _webApiUrl + collection + "(" + id + ")/" + singleValuedNavigationPropertyName + "/$ref",
-            onSuccess, onError,
+            onSuccess, errorCallback,
             { "@odata.id": _webApiUrl + relatedcollection + "(" + relatedId + ")" });
     }
 
@@ -1316,11 +1310,7 @@ var DynamicsWebApi = function (config) {
             successCallback();
         };
 
-        var onError = function (xhr) {
-            errorCallback(_errorHandler(xhr));
-        };
-
-        _sendRequest("DELETE", _webApiUrl + collection + "(" + id + ")/" + singleValuedNavigationPropertyName + "/$ref", onSuccess, onError);
+        _sendRequest("DELETE", _webApiUrl + collection + "(" + id + ")/" + singleValuedNavigationPropertyName + "/$ref", onSuccess, errorCallback);
     }
 
     var createInstance = function (config) {
@@ -1351,7 +1341,8 @@ var DynamicsWebApi = function (config) {
         update: updateRecord,
         updateRequest: updateRequest,
         upsert: upsertRecord,
-        deleteRecord: deleteRequest,
+        deleteRecord: deleteRecord,
+        deleteRequest: deleteRequest,
         executeFetchXml: fetchXmlRequest,
         count: countRecords,
         retrieve: retrieveRecord,

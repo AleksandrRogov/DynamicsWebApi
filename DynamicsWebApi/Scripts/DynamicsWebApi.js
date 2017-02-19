@@ -488,7 +488,7 @@ var DynamicsWebApi = function (config) {
 
         _parameterCheck(request, "DynamicsWebApi.retrieve", "request")
 
-        var url = convertRequestToLink(request, "retrieve");
+        var url = convertRequestToLink(request, "DynamicsWebApi.retrieve");
 
         var headers = {};
 
@@ -578,7 +578,7 @@ var DynamicsWebApi = function (config) {
         _parameterCheck(request, "DynamicsWebApi.update", "request")
         _parameterCheck(request.entity, "DynamicsWebApi.update", "request.entity")
 
-        var url = convertRequestToLink(request, "update");
+        var url = convertRequestToLink(request, "DynamicsWebApi.update");
 
         var headers = {};
 
@@ -695,7 +695,41 @@ var DynamicsWebApi = function (config) {
                 }
             });
     };
-    var deleteRequest = function (id, collection, propertyName) {
+
+    var deleteRequest = function (request) {
+        ///<summary>
+        /// Sends an asynchronous request to delete a record.
+        ///</summary>
+        ///<param name="request" type="dwaRequest">
+        /// An object that represents all possible options for a current request.
+        ///</param>
+        /// <returns type="Promise" />
+
+        _parameterCheck(request, "DynamicsWebApi.delete", "request")
+
+        var url = convertRequestToLink(request, "DynamicsWebApi.delete");
+
+        var headers = {};
+
+        if (request.ifmatch != null) {
+            headers['If-Match'] = request.ifmatch;
+        }
+
+        axiosCrm.delete(url, { headers: headers }).then(function () {
+            return true; //deleted
+        }).catch(function (error) {
+            if (request.ifmatch != null && error.response.status == 412) {
+                //precondition failed - not deleted
+                return false;
+            }
+            else {
+                //rethrow error otherwise
+                throw error;
+            }
+        });  
+    }
+
+    var deleteRecord = function (id, collection, propertyName) {
         ///<summary>
         /// Sends an asynchronous request to delete a record.
         ///</summary>
@@ -879,7 +913,7 @@ var DynamicsWebApi = function (config) {
             _stringParameterCheck(nextPageLink, "DynamicsWebApi.retrieveMultiple", "nextPageLink");
 
         var url = nextPageLink == null
-            ? convertRequestToLink(request, "retrieveMultiple")
+            ? convertRequestToLink(request, "DynamicsWebApi.retrieveMultiple")
             : nextPageLink;
 
         var additionalConfig = null;
@@ -1061,7 +1095,8 @@ var DynamicsWebApi = function (config) {
         update: updateRecord,
         updateRequest: updateRequest,
         upsert: upsertRecord,
-        deleteRecord: deleteRequest,
+        deleteRecord: deleteRecord,
+        deleteRequest: deleteRequest,
         executeFetchXml: fetchXmlRequest,
         count: countRecords,
         retrieve: retrieveRecord,
