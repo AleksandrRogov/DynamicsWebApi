@@ -311,6 +311,37 @@
                 console.trace(error.message);
             });
         }
+        function ExecuteUnboundAction() {
+            var opportunityId = "b3828ac8-917a-e511-80d2-00155d2a68d2";
+            var actionRequest = {
+                Status: 3,
+                OpportunityClose: {
+                    subject: "Won Opportunity",
+                    "opportunityid@odata.bind": "opportunities(" + opportunityId + ")"
+                }
+            };
+            dynamicsWebApi.executeUnboundAction("WinOpportunity", actionRequest).then(function () {
+                //success
+            }).catch(function (error) {
+                //catch an error
+            });
+        }
+        function ExecuteBoundAction() {
+            var queueId = "00000000-0000-0000-0000-000000000001";
+            var letterActivityId = "00000000-0000-0000-0000-000000000002";
+            var actionRequest = {
+                Target: {
+                    activityid: letterActivityId,
+                    "@odata.type": "Microsoft.Dynamics.CRM.letter"
+                }
+            };
+            dynamicsWebApi.executeBoundAction(queueId, "queues", "Microsoft.Dynamics.CRM.AddToQueue", actionRequest).then(function (result) {
+                alert(result.QueueItemId);
+            }).catch(function (error) {
+                debugger;
+                console.trace(error.message);
+            });
+        }
         function TestAnotherInstance() {
             var instance = dynamicsWebApi.initializeInstance({ webApiVersion: "8.0" });
 

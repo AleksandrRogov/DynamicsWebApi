@@ -99,7 +99,7 @@ var sendRequestDefault = function (method, url, successCallback, errorCallback, 
     };
 
     if (data != null) {
-        request.data = window.JSON.stringify(data);
+        request.data = data;
     }
 
     $.ajax(request);
@@ -162,6 +162,15 @@ var DynamicsWebApi = function (config) {
     }
 
     _initUrl();
+
+    var _propertyReplacer = function (key, value) {
+        /// <param name="key" type="String">Description</param>
+        if (key.endsWith("@odata.bind") && typeof value === "string" && !value.startsWith(_webApiUrl)) {
+            value += _webApiUrl + value;
+        }
+
+        return value;
+    };
 
     var _dateReviver = function (key, value) {
         ///<summary>
@@ -471,6 +480,10 @@ var DynamicsWebApi = function (config) {
 
         var result = convertOptions(options, functionName);
 
+        if (options.entity != null) {
+            options.entity = JSON.stringify(options.entity);
+        }
+
         if (result.query)
             url += "?" + result.query;
 
@@ -524,7 +537,9 @@ var DynamicsWebApi = function (config) {
             }
         }
 
-        _sendRequest("POST", _webApiUrl + collection.toLowerCase(), onSuccess, errorCallback, object, headers);
+        var data = JSON.stringify(object);
+
+        _sendRequest("POST", _webApiUrl + collection.toLowerCase(), onSuccess, errorCallback, data, headers);
     };
 
     var updateRequest = function (request, successCallback, errorCallback) {
@@ -622,8 +637,9 @@ var DynamicsWebApi = function (config) {
                 ? successCallback(JSON.parse(xhr.responseText, _dateReviver))
                 : successCallback();
         };
+        var data = JSON.stringify(object);
 
-        _sendRequest("PATCH", _webApiUrl + collection.toLowerCase() + "(" + id + ")" + systemQueryOptions, onSuccess, errorCallback, object, headers);
+        _sendRequest("PATCH", _webApiUrl + collection.toLowerCase() + "(" + id + ")" + systemQueryOptions, onSuccess, errorCallback, data, headers);
     };
 
     var updateSingleProperty = function (id, collection, keyValuePair, successCallback, errorCallback, prefer) {
@@ -674,7 +690,8 @@ var DynamicsWebApi = function (config) {
         var key = Object.keys(keyValuePair)[0];
         var keyValue = keyValuePair[key];
 
-        _sendRequest("PUT", _webApiUrl + collection.toLowerCase() + "(" + id + ")/" + key, onSuccess, errorCallback, { value: keyValue }, headers);
+        var data = JSON.stringify({ value: keyValue });
+        _sendRequest("PUT", _webApiUrl + collection.toLowerCase() + "(" + id + ")/" + key, onSuccess, errorCallback, data, headers);
     };
 
     var deleteRequest = function (request, successCallback, errorCallback) {
@@ -987,7 +1004,8 @@ var DynamicsWebApi = function (config) {
                 successCallback();
         };
 
-        _sendRequest("PATCH", _webApiUrl + collection.toLowerCase() + "(" + id + ")" + systemQueryOptions, onSuccess, errorCallback, object, headers);
+        var data = JSON.stringify(object);
+        _sendRequest("PATCH", _webApiUrl + collection.toLowerCase() + "(" + id + ")" + systemQueryOptions, onSuccess, errorCallback, data, headers);
     }
 
     var countRecords = function (collection, successCallback, errorCallback, filter) {
@@ -1227,10 +1245,11 @@ var DynamicsWebApi = function (config) {
             successCallback();
         };
 
+        var data = JSON.stringify({ "@odata.id": _webApiUrl + relatedcollection + "(" + relatedId + ")" });
+
         _sendRequest("POST",
             _webApiUrl + primarycollection + "(" + primaryId + ")/" + relationshipName + "/$ref",
-            onSuccess, errorCallback,
-            { "@odata.id": _webApiUrl + relatedcollection + "(" + relatedId + ")" });
+            onSuccess, errorCallback, data);
     }
 
     var disassociateRecords = function (primarycollection, primaryId, relationshipName, relatedId, successCallback, errorCallback) {
@@ -1290,10 +1309,11 @@ var DynamicsWebApi = function (config) {
             successCallback();
         };
 
+        var data = JSON.stringify({ "@odata.id": _webApiUrl + relatedcollection + "(" + relatedId + ")" });
+
         _sendRequest("PUT",
             _webApiUrl + collection + "(" + id + ")/" + singleValuedNavigationPropertyName + "/$ref",
-            onSuccess, errorCallback,
-            { "@odata.id": _webApiUrl + relatedcollection + "(" + relatedId + ")" });
+            onSuccess, errorCallback, data);
     }
 
     var disassociateRecordsSingleValued = function (collection, id, singleValuedNavigationPropertyName, successCallback, errorCallback) {
@@ -1371,6 +1391,8 @@ var DynamicsWebApi = function (config) {
         /// </param>
 
         _stringParameterCheck(functionName, "DynamicsWebApi.executeFunction", "functionName");
+        _callbackParameterCheck(successCallback, "DynamicsWebApi.executeFunction", "successCallback");
+        _callbackParameterCheck(errorCallback, "DynamicsWebApi.executeFunction", "errorCallback");
         var url = functionName;
 
         if (parameters != null) {
@@ -1411,6 +1433,76 @@ var DynamicsWebApi = function (config) {
         };
 
         _sendRequest("GET", _webApiUrl + url, onSuccess, errorCallback);
+    }
+
+    var executeUnboundAction = function (actionName, requestObject, successCallback, errorCallback) {
+        /// <summary>Executes an unbound Web API action</summary>
+        /// <param name="actionName" type="String">The name of the Web API action.</param>
+        /// <param name="requestObject" type="object">Action request body object.</param>
+        ///<param name="successCallback" type="Function">
+        /// The function that will be passed through and be called by a successful response. 
+        /// This function must accept the returned record as a parameter.
+        /// </param>
+        ///<param name="errorCallback" type="Function">
+        /// The function that will be passed through and be called by a failed response. 
+        /// This function must accept an Error object as a parameter.
+        /// </param>
+        return _executeAction(actionName, requestObject, successCallback, errorCallback);
+    }
+
+    var executeBoundAction = function (id, collection, actionName, requestObject, successCallback, errorCallback) {
+        /// <summary>Executes a bound Web API action</summary>
+        /// <param name="actionName" type="String">The name of the Web API action.</param>
+        /// <param name="requestObject" type="object">Action request body object.</param>
+        /// <param name="id" type="String">A String representing the GUID value for the record.</param>
+        /// <param name="collection" type="String">The name of the Entity Collection, for example, for account use accounts, opportunity - opportunities and etc.</param>
+        ///<param name="successCallback" type="Function">
+        /// The function that will be passed through and be called by a successful response. 
+        /// This function must accept the returned record as a parameter.
+        /// </param>
+        ///<param name="errorCallback" type="Function">
+        /// The function that will be passed through and be called by a failed response. 
+        /// This function must accept an Error object as a parameter.
+        /// </param>
+        return _executeAction(actionName, requestObject, collection, id, successCallback, errorCallback);
+    }
+
+    var _executeAction = function (actionName, requestObject, collection, id, successCallback, errorCallback) {
+        /// <summary>Executes a Web API action</summary>
+        /// <param name="actionName" type="String">The name of the Web API action.</param>
+        /// <param name="requestObject" type="object">Action request body object.</param>
+        /// <param name="id" type="String" optional="true">A String representing the GUID value for the record.</param>
+        /// <param name="collection" type="String" optional="true">The name of the Entity Collection, for example, for account use accounts, opportunity - opportunities and etc.</param>
+        ///<param name="successCallback" type="Function">
+        /// The function that will be passed through and be called by a successful response. 
+        /// This function must accept the returned record as a parameter.
+        /// </param>
+        ///<param name="errorCallback" type="Function">
+        /// The function that will be passed through and be called by a failed response. 
+        /// This function must accept an Error object as a parameter.
+        /// </param>
+
+        _stringParameterCheck(actionName, "DynamicsWebApi.executeAction", "actionName");
+        _callbackParameterCheck(successCallback, "DynamicsWebApi.executeAction", "successCallback");
+        _callbackParameterCheck(errorCallback, "DynamicsWebApi.executeAction", "errorCallback");
+        var url = actionName;
+
+        if (collection != null) {
+            _stringParameterCheck(collection, "DynamicsWebApi.executeAction", "collection");
+            id = _guidParameterCheck(id, "DynamicsWebApi.executeAction", "id");
+
+            url = collection + "(" + id + ")/" + url;
+        }
+
+        var onSuccess = function (xhr) {
+            if (xhr.responseText) {
+                successCallback(JSON.parse(xhr.responseText, _dateReviver));
+            }
+        };
+
+        var data = JSON.stringify(requestObject, _propertyReplacer);
+
+        _sendRequest("POST", _webApiUrl + url, onSuccess, errorCallback, data);
     }
 
     var createInstance = function (config) {
@@ -1455,6 +1547,10 @@ var DynamicsWebApi = function (config) {
         disassociate: disassociateRecords,
         associateSingleValued: associateRecordsSingleValued,
         disassociateSingleValued: disassociateRecordsSingleValued,
+        executeBoundFunction: executeBoundFunction,
+        executeUnboundFunction: executeUnboundFunction,
+        executeBoundAction: executeBoundAction,
+        executeUnboundAction: executeUnboundAction,
         setConfig: setConfig,
         initializeInstance: createInstance
     }

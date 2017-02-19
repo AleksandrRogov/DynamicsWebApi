@@ -281,6 +281,57 @@
                 console.trace(error.message);
             });
         }
+        function ExecuteBoundFunction() {
+            var teamId = "";
+            dynamicsWebApi.executeBoundFunction(teamId, "teams", "RetrieveTeamPrivileges", function (response) {
+                //do something with a response
+            }, function (error) {
+                //catch an error
+            });
+        }
+        function ExecuteUnboundFunction() {
+            var parameters = {
+                LocalizedStandardName: 'Pacific Standard Time',
+                LocaleId: 1033
+            };
+            dynamicsWebApi.executeUnboundFunction("GetTimeZoneCodeByLocalizedName", function (result) {
+                alert(result.TimeZoneCode);
+            }, function (error) {
+                debugger;
+                console.trace(error.message);
+            }, parameters);
+        }
+        function ExecuteUnboundAction() {
+            var opportunityId = "b3828ac8-917a-e511-80d2-00155d2a68d2";
+            var actionRequest = {
+                Status: 3,
+                OpportunityClose: {
+                    subject: "Won Opportunity",
+                    "opportunityid@odata.bind": "opportunities(" + opportunityId + ")"
+                }
+            };
+            dynamicsWebApi.executeUnboundAction("WinOpportunity", actionRequest, function () {
+                //success
+            }, function (error) {
+                //catch an error
+            });
+        }
+        function ExecuteBoundAction() {
+            var queueId = "00000000-0000-0000-0000-000000000001";
+            var letterActivityId = "00000000-0000-0000-0000-000000000002";
+            var actionRequest = {
+                Target: {
+                    activityid: letterActivityId,
+                    "@odata.type": "Microsoft.Dynamics.CRM.letter"
+                }
+            };
+            dynamicsWebApi.executeBoundAction(queueId, "queues", "Microsoft.Dynamics.CRM.AddToQueue", actionRequest, function (result) {
+                alert(result.QueueItemId);
+            }, function (error) {
+                debugger;
+                console.trace(error.message);
+            });
+        }
         function TestAnotherInstance() {
 
             var instance = dynamicsWebApi.initializeInstance({ webApiVersion: "8.0" });

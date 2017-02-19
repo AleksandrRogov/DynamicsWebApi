@@ -129,7 +129,16 @@ var DynamicsWebApi = function (config) {
 
     var _initUrl = function () {
         return _getClientUrl() + "/api/data/v" + _webApiVersion + "/";
-    }
+    };
+
+    var _propertyReplacer = function(key, value){
+        /// <param name="key" type="String">Description</param>
+        if (key.endsWith("@odata.bind") && typeof value === "string" && !value.startsWith(axiosCrm.defaults.baseURL)){
+            value += axiosCrm.defaults.baseURL + value;
+        }
+
+        return value;
+    };
 
     var _dateReviver = function (key, value) {
         ///<summary>
@@ -151,8 +160,6 @@ var DynamicsWebApi = function (config) {
         return value;
     };
 
-    var PROTECTION_PREFIX = /^\)\]\}',?\n/;
-
     var axiosCrm = axios.create({
         baseURL: _initUrl(),
         headers: {
@@ -161,10 +168,16 @@ var DynamicsWebApi = function (config) {
             'OData-Version': '4.0',
             'OData-MaxVersion': '4.0'
         },
+        transformRequest: [function (data) {
+            if (typeof data === "object") {
+                try {
+                    data = JSON.stringify(data, _propertyReplacer);
+                } catch (e) { /* Ignore */ }
+            }
+            return data;
+        }],
         transformResponse: [function transformResponse(data) {
-            /*eslint no-param-reassign:0*/
             if (typeof data === 'string') {
-                data = data.replace(PROTECTION_PREFIX, '');
                 try {
                     data = JSON.parse(data, _dateReviver);
                 } catch (e) { /* Ignore */ }
@@ -1140,6 +1153,49 @@ var DynamicsWebApi = function (config) {
         });
     }
 
+    var executeUnboundAction = function (actionName, requestObject) {
+        /// <summary>Executes an unbound Web API action</summary>
+        /// <param name="actionName" type="String">The name of the Web API action.</param>
+        /// <param name="requestObject" type="object">Action request body object.</param>
+        /// <returns type="Promise" />
+        return _executeAction(actionName, requestObject);
+    }
+
+    var executeBoundAction = function (id, collection, actionName, requestObject) {
+        /// <summary>Executes a bound Web API action</summary>
+        /// <param name="actionName" type="String">The name of the Web API action.</param>
+        /// <param name="requestObject" type="object">Action request body object.</param>
+        /// <param name="id" type="String">A String representing the GUID value for the record.</param>
+        /// <param name="collection" type="String">The name of the Entity Collection, for example, for account use accounts, opportunity - opportunities and etc.</param>
+        /// <returns type="Promise" />
+        return _executeAction(actionName, requestObject, collection, id);
+    }
+
+    var _executeAction = function (actionName, requestObject, collection, id) {
+        /// <summary>Executes a Web API action</summary>
+        /// <param name="actionName" type="String">The name of the Web API action.</param>
+        /// <param name="requestObject" type="object">Action request body object.</param>
+        /// <param name="id" type="String" optional="true">A String representing the GUID value for the record.</param>
+        /// <param name="collection" type="String" optional="true">The name of the Entity Collection, for example, for account use accounts, opportunity - opportunities and etc.</param>
+        /// <returns type="Promise" />
+
+        _stringParameterCheck(actionName, "DynamicsWebApi.executeAction", "actionName");
+        var url = actionName;
+
+        if (collection != null) {
+            _stringParameterCheck(collection, "DynamicsWebApi.executeAction", "collection");
+            id = _guidParameterCheck(id, "DynamicsWebApi.executeAction", "id");
+
+            url = collection + "(" + id + ")/" + url;
+        }
+
+        axiosCrm.post(url, requestObject).then(function (response) {
+            if (response.data) {
+                return response.data;
+            }
+        });
+    }
+
     var createInstance = function (config) {
         /// <summary>Creates another instance of DynamicsWebApi helper. This function copies sendRequest function into a newly created object.</summary>
         ///<param name="config" type="Object">
@@ -1174,6 +1230,8 @@ var DynamicsWebApi = function (config) {
         disassociateSingleValued: disassociateRecordsSingleValued,
         executeBoundFunction: executeBoundFunction,
         executeUnboundFunction: executeUnboundFunction,
+        executeBoundAction: executeBoundAction,
+        executeUnboundAction: executeUnboundAction,
         setConfig: setConfig,
         initializeInstance: createInstance
     }

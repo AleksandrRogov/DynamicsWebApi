@@ -28,6 +28,7 @@ Any suggestions are welcome!
   * [Disassociate for a single-valued navigation property] (#disassociate-for-a-single-valued-navigation-property)
   * [Fetch XML Request] (#fetch-xml-request)
   * [Execute Web API functions] (#execute-web-api-functions)
+  * [Execute Web API actions] (#execute-web-api-actions)
 * [JavaScript Promises] (#javascript-promises)
 * [JavaScript Callbacks] (#javascript-callbacks)
   * [Custom Request Function to Web API] (#custom-request-function-to-web-api)
@@ -581,6 +582,47 @@ dynamicsWebApi.executeUnboundFunction("GetTimeZoneCodeByLocalizedName", paramete
 });
 ```
 
+### Execute Web API actions
+
+#### Bound actions
+
+```js
+var queueId = "00000000-0000-0000-0000-000000000001";
+var letterActivityId = "00000000-0000-0000-0000-000000000002";
+var actionRequest = {
+    Target: {
+        activityid: letterActivityId,
+        "@odata.type": "Microsoft.Dynamics.CRM.letter"
+    }
+};
+dynamicsWebApi.executeBoundAction(queueId, "queues", "Microsoft.Dynamics.CRM.AddToQueue", actionRequest).then(function (result) {
+    var queueItemId = result.QueueItemId;
+}).catch(function (error) {
+    //catch an error
+});
+```
+
+#### Unbound actions
+
+```js
+var opportunityId = "b3828ac8-917a-e511-80d2-00155d2a68d2";
+var actionRequest = {
+    Status: 3,
+    OpportunityClose: {
+        subject: "Won Opportunity",
+
+		//DynamicsWebApi will add full url if the property contains @odata.bind suffix
+		//but it is also possible to specify a full url to the entity record
+        "opportunityid@odata.bind": "opportunities(" + opportunityId + ")"
+    }
+};
+dynamicsWebApi.executeUnboundAction("WinOpportunity", actionRequest).then(function () {
+    //success
+}).catch(function (error) {
+    //catch an error
+});
+```
+
 ### In Progress
 
 - [ ] overloaded functions with rich request options for all Web API operations.
@@ -617,7 +659,7 @@ var dynamicsWebApi = new DynamicsWebApi({
         /// <param name="url" type="String">The request URL</param>
         /// <param name="successCallback" type="Function">A callback called on success of the request</param>
         /// <param name="errorCallback" type="Function">A callback called when a request failed</param>
-        /// <param name="data" type="Object" optional="true">Data to send in the request</param>
+        /// <param name="data" type="String" optional="true">Stringified data to send in the request</param>
         /// <param name="additionalHeaders" type="Object" optional="true">Object with additional headers.<para>IMPORTANT! This object does not contain default headers needed for every request.</para></param>
 
         var request = {
@@ -648,7 +690,7 @@ var dynamicsWebApi = new DynamicsWebApi({
         };
 
         if (data != null) {
-            request.data = window.JSON.stringify(data);
+            request.data = data;
         }
 
         $.ajax(request);
@@ -659,7 +701,7 @@ var dynamicsWebApi = new DynamicsWebApi({
 It is important to note the following:
 
 * Both `successCallback` and `errorCallback` passed to the `sendRequest` function must be called with XMLHttpRequest object as a parameter.
-* `data` parameter will not be stringified.
+* `data` object is always stringified.
 * `additionalHeaders` does not contain default headers needed for every request as the parameter name suggests.
 
 When another DynamicsWebApi object with a different configuration created using `initializeInstance` function, the `sendRequest` function will be copied, no need to specify it in the configuration object for every instance of the Wep API helper library.
