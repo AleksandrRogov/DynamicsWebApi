@@ -27,6 +27,7 @@ Any suggestions are welcome!
 	* [Disassociate] (#disassociate)
 	* [Disassociate for a single-valued navigation property] (#disassociate-for-a-single-valued-navigation-property)
 	* [Fetch XML Request] (#fetch-xml-request)
+	* [Execute Web API functions] (#execute-web-api-functions)
 * [JavaScript Promises] (#javascript-promises)
 * [JavaScript Callbacks] (#javascript-callbacks)
   * [Custom Request Function to Web API] (#custom-request-function-to-web-api)
