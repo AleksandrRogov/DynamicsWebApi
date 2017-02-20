@@ -70,7 +70,7 @@ var DWA = {
     }
 }
 
-var sendRequestDefault = function (method, url, successCallback, errorCallback, data, additionalHeaders) {
+var _sendRequestDefault = function (method, url, successCallback, errorCallback, data, additionalHeaders) {
     /// <summary>Sends a request to given URL with given parameters</summary>
     /// <param name="method" type="String">Method of the request</param>
     /// <param name="url" type="String">The request URL</param>
@@ -163,13 +163,12 @@ var DynamicsWebApi = function (config) {
     };
 
     var _webApiVersion = "8.0";
-    var _webApiUrl = null;
 
     var _initUrl = function () {
-        _webApiUrl = _getClientUrl() + "/api/data/v" + _webApiVersion + "/";
+        return _getClientUrl() + "/api/data/v" + _webApiVersion + "/";
     }
 
-    _initUrl();
+    var _webApiUrl = _initUrl();
 
     var _propertyReplacer = function (key, value) {
         /// <param name="key" type="String">Description</param>
@@ -337,7 +336,7 @@ var DynamicsWebApi = function (config) {
         if (object != null) {
             data = JSON.stringify(object, _propertyReplacer);
         }
-        sendRequestDefault(method, _webApiUrl + url, successCallback, errorCallback, data, additionalHeaders);
+        _sendRequestDefault(method, _webApiUrl + url, successCallback, errorCallback, data, additionalHeaders);
     }
 
     var dwaExpandRequest = function () {
@@ -367,7 +366,7 @@ var DynamicsWebApi = function (config) {
             returnRepresentation: true,
             entity: {},
             impersonate: "",
-            navigationProperty: "" 
+            navigationProperty: ""
         }
     };
 
@@ -384,7 +383,7 @@ var DynamicsWebApi = function (config) {
         if (config.webApiVersion != null) {
             _stringParameterCheck(config.webApiVersion, "DynamicsWebApi.setConfig", "config.webApiVersion");
             _webApiVersion = config.webApiVersion;
-            _initUrl();
+            _webApiUrl = _initUrl();
         }
 
         if (config.webApiUrl != null) {

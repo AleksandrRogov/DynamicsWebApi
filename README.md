@@ -698,7 +698,6 @@ Please use the following library that implements [ES6 Promises](https://develope
 
 ### Dependencies
 * [Yaku](https://github.com/ysmood/yaku) - Promise polyfill added at the top of the file while the project is under development.
-* [Axios](https://github.com/mzabriskie/axios) - Added at the top of the library while the project is under development.
 
 ## JavaScript Callbacks
 Please use the following library that implements Callbacks : [DynamicsWebApi with Callbacks](https://github.com/AleksandrRogov/DynamicsWebApi/blob/master/DynamicsWebApi/Scripts/DynamicsWebApi.Callbacks.js).

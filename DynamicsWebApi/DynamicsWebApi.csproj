@@ -67,6 +67,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
+    <Content Include="Pages\TestPage.html" />
+    <Content Include="Tests\callbacks.tests.js" />
+    <Content Include="Tests\main.tests.js" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -77,11 +80,11 @@
   <ItemGroup>
     <Content Include="Pages\DynamicsWebApiCallbacks.html" />
     <Content Include="Pages\DynamicsWebApiPromises.html" />
-    <Content Include="Pages\TestPage.html" />
     <Content Include="Scripts\axios.js" />
     <Content Include="Scripts\axios.min.js" />
     <Content Include="Scripts\DynamicsWebApi.Callbacks.js" />
     <Content Include="Scripts\DynamicsWebApi.js" />
+    <Content Include="Tests\jasmine.js" />
     <Content Include="Scripts\jQuery.js" />
     <Content Include="Scripts\jQuery.min.js" />
     <Content Include="Scripts\yaku.browser.global.min.js" />
