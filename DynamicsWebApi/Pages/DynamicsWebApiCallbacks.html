@@ -42,7 +42,6 @@
     <button onclick="DeleteTestData()">Delete Test Data</button>
 
     <script src="../../clientGlobalcontext.js.aspx"></script>
-    <script src="../../int_jquery.js"></script>
     <script src="../Scripts/DynamicsWebApi.Callbacks.js"></script>
     <script>
         var recordId = "115a8970-d788-4bf6-b064-d1574dbe6930";
@@ -53,12 +52,12 @@
         var queueId = null;
 
         //for association
-        dynamicsWebApi.retrieveMultiple("accounts", ["accountid"], "name eq 'Best For You Organics Company'", null, function (response) {
+        dynamicsWebApi.retrieveMultiple("accounts", null, function (response) {
             /// <param name="response" type="DWA.Types.MultipleResponse">Response object</param>
             accountId = response.value[0].accountid;
         }, function (error) {
             debugger;
-        });
+        }, ["accountid"], "name eq 'Best For You Organics Company'");
 
         dynamicsWebApi.create({ o4u_name: "Test" }, "o4u_tests", function (id) {
             testEntityid = id;
@@ -357,7 +356,7 @@
             });
         }
         function ExecuteBoundFunction() {
-            dynamicsWebApi.retrieveMultiple("teams", null, null, null, function (response) {
+            dynamicsWebApi.retrieveMultiple("teams", null, function (response) {
                 /// <param name="response" type="DWA.Types.MultipleResponse">Response</param>
 
                 dynamicsWebApi.executeBoundFunction(response.value[0].teamid, "teams", "Microsoft.Dynamics.CRM.RetrieveTeamPrivileges", function (response) {

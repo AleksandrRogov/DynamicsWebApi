@@ -1,7 +1,7 @@
 ﻿/*
  DynamicsWebApi v0.9.0 (for Dynamics 365 (online), Dynamics 365 (on-premises), Dynamics CRM 2016, Dynamics CRM Online)
  
- Copyright (c) 2017. 
+ Copyright (c) 2016. 
  Author: Aleksandr Rogov (https://github.com/AleksandrRogov)
  MIT License
 
@@ -560,7 +560,7 @@ var DynamicsWebApi = function (config) {
         return _sendRequest("POST", collection.toLowerCase(), object, headers)
             .then(function (response) {
                 if (response.data) {
-                    return response;
+                    return response.data;
                 }
 
                 var entityUrl = response.headers['OData-EntityId'];
@@ -858,7 +858,7 @@ var DynamicsWebApi = function (config) {
         return _sendRequest("PATCH", result.url, request.entity, result.headers)
             .then(function (response) {
                 if (response.status == 204) {
-                    var entityUrl = response.headers['odata-entityid'];
+                    var entityUrl = response.headers['OData-EntityId'];
                     var id = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(entityUrl)[0];
                     return id;
                 }
@@ -931,7 +931,7 @@ var DynamicsWebApi = function (config) {
         return _sendRequest("PATCH", collection.toLowerCase() + "(" + id + ")" + systemQueryOptions, object, headers)
             .then(function (response) {
                 if (response.status == 204) {
-                    var entityUrl = response.headers['odata-entityid'];
+                    var entityUrl = response.headers['OData-EntityId'];
                     var id = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(entityUrl)[0];
                     return id;
                 }
@@ -1030,8 +1030,10 @@ var DynamicsWebApi = function (config) {
                 if (response.data['@odata.nextLink'] != null) {
                     response.data.oDataNextLink = response.data['@odata.nextLink'];
                 }
-                if (response.data['@odata.count'] != null) {
-                    response.data.oDataCount = parseInt(response.data['@odata.count']);
+                if (request.count) {
+                    response.data.oDataCount = response.data['@odata.count'] != null
+                        ? parseInt(response.data['@odata.count'])
+                        : 0;
                 }
                 if (response.data['@odata.context'] != null) {
                     response.data.oDataContext = response.data['@odata.context'];
