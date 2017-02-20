@@ -69,6 +69,8 @@ var DynamicsWebApi = function (config) {
     /// <summary>DynamicsWebApi - a Microsoft Dynamics CRM Web API helper library. Current version uses Promises instead of Callbacks.</summary>
     ///<param name="config" type="Object">
     /// DynamicsWebApi Configuration object
+    ///<para>   config.impersonate (String).
+    ///             A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.</para>
     ///<para>   config.webApiVersion (String).
     ///             The version of Web API to use, for example: "8.1"</para>
     ///<para>   config.webApiUrl (String).
@@ -115,6 +117,7 @@ var DynamicsWebApi = function (config) {
     };
 
     var _webApiVersion = "8.0";
+    var _impersonateUserId = null;
 
     var _initUrl = function () {
         return _getClientUrl() + "/api/data/v" + _webApiVersion + "/";
@@ -182,6 +185,10 @@ var DynamicsWebApi = function (config) {
             request.setRequestHeader("OData-Version", "4.0");
             request.setRequestHeader("Accept", "application/json");
             request.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+
+            if (_impersonateUserId != null) {
+                request.setRequestHeader("MSCRMCallerId", _impersonateUserId);
+            }
 
             //set additional headers
             if (additionalHeaders != null) {
@@ -379,14 +386,18 @@ var DynamicsWebApi = function (config) {
         ///</param>
 
         if (config.webApiVersion != null) {
-            _stringParameterCheck(config.webApiVersion, "DynamicsWebApi.setConfig requires config.webApiVersion is a string.");
+            _stringParameterCheck(config.webApiVersion, "DynamicsWebApi.setConfig", "config.webApiVersion");
             _webApiVersion = config.webApiVersion;
             _webApiUrl = _initUrl();
         }
 
         if (config.webApiUrl != null) {
-            _stringParameterCheck(config.webApiUrl, "DynamicsWebApi.setConfig requires config.webApiUrl is a string.");
+            _stringParameterCheck(config.webApiUrl, "DynamicsWebApi.setConfig", "config.webApiUrl");
             _webApiUrl = config.webApiUrl;
+        }
+
+        if (config.impersonate != null) {
+            _impersonateUserId = _guidParameterCheck(config.impersonate, "DynamicsWebApi.setConfig", "config.impersonate");
         }
     }
 
@@ -1111,13 +1122,14 @@ var DynamicsWebApi = function (config) {
             });
     }
 
-    var associateRecords = function (primaryCollection, primaryId, relationshipName, relatedCollection, relatedId) {
+    var associateRecords = function (primaryCollection, primaryId, relationshipName, relatedCollection, relatedId, impersonateUserId) {
         /// <summary>Associate for a collection-valued navigation property. (1:N or N:N)</summary>
         /// <param name="primaryCollection" type="String">Primary entity collection name.</param>
         /// <param name="primaryId" type="String">Primary entity record id.</param>
         /// <param name="relationshipName" type="String">Relationship name.</param>
         /// <param name="relatedCollection" type="String">Related colletion name.</param>
         /// <param name="relatedId" type="String">Related entity record id.</param>
+        /// <param name="impersonateUserId" type="String" optional="true">A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.</param>
         /// <returns type="Promise" />
         _stringParameterCheck(primaryCollection, "DynamicsWebApi.associate", "primarycollection");
         _stringParameterCheck(relatedCollection, "DynamicsWebApi.associate", "relatedcollection");
@@ -1125,32 +1137,48 @@ var DynamicsWebApi = function (config) {
         primaryId = _guidParameterCheck(primaryId, "DynamicsWebApi.associate", "primaryId");
         relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.associate", "relatedId");
 
+        var header = {};
+
+        if (impersonateUserId != null) {
+            impersonateUserId = _guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
+            header["MSCRMCallerID"] = impersonateUserId;
+        }
+
         return _sendRequest("POST", primaryCollection + "(" + primaryId + ")/" + relationshipName + "/$ref",
-            { "@odata.id": _initUrl() + relatedCollection + "(" + relatedId + ")" });
+            { "@odata.id": _initUrl() + relatedCollection + "(" + relatedId + ")" }, header);
     }
 
-    var disassociateRecords = function (primaryCollection, primaryId, relationshipName, relatedId) {
+    var disassociateRecords = function (primaryCollection, primaryId, relationshipName, relatedId, impersonateUserId) {
         /// <summary>Disassociate for a collection-valued navigation property.</summary>
         /// <param name="primaryCollection" type="String">Primary entity collection name</param>
         /// <param name="primaryId" type="String">Primary entity record id</param>
         /// <param name="relationshipName" type="String">Relationship name</param>
         /// <param name="relatedId" type="String">Related entity record id</param>
+        /// <param name="impersonateUserId" type="String" optional="true">A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.</param>
         /// <returns type="Promise" />
         _stringParameterCheck(primaryCollection, "DynamicsWebApi.disassociate", "primarycollection");
         _stringParameterCheck(relationshipName, "DynamicsWebApi.disassociate", "relationshipName");
         primaryId = _guidParameterCheck(primaryId, "DynamicsWebApi.disassociate", "primaryId");
         relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.disassociate", "relatedId");
 
-        return _sendRequest("DELETE", primaryCollection + "(" + primaryId + ")/" + relationshipName + "(" + relatedId + ")/$ref");
+        var header = {};
+
+        if (impersonateUserId != null) {
+            impersonateUserId = _guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
+            header["MSCRMCallerID"] = impersonateUserId;
+        }
+
+        return _sendRequest("DELETE", primaryCollection + "(" + primaryId + ")/" + relationshipName + "(" + relatedId + ")/$ref", null, header);
     }
 
-    var associateRecordsSingleValued = function (collection, id, singleValuedNavigationPropertyName, relatedCollection, relatedId) {
+    var associateRecordsSingleValued = function (collection, id, singleValuedNavigationPropertyName, relatedCollection, relatedId, impersonateUserId) {
         /// <summary>Associate for a single-valued navigation property. (1:N)</summary>
         /// <param name="collection" type="String">Entity collection name that contains an attribute.</param>
         /// <param name="id" type="String">Entity record id that contains a attribute.</param>
         /// <param name="singleValuedNavigationPropertyName" type="String">Single-valued navigation property name (usually it's a Schema Name of the lookup attribute).</param>
         /// <param name="relatedCollection" type="String">Related collection name that the lookup (attribute) points to.</param>
         /// <param name="relatedId" type="String">Related entity record id that needs to be associated.</param>
+        /// <param name="impersonateUserId" type="String" optional="true">A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.</param>
         /// <returns type="Promise" />
 
         _stringParameterCheck(collection, "DynamicsWebApi.associateSingleValued", "collection");
@@ -1159,48 +1187,66 @@ var DynamicsWebApi = function (config) {
         _stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.associateSingleValued", "singleValuedNavigationPropertyName");
         _stringParameterCheck(relatedCollection, "DynamicsWebApi.associateSingleValued", "relatedcollection");
 
+        var header = {};
+
+        if (impersonateUserId != null) {
+            impersonateUserId = _guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
+            header["MSCRMCallerID"] = impersonateUserId;
+        }
+
         return _sendRequest("PUT", collection + "(" + id + ")/" + singleValuedNavigationPropertyName + "/$ref",
-            { "@odata.id": _initUrl() + relatedCollection + "(" + relatedId + ")" });
+            { "@odata.id": _initUrl() + relatedCollection + "(" + relatedId + ")" }, header);
     }
 
-    var disassociateRecordsSingleValued = function (collection, id, singleValuedNavigationPropertyName) {
+    var disassociateRecordsSingleValued = function (collection, id, singleValuedNavigationPropertyName, impersonateUserId) {
         /// <summary>Removes a reference to an entity for a single-valued navigation property. (1:N)</summary>
         /// <param name="collection" type="String">Entity collection name that contains an attribute.</param>
         /// <param name="id" type="String">Entity record id that contains an attribute.</param>
         /// <param name="singleValuedNavigationPropertyName" type="String">Single-valued navigation property name (usually it's a Schema Name of the lookup attribute).</param>
+        /// <param name="impersonateUserId" type="String" optional="true">A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.</param>
         /// <returns type="Promise" />
 
         _stringParameterCheck(collection, "DynamicsWebApi.disassociateSingleValued", "collection");
         id = _guidParameterCheck(id, "DynamicsWebApi.disassociateSingleValued", "id");
         _stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.disassociateSingleValued", "singleValuedNavigationPropertyName");
 
-        return _sendRequest("DELETE", collection + "(" + id + ")/" + singleValuedNavigationPropertyName + "/$ref");
+        var header = {};
+
+        if (impersonateUserId != null) {
+            impersonateUserId = _guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
+            header["MSCRMCallerID"] = impersonateUserId;
+        }
+
+        return _sendRequest("DELETE", collection + "(" + id + ")/" + singleValuedNavigationPropertyName + "/$ref", null, header);
     }
 
-    var executeUnboundFunction = function (functionName, parameters) {
+    var executeUnboundFunction = function (functionName, parameters, impersonateUserId) {
         /// <summary>Executes an unbound function (not bound to a particular entity record)</summary>
         /// <param name="functionName" type="String">The name of the function</param>
         /// <param name="parameters" type="Object" optional="true">Function's input parameters. Example: { param1: "test", param2: 3 }</param>
+        /// <param name="impersonateUserId" type="String" optional="true">A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.</param>
         /// <returns type="Promise" />
-        return _executeFunction(functionName, parameters);
+        return _executeFunction(functionName, parameters, null, null, impersonateUserId);
     }
 
-    var executeBoundFunction = function (id, collection, functionName, parameters) {
+    var executeBoundFunction = function (id, collection, functionName, parameters, impersonateUserId) {
         /// <summary>Executes a bound function</summary>
         /// <param name="id" type="String">A String representing the GUID value for the record.</param>
         /// <param name="collection" type="String">The name of the Entity Collection, for example, for account use accounts, opportunity - opportunities and etc.</param>
         /// <param name="functionName" type="String">The name of the function</param>
         /// <param name="parameters" type="Object" optional="true">Function's input parameters. Example: { param1: "test", param2: 3 }</param>
+        /// <param name="impersonateUserId" type="String" optional="true">A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.</param>
         /// <returns type="Promise" />
-        return _executeFunction(functionName, parameters, collection, id);
+        return _executeFunction(functionName, parameters, collection, id, impersonateUserId);
     }
 
-    var _executeFunction = function (functionName, parameters, collection, id) {
+    var _executeFunction = function (functionName, parameters, collection, id, impersonateUserId) {
         /// <summary>Executes a bound function</summary>
         /// <param name="id" type="String" optional="true">A String representing the GUID value for the record.</param>
         /// <param name="collection" type="String" optional="true">The name of the Entity Collection, for example, for account use accounts, opportunity - opportunities and etc.</param>
         /// <param name="functionName" type="String">The name of the function</param>
         /// <param name="parameters" type="Object" optional="true">Function's input parameters. Example: { param1: "test", param2: 3 }</param>
+        /// <param name="impersonateUserId" type="String" optional="true">A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.</param>
         /// <returns type="Promise" />
 
         _stringParameterCheck(functionName, "DynamicsWebApi.executeFunction", "functionName");
@@ -1237,37 +1283,47 @@ var DynamicsWebApi = function (config) {
             url = collection + "(" + id + ")/" + url;
         }
 
-        return _sendRequest("GET", url).then(function (response) {
+        var header = {};
+
+        if (impersonateUserId != null) {
+            impersonateUserId = _guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
+            header["MSCRMCallerID"] = impersonateUserId;
+        }
+
+        return _sendRequest("GET", url, null, header).then(function (response) {
             if (response.data) {
                 return response.data;
             }
         });
     }
 
-    var executeUnboundAction = function (actionName, requestObject) {
+    var executeUnboundAction = function (actionName, requestObject, impersonateUserId) {
         /// <summary>Executes an unbound Web API action</summary>
         /// <param name="actionName" type="String">The name of the Web API action.</param>
         /// <param name="requestObject" type="object">Action request body object.</param>
+        /// <param name="impersonateUserId" type="String" optional="true">A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.</param>
         /// <returns type="Promise" />
-        return _executeAction(actionName, requestObject);
+        return _executeAction(actionName, requestObject, null, null, impersonateUserId);
     }
 
-    var executeBoundAction = function (id, collection, actionName, requestObject) {
+    var executeBoundAction = function (id, collection, actionName, requestObject, impersonateUserId) {
         /// <summary>Executes a bound Web API action</summary>
         /// <param name="actionName" type="String">The name of the Web API action.</param>
         /// <param name="requestObject" type="object">Action request body object.</param>
         /// <param name="id" type="String">A String representing the GUID value for the record.</param>
         /// <param name="collection" type="String">The name of the Entity Collection, for example, for account use accounts, opportunity - opportunities and etc.</param>
+        /// <param name="impersonateUserId" type="String" optional="true">A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.</param>
         /// <returns type="Promise" />
-        return _executeAction(actionName, requestObject, collection, id);
+        return _executeAction(actionName, requestObject, collection, id, impersonateUserId);
     }
 
-    var _executeAction = function (actionName, requestObject, collection, id) {
+    var _executeAction = function (actionName, requestObject, collection, id, impersonateUserId) {
         /// <summary>Executes a Web API action</summary>
         /// <param name="actionName" type="String">The name of the Web API action.</param>
         /// <param name="requestObject" type="object">Action request body object.</param>
         /// <param name="id" type="String" optional="true">A String representing the GUID value for the record.</param>
         /// <param name="collection" type="String" optional="true">The name of the Entity Collection, for example, for account use accounts, opportunity - opportunities and etc.</param>
+        /// <param name="impersonateUserId" type="String" optional="true">A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.</param>
         /// <returns type="Promise" />
 
         _stringParameterCheck(actionName, "DynamicsWebApi.executeAction", "actionName");
@@ -1280,7 +1336,14 @@ var DynamicsWebApi = function (config) {
             url = collection + "(" + id + ")/" + url;
         }
 
-        return _sendRequest("POST", url, requestObject).then(function (response) {
+        var header = {};
+
+        if (impersonateUserId != null) {
+            impersonateUserId = _guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
+            header["MSCRMCallerID"] = impersonateUserId;
+        }
+
+        return _sendRequest("POST", url, requestObject, header).then(function (response) {
             if (response.data) {
                 return response.data;
             }

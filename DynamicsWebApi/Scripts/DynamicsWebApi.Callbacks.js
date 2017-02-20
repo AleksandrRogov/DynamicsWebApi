@@ -115,6 +115,7 @@ var DynamicsWebApi = function (config) {
         return clientUrl;
     };
 
+    var _impersonateUserId = null;
     var _webApiVersion = "8.0";
 
     var _initUrl = function () {
@@ -308,6 +309,10 @@ var DynamicsWebApi = function (config) {
         request.setRequestHeader("Accept", "application/json");
         request.setRequestHeader("Content-Type", "application/json; charset=utf-8");
 
+        if (_impersonateUserId != null) {
+            request.setRequestHeader("MSCRMCallerId", _impersonateUserId);
+        }
+
         //set additional headers
         if (additionalHeaders != null) {
             var headerKeys = Object.keys(additionalHeaders);
@@ -352,22 +357,6 @@ var DynamicsWebApi = function (config) {
         request.send(JSON.stringify(data, _propertyReplacer));
     }
 
-    //var _sendRequest = function (method, url, successCallback, errorCallback, object, additionalHeaders) {
-    //    /// <summary>Sends a request to given URL with given parameters</summary>
-    //    /// <param name="method" type="String">Method of the request</param>
-    //    /// <param name="url" type="String">The request URL</param>
-    //    /// <param name="successCallback" type="Function">A callback called on success of the request</param>
-    //    /// <param name="errorCallback" type="Function">A callback called when a request failed</param>
-    //    /// <param name="object" type="Object" optional="true">Data to send in the request</param>
-    //    /// <param name="additionalHeaders" type="Object" optional="true">Object with additional headers.<para>IMPORTANT! This object does not contain default headers needed for every request.</para></param>
-
-    //    var data = null;
-    //    if (object != null) {
-    //        data = JSON.stringify(object, _propertyReplacer);
-    //    }
-    //    _sendRequestDefault(method, _webApiUrl + url, successCallback, errorCallback, data, additionalHeaders);
-    //}
-
     var dwaExpandRequest = function () {
         return {
             select: [],
@@ -402,11 +391,11 @@ var DynamicsWebApi = function (config) {
     var setConfig = function (config) {
         ///<summary>Sets the configuration parameters for DynamicsWebApi helper.</summary>
         ///<param name="config" type="Object">
-        /// DynamicsWebApi Configuration object
+        /// Retrieve multiple request options
         ///<para>   config.webApiVersion (String). 
         ///             The version of Web API to use, for example: "8.1"</para>
         ///<para>   config.webApiUrl (String).
-        ///             A String representing a URL to Web API (webApiVersion not required if webApiUrl specified) [optional, if used inside of CRM]</para>
+        ///             A String representing a URL to Web API (webApiVersion not required if webApiUrl specified) [optional, if used inside of CRM]
         ///</param>
 
         if (config.webApiVersion != null) {
@@ -420,8 +409,8 @@ var DynamicsWebApi = function (config) {
             _webApiUrl = config.webApiUrl;
         }
 
-        if (config.sendRequest != null) {
-            _sendRequest = config.sendRequest;
+        if (config.impersonate != null) {
+            _impersonateUserId = _guidParameterCheck(config.impersonate, "DynamicsWebApi.setConfig", "config.impersonate");
         }
     }
 
@@ -1305,7 +1294,7 @@ var DynamicsWebApi = function (config) {
         _sendRequest("GET", collection.toLowerCase() + "?fetchXml=" + encodedFetchXml, onSuccess, errorCallback, null, headers);
     }
 
-    var associateRecords = function (primarycollection, primaryId, relationshipName, relatedcollection, relatedId, successCallback, errorCallback) {
+    var associateRecords = function (primarycollection, primaryId, relationshipName, relatedcollection, relatedId, successCallback, errorCallback, impersonateUserId) {
         /// <summary>Associate for a collection-valued navigation property. (1:N or N:N)</summary>
         /// <param name="primarycollection" type="String">Primary entity collection name.</param>
         /// <param name="primaryId" type="String">Primary entity record id.</param>
@@ -1320,6 +1309,7 @@ var DynamicsWebApi = function (config) {
         /// The function that will be passed through and be called by a failed response. 
         /// This function must accept an Error object as a parameter.
         /// </param>
+        /// <param name="impersonateUserId" type="String" optional="true">A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.</param>
         _stringParameterCheck(primarycollection, "DynamicsWebApi.associate", "primarycollection");
         _stringParameterCheck(relatedcollection, "DynamicsWebApi.associate", "relatedcollection");
         _stringParameterCheck(relationshipName, "DynamicsWebApi.associate", "relationshipName");
@@ -1332,14 +1322,21 @@ var DynamicsWebApi = function (config) {
             successCallback();
         };
 
+        var header = {};
+
+        if (impersonateUserId != null) {
+            impersonateUserId = _guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
+            header["MSCRMCallerID"] = impersonateUserId;
+        }
+
         var object = { "@odata.id": _webApiUrl + relatedcollection + "(" + relatedId + ")" };
 
         _sendRequest("POST",
             primarycollection + "(" + primaryId + ")/" + relationshipName + "/$ref",
-            onSuccess, errorCallback, object);
+            onSuccess, errorCallback, object, header);
     }
 
-    var disassociateRecords = function (primarycollection, primaryId, relationshipName, relatedId, successCallback, errorCallback) {
+    var disassociateRecords = function (primarycollection, primaryId, relationshipName, relatedId, successCallback, errorCallback, impersonateUserId) {
         /// <summary>Disassociate for a collection-valued navigation property.</summary>
         /// <param name="primarycollection" type="String">Primary entity collection name</param>
         /// <param name="primaryId" type="String">Primary entity record id</param>
@@ -1353,6 +1350,7 @@ var DynamicsWebApi = function (config) {
         /// The function that will be passed through and be called by a failed response. 
         /// This function must accept an Error object as a parameter.
         /// </param>
+        /// <param name="impersonateUserId" type="String" optional="true">A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.</param>
 
         _stringParameterCheck(primarycollection, "DynamicsWebApi.disassociate", "primarycollection");
         _stringParameterCheck(relationshipName, "DynamicsWebApi.disassociate", "relationshipName");
@@ -1365,10 +1363,17 @@ var DynamicsWebApi = function (config) {
             successCallback();
         };
 
-        _sendRequest("DELETE", primarycollection + "(" + primaryId + ")/" + relationshipName + "(" + relatedId + ")/$ref", onSuccess, errorCallback);
+        var header = {};
+
+        if (impersonateUserId != null) {
+            impersonateUserId = _guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
+            header["MSCRMCallerID"] = impersonateUserId;
+        }
+
+        _sendRequest("DELETE", primarycollection + "(" + primaryId + ")/" + relationshipName + "(" + relatedId + ")/$ref", onSuccess, errorCallback, null, header);
     }
 
-    var associateRecordsSingleValued = function (collection, id, singleValuedNavigationPropertyName, relatedcollection, relatedId, successCallback, errorCallback) {
+    var associateRecordsSingleValued = function (collection, id, singleValuedNavigationPropertyName, relatedcollection, relatedId, successCallback, errorCallback, impersonateUserId) {
         /// <summary>Associate for a single-valued navigation property. (1:N)</summary>
         /// <param name="collection" type="String">Entity collection name that contains an attribute.</param>
         /// <param name="id" type="String">Entity record id that contains a attribute.</param>
@@ -1383,6 +1388,7 @@ var DynamicsWebApi = function (config) {
         /// The function that will be passed through and be called by a failed response. 
         /// This function must accept an Error object as a parameter.
         /// </param>
+        /// <param name="impersonateUserId" type="String" optional="true">A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.</param>
 
         _stringParameterCheck(collection, "DynamicsWebApi.associateSingleValued", "collection");
         id = _guidParameterCheck(id, "DynamicsWebApi.associateSingleValued", "id");
@@ -1396,14 +1402,21 @@ var DynamicsWebApi = function (config) {
             successCallback();
         };
 
+        var header = { };
+
+        if (impersonateUserId != null) {
+            impersonateUserId = _guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
+            header["MSCRMCallerID"]= impersonateUserId;
+        }
+
         var object = { "@odata.id": _webApiUrl + relatedcollection + "(" + relatedId + ")" };
 
         _sendRequest("PUT",
             collection + "(" + id + ")/" + singleValuedNavigationPropertyName + "/$ref",
-            onSuccess, errorCallback, object);
+            onSuccess, errorCallback, object, header);
     }
 
-    var disassociateRecordsSingleValued = function (collection, id, singleValuedNavigationPropertyName, successCallback, errorCallback) {
+    var disassociateRecordsSingleValued = function (collection, id, singleValuedNavigationPropertyName, successCallback, errorCallback, impersonateUserId) {
         /// <summary>Removes a reference to an entity for a single-valued navigation property. (1:N)</summary>
         /// <param name="collection" type="String">Entity collection name that contains an attribute.</param>
         /// <param name="id" type="String">Entity record id that contains a attribute.</param>
@@ -1416,6 +1429,7 @@ var DynamicsWebApi = function (config) {
         /// The function that will be passed through and be called by a failed response. 
         /// This function must accept an Error object as a parameter.
         /// </param>
+        /// <param name="impersonateUserId" type="String" optional="true">A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.</param>
 
         _stringParameterCheck(collection, "DynamicsWebApi.disassociateSingleValued", "collection");
         id = _guidParameterCheck(id, "DynamicsWebApi.disassociateSingleValued", "id");
@@ -1423,14 +1437,21 @@ var DynamicsWebApi = function (config) {
         _callbackParameterCheck(successCallback, "DynamicsWebApi.disassociateSingleValued", "successCallback");
         _callbackParameterCheck(errorCallback, "DynamicsWebApi.disassociateSingleValued", "errorCallback");
 
+        var header = {};
+
+        if (impersonateUserId != null) {
+            impersonateUserId = _guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
+            header["MSCRMCallerID"] = impersonateUserId;
+        }
+
         var onSuccess = function () {
             successCallback();
         };
 
-        _sendRequest("DELETE", collection + "(" + id + ")/" + singleValuedNavigationPropertyName + "/$ref", onSuccess, errorCallback);
+        _sendRequest("DELETE", collection + "(" + id + ")/" + singleValuedNavigationPropertyName + "/$ref", onSuccess, errorCallback, null, header);
     }
 
-    var executeUnboundFunction = function (functionName, successCallback, errorCallback, parameters) {
+    var executeUnboundFunction = function (functionName, successCallback, errorCallback, parameters, impersonateUserId) {
         /// <summary>Executes an unbound function (not bound to a particular entity record)</summary>
         /// <param name="functionName" type="String">The name of the function</param>
         /// <param name="parameters" type="Object" optional="true">Function's input parameters. Example: { param1: "test", param2: 3 }</param>
@@ -1442,10 +1463,11 @@ var DynamicsWebApi = function (config) {
         /// The function that will be passed through and be called by a failed response. 
         /// This function must accept an Error object as a parameter.
         /// </param>
-        return _executeFunction(functionName, parameters, null, null, successCallback, errorCallback);
+        /// <param name="impersonateUserId" type="String" optional="true">A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.</param>
+        return _executeFunction(functionName, parameters, null, null, successCallback, errorCallback, impersonateUserId);
     }
 
-    var executeBoundFunction = function (id, collection, functionName, successCallback, errorCallback, parameters) {
+    var executeBoundFunction = function (id, collection, functionName, successCallback, errorCallback, parameters, impersonateUserId) {
         /// <summary>Executes a bound function</summary>
         /// <param name="id" type="String">A String representing the GUID value for the record.</param>
         /// <param name="collection" type="String">The name of the Entity Collection, for example, for account use accounts, opportunity - opportunities and etc.</param>
@@ -1459,10 +1481,11 @@ var DynamicsWebApi = function (config) {
         /// The function that will be passed through and be called by a failed response. 
         /// This function must accept an Error object as a parameter.
         /// </param>
-        return _executeFunction(functionName, parameters, collection, id, successCallback, errorCallback);
+        /// <param name="impersonateUserId" type="String" optional="true">A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.</param>
+        return _executeFunction(functionName, parameters, collection, id, successCallback, errorCallback, impersonateUserId);
     }
 
-    var _executeFunction = function (functionName, parameters, collection, id, successCallback, errorCallback) {
+    var _executeFunction = function (functionName, parameters, collection, id, successCallback, errorCallback, impersonateUserId) {
         /// <summary>Executes a bound function</summary>
         /// <param name="id" type="String" optional="true">A String representing the GUID value for the record.</param>
         /// <param name="collection" type="String" optional="true">The name of the Entity Collection, for example, for account use accounts, opportunity - opportunities and etc.</param>
@@ -1476,6 +1499,7 @@ var DynamicsWebApi = function (config) {
         /// The function that will be passed through and be called by a failed response. 
         /// This function must accept an Error object as a parameter.
         /// </param>
+        /// <param name="impersonateUserId" type="String" optional="true">A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.</param>
 
         _stringParameterCheck(functionName, "DynamicsWebApi.executeFunction", "functionName");
         _callbackParameterCheck(successCallback, "DynamicsWebApi.executeFunction", "successCallback");
@@ -1513,16 +1537,23 @@ var DynamicsWebApi = function (config) {
             url = collection + "(" + id + ")/" + url;
         }
 
+        var header = {};
+
+        if (impersonateUserId != null) {
+            impersonateUserId = _guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
+            header["MSCRMCallerID"] = impersonateUserId;
+        }
+
         var onSuccess = function (response) {
             response.data
                 ? successCallback(response.data)
                 : successCallback();
         };
 
-        _sendRequest("GET", url, onSuccess, errorCallback);
+        _sendRequest("GET", url, onSuccess, errorCallback, null, header);
     }
 
-    var executeUnboundAction = function (actionName, requestObject, successCallback, errorCallback) {
+    var executeUnboundAction = function (actionName, requestObject, successCallback, errorCallback, impersonateUserId) {
         /// <summary>Executes an unbound Web API action</summary>
         /// <param name="actionName" type="String">The name of the Web API action.</param>
         /// <param name="requestObject" type="object">Action request body object.</param>
@@ -1534,10 +1565,11 @@ var DynamicsWebApi = function (config) {
         /// The function that will be passed through and be called by a failed response. 
         /// This function must accept an Error object as a parameter.
         /// </param>
-        return _executeAction(actionName, requestObject, null, null, successCallback, errorCallback);
+        /// <param name="impersonateUserId" type="String" optional="true">A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.</param>
+        return _executeAction(actionName, requestObject, null, null, successCallback, errorCallback, impersonateUserId);
     }
 
-    var executeBoundAction = function (id, collection, actionName, requestObject, successCallback, errorCallback) {
+    var executeBoundAction = function (id, collection, actionName, requestObject, successCallback, errorCallback, impersonateUserId) {
         /// <summary>Executes a bound Web API action</summary>
         /// <param name="actionName" type="String">The name of the Web API action.</param>
         /// <param name="requestObject" type="object">Action request body object.</param>
@@ -1551,10 +1583,11 @@ var DynamicsWebApi = function (config) {
         /// The function that will be passed through and be called by a failed response. 
         /// This function must accept an Error object as a parameter.
         /// </param>
-        return _executeAction(actionName, requestObject, collection, id, successCallback, errorCallback);
+        /// <param name="impersonateUserId" type="String" optional="true">A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.</param>
+        return _executeAction(actionName, requestObject, collection, id, successCallback, errorCallback, impersonateUserId);
     }
 
-    var _executeAction = function (actionName, requestObject, collection, id, successCallback, errorCallback) {
+    var _executeAction = function (actionName, requestObject, collection, id, successCallback, errorCallback, impersonateUserId) {
         /// <summary>Executes a Web API action</summary>
         /// <param name="actionName" type="String">The name of the Web API action.</param>
         /// <param name="requestObject" type="object">Action request body object.</param>
@@ -1568,6 +1601,7 @@ var DynamicsWebApi = function (config) {
         /// The function that will be passed through and be called by a failed response. 
         /// This function must accept an Error object as a parameter.
         /// </param>
+        /// <param name="impersonateUserId" type="String" optional="true">A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.</param>
 
         _stringParameterCheck(actionName, "DynamicsWebApi.executeAction", "actionName");
         _callbackParameterCheck(successCallback, "DynamicsWebApi.executeAction", "successCallback");
@@ -1581,13 +1615,20 @@ var DynamicsWebApi = function (config) {
             url = collection + "(" + id + ")/" + url;
         }
 
+        var header = {};
+
+        if (impersonateUserId != null) {
+            impersonateUserId = _guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
+            header["MSCRMCallerID"] = impersonateUserId;
+        }
+
         var onSuccess = function (response) {
             response.data
                 ? successCallback(response.data)
                 : successCallback();
         };
 
-        _sendRequest("POST", url, onSuccess, errorCallback, requestObject);
+        _sendRequest("POST", url, onSuccess, errorCallback, requestObject, header);
     }
 
     var createInstance = function (config) {

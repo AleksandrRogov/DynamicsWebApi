@@ -53,8 +53,9 @@ var dynamicsWebApi81 = new DynamicsWebApi({ webApiVersion: "8.1" });
 #### Configuration Object Properties
 Property Name | Type | Description
 ------------ | ------------- | -------------
-__webApiVersion__ | String | Version of the Web API. By default version "8.0" used.
+__impersonate__ | String | A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
 __webApiUrl__ | String | A complete URL string to Web API. Example of the URL: "https:/myorg.crm.dynamics.com/api/data/v8.2/". If it is specified then webApiVersion property will not be used even if it is not empty. 
+__webApiVersion__ | String | Version of the Web API. By default version "8.0" used.
 
 At this moment the library only works inside CRM.
 
