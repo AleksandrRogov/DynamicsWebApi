@@ -80,8 +80,6 @@
   <ItemGroup>
     <Content Include="Pages\DynamicsWebApiCallbacks.html" />
     <Content Include="Pages\DynamicsWebApiPromises.html" />
-    <Content Include="Scripts\axios.js" />
-    <Content Include="Scripts\axios.min.js" />
     <Content Include="Scripts\DynamicsWebApi.Callbacks.js" />
     <Content Include="Scripts\DynamicsWebApi.js" />
     <Content Include="Tests\jasmine.js" />
