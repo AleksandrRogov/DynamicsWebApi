@@ -29,6 +29,10 @@
     <button onclick="AssociateSingleValued()">Associate Single Valued</button>
     <button onclick="Disassociate()">Disassociate</button>
     <button onclick="DisassociateSingleValued()">Disassociate Single Valued</button>
+    <button onclick="ExecuteBoundFunction()">Bound Function</button>
+    <button onclick="ExecuteUnboundFunction()">Unbound Function</button>
+    <button onclick="ExecuteBoundAction()">Bound Action</button>
+    <button onclick="ExecuteUnboundAction()">Unbound Action</button>
     <button onclick="TestAnotherInstance()">Another instance test</button>
     <button onclick="DeleteTestData()">Delete Test Data</button>
 
@@ -37,8 +41,10 @@
     <script>
         var recordId = "115a8970-d788-4bf6-b064-d1574dbe6930";
         dynamicsWebApi.setConfig({ webApiVersion: "8.2" });
+        var deleteTestObjects = [];
         var accountId = null;
         var testEntityid = null;
+        var queueId = null;
 
         //for association
         dynamicsWebApi.retrieveMultiple("accounts", ["accountid"], "name eq 'Best For You Organics Company'").then(function (response) {
@@ -47,10 +53,18 @@
         }).catch(function (error) {
             debugger;
         });
+
         dynamicsWebApi.create({ o4u_name: "Test" }, "o4u_tests").then(function (id) {
             testEntityid = id;
+            deleteTestObjects.push({ id: id, type: "o4u_tests"});
         }).catch(function (error) {
             debugger;
+        });
+
+        dynamicsWebApi.executeUnboundFunction("WhoAmI").then(function (response) {
+            return dynamicsWebApi.retrieve(response.UserId, "systemusers", ["_queueid_value"]);
+        }).then(function (response) {
+            queueId = response._queueid_value;
         });
 
         function CreateRecord() {
@@ -292,11 +306,13 @@
             });
         }
         function ExecuteBoundFunction() {
-            var teamId = "";
-            dynamicsWebApi.executeBoundFunction(teamId, "teams", "RetrieveTeamPrivileges").then(function (response) {
-                //do something with a response
+            dynamicsWebApi.retrieveMultiple("teams").then(function (response) {
+                /// <param name="response" type="DWA.Types.MultipleResponse">Response</param>
+                return dynamicsWebApi.executeBoundFunction(response.value[0].teamid, "teams", "Microsoft.Dynamics.CRM.RetrieveTeamPrivileges");
+            }).then(function (response) {
+                debugger;
             }).catch(function (error) {
-                //catch an error
+                debugger;
             });
         }
         function ExecuteUnboundFunction() {
@@ -312,35 +328,44 @@
             });
         }
         function ExecuteUnboundAction() {
-            var opportunityId = "b3828ac8-917a-e511-80d2-00155d2a68d2";
-            var actionRequest = {
-                Status: 3,
-                OpportunityClose: {
-                    subject: "Won Opportunity",
-                    "opportunityid@odata.bind": "opportunities(" + opportunityId + ")"
-                }
-            };
-            dynamicsWebApi.executeUnboundAction("WinOpportunity", actionRequest).then(function () {
-                //success
-            }).catch(function (error) {
-                //catch an error
-            });
+            var createOpp = { name: "test" };
+            dynamicsWebApi
+                .create(createOpp, "opportunities")
+                .then(function (opportunityId) {
+                    deleteTestObjects.push({id: opportunityId, type: "opportunities"});
+                    var actionRequest = {
+                        Status: 3,
+                        OpportunityClose: {
+                            subject: "Won Opportunity",
+                            "opportunityid@odata.bind": "opportunities(" + opportunityId + ")"
+                        }
+                    };
+                    return dynamicsWebApi.executeUnboundAction("WinOpportunity", actionRequest);
+                })
+                .then(function () {
+                    alert("WON!");
+                }).catch(function (error) {
+                    debugger;
+                });
         }
         function ExecuteBoundAction() {
-            var queueId = "00000000-0000-0000-0000-000000000001";
-            var letterActivityId = "00000000-0000-0000-0000-000000000002";
-            var actionRequest = {
-                Target: {
-                    activityid: letterActivityId,
-                    "@odata.type": "Microsoft.Dynamics.CRM.letter"
-                }
-            };
-            dynamicsWebApi.executeBoundAction(queueId, "queues", "Microsoft.Dynamics.CRM.AddToQueue", actionRequest).then(function (result) {
-                alert(result.QueueItemId);
-            }).catch(function (error) {
-                debugger;
-                console.trace(error.message);
-            });
+            dynamicsWebApi
+                .create({ subject: "test" }, "letters")
+                .then(function (letterActivityId) {
+                    var actionRequest = {
+                        Target: {
+                            activityid: letterActivityId,
+                            "@odata.type": "Microsoft.Dynamics.CRM.letter"
+                        }
+                    };
+                    deleteTestObjects.push({id: letterActivityId, type: "letters"});
+
+                    return dynamicsWebApi.executeBoundAction(queueId, "queues", "Microsoft.Dynamics.CRM.AddToQueue", actionRequest);
+                }).then(function (response) {
+                    alert(response.QueueItemId);
+                }).catch(function (error) {
+                    debugger;
+                });
         }
         function TestAnotherInstance() {
             var instance = dynamicsWebApi.initializeInstance({ webApiVersion: "8.0" });
@@ -353,11 +378,15 @@
             })
         }
         function DeleteTestData() {
-            dynamicsWebApi.deleteRecord(testEntityid, "o4u_tests").then(function () {
-                alert("success!");
-            }).catch(function (error) {
-                debugger;
-            });
+            var length = deleteTestObjects.length;
+            for (var i = 0; i < length; i++) {
+                var deleteObject = deleteTestObjects.pop();
+                dynamicsWebApi.deleteRecord(deleteObject.id, deleteObject.type).then(function () {
+                    alert("success! " + deleteObject.type);
+                }).catch(function (error) {
+                    debugger;
+                });
+            }
         }
     </script>
 </body>

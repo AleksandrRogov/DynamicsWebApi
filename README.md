@@ -561,7 +561,7 @@ dynamicsWebApi.executeFetchXml("accounts", fetchXml).then(function (response) {
 
 ```js
 var teamId = "00000000-0000-0000-0000-000000000001";
-dynamicsWebApi.executeBoundFunction(teamId, "teams", "RetrieveTeamPrivileges").then(function (response) {
+dynamicsWebApi.executeBoundFunction(teamId, "teams", "Microsoft.Dynamics.CRM.RetrieveTeamPrivileges").then(function (response) {
     //do something with a response
 }).catch(function (error) {
     //catch an error

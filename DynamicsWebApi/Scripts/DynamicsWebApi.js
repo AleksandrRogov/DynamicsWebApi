@@ -1,5 +1,5 @@
 ﻿/*
- DynamicsWebApi v0.1.0 (for Dynamics 365 (online), Dynamics 365 (on-premises), Dynamics CRM 2016, Dynamics CRM Online)
+ DynamicsWebApi v0.9.0 (for Dynamics 365 (online), Dynamics 365 (on-premises), Dynamics CRM 2016, Dynamics CRM Online)
  
  Project references the following javascript libraries:
   > yaku (yaku.js) - https://github.com/ysmood/yaku
@@ -134,7 +134,7 @@ var DynamicsWebApi = function (config) {
     var _propertyReplacer = function(key, value){
         /// <param name="key" type="String">Description</param>
         if (key.endsWith("@odata.bind") && typeof value === "string" && !value.startsWith(axiosCrm.defaults.baseURL)){
-            value += axiosCrm.defaults.baseURL + value;
+            value = axiosCrm.defaults.baseURL + value;
         }
 
         return value;
@@ -376,7 +376,7 @@ var DynamicsWebApi = function (config) {
 
         if (options.maxPageSize != null) {
             _numberParameterCheck(options.maxPageSize, "DynamicsWebApi." + functionName, "request.maxPageSize");
-            header['Prefer'] = 'odata.maxpagesize=' + request.maxPageSize;
+            headers['Prefer'] = 'odata.maxpagesize=' + options.maxPageSize;
         }
 
         if (options.count != null) {
@@ -401,7 +401,7 @@ var DynamicsWebApi = function (config) {
 
         if (options.includeAnnotations != null) {
             _stringParameterCheck(options.includeAnnotations, "DynamicsWebApi." + functionName, "request.includeAnnotations");
-            headers['Prefer'] = 'odata.include-annotations"' + options.includeAnnotations + '"';
+            headers['Prefer'] = 'odata.include-annotations="' + options.includeAnnotations + '"';
         }
 
         if (options.ifmatch != null && options.ifnonematch != null) {
@@ -707,7 +707,7 @@ var DynamicsWebApi = function (config) {
 
         var result = convertRequestToLink(request, "delete");
 
-        axiosCrm.delete(result.url, { headers: result.headers }).then(function () {
+        return axiosCrm.delete(result.url, { headers: result.headers }).then(function () {
             return true; //deleted
         }).catch(function (error) {
             if (request.ifmatch != null && error.response.status == 412) {
@@ -1189,7 +1189,7 @@ var DynamicsWebApi = function (config) {
             url = collection + "(" + id + ")/" + url;
         }
 
-        axiosCrm.post(url, requestObject).then(function (response) {
+        return axiosCrm.post(url, requestObject).then(function (response) {
             if (response.data) {
                 return response.data;
             }

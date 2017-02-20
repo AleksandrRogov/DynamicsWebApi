@@ -1,7 +1,6 @@
-﻿/// <reference path="c:\GitHub\DynamicsWebApi\DynamicsWebApi\Pages/TestPage.html" />
-/// <reference path="jQuery.js" />
+﻿/// <reference path="jQuery.js" />
 /*
- DynamicsWebApi.jQuery v0.1.0 (for Dynamics 365 (online), Dynamics 365 (on-premises), Dynamics CRM 2016, Dynamics CRM Online)
+ DynamicsWebApi.jQuery v0.9.0 (for Dynamics 365 (online), Dynamics 365 (on-premises), Dynamics CRM 2016, Dynamics CRM Online)
  
  Project references the following javascript libraries:
   > jQuery (jQuery.js) - https://github.com/jquery/jquery
@@ -166,7 +165,7 @@ var DynamicsWebApi = function (config) {
     var _propertyReplacer = function (key, value) {
         /// <param name="key" type="String">Description</param>
         if (key.endsWith("@odata.bind") && typeof value === "string" && !value.startsWith(_webApiUrl)) {
-            value += _webApiUrl + value;
+            value = _webApiUrl + value;
         }
 
         return value;
@@ -403,7 +402,7 @@ var DynamicsWebApi = function (config) {
 
         if (options.maxPageSize != null) {
             _numberParameterCheck(options.maxPageSize, "DynamicsWebApi." + functionName, "request.maxPageSize");
-            header['Prefer'] = 'odata.maxpagesize=' + request.maxPageSize;
+            headers['Prefer'] = 'odata.maxpagesize=' + options.maxPageSize;
         }
 
         if (options.count != null) {
@@ -428,7 +427,7 @@ var DynamicsWebApi = function (config) {
 
         if (options.includeAnnotations != null) {
             _stringParameterCheck(options.includeAnnotations, "DynamicsWebApi." + functionName, "request.includeAnnotations");
-            headers['Prefer'] = 'odata.include-annotations"' + options.includeAnnotations + '"';
+            headers['Prefer'] = 'odata.include-annotations="' + options.includeAnnotations + '"';
         }
 
         if (options.ifmatch != null && options.ifnonematch != null) {
@@ -684,7 +683,12 @@ var DynamicsWebApi = function (config) {
         }
 
         var onSuccess = function (xhr) {
-            successCallback(JSON.parse(xhr.responseText, _dateReviver));
+            if (xhr.responseText) {
+                successCallback(JSON.parse(xhr.responseText, _dateReviver));
+            }
+            else {
+                successCallback();
+            }
         };
 
         var key = Object.keys(keyValuePair)[0];
@@ -1355,7 +1359,7 @@ var DynamicsWebApi = function (config) {
         /// The function that will be passed through and be called by a failed response. 
         /// This function must accept an Error object as a parameter.
         /// </param>
-        return _executeFunction(functionName, parameters);
+        return _executeFunction(functionName, parameters, null, null, successCallback, errorCallback);
     }
 
     var executeBoundFunction = function (id, collection, functionName, successCallback, errorCallback, parameters) {
@@ -1430,6 +1434,9 @@ var DynamicsWebApi = function (config) {
             if (xhr.responseText) {
                 successCallback(JSON.parse(xhr.responseText, _dateReviver));
             }
+            else {
+                successCallback();
+            }
         };
 
         _sendRequest("GET", _webApiUrl + url, onSuccess, errorCallback);
@@ -1447,7 +1454,7 @@ var DynamicsWebApi = function (config) {
         /// The function that will be passed through and be called by a failed response. 
         /// This function must accept an Error object as a parameter.
         /// </param>
-        return _executeAction(actionName, requestObject, successCallback, errorCallback);
+        return _executeAction(actionName, requestObject, null, null, successCallback, errorCallback);
     }
 
     var executeBoundAction = function (id, collection, actionName, requestObject, successCallback, errorCallback) {
@@ -1497,6 +1504,9 @@ var DynamicsWebApi = function (config) {
         var onSuccess = function (xhr) {
             if (xhr.responseText) {
                 successCallback(JSON.parse(xhr.responseText, _dateReviver));
+            }
+            else {
+                successCallback();
             }
         };
 
