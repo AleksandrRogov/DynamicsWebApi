@@ -95,7 +95,7 @@ dynamicsWebApi.retrieveMultipleRequest(request).then(function (response) {
 })
 ```
 
-The following types are described at this moment: `DWA.Types.FetchXmlResponse` and `DWA.Types.MultipleResponse`.
+The following types are described at this moment: `DWA.Types.ReferenceResponse`, `DWA.Types.FetchXmlResponse` and `DWA.Types.MultipleResponse`.
 
 ##### DWA.Prefer
 `DWA.Prefer` contains various values that can header "Prefer" to be set with. Most of the existing operations support such header. The following list describes which
