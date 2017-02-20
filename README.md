@@ -67,9 +67,9 @@ If an "out of the box" functionality (jQuery) is used in the code or when a new 
 #### Configuration Object Properties
 Property Name | Type | Description
 ------------ | ------------- | -------------
+__sendRequest__ | Function | __Exists only for the version with Callbacks__. A custom Request Function to Web API. More info: [here](#custom-request-function-to-web-api)
 __webApiVersion__ | String | Version of the Web API. By default version "8.0" used.
 __webApiUrl__ | String | A complete URL string to Web API. Example of the URL: "https:/myorg.crm.dynamics.com/api/data/v8.2/". If it is specified then webApiVersion property will not be used even if it is not empty. 
-__sendRequest__ | Function | __Exists only for the version with Callbacks__. A custom Request Function to Web API. More info: [here](#custom-request-function-to-web-api)
 
 At this moment the library only works inside CRM.
 
@@ -155,31 +155,32 @@ an invalid property you will receive either an error saying that the request is 
 
 Property Name | Type | Operation(s) Supported | Description
 ------------ | ------------- | ------------- | -------------
-id | String | `retrieveRequest`, `updateRequest`, `upsertRequest`, `deleteRequest` | A String representing the GUID value for the record.
 collection | String | All | The name of the Entity Collection, for example, for `account` use `accounts`, `opportunity` - `opportunities` and etc.
+count | Boolean | `retrieveMultipleRequest` | Boolean that sets the $count system query option with a value of true to include a count of entities that match the filter criteria up to 5000 (per page). Do not use $top with $count!
 entity | Object | `updateRequest`, `upsertRequest` | A JavaScript object with properties corresponding to the logical name of entity attributes (exceptions are lookups and single-valued navigation properties).
-select | Array | `retrieveRequest`, `retrieveMultipleRequest`, `updateRequest`, `upsertRequest` | An Array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
 expand | Array | `retrieveRequest`, `updateRequest`, `upsertRequest` | An array of Expand Objects (described below the table) representing the $expand OData System Query Option value to control which related records are also returned.
 filter | String | `retrieveRequest`, `retrieveMultipleRequest` | Use the $filter system query option to set criteria for which entities will be returned.
-orderBy | Array | `retrieveMultipleRequest` | An Array (of Strings) representing the order in which items are returned using the $orderby system query option. Use the asc or desc suffix to specify ascending or descending order respectively. The default is ascending if the suffix isn't applied.
-count | Boolean | `retrieveMultipleRequest` | Boolean that sets the $count system query option with a value of true to include a count of entities that match the filter criteria up to 5000 (per page). Do not use $top with $count!
-top | Number | `retrieveMultipleRequest` | Limit the number of results returned by using the $top system query option. Do not use $top with $count!
-maxPageSize | Number | `retrieveMultipleRequest` | Sets the odata.maxpagesize preference value to request the number of entities returned in the response.
-includeAnnotations | String | `retrieveRequest`, `retrieveMultipleRequest` | Sets Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
+id | String | `retrieveRequest`, `updateRequest`, `upsertRequest`, `deleteRequest` | A String representing the GUID value for the record.
 ifmatch | String | `retrieveRequest`, `updateRequest`, `upsertRequest`, `deleteRequest` | Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests. [More info] (https://msdn.microsoft.com/en-us/library/mt607711.aspx).
 ifnonematch | String | `retrieveRequest`, `upsertRequest` | Sets If-None-Match header value that enables to use conditional retrieval in applicable requests. [More info] (https://msdn.microsoft.com/en-us/library/mt607711.aspx).
-returnRepresentation | Boolean | `updateRequest`, `upsertRequest` | Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
 impersonate | String | All | A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+includeAnnotations | String | `retrieveRequest`, `retrieveMultipleRequest` | Sets Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
+maxPageSize | Number | `retrieveMultipleRequest` | Sets the odata.maxpagesize preference value to request the number of entities returned in the response.
+navigationProperty | String | `retrieveRequest` | A String representing the name of a single-valued navigation property. Useful when needed to retrieve information about a related record in a single request.
+orderBy | Array | `retrieveMultipleRequest` | An Array (of Strings) representing the order in which items are returned using the $orderby system query option. Use the asc or desc suffix to specify ascending or descending order respectively. The default is ascending if the suffix isn't applied.
+returnRepresentation | Boolean | `updateRequest`, `upsertRequest` | Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
+select | Array | `retrieveRequest`, `retrieveMultipleRequest`, `updateRequest`, `upsertRequest` | An Array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
+top | Number | `retrieveMultipleRequest` | Limit the number of results returned by using the $top system query option. Do not use $top with $count!
 
 Basic and Advanced functions are also have differences in `expand` parameters. For Basic ones this parameter is a type of String 
 while request.expand property is an Array of Expand Objects for Advanced operations. The following table describes Expand Object properties:
 
 Property Name | Type | Description
 ------------ | ------------- | -------------
-property | String | A name of a single-valued navigation property which needs to be expanded.
-select | Array | An Array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
 filter | String | Use the $filter system query option to set criteria for which related entities will be returned.
 orderBy | Array | An Array (of Strings) representing the order in which related items are returned using the $orderby system query option. Use the asc or desc suffix to specify ascending or descending order respectively. The default is ascending if the suffix isn't applied.
+property | String | A name of a single-valued navigation property which needs to be expanded.
+select | Array | An Array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
 top | Number | Limit the number of results returned by using the $top system query option.
 
 According to CRM developers ([here](http://stackoverflow.com/a/34742977/2042071) and [here] (https://community.dynamics.com/crm/b/joegilldynamicscrm/archive/2016/03/23/web-api-querying-with-expand) 
@@ -418,6 +419,63 @@ dynamicsWebApi.retrieveRequest(request).then(function (record) {
 });
 ```
 
+#### Retrieve a reference to related record using a single-valued navigation property
+
+It is possible to retrieve a reference to the related entity (it works both in Basic and Advanced requests): `select: ["ownerid/$ref"]`. The parameter
+must be the only one, it must be the name of a [single-valued navigation property] (https://msdn.microsoft.com/en-us/library/mt607990.aspx#Anchor_5) 
+and it must have a suffix `/$ref` attached to it. The returned object will be `DWA.Types.ReferenceResponse`. Example:
+
+```js
+var leadId = '7d577253-3ef0-4a0a-bb7f-8335c2596e70';
+
+//perform a retrieve operaion
+dynamicsWebApi.retrieve(leadid, "leads", ["ownerid/$ref"]).then(function (reference) {
+    /// <param name="reference" type="DWA.Types.ReferenceResponse">Response</param>
+    var ownerId = reference.id;
+	var collectionName = reference.collection; // systemusers or teams
+}) //.catch ...
+```
+
+#### Retrieve a related record data using a single-valued navigation property
+
+In order to retrieve a related record by a signle-valued navigation property you need to add a prefix "/" to the __first__ element in a `select` array: 
+`select: ["/ownerid", "fullname"]`. The first element must be the name of a [single-valued navigation property] (https://msdn.microsoft.com/en-us/library/mt607990.aspx#Anchor_5) 
+and it must contain a prefix "/"; all other elements in a `select` array will represent attributes of __the related entity__. Examples:
+
+```js
+var recordId = '7d577253-3ef0-4a0a-bb7f-8335c2596e70';
+
+//perform a retrieve operaion
+dynamicsWebApi.retrieve(recordId, "new_tests", ["/new_ParentLead", "fullname", "subject"]).then(function (leadRecord) {
+    var fullname = leadRecord.fullname;
+	//and etc...
+}) //.catch ...
+```
+
+In advanced request you have a choice to specify a `request.navigationProperty` or use it in the same way as for the Basic function.
+
+```js
+var request = {
+    id: recordId,
+    collection: "new_tests",
+    navigationProperty: "new_ParentLead", //use request.navigationProperty
+    select: ["fullname", "subject"]
+}
+
+//or
+
+request = {
+    id: recordId,
+    collection: "new_tests",
+    select: ["/new_ParentLead", "fullname", "subject"]    //inline with prefix "/"
+}
+
+dynamicsWebApi.retrieveRequest(request).then(function (leadRecord) {
+    var fullname = leadRecord.fullname;
+	//and etc...
+}) // .catch...
+```
+
 ### Retrieve multiple records
 
 Retrieve multiple records can be called differently depending on what level of operation is needed.
@@ -492,12 +550,12 @@ dynamicsWebApi.associate("accounts", accountId, "lead_parent_account", "leads", 
 
 The name of a single-valued navigation property can be retrieved by using a `GET` request with a header `Prefer:odata.include-annotations=Microsoft.Dynamics.CRM.associatednavigationproperty`, then individual records in the response will contain the property `@Microsoft.Dynamics.CRM.associatednavigationproperty` which is the name of the needed navigation property. Usually it will be equal to a schema name of the entity attribute.
 
-For example, there is an entity with a logical name `new_test`, it has a lookup attribute to `lead` entity called `new_leadtest` and schema name `new_LeadTest` which is needed single-valued navigation property.
+For example, there is an entity with a logical name `new_test`, it has a lookup attribute to `lead` entity called `new_parentlead` and schema name `new_ParentLead` which is needed single-valued navigation property.
 
 ```js
 var new_testid = '00000000-0000-0000-0000-000000000001';
 var leadId = '00000000-0000-0000-0000-000000000002';
-dynamicsWebApi.associateSingleValued("new_tests", new_testid, "new_LeadTest", "leads", leadId).then(function () {
+dynamicsWebApi.associateSingleValued("new_tests", new_testid, "new_ParentLead", "leads", leadId).then(function () {
     //success
 }).catch(function (error) {
     //catch an error
@@ -521,7 +579,7 @@ Current request removes a reference to an entity for a single-valued navigation 
 
 ```js
 var new_testid = '00000000-0000-0000-0000-000000000001';
-dynamicsWebApi.disassociateSingleValued("new_tests", new_testid, "new_LeadTest").then(function () {
+dynamicsWebApi.disassociateSingleValued("new_tests", new_testid, "new_ParentLead").then(function () {
     //success
 }).catch(function (error) {
     //catch an error

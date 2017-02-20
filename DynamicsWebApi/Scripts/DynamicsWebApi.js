@@ -37,6 +37,14 @@ var DWA = {
 
             this.value = {};
         },
+        ReferenceResponse: function () {
+            /// <field name='id' type='String'>A String representing the GUID value of the record.</field>  
+            /// <field name='collection' type='String'>The name of the Entity Collection that the record belongs to.</field>  
+            DWA.Types.ResponseBase.call(this);
+
+            this.id = "";
+            this.collection = "";
+        },
         MultipleResponse: function () {
             /// <field name='oDataNextLink' type='String'>The link to the next page.</field>  
             /// <field name='oDataCount' type='Number'>The count of the records.</field>  
@@ -131,9 +139,9 @@ var DynamicsWebApi = function (config) {
         return _getClientUrl() + "/api/data/v" + _webApiVersion + "/";
     };
 
-    var _propertyReplacer = function(key, value){
+    var _propertyReplacer = function (key, value) {
         /// <param name="key" type="String">Description</param>
-        if (key.endsWith("@odata.bind") && typeof value === "string" && !value.startsWith(axiosCrm.defaults.baseURL)){
+        if (key.endsWith("@odata.bind") && typeof value === "string" && !value.startsWith(axiosCrm.defaults.baseURL)) {
             value = axiosCrm.defaults.baseURL + value;
         }
 
@@ -321,7 +329,8 @@ var DynamicsWebApi = function (config) {
             ifnonematch: "",
             returnRepresentation: true,
             entity: {},
-            impersonate: ""
+            impersonate: "",
+            navigationProperty: ""
         }
     };
 
@@ -350,21 +359,44 @@ var DynamicsWebApi = function (config) {
     if (config != null)
         setConfig(config);
 
-    var convertOptions = function (options, functionName, joinSymbol) {
+    var _convertToReferenceObject = function (url) {
+        var result = /\/(\w+)\(([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})/i.exec(url);
+        return { id: result[2], collection: result[1] };
+    }
+
+    var convertOptions = function (options, functionName, url, joinSymbol) {
         /// <param name="options" type="dwaRequest">Options</param>
 
         joinSymbol = joinSymbol != null ? joinSymbol : "&";
 
         var optionsArray = [];
 
-        if (options.collection == null)
-            _parameterCheck(options.collection, "DynamicsWebApi." + functionName, "request.collection");
-        else
-            _stringParameterCheck(options.collection, "DynamicsWebApi." + functionName, "request.collection");
+        if (options.navigationProperty != null) {
+            _stringParameterCheck(options.navigationProperty, "DynamicsWebApi." + functionName, "request.navigationProperty");
+            url += "/" + options.navigationProperty;
+        }
 
         if (options.select != null && options.select.length) {
             _arrayParameterCheck(options.select, "DynamicsWebApi." + functionName, "request.select");
-            optionsArray.push("$select=" + options.select.join(','));
+
+            if (functionName == "retrieve" && options.select.length == 1 && options.select[0].endsWith("/$ref")) {
+                url += "/" + options.select[0];
+            }
+            else {
+                if (options.select[0].startsWith("/") && functionName == "retrieve") {
+                    if (options.navigationProperty == null) {
+                        url += options.select.shift();
+                    }
+                    else {
+                        options.select.shift();
+                    }
+                }
+
+                //check if anything left in the array
+                if (options.select.length) {
+                    optionsArray.push("$select=" + options.select.join(','));
+                }
+            }
         }
 
         if (options.filter != null && options.filter.length) {
@@ -427,7 +459,7 @@ var DynamicsWebApi = function (config) {
             _arrayParameterCheck(options.expand, "DynamicsWebApi." + functionName, "request.expand");
             var expandOptionsArray = [];
             for (var i = 0; i < options.expand.length; i++) {
-                var expandOptions = convertOptions(options.expand[i], functionName + " $expand", ";").query;
+                var expandOptions = convertOptions(options.expand[i], functionName + " $expand", null, ";").query;
                 if (expandOptions.length) {
                     expandOptions = "(" + expandOptions + ")";
                 }
@@ -436,13 +468,18 @@ var DynamicsWebApi = function (config) {
             optionsArray.push("$expand=" + encodeURI(expandOptionsArray.join(",")));
         }
 
-        return { query: optionsArray.join(joinSymbol), headers: headers }
+        return { url: url, query: optionsArray.join(joinSymbol), headers: headers }
     }
 
     var convertRequestToLink = function (options, functionName) {
         /// <summary>Builds the Web Api query string based on a passed options object parameter.</summary>
         /// <param name="options" type="dwaRequest">Options</param>
         /// <returns type="String" />
+
+        if (options.collection == null)
+            _parameterCheck(options.collection, "DynamicsWebApi." + functionName, "request.collection");
+        else
+            _stringParameterCheck(options.collection, "DynamicsWebApi." + functionName, "request.collection");
 
         var url = options.collection.toLowerCase();
 
@@ -451,12 +488,12 @@ var DynamicsWebApi = function (config) {
             url += "(" + options.id + ")";
         }
 
-        var result = convertOptions(options, functionName);
+        var result = convertOptions(options, functionName, url);
 
         if (result.query)
-            url += "?" + result.query;
+            result.url += "?" + result.query;
 
-        return { url: url, headers: result.headers };
+        return { url: result.url, headers: result.headers };
     };
 
     var createRecord = function (object, collection, prefer) {
@@ -508,11 +545,15 @@ var DynamicsWebApi = function (config) {
         ///</param>
         /// <returns type="Promise" />
 
-        _parameterCheck(request, "DynamicsWebApi.retrieve", "request")
+        _parameterCheck(request, "DynamicsWebApi.retrieve", "request");
 
         var result = convertRequestToLink(request, "retrieve");
 
         return axiosCrm.get(result.url, { headers: result.headers }).then(function (response) {
+            if (request.select != null && request.select.length == 1 && request.select[0].endsWith("/$ref") && response.data["@odata.id"] != null) {
+                return _convertToReferenceObject(response.data["@odata.id"]);
+            }
+
             return response.data;
         });
     };
@@ -550,26 +591,40 @@ var DynamicsWebApi = function (config) {
         _stringParameterCheck(collection, "DynamicsWebApi.retrieve", "collection");
         if (select != null)
             _arrayParameterCheck(select, "DynamicsWebApi.retrieve", "select");
-        if (expand != null)
-            _stringParameterCheck(expand, "DynamicsWebApi.retrieve", "expand");
 
-        var systemQueryOptions = "";
+        var url = collection.toLowerCase() + "(" + id + ")";
 
-        if (select != null || expand != null) {
-            systemQueryOptions = "?";
-            if (select != null && select.length > 0) {
-                var selectString = "$select=" + select.join(',');
-                if (expand != null) {
-                    selectString = selectString + "," + expand;
-                }
-                systemQueryOptions = systemQueryOptions + selectString;
+        var queryOptions = [];
+
+        if (select.length) {
+            if (select.length == 1 && select[0].endsWith("/$ref") && select[0].endsWith("/$ref")) {
+                url += "/" + select[0];
             }
-            if (expand != null) {
-                systemQueryOptions = systemQueryOptions + "&$expand=" + expand;
+            else {
+                if (select[0].startsWith("/")) {
+                    url += select.shift();
+                }
+
+                //check if anything left in the array
+                if (select.length) {
+                    queryOptions.push("$select=" + select.join(','));
+                }
             }
         }
 
-        return axiosCrm.get(collection.toLowerCase() + "(" + id + ")" + systemQueryOptions, null).then(function (response) {
+        if (expand != null) {
+            _stringParameterCheck(expand, "DynamicsWebApi.retrieve", "expand");
+            queryOptions.push("$expand=" + expand);
+        }
+
+        if (queryOptions.length)
+            url += "?" + queryOptions.join("&");
+
+        return axiosCrm.get(url).then(function (response) {
+            if (select != null && select.length == 1 && select[0].endsWith("/$ref") && response.data["@odata.id"] != null) {
+                return _convertToReferenceObject(response.data["@odata.id"]);
+            }
+
             return response.data;
         });
     };

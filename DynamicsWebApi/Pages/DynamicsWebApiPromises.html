@@ -17,7 +17,11 @@
     <button onclick="UpdateRequest()">Update Request</button>
     <button onclick="UpdateSingleProperty()">Update Single Property</button>
     <button onclick="RetrieveRecord()">Retrieve Record</button>
+    <button onclick="RetrieveReference()">Retrieve Record Reference</button>
+    <button onclick="RetrieveRelated()">Retrieve Related Record</button>
     <button onclick="RetrieveRequest()">Retrieve Request</button>
+    <button onclick="RetrieveReferenceRequest()">Retrieve Reference Request</button>
+    <button onclick="RetrieveRelatedRequest()">Retrieve Related Record Request</button>
     <button onclick="CountRecords()">Count Records</button>
     <button onclick="DeleteRecord()">Delete Record</button>
     <button onclick="DeleteRequest()">Delete Request</button>
@@ -56,7 +60,7 @@
 
         dynamicsWebApi.create({ o4u_name: "Test" }, "o4u_tests").then(function (id) {
             testEntityid = id;
-            deleteTestObjects.push({ id: id, type: "o4u_tests"});
+            deleteTestObjects.push({ id: id, type: "o4u_tests" });
         }).catch(function (error) {
             debugger;
         });
@@ -64,6 +68,7 @@
         dynamicsWebApi.executeUnboundFunction("WhoAmI").then(function (response) {
             return dynamicsWebApi.retrieve(response.UserId, "systemusers", ["_queueid_value"]);
         }).then(function (response) {
+            /// <param name="response" type="DWA.Types.Response">Response</param>
             queueId = response._queueid_value;
         });
 
@@ -83,11 +88,30 @@
         }
         function RetrieveRecord() {
             dynamicsWebApi.retrieve(recordId, "leads", ["fullname", "subject"]).then(function (object) {
-                var fullname = object.fullname;
-                debugger;
+                alert(object.fullname)
             })
             .catch(function (error) {
                 //if the record has not been found it will throw an error
+                debugger;
+                console.trace(error.message);
+            });
+        }
+        function RetrieveReference() {
+            dynamicsWebApi.retrieve(recordId, "leads", ["ownerid/$ref"]).then(function (reference) {
+                /// <param name="reference" type="DWA.Types.ReferenceResponse">Response</param>
+                alert(reference.id + " " + reference.collection);
+            })
+            .catch(function (error) {
+                //if the record has not been found it will throw an error
+                debugger;
+                console.trace(error.message);
+            });
+        }
+        function RetrieveRelated() {
+            dynamicsWebApi.retrieve(testEntityid, "o4u_tests", ["/o4u_LeadTest", "fullname", "subject"]).then(function (response) {
+                alert(response.subject + ": " + response.fullname);
+            })
+            .catch(function (error) {
                 debugger;
                 console.trace(error.message);
             });
@@ -110,6 +134,44 @@
                 //if the record has not been found it will throw an error
                 debugger;
                 console.trace(error.message);
+            });
+        }
+        function RetrieveReferenceRequest() {
+            var request = {
+                id: recordId,
+                collection: "leads",
+                select: ["ownerid/$ref"]
+            };
+            dynamicsWebApi.retrieveRequest(request).then(function (reference) {
+                /// <param name="reference" type="DWA.Types.ReferenceResponse">Response</param>
+                alert(reference.id + " " + reference.collection);
+            })
+            .catch(function (error) {
+                debugger;
+                console.trace(error.message);
+            });
+        }
+        function RetrieveRelatedRequest() {
+            var request = {
+                id: testEntityid,
+                collection: "o4u_tests",
+                navigationProperty: "o4u_LeadTest", //use request.navigationProperty
+                select: ["fullname", "subject"]
+            }
+
+            //or
+
+            request = {
+                id: testEntityid,
+                collection: "o4u_tests",
+                select: ["/o4u_LeadTest", "fullname", "subject"]    //or inline with prefix "/"
+            }
+
+            dynamicsWebApi.retrieveRequest(request).then(function (response) {
+                alert(response.subject + ": " + response.fullname);
+            })
+            .catch(function (error) {
+                debugger;
             });
         }
         function CountRecords() {
@@ -332,7 +394,7 @@
             dynamicsWebApi
                 .create(createOpp, "opportunities")
                 .then(function (opportunityId) {
-                    deleteTestObjects.push({id: opportunityId, type: "opportunities"});
+                    deleteTestObjects.push({ id: opportunityId, type: "opportunities" });
                     var actionRequest = {
                         Status: 3,
                         OpportunityClose: {
@@ -358,7 +420,7 @@
                             "@odata.type": "Microsoft.Dynamics.CRM.letter"
                         }
                     };
-                    deleteTestObjects.push({id: letterActivityId, type: "letters"});
+                    deleteTestObjects.push({ id: letterActivityId, type: "letters" });
 
                     return dynamicsWebApi.executeBoundAction(queueId, "queues", "Microsoft.Dynamics.CRM.AddToQueue", actionRequest);
                 }).then(function (response) {

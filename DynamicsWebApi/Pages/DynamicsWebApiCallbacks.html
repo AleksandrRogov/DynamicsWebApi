@@ -18,7 +18,11 @@
     <button onclick="UpdateRequest()">Update Request</button>
     <button onclick="UpdateSingleProperty()">Update Single Property</button>
     <button onclick="RetrieveRecord()">Retrieve Record</button>
+    <button onclick="RetrieveReference()">Retrieve Record Reference</button>
+    <button onclick="RetrieveRelated()">Retrieve Related Record</button>
     <button onclick="RetrieveRequest()">Retrieve Request</button>
+    <button onclick="RetrieveReferenceRequest()">Retrieve Reference Request</button>
+    <button onclick="RetrieveRelatedRequest()">Retrieve Related Record Request</button>
     <button onclick="CountRecords()">Count Records</button>
     <button onclick="DeleteRecord()">Delete Record</button>
     <button onclick="DeleteRequest()">Delete Request</button>
@@ -95,6 +99,24 @@
                 console.trace(error.message);
             }, ["fullname", "subject"]);
         }
+        function RetrieveReference() {
+            dynamicsWebApi.retrieve(recordId, "leads", function (reference) {
+                /// <param name="reference" type="DWA.Types.ReferenceResponse">Response</param>
+                alert(reference.id + " " + reference.collection);
+            }, function (error) {
+                //if the record has not been found it will throw an error
+                debugger;
+                console.trace(error.message);
+            }, ["ownerid/$ref"]);
+        }
+        function RetrieveRelated() {
+            dynamicsWebApi.retrieve(testEntityid, "o4u_tests", function (response) {
+                alert(response.subject + ": " + response.fullname);
+            }, function (error) {
+                debugger;
+                console.trace(error.message);
+            }, ["/o4u_LeadTest", "fullname", "subject"]);
+        }
         function RetrieveRequest() {
             var request = {
                 id: recordId,
@@ -111,6 +133,43 @@
                 //if the record has not been found it will throw an error
                 debugger;
                 console.trace(error.message);
+            });
+        }
+        function RetrieveReferenceRequest() {
+            var request = {
+                id: recordId,
+                collection: "leads",
+                select: ["ownerid/$ref"]
+            };
+            dynamicsWebApi.retrieveRequest(request, function (reference) {
+                /// <param name="reference" type="DWA.Types.ReferenceResponse">Response</param>
+                alert(reference.id + " " + reference.collection);
+            }, function (error) {
+                //if the record has not been found it will throw an error
+                debugger;
+                console.trace(error.message);
+            });
+        }
+        function RetrieveRelatedRequest() {
+            var request = {
+                id: testEntityid,
+                collection: "o4u_tests",
+                navigationProperty: "o4u_LeadTest", //use request.navigationProperty
+                select: ["fullname", "subject"]
+            }
+
+            //or
+
+            //request = {
+            //    id: testEntityid,
+            //    collection: "o4u_tests",
+            //    select: ["/o4u_LeadTest", "fullname", "subject"]    //or inline with prefix "/"
+            //}
+
+            dynamicsWebApi.retrieveRequest(request, function (response) {
+                alert(response.subject + ": " + response.fullname);
+            }, function (error) {
+                debugger;
             });
         }
         function CountRecords() {
