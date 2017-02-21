@@ -588,8 +588,7 @@ dynamicsWebApi.executeFetchXml("accounts", fetchXml).then(function (response) {
 	//do something with results here; access records response.value[0].accountid 
 })
 .catch(function (error) {
-    debugger;
-    console.trace(error.message);
+    //catch an error
 })
 ```
 
