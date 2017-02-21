@@ -714,7 +714,7 @@ var DynamicsWebApi = function (config) {
             _arrayParameterCheck(select, "DynamicsWebApi.update", "select");
 
             if (select != null && select.length > 0) {
-                systemQueryOptions = "?" + select.join(",");
+                systemQueryOptions = "?$select=" + select.join(",");
             }
         }
 
@@ -938,9 +938,6 @@ var DynamicsWebApi = function (config) {
         _stringParameterCheck(id, "DynamicsWebApi.retrieve", "id");
         id = _guidParameterCheck(id, "DynamicsWebApi.retrieve", "id")
         _stringParameterCheck(collection, "DynamicsWebApi.retrieve", "collection");
-        if (select != null)
-            _arrayParameterCheck(select, "DynamicsWebApi.retrieve", "select");
-
         _callbackParameterCheck(successCallback, "DynamicsWebApi.retrieve", "successCallback");
         _callbackParameterCheck(errorCallback, "DynamicsWebApi.retrieve", "errorCallback");
 
@@ -948,7 +945,9 @@ var DynamicsWebApi = function (config) {
 
         var queryOptions = [];
 
-        if (select.length) {
+        if (select != null && select.length) {
+            _arrayParameterCheck(select, "DynamicsWebApi.retrieve", "select");
+
             if (select.length == 1 && select[0].endsWith("/$ref") && select[0].endsWith("/$ref")) {
                 url += "/" + select[0];
             }
@@ -1091,12 +1090,12 @@ var DynamicsWebApi = function (config) {
             _arrayParameterCheck(select, "DynamicsWebApi.upsert", "select");
 
             if (select != null && select.length > 0) {
-                systemQueryOptions = "?" + select.join(",");
+                systemQueryOptions = "?$select=" + select.join(",");
             }
         }
 
         var onSuccess = function (response) {
-            if (response.status == 204) {
+            if (response.headers['OData-EntityId'] == 204) {
                 var entityUrl = response.headers['OData-EntityId'];
                 var id = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(entityUrl)[0];
                 successCallback(id);

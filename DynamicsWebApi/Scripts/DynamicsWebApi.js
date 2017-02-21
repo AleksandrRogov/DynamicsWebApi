@@ -642,17 +642,17 @@ var DynamicsWebApi = function (config) {
         /// The Logical Name of the Entity Collection to retrieve.
         /// For an Account record, use "accounts"
         ///</param>
-        ///<param name="select" type="Array">
+        ///<param name="select" type="Array" optional="true">
         /// An Array representing the $select OData System Query Option to control which
         /// attributes will be returned. This is a list of Attribute names that are valid for retrieve.
         /// If null all properties for the record will be returned
         ///</param>
-        ///<param name="expand" type="String">
+        ///<param name="expand" type="String" optional="true">
         /// A String representing the $expand OData System Query Option value to control which
         /// related records are also returned. This is a comma separated list of of up to 6 entity relationship names
         /// If null no expanded related records will be returned.
         ///</param>
-        ///<param name="prefer" type="String">
+        ///<param name="prefer" type="String" optional="true">
         /// A String representing the 'Prefer: odata.include-annotations' header value. 
         /// It can be used to include annotations that will provide additional information about the data in selected properties.
         /// <para>Example values: "*"; "OData.Community.Display.V1.FormattedValue" and etc.</para>
@@ -662,14 +662,14 @@ var DynamicsWebApi = function (config) {
         _stringParameterCheck(id, "DynamicsWebApi.retrieve", "id");
         id = _guidParameterCheck(id, "DynamicsWebApi.retrieve", "id")
         _stringParameterCheck(collection, "DynamicsWebApi.retrieve", "collection");
-        if (select != null)
-            _arrayParameterCheck(select, "DynamicsWebApi.retrieve", "select");
 
         var url = collection.toLowerCase() + "(" + id + ")";
 
         var queryOptions = [];
 
-        if (select.length) {
+        if (select != null && select.length) {
+            _arrayParameterCheck(select, "DynamicsWebApi.retrieve", "select");
+
             if (select.length == 1 && select[0].endsWith("/$ref") && select[0].endsWith("/$ref")) {
                 url += "/" + select[0];
             }
@@ -743,7 +743,7 @@ var DynamicsWebApi = function (config) {
         /// For an Account record, use "accounts"
         ///</param>
         ///<param name="prefer" type="String" optional="true">
-        /// If set to "return=representation" the function will return a newly created object
+        /// If set to "return=representation" the function will return an updated object
         ///</param>
         ///<param name="select" type="Array" optional="true">
         /// Limits returned properties with update when prefer equals "return=representation". 
@@ -767,7 +767,7 @@ var DynamicsWebApi = function (config) {
             _arrayParameterCheck(select, "DynamicsWebApi.update", "select");
 
             if (select.length > 0) {
-                systemQueryOptions = "?" + select.join(",");
+                systemQueryOptions = "?$select=" + select.join(",");
             }
         }
 
@@ -795,7 +795,7 @@ var DynamicsWebApi = function (config) {
         /// For an Account record, use "accounts"
         ///</param>
         ///<param name="prefer" type="String" optional="true">
-        /// If set to "return=representation" the function will return a newly created object
+        /// If set to "return=representation" the function will return an updated object
         ///</param>
         /// <returns type="Promise" />
 
@@ -878,7 +878,9 @@ var DynamicsWebApi = function (config) {
         if (propertyName != null)
             url += "/" + propertyName;
 
-        return _sendRequest("DELETE", url);
+        return _sendRequest("DELETE", url).then(function () {
+            return;
+        })
     };
 
     var upsertRequest = function (request) {
@@ -964,13 +966,13 @@ var DynamicsWebApi = function (config) {
             _arrayParameterCheck(select, "DynamicsWebApi.upsert", "select");
 
             if (select.length > 0) {
-                systemQueryOptions = "?" + select.join(",");
+                systemQueryOptions = "?$select=" + select.join(",");
             }
         }
 
         return _sendRequest("PATCH", collection.toLowerCase() + "(" + id + ")" + systemQueryOptions, object, headers)
             .then(function (response) {
-                if (response.status == 204) {
+                if (response.headers['OData-EntityId']) {
                     var entityUrl = response.headers['OData-EntityId'];
                     var id = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(entityUrl)[0];
                     return id;
@@ -1017,9 +1019,9 @@ var DynamicsWebApi = function (config) {
         /// Sends an asynchronous request to retrieve records.
         ///</summary>
         /// <param name="collection" type="String">The Logical Name of the Entity Collection to retrieve. For an Account record, use "accounts".</param>
-        /// <param name="select" type="Array">Use the $select system query option to limit the properties returned as shown in the following example.</param>
-        /// <param name="filter" type="String">Use the $filter system query option to set criteria for which entities will be returned.</param>
-        /// <param name="nextPageLink" type="String">Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.</param>
+        /// <param name="select" type="Array" optional="true">Use the $select system query option to limit the properties returned as shown in the following example.</param>
+        /// <param name="filter" type="String" optional="true">Use the $filter system query option to set criteria for which entities will be returned.</param>
+        /// <param name="nextPageLink" type="String" optional="true">Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.</param>
         /// <returns type="Promise" />
 
         return retrieveMultipleRecordsAdvanced({
@@ -1159,7 +1161,7 @@ var DynamicsWebApi = function (config) {
 
         var encodedFetchXml = escape(fetchXml);
 
-        return _sendRequest("GET", collection.toLowerCase() + "?fetchXml=" + encodedFetchXml, headers)
+        return _sendRequest("GET", collection.toLowerCase() + "?fetchXml=" + encodedFetchXml, null, headers)
             .then(function (response) {
 
                 if (response.data['@Microsoft.Dynamics.CRM.fetchxmlpagingcookie'] != null) {
@@ -1197,7 +1199,8 @@ var DynamicsWebApi = function (config) {
         }
 
         return _sendRequest("POST", primaryCollection + "(" + primaryId + ")/" + relationshipName + "/$ref",
-            { "@odata.id": _initUrl() + relatedCollection + "(" + relatedId + ")" }, header);
+            { "@odata.id": _webApiUrl + relatedCollection + "(" + relatedId + ")" }, header)
+            .then(function () { });
     }
 
     var disassociateRecords = function (primaryCollection, primaryId, relationshipName, relatedId, impersonateUserId) {
@@ -1220,7 +1223,8 @@ var DynamicsWebApi = function (config) {
             header["MSCRMCallerID"] = impersonateUserId;
         }
 
-        return _sendRequest("DELETE", primaryCollection + "(" + primaryId + ")/" + relationshipName + "(" + relatedId + ")/$ref", null, header);
+        return _sendRequest("DELETE", primaryCollection + "(" + primaryId + ")/" + relationshipName + "(" + relatedId + ")/$ref", null, header)
+            .then(function () { });
     }
 
     var associateRecordsSingleValued = function (collection, id, singleValuedNavigationPropertyName, relatedCollection, relatedId, impersonateUserId) {
@@ -1247,7 +1251,8 @@ var DynamicsWebApi = function (config) {
         }
 
         return _sendRequest("PUT", collection + "(" + id + ")/" + singleValuedNavigationPropertyName + "/$ref",
-            { "@odata.id": _initUrl() + relatedCollection + "(" + relatedId + ")" }, header);
+            { "@odata.id": _webApiUrl + relatedCollection + "(" + relatedId + ")" }, header)
+            .then(function () { });
     }
 
     var disassociateRecordsSingleValued = function (collection, id, singleValuedNavigationPropertyName, impersonateUserId) {
@@ -1269,7 +1274,8 @@ var DynamicsWebApi = function (config) {
             header["MSCRMCallerID"] = impersonateUserId;
         }
 
-        return _sendRequest("DELETE", collection + "(" + id + ")/" + singleValuedNavigationPropertyName + "/$ref", null, header);
+        return _sendRequest("DELETE", collection + "(" + id + ")/" + singleValuedNavigationPropertyName + "/$ref", null, header)
+            .then(function () { });
     }
 
     var executeUnboundFunction = function (functionName, parameters, impersonateUserId) {
@@ -1439,9 +1445,17 @@ var DynamicsWebApi = function (config) {
         executeBoundAction: executeBoundAction,
         executeUnboundAction: executeUnboundAction,
         setConfig: setConfig,
-        initializeInstance: createInstance
+        initializeInstance: createInstance,
+        //**for tests only**
+        __forTestsOnly__: {
+            sendRequest: _sendRequest,
+            getPagingCookie: getPagingCookie,
+            convertOptions: convertOptions,
+            convertRequestToLink: convertRequestToLink,
+            convertToReferenceObject: _convertToReferenceObject
+        }
+        //**for tests only end**
     }
 };
 
 var dynamicsWebApi = new DynamicsWebApi();
-
