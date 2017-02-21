@@ -433,10 +433,11 @@ and it must contain a prefix "/"; all other elements in a `select` array will re
 var recordId = '7d577253-3ef0-4a0a-bb7f-8335c2596e70';
 
 //perform a retrieve operaion
-dynamicsWebApi.retrieve(recordId, "new_tests", ["/new_ParentLead", "fullname", "subject"]).then(function (leadRecord) {
-    var fullname = leadRecord.fullname;
-	//and etc...
-}) //.catch ...
+dynamicsWebApi.retrieve(recordId, "new_tests", ["/new_ParentLead", "fullname", "subject"])
+	.then(function (leadRecord) {
+		var fullname = leadRecord.fullname;
+		//and etc...
+	}) //.catch ...
 ```
 
 In advanced request you have a choice to specify a `request.navigationProperty` or use it in the same way as for the Basic function.
@@ -540,11 +541,12 @@ For example, there is an entity with a logical name `new_test`, it has a lookup 
 ```js
 var new_testid = '00000000-0000-0000-0000-000000000001';
 var leadId = '00000000-0000-0000-0000-000000000002';
-dynamicsWebApi.associateSingleValued("new_tests", new_testid, "new_ParentLead", "leads", leadId).then(function () {
-    //success
-}).catch(function (error) {
-    //catch an error
-});
+dynamicsWebApi.associateSingleValued("new_tests", new_testid, "new_ParentLead", "leads", leadId)
+	.then(function () {
+		//success
+	}).catch(function (error) {
+		//catch an error
+	});
 ```
 
 ### Disassociate
@@ -632,11 +634,12 @@ dynamicsWebApi.executeFetchXml("accounts", fetchXml).then(function (response) {
 
 ```js
 var teamId = "00000000-0000-0000-0000-000000000001";
-dynamicsWebApi.executeBoundFunction(teamId, "teams", "Microsoft.Dynamics.CRM.RetrieveTeamPrivileges").then(function (response) {
-    //do something with a response
-}).catch(function (error) {
-    //catch an error
-});
+dynamicsWebApi.executeBoundFunction(teamId, "teams", "Microsoft.Dynamics.CRM.RetrieveTeamPrivileges")
+	.then(function (response) {
+		//do something with a response
+	}).catch(function (error) {
+		//catch an error
+	});
 ```
 
 #### Unbound functions
@@ -666,11 +669,13 @@ var actionRequest = {
         "@odata.type": "Microsoft.Dynamics.CRM.letter"
     }
 };
-dynamicsWebApi.executeBoundAction(queueId, "queues", "Microsoft.Dynamics.CRM.AddToQueue", actionRequest).then(function (result) {
-    var queueItemId = result.QueueItemId;
-}).catch(function (error) {
-    //catch an error
-});
+dynamicsWebApi.executeBoundAction(queueId, "queues", "Microsoft.Dynamics.CRM.AddToQueue", actionRequest)
+	.then(function (result) {
+		var queueItemId = result.QueueItemId;
+	})
+	.catch(function (error) {
+		//catch an error
+	});
 ```
 
 #### Unbound actions
