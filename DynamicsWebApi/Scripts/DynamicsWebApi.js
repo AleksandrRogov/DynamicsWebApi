@@ -1,5 +1,5 @@
 ﻿/*
- DynamicsWebApi v0.9.0 (for Dynamics 365 (online), Dynamics 365 (on-premises), Dynamics CRM 2016, Dynamics CRM Online)
+ DynamicsWebApi v1.0.0 beta (for Dynamics 365 (online), Dynamics 365 (on-premises), Dynamics CRM 2016, Dynamics CRM Online)
  
  Copyright (c) 2016. 
  Author: Aleksandr Rogov (https://github.com/AleksandrRogov)
