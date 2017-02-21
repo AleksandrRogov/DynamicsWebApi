@@ -7,6 +7,24 @@
 
 */
 
+if (!String.prototype.endsWith) {
+    String.prototype.endsWith = function (searchString, position) {
+        var subjectString = this.toString();
+        if (typeof position !== 'number' || !isFinite(position) || Math.floor(position) !== position || position > subjectString.length) {
+            position = subjectString.length;
+        }
+        position -= searchString.length;
+        var lastIndex = subjectString.lastIndexOf(searchString, position);
+        return lastIndex !== -1 && lastIndex === position;
+    };
+}
+if (!String.prototype.startsWith) {
+    String.prototype.startsWith = function (searchString, position) {
+        position = position || 0;
+        return this.substr(position, searchString.length) === searchString;
+    };
+}
+
 var DWA = {
     Types: {
         ResponseBase: function () {
@@ -93,7 +111,7 @@ var DynamicsWebApi = function (config) {
             if (typeof Xrm != "undefined") {
                 return Xrm.Page.context;
             }
-            else { throw new Error("Context is not available."); }
+            else { /*throw new Error("Context is not available.");*/ }
         }
     };
 
@@ -112,13 +130,16 @@ var DynamicsWebApi = function (config) {
         /// Private function to return the server URL from the context
         ///</summary>
         ///<returns>String</returns>
+        if (typeof Xrm != "undefined") {
 
-        var clientUrl = Xrm.Page.context.getClientUrl();
+            var clientUrl = Xrm.Page.context.getClientUrl();
 
-        if (clientUrl.match(/\/$/)) {
-            clientUrl = clientUrl.substring(0, clientUrl.length - 1);
+            if (clientUrl.match(/\/$/)) {
+                clientUrl = clientUrl.substring(0, clientUrl.length - 1);
+            }
+            return clientUrl;
         }
-        return clientUrl;
+        return "";
     };
 
     var _webApiVersion = "8.0";
@@ -132,7 +153,7 @@ var DynamicsWebApi = function (config) {
 
     var _propertyReplacer = function (key, value) {
         /// <param name="key" type="String">Description</param>
-        if (key.endsWith("@odata.bind") && typeof value === "string" && !value.startsWith(_webApiUrl)) {
+        if (typeof key === "string" && key.endsWith("@odata.bind") && typeof value === "string" && !value.startsWith(_webApiUrl)) {
             value = _webApiUrl + value;
         }
 
@@ -208,6 +229,7 @@ var DynamicsWebApi = function (config) {
                     request.onreadystatechange = null;
                     switch (this.status) {
                         case 200: // Success with content returned in response body.
+                        case 201: // Success with content returned in response body.
                         case 204: // Success with no content returned in response body.
                         case 304: {// Success with Not Modified
                             var responseData = null;
@@ -236,7 +258,9 @@ var DynamicsWebApi = function (config) {
                     }
                 }
             };
-            request.send(JSON.stringify(data, _propertyReplacer));
+            data != null
+                ? request.send(JSON.stringify(data, _propertyReplacer))
+                : request.send();
         });
     }
 

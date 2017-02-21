@@ -69,6 +69,7 @@
     <Content Include="packages.config" />
     <Content Include="Pages\TestPage.html" />
     <Content Include="Tests\callbacks.tests.js" />
+    <Content Include="Tests\jasmine-ajax.js" />
     <Content Include="Tests\main.tests.js" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -89,6 +90,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

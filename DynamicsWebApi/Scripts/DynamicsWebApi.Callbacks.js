@@ -8,6 +8,24 @@
 
 */
 
+if (!String.prototype.endsWith) {
+    String.prototype.endsWith = function (searchString, position) {
+        var subjectString = this.toString();
+        if (typeof position !== 'number' || !isFinite(position) || Math.floor(position) !== position || position > subjectString.length) {
+            position = subjectString.length;
+        }
+        position -= searchString.length;
+        var lastIndex = subjectString.lastIndexOf(searchString, position);
+        return lastIndex !== -1 && lastIndex === position;
+    };
+}
+if (!String.prototype.startsWith) {
+    String.prototype.startsWith = function (searchString, position) {
+        position = position || 0;
+        return this.substr(position, searchString.length) === searchString;
+    };
+}
+
 var DWA = {
     Types: {
         ResponseBase: function () {
@@ -331,6 +349,7 @@ var DynamicsWebApi = function (config) {
                 request.onreadystatechange = null;
                 switch (this.status) {
                     case 200: // Success with content returned in response body.
+                    case 201: // Success with content returned in response body.
                     case 204: // Success with no content returned in response body.
                     case 304: {// Success with Not Modified
                         var responseData = null;
