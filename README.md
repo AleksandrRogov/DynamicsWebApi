@@ -573,8 +573,6 @@ dynamicsWebApi.disassociateSingleValued("new_tests", new_testid, "new_ParentLead
 
 ### Fetch XML Request
 
-Current operation is in a development. Adding a paging.
-
 ```js
 //build a fetch xml
 var fetchXml = "<fetch mapping='logical'>" +
@@ -587,15 +585,46 @@ var fetchXml = "<fetch mapping='logical'>" +
 dynamicsWebApi.executeFetchXml("accounts", fetchXml).then(function (response) {
     /// <param name="response" type="DWA.Types.FetchXmlResponse">Request response</param>
 
-	//do something with results here. For example:
-    for (var i = 0; i < response.value.length; i++) {
-        console.trace("accountid: " + response.value[i].accountid + ", name: " + response.value[i].name);
-    }
+	//do something with results here; access records response.value[0].accountid 
 })
 .catch(function (error) {
     debugger;
     console.trace(error.message);
 })
+```
+
+#### Paging
+
+```js
+//build a fetch xml
+var fetchXml = "<fetch mapping='logical' count='5'>" +
+					"<entity name='account'>" +
+						"<attribute name='accountid'/>" +
+						"<attribute name='name'/>" +
+					"</entity>" +
+				"</fetch>";
+
+dynamicsWebApi.executeFetchXml("accounts", fetchXml).then(function (response) {
+    /// <param name="response" type="DWA.Types.FetchXmlResponse">Request response</param>
+	
+	//do something with results here; access records response.value[0].accountid
+
+	return dynamicsWebApi
+        .executeFetchXml("accounts", fetchXml, null, response.PagingInfo.nextPage, response.PagingInfo.cookie);
+}).then(function (response) {
+    /// <param name="response" type="DWA.Types.FetchXmlResponse">Request response</param>
+    
+	//page 2
+	//do something with results here; access records response.value[0].accountid
+
+    return dynamicsWebApi
+        .executeFetchXml("accounts", fetchXml, null, response.PagingInfo.nextPage, response.PagingInfo.cookie);
+}).then(function (response) {
+    /// <param name="response" type="DWA.Types.FetchXmlResponse">Request response</param>
+	//page 3
+	//and so on... or use a loop.
+}) 
+//catch...
 ```
 
 ### Execute Web API functions
@@ -669,7 +698,6 @@ dynamicsWebApi.executeUnboundAction("WinOpportunity", actionRequest).then(functi
 ### In Progress
 
 - [ ] overloaded functions with rich request options for all Web API operations.
-- [ ] execute fetch xml request using POST method.
 - [ ] get all pages requests, such as: countAll, retrieveMultipleAll, fetchXmlAll and etc.
 - [ ] "formatted" values in responses. For instance: Web API splits information about lookup fields into separate properties, the config option "formatted" will enable developers to retrieve all information about such fields in a single requests and access it through DynamicsWebApi custom response objects.
 - [ ] Intellisense for request objects.

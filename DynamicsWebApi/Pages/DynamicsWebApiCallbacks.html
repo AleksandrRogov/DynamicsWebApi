@@ -304,7 +304,7 @@
             });
         }
         function FetchXmlTest() {
-            var fetchXml = "<fetch mapping='logical'>" +
+            var fetchXml = "<fetch mapping='logical' count='5'>" +
                                "<entity name='account'>" +
                                   "<attribute name='accountid'/>" +
                                   "<attribute name='name'/>" +
@@ -314,10 +314,13 @@
             dynamicsWebApi.executeFetchXml("accounts", fetchXml, function (response) {
                 /// <param name="response" type="DWA.Types.FetchXmlResponse">Request response</param>
 
-                for (var i = 0; i < response.value.length; i++) {
-                    console.trace("accountid: " + response.value[i].accountid + ", name: " + response.value[i].name);
-                }
                 debugger;
+
+                dynamicsWebApi.executeFetchXml("accounts", fetchXml, function (response) {
+                    debugger;
+                }, function (error) {
+
+                }, null, response.PagingInfo.nextPage, response.PagingInfo.cookie);
             }, function (error) {
                 debugger;
                 console.trace(error.message);

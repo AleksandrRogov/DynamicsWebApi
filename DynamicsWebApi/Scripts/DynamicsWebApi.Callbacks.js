@@ -40,13 +40,16 @@ var DWA = {
         },
         FetchXmlResponse: function () {
             /// <field name='value' type='Array'>The array of the records returned from the request.</field>  
-            /// <field name='fetchXmlPagingCookie' type='Object'>Paging Cookie object</field>  
+            /// <field name='pagingInfo' type='Object'>Paging Information</field>  
             DWA.Types.ResponseBase.call(this);
 
             this.value = [];
-            this.fetchXmlPagingCookie = {
-                pageCookies: "",
-                pageNumber: 0
+            this.PagingInfo = {
+                /// <param name='cookie' type='String'>Paging Cookie</param>  
+                /// <param name='page' type='Number'>Page Number</param>  
+                cookie: "",
+                page: 0,
+                nextPage: 1
             }
         }
     },
@@ -61,7 +64,9 @@ var DWA = {
             /// <field type="String">*</field>
             All: '*',
             /// <field type="String">OData.Community.Display.V1.FormattedValue</field>
-            FormattedValue: 'OData.Community.Display.V1.FormattedValue'
+            FormattedValue: 'OData.Community.Display.V1.FormattedValue',
+            /// <field type="String">Microsoft.Dynamics.CRM.fetchxmlpagingcookie</field>
+            FetchXmlPagingCookie: 'Microsoft.Dynamics.CRM.fetchxmlpagingcookie'
         }
     }
 }
@@ -417,9 +422,9 @@ var DynamicsWebApi = function (config) {
     if (config != null)
         setConfig(config);
 
-    var _convertToReferenceObject = function (url) {
-        var result = /\/(\w+)\(([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})/i.exec(url);
-        return { id: result[2], collection: result[1] };
+    var _convertToReferenceObject = function (responseData) {
+        var result = /\/(\w+)\(([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})/i.exec(responseData["@odata.id"]);
+        return { id: result[2], collection: result[1], oDataContext: responseData["@odata.context"] };
     }
 
     var convertOptions = function (options, functionName, url, joinSymbol) {
@@ -866,7 +871,7 @@ var DynamicsWebApi = function (config) {
 
         var onSuccess = function (response) {
             if (request.select != null && request.select.length == 1 && request.select[0].endsWith("/$ref") && response.data["@odata.id"] != null) {
-                successCallback(_convertToReferenceObject(response.data["@odata.id"]));
+                successCallback(_convertToReferenceObject(response.data));
             }
             else {
                 successCallback(response.data);
@@ -950,7 +955,7 @@ var DynamicsWebApi = function (config) {
 
         var onSuccess = function (response) {
             if (select != null && select.length == 1 && select[0].endsWith("/$ref") && response.data["@odata.id"] != null) {
-                successCallback(_convertToReferenceObject(response.data["@odata.id"]));
+                successCallback(_convertToReferenceObject(response.data));
             }
             else {
                 successCallback(response.data);
@@ -1217,40 +1222,40 @@ var DynamicsWebApi = function (config) {
         _sendRequest("GET", result.url, onSuccess, errorCallback, null, result.headers);
     }
 
-    var getPagingCookie = function (pageCookies) {
-        var pagingInfo = {};
-        var pageNumber = null;
-
+    var getPagingCookie = function (pageCookies, currentPageNumber) {
+        /// <summary>Parses a paging cookie</summary>
+        /// <param name="pageCookies" type="String">Page cookies returned in @Microsoft.Dynamics.CRM.fetchxmlpagingcookie.</param>
+        /// <param name="currentPageNumber" type="Number">A current page number. Fix empty paging-cookie for complex fetch xmls.</param>
+        /// <returns type="{cookie: "", number: 0, next: 1}" />
         try {
             //get the page cokies
             pageCookies = unescape(unescape(pageCookies));
 
-            //get the pageNumber
-            pageNumber = parseInt(pageCookies.substring(pageCookies.indexOf("=") + 1, pageCookies.indexOf("pagingcookie")).replace(/\"/g, '').trim());
+            var info = /pagingcookie="(<cookie page="(\d+)".+<\/cookie>)/.exec(pageCookies);
 
-            // this line is used to get the cookie part
-            pageCookies = pageCookies.substring(pageCookies.indexOf("pagingcookie"), (pageCookies.indexOf("/>") + 12));
-            pageCookies = pageCookies.substring(pageCookies.indexOf("=") + 1, pageCookies.length);
-            pageCookies = pageCookies.substring(1, pageCookies.length - 1);
-
-            //replace special character 
-            pageCookies = pageCookies.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '\'').replace(/\'/g, '&' + 'quot;');
-
-            //append paging-cookie
-            pageCookies = "paging-cookie ='" + pageCookies + "'";
-
-            //set the parameter
-            pagingInfo.pageCookies = pageCookies;
-            pagingInfo.pageNumber = pageNumber;
+            if (info != null) {
+                var page = parseInt(info[2]);
+                return {
+                    cookie: info[1].replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '\'').replace(/\'/g, '&' + 'quot;'),
+                    page: page,
+                    nextPage: page + 1
+                };
+            } else {
+                //http://stackoverflow.com/questions/41262772/execution-of-fetch-xml-using-web-api-dynamics-365 workaround
+                return {
+                    cookie: "",
+                    page: currentPageNumber,
+                    nextPage: currentPageNumber + 1
+                }
+            }
 
         } catch (e) {
             throw new Error(e);
         }
+        return null;
+    }}
 
-        return pagingInfo;
-    }
-
-    var fetchXmlRequest = function (collection, fetchXml, successCallback, errorCallback, includeAnnotations) {
+    var executeFetchXml = function (collection, fetchXml, successCallback, errorCallback, includeAnnotations, pageNumber, pagingCookie, impersonateUserId) {
         ///<summary>
         /// Sends an asynchronous request to count records.
         ///</summary>
@@ -1265,23 +1270,46 @@ var DynamicsWebApi = function (config) {
         /// The function that will be passed through and be called by a failed response. 
         /// This function must accept an Error object as a parameter.
         /// </param>
+        /// <param name="pageNumber" type="Number" optional="true">Page number.</param>
+        /// <param name="pagingCookie" type="String" optional="true">Paging cookie. For retrieving the first page, pagingCookie should be null. param>
+        /// <param name="impersonateUserId" type="String" optional="true">A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.</param>
 
         _stringParameterCheck(collection, "DynamicsWebApi.executeFetchXml", "collection");
         _stringParameterCheck(fetchXml, "DynamicsWebApi.executeFetchXml", "fetchXml");
         _callbackParameterCheck(successCallback, "DynamicsWebApi.executeFetchXml", "successCallback");
         _callbackParameterCheck(errorCallback, "DynamicsWebApi.executeFetchXml", "errorCallback");
 
-        var headers = null;
-        if (includeAnnotations != null) {
-            _stringParameterCheck(includeAnnotations, "DynamicsWebApi.executeFetchXml", "includeAnnotations");
-            headers = { 'Prefer': 'odata.include-annotations="' + includeAnnotations + '"' };
+        if (pageNumber == null) {
+            pageNumber = 1;
         }
 
-        var encodedFetchXml = encodeURI(fetchXml);
+        _numberParameterCheck(pageNumber, "DynamicsWebApi.executeFetchXml", "pageNumber");
+        var replacementString = "$1 page='" + pageNumber + "'";
+
+        if (pagingCookie != null) {
+            _stringParameterCheck(pagingCookie, "DynamicsWebApi.executeFetchXml", "pagingCookie");
+            replacementString += " paging-cookie='" + pagingCookie + "'";
+        }
+
+        //add page number and paging cookie to fetch xml
+        fetchXml = fetchXml.replace(/^(<fetch[\w\d\s'"=]+)/, replacementString);
+
+        var headers = {};
+        if (includeAnnotations != null) {
+            _stringParameterCheck(includeAnnotations, "DynamicsWebApi.executeFetchXml", "includeAnnotations");
+            headers['Prefer'] = 'odata.include-annotations="' + includeAnnotations + '"';
+        }
+
+        if (impersonateUserId != null) {
+            impersonateUserId = _guidParameterCheck(impersonateUserId, "DynamicsWebApi.executeFetchXml", "impersonateUserId");
+            header["MSCRMCallerID"] = impersonateUserId;
+        }
+
+        var encodedFetchXml = escape(fetchXml);
 
         var onSuccess = function (response) {
             if (response.data['@Microsoft.Dynamics.CRM.fetchxmlpagingcookie'] != null) {
-                response.data.fetchXmlPagingCookie = getPagingCookie(response.data['@Microsoft.Dynamics.CRM.fetchxmlpagingcookie']);
+                response.data.PagingInfo = getPagingCookie(response.data['@Microsoft.Dynamics.CRM.fetchxmlpagingcookie'], pageNumber);
             }
 
             if (response['@odata.context'] != null) {
@@ -1402,11 +1430,11 @@ var DynamicsWebApi = function (config) {
             successCallback();
         };
 
-        var header = { };
+        var header = {};
 
         if (impersonateUserId != null) {
             impersonateUserId = _guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
-            header["MSCRMCallerID"]= impersonateUserId;
+            header["MSCRMCallerID"] = impersonateUserId;
         }
 
         var object = { "@odata.id": _webApiUrl + relatedcollection + "(" + relatedId + ")" };
@@ -1656,7 +1684,7 @@ var DynamicsWebApi = function (config) {
         upsertRequest: upsertRequest,
         deleteRecord: deleteRecord,
         deleteRequest: deleteRequest,
-        executeFetchXml: fetchXmlRequest,
+        executeFetchXml: executeFetchXml,
         count: countRecords,
         retrieve: retrieveRecord,
         retrieveRequest: retrieveRequest,
