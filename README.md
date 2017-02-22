@@ -156,8 +156,10 @@ maxPageSize | Number | `retrieveMultipleRequest` | Sets the odata.maxpagesize pr
 navigationProperty | String | `retrieveRequest` | A String representing the name of a single-valued navigation property. Useful when needed to retrieve information about a related record in a single request.
 orderBy | Array | `retrieveMultipleRequest` | An Array (of Strings) representing the order in which items are returned using the $orderby system query option. Use the asc or desc suffix to specify ascending or descending order respectively. The default is ascending if the suffix isn't applied.
 returnRepresentation | Boolean | `updateRequest`, `upsertRequest` | Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
+savedQuery | String | `retrieveRequest` | A String representing the GUID value of the saved query.
 select | Array | `retrieveRequest`, `retrieveMultipleRequest`, `updateRequest`, `upsertRequest` | An Array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
 top | Number | `retrieveMultipleRequest` | Limit the number of results returned by using the $top system query option. Do not use $top with $count!
+userQuery | String | `retrieveRequest` | A String representing the GUID value of the user query.
 
 Basic and Advanced functions are also have differences in `expand` parameters. For Basic ones this parameter is a type of String 
 while request.expand property is an Array of Expand Objects for Advanced operations. The following table describes Expand Object properties:

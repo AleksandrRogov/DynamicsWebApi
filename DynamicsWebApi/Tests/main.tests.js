@@ -47,6 +47,7 @@ var dataStubs = {
             { name: "name2", subject: "subject2" }
         ]
     },
+
     fetchXmls: {
         cookiePage1: "%253Ccookie%2520pagenumber%253D%25222%2522%2520pagingcookie%253D%2522%253Ccookie%2520page%253D%25221%2522%253E%253Caccountid%2520last%253D%2522%257BEF72AE29-B3DE-E611-8102-5065F38A7BF1%257D%2522%2520first%253D%2522%257B475B158C-541C-E511-80D3-3863BB347BA8%257D%2522%2520/%253E%253C/cookie%253E%2522%2520istracking%253D%2522False%2522%2520/%253E",
         cookiePage2: "%253Ccookie%2520pagenumber%253D%25222%2522%2520pagingcookie%253D%2522%253Ccookie%2520page%253D%25222%2522%253E%253Caccountid%2520last%253D%2522%257BF972AE29-B3DE-E611-8102-5065F38A7BF1%257D%2522%2520first%253D%2522%257BF172AE29-B3DE-E611-8102-5065F38A7BF1%257D%2522%2520/%253E%253C/cookie%253E%2522%2520istracking%253D%2522False%2522%2520/%253E",
@@ -194,7 +195,21 @@ var responseStubs = {
     fetchXmlResponsePage1: {
         status: 200,
         responseText: JSON.stringify(dataStubs.fetchXmls.fetchXmlResponsePage1)
-    }
+    },
+    actionRequest: {
+        Status: 3,
+        OpportunityClose: {
+            subject: "Won Opportunity",
+            "testid@odata.bind": "tests(" + dataStubs.testEntityId + ")"
+        }
+    },
+    actionRequestModified: {
+        Status: 3,
+        OpportunityClose: {
+            subject: "Won Opportunity",
+            "testid@odata.bind": webApiUrl + "tests(" + dataStubs.testEntityId + ")"
+        }
+    },
 };
 
 describe("dynamicsWebApi.create -", function () {
@@ -1512,7 +1527,7 @@ describe("dynamicsWebApi.associate -", function () {
 
         it("sends the right data", function (done) {
             expect(request.data()).toEqual({
-                "@odata.id": webApiUrl + "records("+ dataStubs.testEntityId2 + ")"
+                "@odata.id": webApiUrl + "records(" + dataStubs.testEntityId2 + ")"
             });
             done();
         });
@@ -1636,7 +1651,7 @@ describe("dynamicsWebApi.disassociate -", function () {
         });
 
         it("sends the request to the right end point", function (done) {
-            expect(request.url).toBe(responseStubs.testEntityUrl + "/tests_records(" +dataStubs.testEntityId2 + ")/$ref");
+            expect(request.url).toBe(responseStubs.testEntityUrl + "/tests_records(" + dataStubs.testEntityId2 + ")/$ref");
             done();
         });
 
@@ -1659,5 +1674,1416 @@ describe("dynamicsWebApi.disassociate -", function () {
             expect(responseObject).toBeUndefined();
             done();
         });
+    });
+});
+
+describe("dynamicsWebApi.associateSingleValued -", function () {
+
+    beforeAll(function () {
+        jasmine.Ajax.install();
+    });
+
+    afterAll(function () {
+        jasmine.Ajax.uninstall();
+    });
+
+    describe("basic", function () {
+        var responseObject;
+        var request;
+        beforeAll(function (done) {
+            dynamicsWebApiTest.associateSingleValued("tests", dataStubs.testEntityId, "tests_records", "records", dataStubs.testEntityId2)
+                .then(function (response) {
+                    responseObject = response;
+                    done();
+                });
+
+            request = jasmine.Ajax.requests.mostRecent();
+            request.respondWith(responseStubs.basicEmptyResponseSuccess);
+        });
+
+        it("sends the request to the right end point", function (done) {
+            expect(request.url).toBe(responseStubs.testEntityUrl + "/tests_records/$ref");
+            done();
+        });
+
+        it("uses the correct method", function (done) {
+            expect(request.method).toBe('PUT');
+            done();
+        });
+
+        it("sends the right data", function (done) {
+            expect(request.data()).toEqual({
+                "@odata.id": webApiUrl + "records(" + dataStubs.testEntityId2 + ")"
+            });
+            done();
+        });
+
+        it("does not have MSCRMCallerID header", function (done) {
+            expect(request.requestHeaders['MSCRMCallerID']).toBeUndefined();
+            done();
+        });
+
+        it("returns the correct response", function (done) {
+            expect(responseObject).toBeUndefined();
+            done();
+        });
+    });
+
+    describe("impersonation", function () {
+        var responseObject;
+        var request;
+        beforeAll(function (done) {
+            dynamicsWebApiTest.associateSingleValued("tests", dataStubs.testEntityId, "tests_records", "records", dataStubs.testEntityId2, dataStubs.testEntityId3)
+                .then(function (object) {
+                    responseObject = object;
+                    done();
+                });
+
+            request = jasmine.Ajax.requests.mostRecent();
+            request.respondWith(responseStubs.updateReturnRepresentation);
+        });
+
+        it("sends the request to the right end point", function (done) {
+            expect(request.url).toBe(responseStubs.testEntityUrl + "/tests_records/$ref");
+            done();
+        });
+
+        it("uses the correct method", function (done) {
+            expect(request.method).toBe('PUT');
+            done();
+        });
+
+        it("sends the right data", function (done) {
+            expect(request.data()).toEqual({
+                "@odata.id": webApiUrl + "records(" + dataStubs.testEntityId2 + ")"
+            });
+            done();
+        });
+
+        it("sends the correct MSCRMCallerID header", function (done) {
+            expect(request.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId3);
+            done();
+        });
+
+        it("returns the correct response", function (done) {
+            expect(responseObject).toBeUndefined();
+            done();
+        });
+    });
+});
+
+describe("dynamicsWebApi.disassociateSingleValued -", function () {
+
+    beforeAll(function () {
+        jasmine.Ajax.install();
+    });
+
+    afterAll(function () {
+        jasmine.Ajax.uninstall();
+    });
+
+    describe("basic", function () {
+        var responseObject;
+        var request;
+        beforeAll(function (done) {
+            dynamicsWebApiTest.disassociateSingleValued("tests", dataStubs.testEntityId, "tests_records")
+                .then(function (response) {
+                    responseObject = response;
+                    done();
+                });
+
+            request = jasmine.Ajax.requests.mostRecent();
+            request.respondWith(responseStubs.basicEmptyResponseSuccess);
+        });
+
+        it("sends the request to the right end point", function (done) {
+            expect(request.url).toBe(responseStubs.testEntityUrl + "/tests_records/$ref");
+            done();
+        });
+
+        it("uses the correct method", function (done) {
+            expect(request.method).toBe('DELETE');
+            done();
+        });
+
+        it("does not send the data", function (done) {
+            expect(request.data()).toEqual({});
+            done();
+        });
+
+        it("does not have MSCRMCallerID header", function (done) {
+            expect(request.requestHeaders['MSCRMCallerID']).toBeUndefined();
+            done();
+        });
+
+        it("returns the correct response", function (done) {
+            expect(responseObject).toBeUndefined();
+            done();
+        });
+    });
+
+    describe("impersonation", function () {
+        var responseObject;
+        var request;
+        beforeAll(function (done) {
+            dynamicsWebApiTest.disassociateSingleValued("tests", dataStubs.testEntityId, "tests_records", dataStubs.testEntityId3)
+                .then(function (object) {
+                    responseObject = object;
+                    done();
+                });
+
+            request = jasmine.Ajax.requests.mostRecent();
+            request.respondWith(responseStubs.updateReturnRepresentation);
+        });
+
+        it("sends the request to the right end point", function (done) {
+            expect(request.url).toBe(responseStubs.testEntityUrl + "/tests_records/$ref");
+            done();
+        });
+
+        it("uses the correct method", function (done) {
+            expect(request.method).toBe('DELETE');
+            done();
+        });
+
+        it("does not send the data", function (done) {
+            expect(request.data()).toEqual({});
+            done();
+        });
+
+        it("sends the correct MSCRMCallerID header", function (done) {
+            expect(request.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId3);
+            done();
+        });
+
+        it("returns the correct response", function (done) {
+            expect(responseObject).toBeUndefined();
+            done();
+        });
+    });
+});
+
+describe("dynamicsWebApi._buildFunctionParameters - ", function () {
+    it("no parameters", function () {
+        var result = dynamicsWebApi.__forTestsOnly__.buildFunctionParameters();
+        expect(result).toBe("()");
+    });
+    it("1 parameter", function () {
+        var result = dynamicsWebApi.__forTestsOnly__.buildFunctionParameters({ param1: "value1" });
+        expect(result).toBe("(param1=@p1)?@p1='value1'");
+    });
+    it("2 parameters", function () {
+        var result = dynamicsWebApi.__forTestsOnly__.buildFunctionParameters({ param1: "value1", param2: 2 });
+        expect(result).toBe("(param1=@p1,param2=@p2)?@p1='value1'&@p2=2");
+    });
+    it("3 parameters", function () {
+        var result = dynamicsWebApi.__forTestsOnly__.buildFunctionParameters({ param1: "value1", param2: 2, param3: "value2" });
+        expect(result).toBe("(param1=@p1,param2=@p2,param3=@p3)?@p1='value1'&@p2=2&@p3='value2'");
+    });
+});
+
+describe("dynamicsWebApi.executeFunction -", function () {
+
+    beforeAll(function () {
+        jasmine.Ajax.install();
+    });
+
+    afterAll(function () {
+        jasmine.Ajax.uninstall();
+    });
+
+    describe("unbound", function () {
+        var responseObject;
+        var responseObject2;
+        var request;
+        var request2;
+        beforeAll(function (done) {
+            dynamicsWebApiTest.executeUnboundFunction("FUN")
+                .then(function (response) {
+                    responseObject = response;
+                });
+
+            request = jasmine.Ajax.requests.mostRecent();
+            request.respondWith(responseStubs.response200);
+
+            dynamicsWebApiTest.executeUnboundFunction("FUN", { param1: "value1", param2: 2 })
+                .then(function (response) {
+                    responseObject2 = response;
+                    done();
+                });
+
+            request2 = jasmine.Ajax.requests.mostRecent();
+            request2.respondWith(responseStubs.response200);
+        });
+
+        it("sends the request to the right end point", function (done) {
+            expect(request.url).toBe(webApiUrl + "FUN()");
+            expect(request2.url).toBe(webApiUrl + "FUN(param1=@p1,param2=@p2)?@p1='value1'&@p2=2");
+            done();
+        });
+
+        it("uses the correct method", function (done) {
+            expect(request.method).toBe('GET');
+            expect(request2.method).toBe('GET');
+            done();
+        });
+
+        it("does not send the data", function (done) {
+            expect(request.data()).toEqual({});
+            expect(request2.data()).toEqual({});
+            done();
+        });
+
+        it("does not have MSCRMCallerID header", function (done) {
+            expect(request.requestHeaders['MSCRMCallerID']).toBeUndefined();
+            expect(request2.requestHeaders['MSCRMCallerID']).toBeUndefined();
+            done();
+        });
+
+        it("returns the correct response", function (done) {
+            expect(responseObject).toEqual(dataStubs.testEntity);
+            expect(responseObject2).toEqual(dataStubs.testEntity);
+            done();
+        });
+    });
+
+    describe("unbound impersonation", function () {
+        var responseObject;
+        var responseObject2;
+        var request;
+        var request2;
+        beforeAll(function (done) {
+            dynamicsWebApiTest.executeUnboundFunction("FUN", null, dataStubs.testEntityId)
+                .then(function (response) {
+                    responseObject = response;
+                });
+
+            request = jasmine.Ajax.requests.mostRecent();
+            request.respondWith(responseStubs.response200);
+
+            dynamicsWebApiTest.executeUnboundFunction("FUN", { param1: "value1", param2: 2 }, dataStubs.testEntityId)
+                .then(function (response) {
+                    responseObject2 = response;
+                    done();
+                });
+
+            request2 = jasmine.Ajax.requests.mostRecent();
+            request2.respondWith(responseStubs.response200);
+        });
+
+        it("sends the request to the right end point", function (done) {
+            expect(request.url).toBe(webApiUrl + "FUN()");
+            expect(request2.url).toBe(webApiUrl + "FUN(param1=@p1,param2=@p2)?@p1='value1'&@p2=2");
+            done();
+        });
+
+        it("uses the correct method", function (done) {
+            expect(request.method).toBe('GET');
+            expect(request2.method).toBe('GET');
+            done();
+        });
+
+        it("does not send the data", function (done) {
+            expect(request.data()).toEqual({});
+            expect(request2.data()).toEqual({});
+            done();
+        });
+
+        it("sends the correct MSCRMCallerID header", function (done) {
+            expect(request.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId);
+            expect(request2.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId);
+            done();
+        });
+
+        it("returns the correct response", function (done) {
+            expect(responseObject).toEqual(dataStubs.testEntity);
+            expect(responseObject2).toEqual(dataStubs.testEntity);
+            done();
+        });
+    });
+
+    describe("bound", function () {
+        var responseObject;
+        var responseObject2;
+        var request;
+        var request2;
+        beforeAll(function (done) {
+            dynamicsWebApiTest.executeBoundFunction(dataStubs.testEntityId, "tests", "FUN")
+                .then(function (response) {
+                    responseObject = response;
+                });
+
+            request = jasmine.Ajax.requests.mostRecent();
+            request.respondWith(responseStubs.response200);
+
+            dynamicsWebApiTest.executeBoundFunction(dataStubs.testEntityId, "tests", "FUN", { param1: "value1", param2: 2 })
+                .then(function (response) {
+                    responseObject2 = response;
+                    done();
+                });
+
+            request2 = jasmine.Ajax.requests.mostRecent();
+            request2.respondWith(responseStubs.basicEmptyResponseSuccess);
+        });
+
+        it("sends the request to the right end point", function (done) {
+            expect(request.url).toBe(responseStubs.testEntityUrl + "/FUN()");
+            expect(request2.url).toBe(responseStubs.testEntityUrl + "/FUN(param1=@p1,param2=@p2)?@p1='value1'&@p2=2");
+            done();
+        });
+
+        it("uses the correct method", function (done) {
+            expect(request.method).toBe('GET');
+            expect(request2.method).toBe('GET');
+            done();
+        });
+
+        it("does not send the data", function (done) {
+            expect(request.data()).toEqual({});
+            expect(request2.data()).toEqual({});
+            done();
+        });
+
+        it("does not have MSCRMCallerID header", function (done) {
+            expect(request.requestHeaders['MSCRMCallerID']).toBeUndefined();
+            expect(request2.requestHeaders['MSCRMCallerID']).toBeUndefined();
+            done();
+        });
+
+        it("returns the correct response", function (done) {
+            expect(responseObject).toEqual(dataStubs.testEntity);
+            expect(responseObject2).toBeUndefined();
+            done();
+        });
+    });
+
+    describe("bound impersonation", function () {
+        var responseObject;
+        var responseObject2;
+        var request;
+        var request2;
+        beforeAll(function (done) {
+            dynamicsWebApiTest.executeBoundFunction(dataStubs.testEntityId, "tests", "FUN", null, dataStubs.testEntityId)
+                .then(function (response) {
+                    responseObject = response;
+                });
+
+            request = jasmine.Ajax.requests.mostRecent();
+            request.respondWith(responseStubs.response200);
+
+            dynamicsWebApiTest.executeBoundFunction(dataStubs.testEntityId, "tests", "FUN", { param1: "value1", param2: 2 }, dataStubs.testEntityId)
+                .then(function (response) {
+                    responseObject2 = response;
+                    done();
+                });
+
+            request2 = jasmine.Ajax.requests.mostRecent();
+            request2.respondWith(responseStubs.response200);
+        });
+
+        it("sends the request to the right end point", function (done) {
+            expect(request.url).toBe(responseStubs.testEntityUrl + "/FUN()");
+            expect(request2.url).toBe(responseStubs.testEntityUrl + "/FUN(param1=@p1,param2=@p2)?@p1='value1'&@p2=2");
+            done();
+        });
+
+        it("uses the correct method", function (done) {
+            expect(request.method).toBe('GET');
+            expect(request2.method).toBe('GET');
+            done();
+        });
+
+        it("does not send the data", function (done) {
+            expect(request.data()).toEqual({});
+            expect(request2.data()).toEqual({});
+            done();
+        });
+
+        it("sends the correct MSCRMCallerID header", function (done) {
+            expect(request.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId);
+            expect(request2.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId);
+            done();
+        });
+
+        it("returns the correct response", function (done) {
+            expect(responseObject).toEqual(dataStubs.testEntity);
+            expect(responseObject2).toEqual(dataStubs.testEntity);
+            done();
+        });
+    });
+});
+
+describe("dynamicsWebApi.executeAction -", function () {
+
+    beforeAll(function () {
+        jasmine.Ajax.install();
+    });
+
+    afterAll(function () {
+        jasmine.Ajax.uninstall();
+    });
+
+    describe("unbound", function () {
+        var responseObject;
+        var request;
+        beforeAll(function (done) {
+            dynamicsWebApiTest.executeUnboundAction("FUN", responseStubs.actionRequest)
+                .then(function (response) {
+                    responseObject = response;
+                    done();
+                });
+
+            request = jasmine.Ajax.requests.mostRecent();
+            request.respondWith(responseStubs.basicEmptyResponseSuccess);
+        });
+
+        it("sends the request to the right end point", function (done) {
+            expect(request.url).toBe(webApiUrl + "FUN");
+            done();
+        });
+
+        it("uses the correct method", function (done) {
+            expect(request.method).toBe('POST');
+            done();
+        });
+
+        it("does not send the data", function (done) {
+            expect(request.data()).toEqual(responseStubs.actionRequestModified);
+            done();
+        });
+
+        it("does not have MSCRMCallerID header", function (done) {
+            expect(request.requestHeaders['MSCRMCallerID']).toBeUndefined();
+            done();
+        });
+
+        it("returns the correct response", function (done) {
+            expect(responseObject).toBeUndefined();
+            done();
+        });
+    });
+
+    describe("unbound impersonation", function () {
+        var responseObject;
+        var request;
+        beforeAll(function (done) {
+            dynamicsWebApiTest.executeUnboundAction("FUN", responseStubs.actionRequest, dataStubs.testEntityId2)
+                .then(function (response) {
+                    responseObject = response;
+                    done();
+                });
+
+            request = jasmine.Ajax.requests.mostRecent();
+            request.respondWith(responseStubs.basicEmptyResponseSuccess);
+        });
+
+        it("sends the request to the right end point", function (done) {
+            expect(request.url).toBe(webApiUrl + "FUN");
+            done();
+        });
+
+        it("uses the correct method", function (done) {
+            expect(request.method).toBe('POST');
+            done();
+        });
+
+        it("does not send the data", function (done) {
+            expect(request.data()).toEqual(responseStubs.actionRequestModified);
+            done();
+        });
+
+        it("sends the correct MSCRMCallerID header", function (done) {
+            expect(request.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId2);
+            done();
+        });
+
+        it("returns the correct response", function (done) {
+            expect(responseObject).toBeUndefined();
+            done();
+        });
+    });
+
+    describe("bound", function () {
+        var responseObject;
+        var request;
+        beforeAll(function (done) {
+            dynamicsWebApiTest.executeBoundAction(dataStubs.testEntityId, "tests", "FUN", responseStubs.actionRequest)
+                .then(function (response) {
+                    responseObject = response;
+                    done();
+                });
+
+            request = jasmine.Ajax.requests.mostRecent();
+            request.respondWith(responseStubs.response200);
+        });
+
+        it("sends the request to the right end point", function (done) {
+            expect(request.url).toBe(responseStubs.testEntityUrl + "/FUN");
+            done();
+        });
+
+        it("uses the correct method", function (done) {
+            expect(request.method).toBe('POST');
+            done();
+        });
+
+        it("does not send the data", function (done) {
+            expect(request.data()).toEqual(responseStubs.actionRequestModified);
+            done();
+        });
+
+        it("does not have MSCRMCallerID header", function (done) {
+            expect(request.requestHeaders['MSCRMCallerID']).toBeUndefined();
+            done();
+        });
+
+        it("returns the correct response", function (done) {
+            expect(responseObject).toEqual(dataStubs.testEntity);
+            done();
+        });
+    });
+
+    describe("bound impersonation", function () {
+        var responseObject;
+        var request;
+        beforeAll(function (done) {
+            dynamicsWebApiTest.executeBoundAction(dataStubs.testEntityId, "tests", "FUN", responseStubs.actionRequest, dataStubs.testEntityId2)
+                .then(function (response) {
+                    responseObject = response;
+                    done();
+                });
+
+            request = jasmine.Ajax.requests.mostRecent();
+            request.respondWith(responseStubs.response200);
+        });
+
+        it("sends the request to the right end point", function (done) {
+            expect(request.url).toBe(responseStubs.testEntityUrl + "/FUN");
+            done();
+        });
+
+        it("uses the correct method", function (done) {
+            expect(request.method).toBe('POST');
+            done();
+        });
+
+        it("does not send the data", function (done) {
+            expect(request.data()).toEqual(responseStubs.actionRequestModified);
+            done();
+        });
+
+        it("sends the correct MSCRMCallerID header", function (done) {
+            expect(request.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId2);
+            done();
+        });
+
+        it("returns the correct response", function (done) {
+            expect(responseObject).toEqual(dataStubs.testEntity);
+            done();
+        });
+    });
+});
+
+describe("dynamicsWebApi._convertOptions -", function () {
+    var stubUrl = webApiUrl + "tests";
+    //{ url: url, query: query, headers: headers }
+    it("request is empty", function () {
+        var dwaRequest;
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl, "&");
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(null, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions({}, "", stubUrl, "&");
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+
+    });
+
+    it("count=true", function () {
+        var dwaRequest = {
+            count: true
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "$count=true", headers: {} });
+    });
+
+    it("count=false", function () {
+        var dwaRequest = {
+            count: false
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+    });
+
+    it("expand is empty", function () {
+        var dwaRequest = {
+            expand: undefined
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+
+        dwaRequest = {
+            expand: null
+        };
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+
+        dwaRequest = {
+            expand: []
+        };
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+    });
+
+    it("expand - filter without expand.property", function () {
+        var dwaRequest = {
+            expand: [{
+                filter: "name eq 'name'"
+            }]
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+
+        dwaRequest = {
+            expand: [{
+                filter: "name eq 'name'",
+                property: null
+            }]
+        };
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+    });
+
+    it("expand - property", function () {
+        var dwaRequest = {
+            expand: [{
+                property: "property"
+            }]
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "$expand=property", headers: {} });
+    });
+
+    it("expand - property,filter empty", function () {
+        var dwaRequest = {
+            expand: [{
+                property: "property",
+                filter: ""
+            }]
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "$expand=property", headers: {} });
+
+        dwaRequest = {
+            expand: [{
+                property: "property",
+                filter: null
+            }]
+        };
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "$expand=property", headers: {} });
+    });
+
+    it("expand - property,filter", function () {
+        var dwaRequest = {
+            expand: [{
+                property: "property",
+                filter: "name eq 'name'"
+            }]
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "$expand=property($filter=" + encodeURI("name eq 'name'") + ")", headers: {} });
+    });
+
+    it("expand - property,orderBy empty", function () {
+        var dwaRequest = {
+            expand: [{
+                property: "property",
+                orderBy: []
+            }]
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "$expand=property", headers: {} });
+
+        dwaRequest = {
+            expand: [{
+                property: "property",
+                orderBy: null
+            }]
+        };
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "$expand=property", headers: {} });
+    });
+
+    it("expand - property,orderBy", function () {
+        var dwaRequest = {
+            expand: [{
+                property: "property",
+                orderBy: ["name"]
+            }]
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "$expand=property($orderBy=name)", headers: {} });
+
+        dwaRequest = {
+            expand: [{
+                property: "property",
+                orderBy: ["name", "subject"]
+            }]
+        };
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "$expand=property($orderBy=name,subject)", headers: {} });
+    });
+
+    it("expand - property,select empty", function () {
+        var dwaRequest = {
+            expand: [{
+                property: "property",
+                select: []
+            }]
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "$expand=property", headers: {} });
+
+        dwaRequest = {
+            expand: [{
+                property: "property",
+                select: null
+            }]
+        };
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "$expand=property", headers: {} });
+    });
+
+    it("expand - property,select", function () {
+        var dwaRequest = {
+            expand: [{
+                property: "property",
+                select: ["name"]
+            }]
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "$expand=property($select=name)", headers: {} });
+
+        dwaRequest = {
+            expand: [{
+                property: "property",
+                select: ["name", "subject"]
+            }]
+        };
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "$expand=property($select=name,subject)", headers: {} });
+    });
+
+    it("expand - property,top empty or <=0", function () {
+        var dwaRequest = {
+            expand: [{
+                property: "property",
+                top: 0
+            }]
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "$expand=property", headers: {} });
+
+        dwaRequest = {
+            expand: [{
+                property: "property",
+                top: -1
+            }]
+        };
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "$expand=property", headers: {} });
+
+        dwaRequest = {
+            expand: [{
+                property: "property",
+                top: null
+            }]
+        };
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "$expand=property", headers: {} });
+    });
+
+    it("expand - property,top", function () {
+        var dwaRequest = {
+            expand: [{
+                property: "property",
+                top: 3
+            }]
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "$expand=property($top=3)", headers: {} });
+    });
+
+    it("expand - different properties", function () {
+        var dwaRequest = {
+            expand: [{
+                property: "property",
+                select: ["name", "subject"],
+                top: 3
+            }]
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "$expand=property($select=name,subject;$top=3)", headers: {} });
+
+        dwaRequest = {
+            expand: [{
+                property: "property",
+                select: ["name", "subject"],
+                orderBy: ["order"],
+                top: 3
+            }]
+        };
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "$expand=property($select=name,subject;$top=3;$orderBy=order)", headers: {} });
+    });
+
+    it("filter empty", function () {
+        var dwaRequest = {
+            filter: ""
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+
+        dwaRequest = {
+            filter: null
+        };
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+    });
+
+    it("filter", function () {
+        var dwaRequest = {
+            filter: "name eq 'name'"
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "$filter=name eq 'name'", headers: {} });
+    });
+
+    it("ifmatch empty", function () {
+        var dwaRequest = {
+            ifmatch: ""
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+
+        dwaRequest = {
+            ifmatch: null
+        };
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+    });
+
+    it("ifmatch", function () {
+        var dwaRequest = {
+            ifmatch: "*"
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: { "If-Match": "*" } });
+    });
+
+    it("ifnonematch empty", function () {
+        var dwaRequest = {
+            ifnonematch: ""
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+
+        dwaRequest = {
+            ifnonematch: null
+        };
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+    });
+
+    it("ifnonematch", function () {
+        var dwaRequest = {
+            ifnonematch: "*"
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: { "If-None-Match": "*" } });
+    });
+
+    it("impersonate empty", function () {
+        var dwaRequest = {
+            impersonate: ""
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+
+        dwaRequest = {
+            impersonate: null
+        };
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+    });
+
+    it("impersonate", function () {
+        var dwaRequest = {
+            impersonate: dataStubs.testEntityId
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: { "MSCRMCallerID": dataStubs.testEntityId } });
+    });
+
+    it("includeAnnotations empty", function () {
+        var dwaRequest = {
+            includeAnnotations: ""
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+
+        dwaRequest = {
+            includeAnnotations: null
+        };
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+    });
+
+    it("includeAnnotations", function () {
+        var dwaRequest = {
+            includeAnnotations: DWA.Prefer.Annotations.AssociatedNavigationProperty
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: { Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.AssociatedNavigationProperty + '"' } });
+    });
+
+    it("maxPageSize empty or <=0", function () {
+        var dwaRequest = {
+            maxPageSize: 0
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+
+        dwaRequest = {
+            maxPageSize: null
+        };
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+
+        dwaRequest = {
+            maxPageSize: -2
+        };
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+    });
+
+    it("maxPageSize", function () {
+        var dwaRequest = {
+            maxPageSize: 10
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: { Prefer: 'odata.maxpagesize=10' } });
+    });
+
+    it("navigationProperty empty", function () {
+        var dwaRequest = {
+            navigationProperty: ""
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+
+        dwaRequest = {
+            navigationProperty: null
+        };
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+    });
+
+    it("navigationProperty", function () {
+        var dwaRequest = {
+            navigationProperty: "nav"
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl + "/nav", query: "", headers: {} });
+    });
+
+    it("orderBy empty", function () {
+        var dwaRequest = {
+            orderBy: []
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+
+        dwaRequest = {
+            orderBy: null
+        };
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+    });
+
+    it("orderBy", function () {
+        var dwaRequest = {
+            orderBy: ["name"]
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "$orderBy=name", headers: {} });
+
+        dwaRequest = {
+            orderBy: ["name", "subject"]
+        };
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({
+            url: stubUrl, query: "$orderBy=name,subject", headers: {}
+        });
+    });
+
+    it("returnRepresentation empty", function () {
+        var dwaRequest = {
+            returnRepresentation: false
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+
+        dwaRequest = {
+            returnRepresentation: null
+        };
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+    });
+
+    it("returnRepresentation", function () {
+        var dwaRequest = {
+            returnRepresentation: true
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: { Prefer: DWA.Prefer.ReturnRepresentation } });
+    });
+
+    it("select empty", function () {
+        var dwaRequest = {
+            select: []
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+
+        dwaRequest = {
+            select: null
+        };
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+    });
+
+    it("select", function () {
+        var dwaRequest = {
+            select: ["name"]
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "$select=name", headers: {} });
+
+        dwaRequest = {
+            select: ["name", "subject"]
+        };
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "$select=name,subject", headers: {} });
+    });
+
+    it("select navigation property", function () {
+        var dwaRequest = {
+            select: ["/nav"]
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "retrieve", stubUrl);
+        expect(result).toEqual({ url: stubUrl + "/nav", query: "", headers: {} });
+
+        dwaRequest = {
+            select: ["/nav", "subject"]
+        };
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "retrieve", stubUrl);
+        expect(result).toEqual({ url: stubUrl + "/nav", query: "$select=subject", headers: {} });
+
+        dwaRequest = {
+            select: ["/nav", "subject", "fullname"]
+        };
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "retrieve", stubUrl);
+        expect(result).toEqual({ url: stubUrl + "/nav", query: "$select=subject,fullname", headers: {} });
+    });
+
+    it("select reference", function () {
+        var dwaRequest = {
+            select: ["nav/$ref"]
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "retrieve", stubUrl);
+        expect(result).toEqual({ url: stubUrl + "/nav/$ref", query: "", headers: {} });
+    });
+
+    it("top empty or <=0", function () {
+        var dwaRequest = {
+            top: 0
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+
+        dwaRequest = {
+            top: -1
+        };
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+
+        dwaRequest = {
+            top: null
+        };
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+    });
+
+    it("top", function () {
+        var dwaRequest = {
+            top: 3
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "$top=3", headers: {} });
+    });
+
+    it("savedQuery empty", function () {
+        var dwaRequest = {
+            savedQuery: ""
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+
+        dwaRequest = {
+            savedQuery: null
+        };
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+    });
+
+    it("savedQuery", function () {
+        var dwaRequest = {
+            savedQuery: dataStubs.testEntityId
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "savedQuery=" + dataStubs.testEntityId, headers: {} });
+    });
+
+    it("userQuery empty", function () {
+        var dwaRequest = {
+            userQuery: ""
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+
+        dwaRequest = {
+            userQuery: null
+        };
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+    });
+
+    it("userQuery", function () {
+        var dwaRequest = {
+            userQuery: dataStubs.testEntityId
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "userQuery=" + dataStubs.testEntityId, headers: {} });
+    });
+
+    it("multiple options", function () {
+        var dwaRequest = {
+            select: ["name", "subject"],
+            orderBy: ["order"],
+            top: 5
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "$select=name,subject&$top=5&$orderBy=order", headers: {} });
+
+        dwaRequest.expand = [{
+            property: "property",
+            select: ["name"],
+            orderBy: ["order"]
+        }, {
+            property: "property2",
+            select: ["name3"]
+        }];
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "$select=name,subject&$top=5&$orderBy=order&$expand=property($select=name;$orderBy=order),property2($select=name3)", headers: {} });
+
+        dwaRequest.expand = null;
+        dwaRequest.returnRepresentation = true;
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "$select=name,subject&$top=5&$orderBy=order", headers: { Prefer: DWA.Prefer.ReturnRepresentation } });
+
+        dwaRequest.top = 0;
+        dwaRequest.count = true;
+        dwaRequest.impersonate = dataStubs.testEntityId;
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl, query: "$select=name,subject&$count=true&$orderBy=order", headers: { Prefer: DWA.Prefer.ReturnRepresentation, MSCRMCallerID: dataStubs.testEntityId } });
+
+        dwaRequest.impersonate = null;
+        dwaRequest.navigationProperty = "nav";
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
+        expect(result).toEqual({ url: stubUrl + "/nav", query: "$select=name,subject&$count=true&$orderBy=order", headers: { Prefer: DWA.Prefer.ReturnRepresentation } });
+
+        dwaRequest.navigationProperty = null;
+        dwaRequest.returnRepresentation = false;
+        dwaRequest.includeAnnotations = DWA.Prefer.Annotations.All;
+        dwaRequest.select[0] = "/nav";
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "retrieve", stubUrl);
+        expect(result).toEqual({ url: stubUrl + "/nav", query: "$select=subject&$count=true&$orderBy=order", headers: { Prefer: 'odata.include-annotations="*"' } });
+    });
+});
+
+describe("dynamicsWebApi._convertRequestToLink -", function () {
+    //{ url: result.url, headers: result.headers }
+    it("collection", function () {
+        var dwaRequest = {
+            collection: "cols"
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertRequestToLink(dwaRequest);
+        expect(result).toEqual({ url: "cols", headers: {} });
+    });
+
+    it("collection empty - throw error", function () {
+        var dwaRequest = {
+            collection: ""
+        };
+
+        var test = function () {
+            dynamicsWebApiTest.__forTestsOnly__.convertRequestToLink(dwaRequest);
+        }
+
+        expect(test).toThrowError(/request\.collection/);
+
+        dwaRequest.collection = 0;
+        expect(test).toThrowError(/request\.collection/);
+
+        dwaRequest.collection = null;
+        expect(test).toThrowError(/request\.collection/);
+    });
+
+    it("collection, id empty", function () {
+        var dwaRequest = {
+            collection: "cols",
+            id: null
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertRequestToLink(dwaRequest);
+        expect(result).toEqual({ url: "cols", headers: {} });
+
+        dwaRequest.id = "";
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertRequestToLink(dwaRequest);
+        expect(result).toEqual({ url: "cols", headers: {} });
+    });
+
+    it("collection, id - wrong format throw error", function () {
+        var dwaRequest = {
+            collection: "cols",
+            id: "sa"
+        };
+
+        var test = function () {
+            dynamicsWebApiTest.__forTestsOnly__.convertRequestToLink(dwaRequest);
+        }
+
+        expect(test).toThrowError(/request\.id/);
+    });
+
+    it("collection, id", function () {
+        var dwaRequest = {
+            collection: "cols",
+            id: dataStubs.testEntityId
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertRequestToLink(dwaRequest);
+        expect(result).toEqual({ url: "cols(" + dataStubs.testEntityId + ")", headers: {} });
+    });
+
+    it("full", function () {
+        var dwaRequest = {
+            collection: "cols",
+            id: dataStubs.testEntityId,
+            select: ["name"],
+            returnRepresentation: true
+        };
+
+        var result = dynamicsWebApiTest.__forTestsOnly__.convertRequestToLink(dwaRequest);
+        expect(result).toEqual({ url: "cols(" + dataStubs.testEntityId + ")?$select=name", headers: { Prefer: DWA.Prefer.ReturnRepresentation } });
+
+        dwaRequest.navigationProperty = "nav";
+
+        result = dynamicsWebApiTest.__forTestsOnly__.convertRequestToLink(dwaRequest);
+        expect(result).toEqual({ url: "cols(" + dataStubs.testEntityId + ")/nav?$select=name", headers: { Prefer: DWA.Prefer.ReturnRepresentation } });
     });
 });
