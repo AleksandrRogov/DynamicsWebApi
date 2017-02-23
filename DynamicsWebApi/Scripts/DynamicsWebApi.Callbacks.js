@@ -674,10 +674,23 @@ var DynamicsWebApi = function (config) {
         var onSuccess = function (response) {
             response.data
                 ? successCallback(response.data)
-                : successCallback();
+                : successCallback(true);
         };
 
-        _sendRequest("PATCH", result.url, onSuccess, errorCallback, request.entity, result.headers);
+        //copy locally
+        var ifmatch = request.ifmatch;
+        var onError = function (xhr) {
+            if (ifmatch && xhr.status == 412) {
+                //precondition failed - not deleted
+                successCallback(false);
+            }
+            else {
+                //rethrow error otherwise
+                errorCallback(xhr);
+            }
+        };
+
+        _sendRequest("PATCH", result.url, onSuccess, onError, request.entity, result.headers);
     }
 
     var updateRecord = function (id, collection, object, successCallback, errorCallback, prefer, select) {
