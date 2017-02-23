@@ -822,8 +822,10 @@ var DynamicsWebApi = function (config) {
             successCallback(true);
         };
 
+        //copy locally
+        var ifmatch = request.ifmatch;
         var onError = function (xhr) {
-            if (request.ifmatch != null && xhr.status == 412) {
+            if (ifmatch && xhr.status == 412) {
                 //precondition failed - not deleted
                 successCallback(false);
             }
@@ -904,8 +906,10 @@ var DynamicsWebApi = function (config) {
 
         var result = convertRequestToLink(request, "retrieve");
 
+        //copy locally
+        var select = request.select;
         var onSuccess = function (response) {
-            if (request.select != null && request.select.length == 1 && request.select[0].endsWith("/$ref") && response.data["@odata.id"] != null) {
+            if (select != null && select.length == 1 && select[0].endsWith("/$ref") && response.data["@odata.id"] != null) {
                 successCallback(_convertToReferenceObject(response.data));
             }
             else {
@@ -1022,8 +1026,11 @@ var DynamicsWebApi = function (config) {
 
         var result = convertRequestToLink(request, "upsert");
 
+        //copy locally
+        var ifnonematch = request.ifnonematch;
+        var ifmatch = request.ifmatch;
         var onSuccess = function (response) {
-            if (response.status == 204) {
+            if (response.headers['OData-EntityId']) {
                 var entityUrl = response.headers['OData-EntityId'];
                 var id = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(entityUrl)[0];
                 successCallback(id);
@@ -1037,11 +1044,11 @@ var DynamicsWebApi = function (config) {
         };
 
         var onError = function (xhr) {
-            if (request.ifnonematch != null && xhr.status == 412) {
+            if (ifnonematchl && xhr.status == 412) {
                 //if prevent update
                 successCallback();
             }
-            else if (request.ifmatch != null && xhr.status == 404) {
+            else if (ifmatch && xhr.status == 404) {
                 //if prevent create
                 successCallback();
             }
@@ -1111,7 +1118,7 @@ var DynamicsWebApi = function (config) {
         }
 
         var onSuccess = function (response) {
-            if (response.headers['OData-EntityId'] == 204) {
+            if (response.headers['OData-EntityId']) {
                 var entityUrl = response.headers['OData-EntityId'];
                 var id = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(entityUrl)[0];
                 successCallback(id);
@@ -1230,18 +1237,25 @@ var DynamicsWebApi = function (config) {
         _callbackParameterCheck(successCallback, "DynamicsWebApi.retrieveMultiple", "successCallback");
         _callbackParameterCheck(errorCallback, "DynamicsWebApi.retrieveMultiple", "errorCallback");
 
+        if (nextPageLink && !request.collection) {
+            request.collection = "any";
+        }
+
         var result = convertRequestToLink(request, "retrieveMultiple");
 
-        if (nextPageLink != null) {
+        if (nextPageLink) {
             _stringParameterCheck(nextPageLink, "DynamicsWebApi.retrieveMultiple", "nextPageLink");
-            result.url = nextPageLink;
+            result.url = nextPageLink.replace(_webApiUrl, "");
         }
+
+        //copy locally
+        var toCount = request.count;
 
         var onSuccess = function (response) {
             if (response.data['@odata.nextLink'] != null) {
                 response.data.oDataNextLink = response.data['@odata.nextLink'];
             }
-            if (request.count) {
+            if (toCount) {
                 response.data.oDataCount = response.data['@odata.count'] != null
                     ? parseInt(response.data['@odata.count'])
                     : 0;
@@ -1513,6 +1527,35 @@ var DynamicsWebApi = function (config) {
         _sendRequest("DELETE", collection + "(" + id + ")/" + singleValuedNavigationPropertyName + "/$ref", onSuccess, errorCallback, null, header);
     }
 
+    var _buildFunctionParameters = function (parameters) {
+        /// <summary>Builds parametes for a funciton. Returns '()' (if no parameters) or '([params])?[query]'</summary>
+        /// <param name="parameters" type="Object" optional="true">Function Parameters</param>
+        /// <returns type="String" />
+        if (parameters) {
+            var parameterNames = Object.keys(parameters);
+            var functionParameters = "";
+            var urlQuery = "";
+
+            for (var i = 1; i <= parameterNames.length; i++) {
+                var parameterName = parameterNames[i - 1];
+                var value = parameters[parameterName];
+
+                if (i > 1) {
+                    functionParameters += ",";
+                    urlQuery += "&";
+                }
+
+                functionParameters += parameterName + "=@p" + i;
+                urlQuery += "@p" + i + "=" + ((typeof value == "string") ? "'" + value + "'" : value);
+            }
+
+            return "(" + functionParameters + ")?" + urlQuery;
+        }
+        else {
+            return "()";
+        }
+    }
+
     var executeUnboundFunction = function (functionName, successCallback, errorCallback, parameters, impersonateUserId) {
         /// <summary>Executes an unbound function (not bound to a particular entity record)</summary>
         /// <param name="functionName" type="String">The name of the function</param>
@@ -1566,31 +1609,7 @@ var DynamicsWebApi = function (config) {
         _stringParameterCheck(functionName, "DynamicsWebApi.executeFunction", "functionName");
         _callbackParameterCheck(successCallback, "DynamicsWebApi.executeFunction", "successCallback");
         _callbackParameterCheck(errorCallback, "DynamicsWebApi.executeFunction", "errorCallback");
-        var url = functionName;
-
-        if (parameters != null) {
-            var parameterNames = Object.keys(parameters);
-            var functionParameters = "";
-            var urlQuery = "";
-
-            for (var i = 1; i <= parameterNames.length; i++) {
-                var parameterName = parameterNames[i - 1];
-                var value = parameters[parameterName];
-
-                if (i > 1) {
-                    functionParameters += ",";
-                    urlQuery += "&";
-                }
-
-                functionParameters += parameterName + "=@p" + i;
-                urlQuery += "@p" + i + "=" + ((typeof value == "string") ? "'" + value + "'" : value);
-            }
-
-            url += "(" + functionParameters + ")?" + urlQuery;
-        }
-        else {
-            url += "()";
-        }
+        var url = functionName + _buildFunctionParameters(parameters);
 
         if (collection != null) {
             _stringParameterCheck(collection, "DynamicsWebApi.executeFunction", "collection");
@@ -1602,8 +1621,7 @@ var DynamicsWebApi = function (config) {
         var header = {};
 
         if (impersonateUserId != null) {
-            impersonateUserId = _guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
-            header["MSCRMCallerID"] = impersonateUserId;
+            header["MSCRMCallerID"] = _guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
         }
 
         var onSuccess = function (response) {
@@ -1737,5 +1755,3 @@ var DynamicsWebApi = function (config) {
         initializeInstance: createInstance
     }
 };
-
-var dynamicsWebApi = new DynamicsWebApi();

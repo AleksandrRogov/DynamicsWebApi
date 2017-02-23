@@ -44,7 +44,7 @@
     <script src="../Scripts/DynamicsWebApi.js"></script>
     <script>
         var recordId = "115a8970-d788-4bf6-b064-d1574dbe6930";
-        dynamicsWebApi.setConfig({ webApiVersion: "8.2" });
+        var dynamicsWebApi = new DynamicsWebApi({ webApiVersion: "8.2" });
         var deleteTestObjects = [];
         var accountId = null;
         var testEntityid = null;

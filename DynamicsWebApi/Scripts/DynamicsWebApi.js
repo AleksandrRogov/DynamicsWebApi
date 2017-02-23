@@ -638,8 +638,10 @@ var DynamicsWebApi = function (config) {
 
         var result = convertRequestToLink(request, "retrieve");
 
-        return _sendRequest("GET", result.url, result.headers).then(function (response) {
-            if (request.select != null && request.select.length == 1 && request.select[0].endsWith("/$ref") && response.data["@odata.id"] != null) {
+        //copy locally
+        var select = request.select;
+        return _sendRequest("GET", result.url, null, result.headers).then(function (response) {
+            if (select != null && select.length == 1 && select[0].endsWith("/$ref") && response.data["@odata.id"] != null) {
                 return _convertToReferenceObject(response.data);
             }
 
@@ -727,8 +729,8 @@ var DynamicsWebApi = function (config) {
         ///</param>
         /// <returns type="Promise" />
 
-        _parameterCheck(request, "DynamicsWebApi.update", "request")
-        _parameterCheck(request.entity, "DynamicsWebApi.update", "request.entity")
+        _parameterCheck(request, "DynamicsWebApi.update", "request");
+        _parameterCheck(request.entity, "DynamicsWebApi.update", "request.entity");
 
         var result = convertRequestToLink(request, "update");
 
@@ -736,11 +738,24 @@ var DynamicsWebApi = function (config) {
             result.headers['If-Match'] = '*'; //to prevent upsert
         }
 
-        return _sendRequest("PATCH", result.url, request.entity, result.headers).then(function (response) {
-            if (response.data) {
-                return response.data;
-            }
-        })
+        //copy locally
+        var ifmatch = request.ifmatch;
+        return _sendRequest("PATCH", result.url, request.entity, result.headers)
+            .then(function (response) {
+                if (response.data) {
+                    return response.data;
+                }
+
+                return true; //updated
+
+            }).catch(function (error) {
+                if (ifmatch && error.status == 412) {
+                    //precondition failed - not updated
+                    return false;
+                }
+                //rethrow error otherwise
+                throw error;
+            });
     };
 
     var updateRecord = function (id, collection, object, prefer, select) {
@@ -851,10 +866,12 @@ var DynamicsWebApi = function (config) {
 
         var result = convertRequestToLink(request, "delete");
 
-        return _sendRequest("DELETE", result.url, result.headers).then(function () {
+        //copy locally
+        var ifmatch = request.ifmatch;
+        return _sendRequest("DELETE", result.url, null, result.headers).then(function () {
             return true; //deleted
         }).catch(function (error) {
-            if (request.ifmatch != null && error.status == 412) {
+            if (ifmatch && error.status == 412) {
                 //precondition failed - not deleted
                 return false;
             }
@@ -913,9 +930,12 @@ var DynamicsWebApi = function (config) {
 
         var result = convertRequestToLink(request, "upsert");
 
+        //copy locally
+        var ifnonematch = request.ifnonematch;
+        var ifmatch = request.ifmatch;
         return _sendRequest("PATCH", result.url, request.entity, result.headers)
             .then(function (response) {
-                if (response.status == 204) {
+                if (response.headers['OData-EntityId']) {
                     var entityUrl = response.headers['OData-EntityId'];
                     var id = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(entityUrl)[0];
                     return id;
@@ -925,18 +945,16 @@ var DynamicsWebApi = function (config) {
                 }
             }).catch(function (error) {
                 /// <param name="error" type="XMLHttpRequest">Description</param>
-                if (request.ifnonematch != null && error.status == 412) {
+                if (ifnonematch && error.status == 412) {
                     //if prevent update
                     return;
                 }
-                else if (request.ifmatch != null && error.status == 404) {
+                else if (ifmatch && error.status == 404) {
                     //if prevent create
                     return;
                 }
-                else {
-                    //rethrow error otherwise
-                    throw error;
-                }
+                //rethrow error otherwise
+                throw error;
             });
     };
 
@@ -1076,19 +1094,26 @@ var DynamicsWebApi = function (config) {
         /// Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
         ///</param>
 
-        var result = convertRequestToLink(request, "retrieveMultiple");
-
-        if (nextPageLink != null) {
-            _stringParameterCheck(nextPageLink, "DynamicsWebApi.retrieveMultiple", "nextPageLink");
-            result.url = nextPageLink;
+        if (nextPageLink && !request.collection) {
+            request.collection = "any";
         }
 
-        return _sendRequest("GET", result.url, result.headers)
+        var result = convertRequestToLink(request, "retrieveMultiple");
+
+        if (nextPageLink) {
+            _stringParameterCheck(nextPageLink, "DynamicsWebApi.retrieveMultiple", "nextPageLink");
+            result.url = nextPageLink.replace(_webApiUrl, "");
+        }
+
+        //copy locally
+        var toCount = request.count;
+
+        return _sendRequest("GET", result.url, null, result.headers)
             .then(function (response) {
                 if (response.data['@odata.nextLink'] != null) {
                     response.data.oDataNextLink = response.data['@odata.nextLink'];
                 }
-                if (request.count) {
+                if (toCount) {
                     response.data.oDataCount = response.data['@odata.count'] != null
                         ? parseInt(response.data['@odata.count'])
                         : 0;
@@ -1365,8 +1390,7 @@ var DynamicsWebApi = function (config) {
         var header = {};
 
         if (impersonateUserId != null) {
-            impersonateUserId = _guidParameterCheck(impersonateUserId, "DynamicsWebApi.executeFunction", "impersonateUserId");
-            header["MSCRMCallerID"] = impersonateUserId;
+            header["MSCRMCallerID"] = _guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
         }
 
         return _sendRequest("GET", url, null, header).then(function (response) {
@@ -1481,5 +1505,3 @@ var DynamicsWebApi = function (config) {
         //**for tests only end**
     }
 };
-
-var dynamicsWebApi = new DynamicsWebApi();
