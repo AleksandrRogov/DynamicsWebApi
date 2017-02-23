@@ -1765,6 +1765,18 @@ var DynamicsWebApi = function (config) {
         executeBoundAction: executeBoundAction,
         executeUnboundAction: executeUnboundAction,
         setConfig: setConfig,
-        initializeInstance: createInstance
+        initializeInstance: createInstance,
+        //**for tests only**
+        __forTestsOnly__: {
+            sendRequest: _sendRequest,
+            getPagingCookie: getPagingCookie,
+            convertOptions: convertOptions,
+            convertRequestToLink: convertRequestToLink,
+            convertToReferenceObject: _convertToReferenceObject,
+            executeFunction: _executeFunction,
+            executeAction: _executeAction,
+            buildFunctionParameters: _buildFunctionParameters
+        }
+        //**for tests only end**
     }
 };

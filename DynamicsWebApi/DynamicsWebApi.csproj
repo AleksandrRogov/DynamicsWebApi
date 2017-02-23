@@ -86,6 +86,7 @@
     <Content Include="Tests\jasmine.js" />
     <Content Include="Scripts\Polyfills\yaku.browser.global.min.js" />
     <Content Include="Scripts\Polyfills\yaku.js" />
+    <Content Include="Tests\stubs.js" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
