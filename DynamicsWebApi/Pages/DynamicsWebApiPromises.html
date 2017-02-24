@@ -28,6 +28,7 @@
     <button onclick="UpsertRecord()">Upsert Record</button>
     <button onclick="UpsertRequest()">Upsert Request</button>
     <button onclick="RetrieveMultipleRecordsExtended()">Multiple Records Extended</button>
+    <button onclick="RetrieveMultiplePaging()">Multiple Paging</button>
     <button onclick="FetchXmlTest()">Fetch XML Test</button>
     <button onclick="Associate()">Associate</button>
     <button onclick="AssociateSingleValued()">Associate Single Valued</button>
@@ -197,6 +198,28 @@
                 //get a field value here (check first whether object (array) contains any element)
                 var fullname = response.value.length ? response.value[0].fullname : "-1";
                 debugger;
+            })
+            .catch(function (error) {
+                debugger;
+                console.trace(error.message);
+            });
+        }
+        function RetrieveMultiplePaging() {
+            var request = {
+                collection: "leads",
+                select: ["firstname", "subject"],
+                maxPageSize: 5
+            };
+
+            dynamicsWebApi.retrieveMultipleRequest(request).then(function (response) {
+                /// <param name="response" type="DWA.Types.MultipleResponse">Request response</param>
+
+                debugger;
+
+                return dynamicsWebApi.retrieveMultipleRequest(request, response.oDataNextLink).then(function (response) {
+                    /// <param name="response" type="DWA.Types.MultipleResponse">Request response</param>
+                    debugger;
+                });
             })
             .catch(function (error) {
                 debugger;

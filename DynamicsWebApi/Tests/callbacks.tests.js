@@ -56,13 +56,13 @@ describe("callbacks -", function () {
             var responseObject;
             var request;
             beforeAll(function (done) {
-                dynamicsWebApiTest.create(dataStubs.testEntity, "tests", DWA.Prefer.ReturnRepresentation, function (object) {
+                dynamicsWebApiTest.create(dataStubs.testEntity, "tests", function (object) {
                     responseObject = object;
                     done();
                 }, function (object) {
                     responseObject = object;
                     done();
-                });
+                }, DWA.Prefer.ReturnRepresentation);
 
                 request = jasmine.Ajax.requests.mostRecent();
                 request.respondWith(responseStubs.createReturnRepresentation);
@@ -145,13 +145,13 @@ describe("callbacks -", function () {
             var responseObject;
             var request;
             beforeAll(function (done) {
-                dynamicsWebApiTest.update(dataStubs.testEntityId, "tests", dataStubs.testEntity, DWA.Prefer.ReturnRepresentation, function (object) {
+                dynamicsWebApiTest.update(dataStubs.testEntityId, "tests", dataStubs.testEntity, function (object) {
                     responseObject = object;
                     done();
                 }, function (object) {
                     responseObject = object;
                     done();
-                });
+                }, DWA.Prefer.ReturnRepresentation);
 
                 request = jasmine.Ajax.requests.mostRecent();
                 request.respondWith(responseStubs.updateReturnRepresentation);
@@ -189,23 +189,23 @@ describe("callbacks -", function () {
             var request2;
             beforeAll(function (done) {
                 dynamicsWebApiTest
-                    .update(dataStubs.testEntityId, "tests", dataStubs.testEntity, DWA.Prefer.ReturnRepresentation, ["fullname"], function (object) {
+                    .update(dataStubs.testEntityId, "tests", dataStubs.testEntity, function (object) {
                         responseObject = object;
                     }, function (object) {
                         responseObject = object;
-                    });
+                    }, DWA.Prefer.ReturnRepresentation, ["fullname"]);
 
                 request = jasmine.Ajax.requests.mostRecent();
                 request.respondWith(responseStubs.updateReturnRepresentation);
 
                 dynamicsWebApiTest
-                    .update(dataStubs.testEntityId, "tests", dataStubs.testEntity, DWA.Prefer.ReturnRepresentation, ["fullname", "subject"], function (object) {
+                    .update(dataStubs.testEntityId, "tests", dataStubs.testEntity, function (object) {
                         responseObject2 = object;
                         done();
                     }, function (object) {
                         responseObject2 = object;
                         done();
-                    });
+                    }, DWA.Prefer.ReturnRepresentation, ["fullname", "subject"]);
 
                 request2 = jasmine.Ajax.requests.mostRecent();
                 request2.respondWith(responseStubs.updateReturnRepresentation);
@@ -296,13 +296,13 @@ describe("callbacks -", function () {
             var responseObject;
             var request;
             beforeAll(function (done) {
-                dynamicsWebApiTest.updateSingleProperty(dataStubs.testEntityId, "tests", dataStubs.updatedEntity, DWA.Prefer.ReturnRepresentation, function (object) {
+                dynamicsWebApiTest.updateSingleProperty(dataStubs.testEntityId, "tests", dataStubs.updatedEntity, function (object) {
                     responseObject = object;
                     done();
                 }, function (object) {
                     responseObject = object;
                     done();
-                });
+                }, DWA.Prefer.ReturnRepresentation);
 
                 request = jasmine.Ajax.requests.mostRecent();
                 request.respondWith(responseStubs.updateReturnRepresentation);
@@ -406,22 +406,22 @@ describe("callbacks -", function () {
             var request;
             var request2;
             beforeAll(function (done) {
-                dynamicsWebApiTest.upsert(dataStubs.testEntityId, "tests", dataStubs.testEntity, DWA.Prefer.ReturnRepresentation, function (object) {
+                dynamicsWebApiTest.upsert(dataStubs.testEntityId, "tests", dataStubs.testEntity, function (object) {
                     responseObject = object;
                 }, function (object) {
                     responseObject = object;
-                });
+                }, DWA.Prefer.ReturnRepresentation);
 
                 request = jasmine.Ajax.requests.mostRecent();
                 request.respondWith(responseStubs.updateReturnRepresentation);
 
-                dynamicsWebApiTest.upsert(dataStubs.testEntityId, "tests", dataStubs.testEntity, DWA.Prefer.ReturnRepresentation, function (object) {
+                dynamicsWebApiTest.upsert(dataStubs.testEntityId, "tests", dataStubs.testEntity, function (object) {
                     responseObject2 = object;
                     done();
                 }, function (object) {
                     responseObject2 = object;
                     done();
-                });
+                }, DWA.Prefer.ReturnRepresentation);
 
                 request2 = jasmine.Ajax.requests.mostRecent();
                 request2.respondWith(responseStubs.createReturnRepresentation);
@@ -469,43 +469,43 @@ describe("callbacks -", function () {
             var request4;
             beforeAll(function (done) {
                 dynamicsWebApiTest
-                    .upsert(dataStubs.testEntityId, "tests", dataStubs.testEntity, DWA.Prefer.ReturnRepresentation, ["fullname"], function (object) {
+                    .upsert(dataStubs.testEntityId, "tests", dataStubs.testEntity, function (object) {
                         responseObject = object;
                     }, function (object) {
                         responseObject = object;
-                    });
+                    }, DWA.Prefer.ReturnRepresentation, ["fullname"]);
 
                 request = jasmine.Ajax.requests.mostRecent();
                 request.respondWith(responseStubs.updateReturnRepresentation);
 
                 dynamicsWebApiTest
-                    .upsert(dataStubs.testEntityId, "tests", dataStubs.testEntity, DWA.Prefer.ReturnRepresentation, ["fullname", "subject"], function (object) {
+                    .upsert(dataStubs.testEntityId, "tests", dataStubs.testEntity, function (object) {
                         responseObject2 = object;
                     }, function (object) {
                         responseObject2 = object;
-                    });
+                    }, DWA.Prefer.ReturnRepresentation, ["fullname", "subject"]);
 
                 request2 = jasmine.Ajax.requests.mostRecent();
                 request2.respondWith(responseStubs.updateReturnRepresentation);
 
                 dynamicsWebApiTest
-                    .upsert(dataStubs.testEntityId, "tests", dataStubs.testEntity, DWA.Prefer.ReturnRepresentation, ["fullname"], function (object) {
+                    .upsert(dataStubs.testEntityId, "tests", dataStubs.testEntity, function (object) {
                         responseObject3 = object;
                     }, function (object) {
                         responseObject3 = object;
-                    });
+                    }, DWA.Prefer.ReturnRepresentation, ["fullname"]);
 
                 request3 = jasmine.Ajax.requests.mostRecent();
                 request3.respondWith(responseStubs.createReturnId);
 
                 dynamicsWebApiTest
-                    .upsert(dataStubs.testEntityId, "tests", dataStubs.testEntity, DWA.Prefer.ReturnRepresentation, ["fullname", "subject"], function (object) {
+                    .upsert(dataStubs.testEntityId, "tests", dataStubs.testEntity, function (object) {
                         responseObject4 = object;
                         done();
                     }, function (object) {
                         responseObject4 = object;
                         done();
-                    });
+                    }, DWA.Prefer.ReturnRepresentation, ["fullname", "subject"]);
 
                 request4 = jasmine.Ajax.requests.mostRecent();
                 request4.respondWith(responseStubs.createReturnRepresentation);
@@ -602,13 +602,13 @@ describe("callbacks -", function () {
             var responseObject;
             var request;
             beforeAll(function (done) {
-                dynamicsWebApiTest.deleteRecord(dataStubs.testEntityId, "tests", "fullname", function (object) {
+                dynamicsWebApiTest.deleteRecord(dataStubs.testEntityId, "tests", function (object) {
                     responseObject = object;
                     done();
                 }, function (object) {
                     responseObject = object;
                     done();
-                });
+                }, "fullname");
 
                 request = jasmine.Ajax.requests.mostRecent();
                 request.respondWith(responseStubs.basicEmptyResponseSuccess);
@@ -681,22 +681,22 @@ describe("callbacks -", function () {
             var request;
             var request2;
             beforeAll(function (done) {
-                dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", ["fullname"], function (object) {
+                dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", function (object) {
                     responseObject = object;
                 }, function (object) {
                     responseObject = object;
-                });
+                }, ["fullname"]);
 
                 request = jasmine.Ajax.requests.mostRecent();
                 request.respondWith(responseStubs.response200);
 
-                dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", ["fullname", "subject"], function (object) {
+                dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", function (object) {
                     responseObject2 = object;
                     done();
                 }, function (object) {
                     responseObject2 = object;
                     done();
-                });
+                }, ["fullname", "subject"]);
 
                 request2 = jasmine.Ajax.requests.mostRecent();
                 request2.respondWith(responseStubs.response200);
@@ -731,31 +731,31 @@ describe("callbacks -", function () {
             var request2;
             var request3;
             beforeAll(function (done) {
-                dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", ["/reference"], function (object) {
+                dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", function (object) {
                     responseObject = object;
                 }, function (object) {
                     responseObject = object;
-                });
+                }, ["/reference"]);
 
                 request = jasmine.Ajax.requests.mostRecent();
                 request.respondWith(responseStubs.response200);
 
-                dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", ["/reference", "fullname"], function (object) {
+                dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", function (object) {
                     responseObject2 = object;
                 }, function (object) {
                     responseObject2 = object;
-                });
+                }, ["/reference", "fullname"]);
 
                 request2 = jasmine.Ajax.requests.mostRecent();
                 request2.respondWith(responseStubs.response200);
 
-                dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", ["/reference", "fullname", "subject"], function (object) {
+                dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", function (object) {
                     responseObject3 = object;
                     done();
                 }, function (object) {
                     responseObject3 = object;
                     done();
-                });
+                }, ["/reference", "fullname", "subject"]);
 
                 request3 = jasmine.Ajax.requests.mostRecent();
                 request3.respondWith(responseStubs.response200);
@@ -790,13 +790,13 @@ describe("callbacks -", function () {
             var responseObject;
             var request;
             beforeAll(function (done) {
-                dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", ["reference/$ref"], function (object) {
+                dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", function (object) {
                     responseObject = object;
                     done();
                 }, function (object) {
                     responseObject = object;
                     done();
-                });
+                }, ["reference/$ref"]);
 
                 request = jasmine.Ajax.requests.mostRecent();
                 request.respondWith(responseStubs.retrieveReferenceResponse);
@@ -824,13 +824,13 @@ describe("callbacks -", function () {
             var responseObject;
             var request;
             beforeAll(function (done) {
-                dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", null, "reference(something)", function (object) {
+                dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", function (object) {
                     responseObject = object;
                     done();
                 }, function (object) {
                     responseObject = object;
                     done();
-                });
+                }, null, "reference(something)");
 
                 request = jasmine.Ajax.requests.mostRecent();
                 request.respondWith(responseStubs.response200);
@@ -860,22 +860,22 @@ describe("callbacks -", function () {
             var request;
             var request2;
             beforeAll(function (done) {
-                dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", ["fullname"], "reference(something)", function (object) {
+                dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", function (object) {
                     responseObject = object;
                 }, function (object) {
                     responseObject = object;
-                });
+                }, ["fullname"], "reference(something)");
 
                 request = jasmine.Ajax.requests.mostRecent();
                 request.respondWith(responseStubs.response200);
 
-                dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", ["fullname", "subject"], "reference(something)", function (object) {
+                dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", function (object) {
                     responseObject2 = object;
                     done();
                 }, function (object) {
                     responseObject2 = object;
                     done();
-                });
+                }, ["fullname", "subject"], "reference(something)");
 
                 request2 = jasmine.Ajax.requests.mostRecent();
                 request2.respondWith(responseStubs.response200);
@@ -910,31 +910,31 @@ describe("callbacks -", function () {
             var request2;
             var request3;
             beforeAll(function (done) {
-                dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", ["/reference"], "reference(something)", function (object) {
+                dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", function (object) {
                     responseObject = object;
                 }, function (object) {
                     responseObject = object;
-                });
+                }, ["/reference"], "reference(something)");
 
                 request = jasmine.Ajax.requests.mostRecent();
                 request.respondWith(responseStubs.response200);
 
-                dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", ["/reference", "fullname"], "reference(something)", function (object) {
+                dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", function (object) {
                     responseObject2 = object;
                 }, function (object) {
                     responseObject2 = object;
-                });
+                }, ["/reference", "fullname"], "reference(something)");
 
                 request2 = jasmine.Ajax.requests.mostRecent();
                 request2.respondWith(responseStubs.response200);
 
-                dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", ["/reference", "fullname", "subject"], "reference(something)", function (object) {
+                dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", function (object) {
                     responseObject3 = object;
                     done();
                 }, function (object) {
                     responseObject3 = object;
                     done();
-                });
+                }, ["/reference", "fullname", "subject"], "reference(something)");
 
                 request3 = jasmine.Ajax.requests.mostRecent();
                 request3.respondWith(responseStubs.response200);
@@ -1012,13 +1012,13 @@ describe("callbacks -", function () {
             var responseObject;
             var request;
             beforeAll(function (done) {
-                dynamicsWebApiTest.count("tests", "name eq 'name'", function (object) {
+                dynamicsWebApiTest.count("tests", function (object) {
                     responseObject = object;
                     done();
                 }, function (object) {
                     responseObject = object;
                     done();
-                });
+                }, "name eq 'name'");
 
                 request = jasmine.Ajax.requests.mostRecent();
                 request.respondWith(responseStubs.multipleWithCountResponse);
@@ -1118,13 +1118,13 @@ describe("callbacks -", function () {
             var request;
             beforeAll(function (done) {
                 var pagingInfo = dataStubs.fetchXmls.fetchXmlResultPage1Cookie.PagingInfo;
-                dynamicsWebApiTest.executeFetchXml("tests", dataStubs.fetchXmls.fetchXml, null, pagingInfo.nextPage, pagingInfo.cookie, function (object) {
+                dynamicsWebApiTest.executeFetchXml("tests", dataStubs.fetchXmls.fetchXml, function (object) {
                     responseObject = object;
                     done();
                 }, function (object) {
                     responseObject = object;
                     done();
-                });
+                }, null, pagingInfo.nextPage, pagingInfo.cookie);
 
                 request = jasmine.Ajax.requests.mostRecent();
                 request.respondWith(responseStubs.fetchXmlResponsePage2Cookie);
@@ -1194,13 +1194,13 @@ describe("callbacks -", function () {
             var request;
             beforeAll(function (done) {
                 var pagingInfo = dataStubs.fetchXmls.fetchXmlResultPage1Cookie.PagingInfo;
-                dynamicsWebApiTest.executeFetchXml("tests", dataStubs.fetchXmls.fetchXml, DWA.Prefer.Annotations.FormattedValue, pagingInfo.nextPage, pagingInfo.cookie, function (object) {
+                dynamicsWebApiTest.executeFetchXml("tests", dataStubs.fetchXmls.fetchXml, function (object) {
                     responseObject = object;
                     done();
                 }, function (object) {
                     responseObject = object;
                     done();
-                });
+                }, DWA.Prefer.Annotations.FormattedValue, pagingInfo.nextPage, pagingInfo.cookie);
 
                 request = jasmine.Ajax.requests.mostRecent();
                 request.respondWith(responseStubs.fetchXmlResponsePage2Cookie);
@@ -1368,13 +1368,13 @@ describe("callbacks -", function () {
             var responseObject;
             var request;
             beforeAll(function (done) {
-                dynamicsWebApiTest.disassociate("tests", dataStubs.testEntityId, "tests_records", dataStubs.testEntityId2, dataStubs.testEntityId3, function (object) {
+                dynamicsWebApiTest.disassociate("tests", dataStubs.testEntityId, "tests_records", dataStubs.testEntityId2, function (object) {
                     responseObject = object;
                     done();
                 }, function (object) {
                     responseObject = object;
                     done();
-                });
+                }, dataStubs.testEntityId3);
 
                 request = jasmine.Ajax.requests.mostRecent();
                 request.respondWith(responseStubs.updateReturnRepresentation);
@@ -1455,13 +1455,13 @@ describe("callbacks -", function () {
             var responseObject;
             var request;
             beforeAll(function (done) {
-                dynamicsWebApiTest.associateSingleValued("tests", dataStubs.testEntityId, "tests_records", "records", dataStubs.testEntityId2, dataStubs.testEntityId3, function (object) {
+                dynamicsWebApiTest.associateSingleValued("tests", dataStubs.testEntityId, "tests_records", "records", dataStubs.testEntityId2, function (object) {
                     responseObject = object;
                     done();
                 }, function (object) {
                     responseObject = object;
                     done();
-                });
+                }, dataStubs.testEntityId3);
 
                 request = jasmine.Ajax.requests.mostRecent();
                 request.respondWith(responseStubs.updateReturnRepresentation);
@@ -1542,13 +1542,13 @@ describe("callbacks -", function () {
             var responseObject;
             var request;
             beforeAll(function (done) {
-                dynamicsWebApiTest.disassociateSingleValued("tests", dataStubs.testEntityId, "tests_records", dataStubs.testEntityId3, function (object) {
+                dynamicsWebApiTest.disassociateSingleValued("tests", dataStubs.testEntityId, "tests_records", function (object) {
                     responseObject = object;
                     done();
                 }, function (object) {
                     responseObject = object;
                     done();
-                });
+                }, dataStubs.testEntityId3);
 
                 request = jasmine.Ajax.requests.mostRecent();
                 request.respondWith(responseStubs.updateReturnRepresentation);
@@ -1620,13 +1620,13 @@ describe("callbacks -", function () {
                 request = jasmine.Ajax.requests.mostRecent();
                 request.respondWith(responseStubs.response200);
 
-                dynamicsWebApiTest.executeUnboundFunction("FUN", { param1: "value1", param2: 2 }, function (object) {
+                dynamicsWebApiTest.executeUnboundFunction("FUN", function (object) {
                     responseObject2 = object;
                     done();
                 }, function (object) {
                     responseObject2 = object;
                     done();
-                });
+                }, { param1: "value1", param2: 2 });
 
                 request2 = jasmine.Ajax.requests.mostRecent();
                 request2.respondWith(responseStubs.response200);
@@ -1664,22 +1664,22 @@ describe("callbacks -", function () {
             var request;
             var request2;
             beforeAll(function (done) {
-                dynamicsWebApiTest.executeUnboundFunction("FUN", null, dataStubs.testEntityId, function (object) {
+                dynamicsWebApiTest.executeUnboundFunction("FUN", function (object) {
                     responseObject = object;
                 }, function (object) {
                     responseObject = object;
-                });
+                }, null, dataStubs.testEntityId);
 
                 request = jasmine.Ajax.requests.mostRecent();
                 request.respondWith(responseStubs.response200);
 
-                dynamicsWebApiTest.executeUnboundFunction("FUN", { param1: "value1", param2: 2 }, dataStubs.testEntityId, function (object) {
+                dynamicsWebApiTest.executeUnboundFunction("FUN", function (object) {
                     responseObject2 = object;
                     done();
                 }, function (object) {
                     responseObject2 = object;
                     done();
-                });
+                }, { param1: "value1", param2: 2 }, dataStubs.testEntityId);
 
                 request2 = jasmine.Ajax.requests.mostRecent();
                 request2.respondWith(responseStubs.response200);
@@ -1726,13 +1726,13 @@ describe("callbacks -", function () {
                 request = jasmine.Ajax.requests.mostRecent();
                 request.respondWith(responseStubs.response200);
 
-                dynamicsWebApiTest.executeBoundFunction(dataStubs.testEntityId, "tests", "FUN", { param1: "value1", param2: 2 }, function (object) {
+                dynamicsWebApiTest.executeBoundFunction(dataStubs.testEntityId, "tests", "FUN", function (object) {
                     responseObject2 = object;
                     done();
                 }, function (object) {
                     responseObject2 = object;
                     done();
-                });
+                }, { param1: "value1", param2: 2 });
 
                 request2 = jasmine.Ajax.requests.mostRecent();
                 request2.respondWith(responseStubs.basicEmptyResponseSuccess);
@@ -1770,22 +1770,22 @@ describe("callbacks -", function () {
             var request;
             var request2;
             beforeAll(function (done) {
-                dynamicsWebApiTest.executeBoundFunction(dataStubs.testEntityId, "tests", "FUN", null, dataStubs.testEntityId, function (object) {
+                dynamicsWebApiTest.executeBoundFunction(dataStubs.testEntityId, "tests", "FUN", function (object) {
                     responseObject = object;
                 }, function (object) {
                     responseObject = object;
-                });
+                }, null, dataStubs.testEntityId);
 
                 request = jasmine.Ajax.requests.mostRecent();
                 request.respondWith(responseStubs.response200);
 
-                dynamicsWebApiTest.executeBoundFunction(dataStubs.testEntityId, "tests", "FUN", { param1: "value1", param2: 2 }, dataStubs.testEntityId, function (object) {
+                dynamicsWebApiTest.executeBoundFunction(dataStubs.testEntityId, "tests", "FUN", function (object) {
                     responseObject2 = object;
                     done();
                 }, function (object) {
                     responseObject2 = object;
                     done();
-                });
+                }, { param1: "value1", param2: 2 }, dataStubs.testEntityId);
 
                 request2 = jasmine.Ajax.requests.mostRecent();
                 request2.respondWith(responseStubs.response200);
@@ -1869,13 +1869,13 @@ describe("callbacks -", function () {
             var responseObject;
             var request;
             beforeAll(function (done) {
-                dynamicsWebApiTest.executeUnboundAction("FUN", responseStubs.actionRequest, dataStubs.testEntityId2, function (object) {
+                dynamicsWebApiTest.executeUnboundAction("FUN", responseStubs.actionRequest, function (object) {
                     responseObject = object;
                     done();
                 }, function (object) {
                     responseObject = object;
                     done();
-                });
+                }, dataStubs.testEntityId2);
 
                 request = jasmine.Ajax.requests.mostRecent();
                 request.respondWith(responseStubs.basicEmptyResponseSuccess);
@@ -1943,13 +1943,13 @@ describe("callbacks -", function () {
             var responseObject;
             var request;
             beforeAll(function (done) {
-                dynamicsWebApiTest.executeBoundAction(dataStubs.testEntityId, "tests", "FUN", responseStubs.actionRequest, dataStubs.testEntityId2, function (object) {
+                dynamicsWebApiTest.executeBoundAction(dataStubs.testEntityId, "tests", "FUN", responseStubs.actionRequest, function (object) {
                     responseObject = object;
                     done();
                 }, function (object) {
                     responseObject = object;
                     done();
-                });
+                }, dataStubs.testEntityId2);
 
                 request = jasmine.Ajax.requests.mostRecent();
                 request.respondWith(responseStubs.response200);
@@ -3442,22 +3442,22 @@ describe("callbacks -", function () {
             var request;
             var request2;
             beforeAll(function (done) {
-                dynamicsWebApiTest.retrieveMultiple("tests", ["fullname"], function (object) {
+                dynamicsWebApiTest.retrieveMultiple("tests", function (object) {
                     responseObject = object;
                 }, function (object) {
                     responseObject = object;
-                });
+                }, ["fullname"]);
 
                 request = jasmine.Ajax.requests.mostRecent();
                 request.respondWith(responseStubs.multipleResponse);
 
-                dynamicsWebApiTest.retrieveMultiple("tests", ["fullname", "subject"], function (object) {
+                dynamicsWebApiTest.retrieveMultiple("tests", function (object) {
                     responseObject2 = object;
                     done();
                 }, function (object) {
                     responseObject2 = object;
                     done();
-                });
+                }, ["fullname", "subject"]);
 
                 request2 = jasmine.Ajax.requests.mostRecent();
                 request2.respondWith(responseStubs.multipleResponse);
@@ -3500,22 +3500,22 @@ describe("callbacks -", function () {
             var request;
             var request2;
             beforeAll(function (done) {
-                dynamicsWebApiTest.retrieveMultiple("tests", null, "name eq 'name'", function (object) {
+                dynamicsWebApiTest.retrieveMultiple("tests", function (object) {
                     responseObject = object;
                 }, function (object) {
                     responseObject = object;
-                });
+                }, null, "name eq 'name'");
 
                 request = jasmine.Ajax.requests.mostRecent();
                 request.respondWith(responseStubs.multipleResponse);
 
-                dynamicsWebApiTest.retrieveMultiple("tests", ["fullname"], "name eq 'name'", function (object) {
+                dynamicsWebApiTest.retrieveMultiple("tests", function (object) {
                     responseObject2 = object;
                     done();
                 }, function (object) {
                     responseObject2 = object;
                     done();
-                });
+                }, ["fullname"], "name eq 'name'");
 
                 request2 = jasmine.Ajax.requests.mostRecent();
                 request2.respondWith(responseStubs.multipleResponse);
@@ -3567,13 +3567,13 @@ describe("callbacks -", function () {
                 request = jasmine.Ajax.requests.mostRecent();
                 request.respondWith(responseStubs.multipleWithLinkResponse);
 
-                dynamicsWebApiTest.retrieveMultiple(null, null, null, responseStubs.multipleWithLink().oDataNextLink, function (object) {
+                dynamicsWebApiTest.retrieveMultiple(null, function (object) {
                     responseObject2 = object;
                     done();
                 }, function (object) {
                     responseObject2 = object;
                     done();
-                });
+                }, null, null, responseStubs.multipleWithLink().oDataNextLink);
 
                 request2 = jasmine.Ajax.requests.mostRecent();
                 request2.respondWith(responseStubs.multipleResponse);
@@ -3709,13 +3709,13 @@ describe("callbacks -", function () {
                 request = jasmine.Ajax.requests.mostRecent();
                 request.respondWith(responseStubs.multipleWithLinkResponse);
 
-                dynamicsWebApiTest.retrieveMultipleRequest(dwaRequest, responseStubs.multipleWithLink().oDataNextLink, function (object) {
+                dynamicsWebApiTest.retrieveMultipleRequest(dwaRequest, function (object) {
                     responseObject2 = object;
                     done();
                 }, function (object) {
                     responseObject2 = object;
                     done();
-                });
+                }, responseStubs.multipleWithLink().oDataNextLink);
 
                 request2 = jasmine.Ajax.requests.mostRecent();
                 request2.respondWith(responseStubs.multipleResponse);
@@ -3884,6 +3884,197 @@ describe("callbacks -", function () {
                 expect(responseObject2).toBe(false);
                 expect(responseObject3.status).toBe(404);
             });
+        });
+    });
+});
+
+describe("dynamicsWebApi.constructor -", function () {
+    var dynamicsWebApi80 = new DynamicsWebApi();
+
+    beforeAll(function () {
+        jasmine.Ajax.install();
+    });
+
+    afterAll(function () {
+        jasmine.Ajax.uninstall();
+    });
+
+    describe("webApiVersion and impersonate", function () {
+        var responseObject;
+        var request;
+        beforeAll(function (done) {
+            dynamicsWebApi80.create(dataStubs.testEntity, "tests", function (object) {
+                    responseObject = object;
+                    done();
+                }, function (object) {
+                    responseObject = object;
+                    done();
+                });
+
+            request = jasmine.Ajax.requests.mostRecent();
+            request.respondWith(responseStubs.createReturnId);
+        });
+
+        it("sends the request to the right end point", function () {
+            expect(request.url).toBe(webApiUrl80 + "tests");
+        });
+
+        it("does not send MSCRMCallerID header", function () {
+            expect(request.requestHeaders['MSCRMCallerID']).toBeUndefined();
+        });
+    });
+});
+
+describe("dynamicsWebApi.setConfig -", function () {
+    var dynamicsWebApi81 = new DynamicsWebApi();
+    dynamicsWebApi81.setConfig({ webApiVersion: "8.1", impersonate: dataStubs.testEntityId2 });
+
+    beforeAll(function () {
+        jasmine.Ajax.install();
+    });
+
+    afterAll(function () {
+        jasmine.Ajax.uninstall();
+    });
+
+    describe("webApiVersion and impersonate", function () {
+        var responseObject;
+        var request;
+        beforeAll(function (done) {
+            dynamicsWebApi81.create(dataStubs.testEntity, "tests", function (object) {
+                    responseObject = object;
+                    done();
+                }, function (object) {
+                    responseObject = object;
+                    done();
+                });
+
+            request = jasmine.Ajax.requests.mostRecent();
+            request.respondWith(responseStubs.createReturnId);
+        });
+
+        it("sends the request to the right end point", function () {
+            expect(request.url).toBe(webApiUrl81 + "tests");
+        });
+
+        it("sends the correct MSCRMCallerID header", function () {
+            expect(request.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId2);
+        });
+    });
+
+    describe("impersonate overriden with a request.impersonate", function () {
+        var responseObject;
+        var request;
+        beforeAll(function (done) {
+            dynamicsWebApi81.retrieveMultipleRequest({ collection: "tests", impersonate: dataStubs.testEntityId3 }, function (object) {
+                    responseObject = object;
+                    done();
+                }, function (object) {
+                    responseObject = object;
+                    done();
+                });
+
+            request = jasmine.Ajax.requests.mostRecent();
+            request.respondWith(responseStubs.multipleResponse);
+        });
+
+        it("sends the request to the right end point", function () {
+            expect(request.url).toBe(webApiUrl81 + "tests");
+        });
+
+        it("sends the correct MSCRMCallerID header", function () {
+            expect(request.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId3);
+        });
+    });
+
+    describe("webApiVersion is overriden by webApiUrl", function () {
+        var responseObject;
+        var request;
+        beforeAll(function (done) {
+            dynamicsWebApi81.setConfig({ webApiUrl: webApiUrl });
+            dynamicsWebApi81.retrieveMultipleRequest({ collection: "tests" }, function (object) {
+                    responseObject = object;
+                    done();
+                }, function (object) {
+                    responseObject = object;
+                    done();
+                });
+
+            request = jasmine.Ajax.requests.mostRecent();
+            request.respondWith(responseStubs.multipleResponse);
+        });
+
+        it("sends the request to the right end point", function () {
+            expect(request.url).toBe(responseStubs.collectionUrl);
+        });
+
+        it("sends the correct MSCRMCallerID header", function () {
+            expect(request.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId2);
+        });
+    });
+});
+
+describe("dynamicsWebApi.initializeInstance -", function () {
+    var dynamicsWebApi81 = new DynamicsWebApi();
+    dynamicsWebApi81.setConfig({ webApiVersion: "8.1", impersonate: dataStubs.testEntityId2 });
+    dynamicsWebApiCopy = dynamicsWebApi81.initializeInstance();
+
+    beforeAll(function () {
+        jasmine.Ajax.install();
+    });
+
+    afterAll(function () {
+        jasmine.Ajax.uninstall();
+    });
+
+    describe("current instance copied with its config", function () {
+        var responseObject;
+        var request;
+        beforeAll(function (done) {
+            dynamicsWebApiCopy.create(dataStubs.testEntity, "tests", function (object) {
+                    responseObject = object;
+                    done();
+                }, function (object) {
+                    responseObject = object;
+                    done();
+                });
+
+            request = jasmine.Ajax.requests.mostRecent();
+            request.respondWith(responseStubs.createReturnId);
+        });
+
+        it("sends the request to the right end point", function () {
+            expect(request.url).toBe(webApiUrl81 + "tests");
+        });
+
+        it("sends the correct MSCRMCallerID header", function () {
+            expect(request.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId2);
+        });
+    });
+
+    describe("config changed", function () {
+        var responseObject;
+        var request;
+        beforeAll(function (done) {
+            dynamicsWebApiCopy = dynamicsWebApi81.initializeInstance({ webApiVersion: "8.2" });
+            dynamicsWebApiCopy.retrieveMultipleRequest({ collection: "tests" }, function (object) {
+                    responseObject = object;
+                    done();
+                }, function (object) {
+                    responseObject = object;
+                    done();
+                });
+
+            request = jasmine.Ajax.requests.mostRecent();
+            request.respondWith(responseStubs.multipleResponse);
+        });
+
+        it("sends the request to the right end point", function () {
+            expect(request.url).toBe(responseStubs.collectionUrl);
+        });
+
+        it("does not send MSCRMCallerID header", function () {
+            expect(request.requestHeaders['MSCRMCallerID']).toBeUndefined();
         });
     });
 });

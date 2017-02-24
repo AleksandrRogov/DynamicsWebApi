@@ -5,13 +5,15 @@ var Xrm = {
     Page: {
         context: {
             getClientUrl: function () {
-                return "";
+                return "https://testorg.crm.dynamics.com";
             }
         }
     }
 }
 
 var webApiUrl = "https://testorg.crm.dynamics.com/api/data/v8.2/";
+var webApiUrl81 = "https://testorg.crm.dynamics.com/api/data/v8.1/";
+var webApiUrl80 = "https://testorg.crm.dynamics.com/api/data/v8.0/";
 var dynamicsWebApiTest = new DynamicsWebApi({ webApiUrl: webApiUrl });
 
 var dataStubs = {
@@ -54,7 +56,7 @@ var dataStubs = {
     },
     multipleWithLink: {
         "@odata.context": "context",
-        "@odata.nextLink": webApiUrl + "tests?$select=name&$skiptoken=%3Ccookie%20pagenumber=%222%22%20pagingcookie=%22%253ccookie%2520page%253d%25221%2522%253e%253caccountid%2520last%253d%2522%257b8151925C-CDE2-E411-80DB-00155D2A68CB%257d%2522%2520first%253d%2522%257b7D51925C-CDE2-E411-80DB-00155D2A68CB%257d%2522%2520%252f%253e%253c%252fcookie%253e%22%20/%3",
+        "@odata.nextLink": webApiUrl + "tests?$select=name&$skiptoken=%3Ccookie%20pagenumber=%222%22%20pagingcookie=%22%253ccookie%2520page%253d%25221%2522%253e%253caccountid%2520last%253d%2522%257b8151925C-CDE2-E411-80DB-00155D2A68CB%257d%2522%2520first%253d%2522%257b7D51925C-CDE2-E411-80DB-00155D2A68CB%257d%2522%2520%252f%253e%253c%252fcookie%253e%22%20/%3E",
         value: [
             { name: "name1", subject: "subject1" },
             { name: "name2", subject: "subject2" }

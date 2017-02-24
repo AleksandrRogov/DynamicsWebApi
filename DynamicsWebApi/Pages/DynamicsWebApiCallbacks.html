@@ -29,6 +29,7 @@
     <button onclick="UpsertRecord()">Upsert Record</button>
     <button onclick="UpsertRequest()">Upsert Request</button>
     <button onclick="RetrieveMultipleRecordsExtended()">Multiple Records Extended</button>
+    <button onclick="RetrieveMultiplePaging()">Multiple Paging</button>
     <button onclick="FetchXmlTest()">Fetch XML Test</button>
     <button onclick="Associate()">Associate</button>
     <button onclick="AssociateSingleValued()">Associate Single Valued</button>
@@ -52,7 +53,7 @@
         var queueId = null;
 
         //for association
-        dynamicsWebApi.retrieveMultiple("accounts", null, function (response) {
+        dynamicsWebApi.retrieveMultiple("accounts", function (response) {
             /// <param name="response" type="DWA.Types.MultipleResponse">Response object</param>
             accountId = response.value[0].accountid;
         }, function (error) {
@@ -187,7 +188,7 @@
                 maxPageSize: 1
             };
 
-            dynamicsWebApi.retrieveMultipleRequest(request, null,
+            dynamicsWebApi.retrieveMultipleRequest(request,
                 function (response) {
                     /// <param name="response" type="DWA.Types.MultipleResponse">Request response</param>
 
@@ -198,6 +199,30 @@
                     debugger;
                     console.trace(error.message);
                 });
+        }
+        function RetrieveMultiplePaging() {
+            var request = {
+                collection: "leads",
+                select: ["firstname", "subject"],
+                maxPageSize: 5
+            };
+
+            dynamicsWebApi.retrieveMultipleRequest(request, function (response) {
+                /// <param name="response" type="DWA.Types.MultipleResponse">Request response</param>
+
+                debugger;
+
+                return dynamicsWebApi.retrieveMultipleRequest(request, function (response) {
+                    /// <param name="response" type="DWA.Types.MultipleResponse">Request response</param>
+                    debugger;
+                }, function (error) {
+                    debugger;
+                    console.trace(error.message);
+                }, response.oDataNextLink);
+            }, function (error) {
+                debugger;
+                console.trace(error.message);
+            });
         }
         function DeleteRecord() {
             dynamicsWebApi.deleteRecord(recordId, "leads", function () {
@@ -359,7 +384,7 @@
             });
         }
         function ExecuteBoundFunction() {
-            dynamicsWebApi.retrieveMultiple("teams", null, function (response) {
+            dynamicsWebApi.retrieveMultiple("teams", function (response) {
                 /// <param name="response" type="DWA.Types.MultipleResponse">Response</param>
 
                 dynamicsWebApi.executeBoundFunction(response.value[0].teamid, "teams", "Microsoft.Dynamics.CRM.RetrieveTeamPrivileges", function (response) {

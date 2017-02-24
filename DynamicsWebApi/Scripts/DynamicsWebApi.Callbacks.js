@@ -332,8 +332,8 @@ var DynamicsWebApi = function (config) {
         request.setRequestHeader("Accept", "application/json");
         request.setRequestHeader("Content-Type", "application/json; charset=utf-8");
 
-        if (_impersonateUserId != null) {
-            request.setRequestHeader("MSCRMCallerId", _impersonateUserId);
+        if (_impersonateUserId && (!additionalHeaders || (additionalHeaders && !additionalHeaders["MSCRMCallerID"]))) {
+            request.setRequestHeader("MSCRMCallerID", _impersonateUserId);
         }
 
         //set additional headers
@@ -378,7 +378,9 @@ var DynamicsWebApi = function (config) {
                 }
             }
         };
-        request.send(JSON.stringify(data, _propertyReplacer));
+        data
+            ? request.send(JSON.stringify(data, _propertyReplacer))
+            : request.send();
     }
 
     var dwaExpandRequest = function () {
@@ -418,10 +420,12 @@ var DynamicsWebApi = function (config) {
         ///<summary>Sets the configuration parameters for DynamicsWebApi helper.</summary>
         ///<param name="config" type="Object">
         /// Retrieve multiple request options
+        ///<para>   config.impersonate (String)
+        ///             A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.</para>
         ///<para>   config.webApiVersion (String). 
         ///             The version of Web API to use, for example: "8.1"</para>
         ///<para>   config.webApiUrl (String).
-        ///             A String representing a URL to Web API (webApiVersion not required if webApiUrl specified) [optional, if used inside of CRM]
+        ///             A String representing a URL to Web API (webApiVersion not required if webApiUrl specified) [optional, if used inside of CRM]</para>
         ///</param>
 
         if (config.webApiVersion != null) {
@@ -1057,7 +1061,7 @@ var DynamicsWebApi = function (config) {
         };
 
         var onError = function (xhr) {
-            if (ifnonematchl && xhr.status == 412) {
+            if (ifnonematch && xhr.status == 412) {
                 //if prevent update
                 successCallback();
             }
@@ -1180,13 +1184,13 @@ var DynamicsWebApi = function (config) {
                 collection: collection,
                 filter: filter,
                 count: true
-            }, null, function (response) {
+            }, function (response) {
                 successCallback(response.oDataCount ? response.oDataCount : 0);
             }, errorCallback);
         }
     }
 
-    var retrieveMultipleRecords = function (collection, nextPageLink, successCallback, errorCallback, select, filter) {
+    var retrieveMultipleRecords = function (collection, successCallback, errorCallback, select, filter, nextPageLink) {
         ///<summary>
         /// Sends an asynchronous request to retrieve records.
         ///</summary>
@@ -1207,15 +1211,16 @@ var DynamicsWebApi = function (config) {
             collection: collection,
             select: select,
             filter: filter
-        }, nextPageLink, successCallback, errorCallback);
+        }, successCallback, errorCallback, nextPageLink);
     }
 
-    var retrieveMultipleRecordsAdvanced = function (request, nextPageLink, successCallback, errorCallback) {
+    var retrieveMultipleRecordsAdvanced = function (request, successCallback, errorCallback, nextPageLink) {
         ///<summary>
         /// Sends an asynchronous request to retrieve records.
         ///</summary>
         ///<param name="request" type="dwaRequest">
         /// Retrieve multiple request options
+        ///</param>
         ///<para>   object.collection (String). 
         ///             The Logical Name of the Entity Collection to retrieve. For an Account record, use "accounts".</para>
         ///<para>   object.id (String).
@@ -1258,7 +1263,7 @@ var DynamicsWebApi = function (config) {
 
         if (nextPageLink) {
             _stringParameterCheck(nextPageLink, "DynamicsWebApi.retrieveMultiple", "nextPageLink");
-            result.url = nextPageLink.replace(_webApiUrl, "");
+            result.url = unescape(nextPageLink).replace(_webApiUrl, "");
         }
 
         //copy locally
@@ -1373,7 +1378,7 @@ var DynamicsWebApi = function (config) {
                 response.data.PagingInfo = getPagingCookie(response.data['@Microsoft.Dynamics.CRM.fetchxmlpagingcookie'], pageNumber);
             }
 
-            if (response['@odata.context'] != null) {
+            if (response.data['@odata.context'] != null) {
                 response.data.oDataContext = response.data['@odata.context'];
             }
 
@@ -1725,18 +1730,24 @@ var DynamicsWebApi = function (config) {
     }
 
     var createInstance = function (config) {
-        ///<summary>Creates another instance of DynamicsWebApi helper.</summary>
-        ///<param name="config" type="Object">
-        /// DynamicsWebApi Configuration object
-        ///<para>   config.webApiVersion (String).
+        ///<summary>Sets the configuration parameters for DynamicsWebApi helper.</summary>
+        ///<param name="config" type="Object" optional="true">
+        /// Retrieve multiple request options. If it's not passed then the current instance config copied.
+        ///<para>   config.impersonate (String)
+        ///             A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.</para>
+        ///<para>   config.webApiVersion (String). 
         ///             The version of Web API to use, for example: "8.1"</para>
         ///<para>   config.webApiUrl (String).
         ///             A String representing a URL to Web API (webApiVersion not required if webApiUrl specified) [optional, if used inside of CRM]</para>
         ///</param>
-        /// <returns type="DynamicsWebApi" />
 
-        if (config == null)
-            config = {};
+        if (!config) {
+            config = {
+                impersonate: _impersonateUserId,
+                webApiUrl: _webApiUrl,
+                webApiVersion: _webApiVersion
+            };
+        }
 
         return new DynamicsWebApi(config);
     }

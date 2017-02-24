@@ -3973,3 +3973,200 @@ describe("dynamicsWebApi.deleteRequest -", function () {
         });
     });
 });
+
+describe("dynamicsWebApi.constructor -", function () {
+    var dynamicsWebApi80 = new DynamicsWebApi();
+
+    beforeAll(function () {
+        jasmine.Ajax.install();
+    });
+
+    afterAll(function () {
+        jasmine.Ajax.uninstall();
+    });
+
+    describe("webApiVersion and impersonate", function () {
+        var responseObject;
+        var request;
+        beforeAll(function (done) {
+            dynamicsWebApi80.create(dataStubs.testEntity, "tests")
+                .then(function (object) {
+                    responseObject = object;
+                    done();
+                }).catch(function (object) {
+                    responseObject = object;
+                    done();
+                });
+
+            request = jasmine.Ajax.requests.mostRecent();
+            request.respondWith(responseStubs.createReturnId);
+        });
+
+        it("sends the request to the right end point", function () {
+            expect(request.url).toBe(webApiUrl80 + "tests");
+        });
+
+        it("does not send MSCRMCallerID header", function () {
+            expect(request.requestHeaders['MSCRMCallerID']).toBeUndefined();
+        });
+    });
+});
+
+describe("dynamicsWebApi.setConfig -", function () {
+    var dynamicsWebApi81 = new DynamicsWebApi();
+    dynamicsWebApi81.setConfig({ webApiVersion: "8.1", impersonate: dataStubs.testEntityId2 });
+
+    beforeAll(function () {
+        jasmine.Ajax.install();
+    });
+
+    afterAll(function () {
+        jasmine.Ajax.uninstall();
+    });
+
+    describe("webApiVersion and impersonate", function () {
+        var responseObject;
+        var request;
+        beforeAll(function (done) {
+            dynamicsWebApi81.create(dataStubs.testEntity, "tests")
+                .then(function (object) {
+                    responseObject = object;
+                    done();
+                }).catch(function (object) {
+                    responseObject = object;
+                    done();
+                });
+
+            request = jasmine.Ajax.requests.mostRecent();
+            request.respondWith(responseStubs.createReturnId);
+        });
+
+        it("sends the request to the right end point", function () {
+            expect(request.url).toBe(webApiUrl81 + "tests");
+        });
+
+        it("sends the correct MSCRMCallerID header", function () {
+            expect(request.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId2);
+        });
+    });
+
+    describe("impersonate overriden with a request.impersonate", function () {
+        var responseObject;
+        var request;
+        beforeAll(function (done) {
+            dynamicsWebApi81.retrieveMultipleRequest({ collection: "tests", impersonate: dataStubs.testEntityId3 })
+                .then(function (object) {
+                    responseObject = object;
+                    done();
+                }).catch(function (object) {
+                    responseObject = object;
+                    done();
+                });
+
+            request = jasmine.Ajax.requests.mostRecent();
+            request.respondWith(responseStubs.multipleResponse);
+        });
+
+        it("sends the request to the right end point", function () {
+            expect(request.url).toBe(webApiUrl81 + "tests");
+        });
+
+        it("sends the correct MSCRMCallerID header", function () {
+            expect(request.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId3);
+        });
+    });
+
+    describe("webApiVersion is overriden by webApiUrl", function () {
+        var responseObject;
+        var request;
+        beforeAll(function (done) {
+            dynamicsWebApi81.setConfig({ webApiUrl: webApiUrl });
+            dynamicsWebApi81.retrieveMultipleRequest({ collection: "tests" })
+                .then(function (object) {
+                    responseObject = object;
+                    done();
+                }).catch(function (object) {
+                    responseObject = object;
+                    done();
+                });
+
+            request = jasmine.Ajax.requests.mostRecent();
+            request.respondWith(responseStubs.multipleResponse);
+        });
+
+        it("sends the request to the right end point", function () {
+            expect(request.url).toBe(responseStubs.collectionUrl);
+        });
+
+        it("sends the correct MSCRMCallerID header", function () {
+            expect(request.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId2);
+        });
+    });
+});
+
+describe("dynamicsWebApi.initializeInstance -", function () {
+    var dynamicsWebApi81 = new DynamicsWebApi();
+    dynamicsWebApi81.setConfig({ webApiVersion: "8.1", impersonate: dataStubs.testEntityId2 });
+    dynamicsWebApiCopy = dynamicsWebApi81.initializeInstance();
+
+    beforeAll(function () {
+        jasmine.Ajax.install();
+    });
+
+    afterAll(function () {
+        jasmine.Ajax.uninstall();
+    });
+
+    describe("current instance copied with its config", function () {
+        var responseObject;
+        var request;
+        beforeAll(function (done) {
+            dynamicsWebApiCopy.create(dataStubs.testEntity, "tests")
+                .then(function (object) {
+                    responseObject = object;
+                    done();
+                }).catch(function (object) {
+                    responseObject = object;
+                    done();
+                });
+
+            request = jasmine.Ajax.requests.mostRecent();
+            request.respondWith(responseStubs.createReturnId);
+        });
+
+        it("sends the request to the right end point", function () {
+            expect(request.url).toBe(webApiUrl81 + "tests");
+        });
+
+        it("sends the correct MSCRMCallerID header", function () {
+            expect(request.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId2);
+        });
+    });
+
+    describe("config changed", function () {
+        var responseObject;
+        var request;
+        beforeAll(function (done) {
+            dynamicsWebApiCopy = dynamicsWebApi81.initializeInstance({ webApiVersion: "8.2" });
+            dynamicsWebApiCopy.retrieveMultipleRequest({ collection: "tests" })
+                .then(function (object) {
+                    responseObject = object;
+                    done();
+                }).catch(function (object) {
+                    responseObject = object;
+                    done();
+                });
+
+            request = jasmine.Ajax.requests.mostRecent();
+            request.respondWith(responseStubs.multipleResponse);
+        });
+
+        it("sends the request to the right end point", function () {
+            expect(request.url).toBe(responseStubs.collectionUrl);
+        });
+
+        it("does not send MSCRMCallerID header", function () {
+            expect(request.requestHeaders['MSCRMCallerID']).toBeUndefined();
+        });
+    });
+});

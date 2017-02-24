@@ -212,8 +212,8 @@ var DynamicsWebApi = function (config) {
             request.setRequestHeader("Accept", "application/json");
             request.setRequestHeader("Content-Type", "application/json; charset=utf-8");
 
-            if (_impersonateUserId != null) {
-                request.setRequestHeader("MSCRMCallerId", _impersonateUserId);
+            if (_impersonateUserId && (!additionalHeaders || (additionalHeaders && !additionalHeaders["MSCRMCallerID"]))) {
+                request.setRequestHeader("MSCRMCallerID", _impersonateUserId);
             }
 
             //set additional headers
@@ -258,7 +258,7 @@ var DynamicsWebApi = function (config) {
                     }
                 }
             };
-            data != null
+            data
                 ? request.send(JSON.stringify(data, _propertyReplacer))
                 : request.send();
         });
@@ -410,24 +410,26 @@ var DynamicsWebApi = function (config) {
         ///<summary>Sets the configuration parameters for DynamicsWebApi helper.</summary>
         ///<param name="config" type="Object">
         /// Retrieve multiple request options
+        ///<para>   config.impersonate (String)
+        ///             A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.</para>
         ///<para>   config.webApiVersion (String). 
         ///             The version of Web API to use, for example: "8.1"</para>
         ///<para>   config.webApiUrl (String).
-        ///             A String representing a URL to Web API (webApiVersion not required if webApiUrl specified) [optional, if used inside of CRM]
+        ///             A String representing a URL to Web API (webApiVersion not required if webApiUrl specified) [optional, if used inside of CRM]</para>
         ///</param>
 
-        if (config.webApiVersion != null) {
+        if (config.webApiVersion) {
             _stringParameterCheck(config.webApiVersion, "DynamicsWebApi.setConfig", "config.webApiVersion");
             _webApiVersion = config.webApiVersion;
             _webApiUrl = _initUrl();
         }
 
-        if (config.webApiUrl != null) {
+        if (config.webApiUrl) {
             _stringParameterCheck(config.webApiUrl, "DynamicsWebApi.setConfig", "config.webApiUrl");
             _webApiUrl = config.webApiUrl;
         }
 
-        if (config.impersonate != null) {
+        if (config.impersonate) {
             _impersonateUserId = _guidParameterCheck(config.impersonate, "DynamicsWebApi.setConfig", "config.impersonate");
         }
     }
@@ -1102,7 +1104,7 @@ var DynamicsWebApi = function (config) {
 
         if (nextPageLink) {
             _stringParameterCheck(nextPageLink, "DynamicsWebApi.retrieveMultiple", "nextPageLink");
-            result.url = nextPageLink.replace(_webApiUrl, "");
+            result.url = unescape(nextPageLink).replace(_webApiUrl, "");
         }
 
         //copy locally
@@ -1454,15 +1456,25 @@ var DynamicsWebApi = function (config) {
     }
 
     var createInstance = function (config) {
-        /// <summary>Creates another instance of DynamicsWebApi helper. This function copies sendRequest function into a newly created object.</summary>
-        ///<param name="config" type="Object">
-        /// DynamicsWebApi Configuration object
-        ///<para>   config.webApiVersion (String).
+        ///<summary>Sets the configuration parameters for DynamicsWebApi helper.</summary>
+        ///<param name="config" type="Object" optional="true">
+        /// Retrieve multiple request options. If it's not passed then the current instance config copied.
+        ///<para>   config.impersonate (String)
+        ///             A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.</para>
+        ///<para>   config.webApiVersion (String). 
         ///             The version of Web API to use, for example: "8.1"</para>
         ///<para>   config.webApiUrl (String).
         ///             A String representing a URL to Web API (webApiVersion not required if webApiUrl specified) [optional, if used inside of CRM]</para>
         ///</param>
-        /// <returns type="DynamicsWebApi" />
+
+        if (!config) {
+            config = {
+                impersonate: _impersonateUserId,
+                webApiUrl: _webApiUrl,
+                webApiVersion: _webApiVersion
+            };
+        }
+
         return new DynamicsWebApi(config);
     }
 
