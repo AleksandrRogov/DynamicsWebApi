@@ -1,0 +1,9 @@
+{
+  "name": "dynamics-web-api",
+  "version": "1.0.0",
+  "description": "Dynamics Web Api",
+  "main": "lib/dynamics-web-api.js",
+  "author": {
+    "name": "Aleksandr Rogov"
+  }
+}
