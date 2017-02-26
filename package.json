@@ -1,9 +1,31 @@
 {
   "name": "dynamics-web-api",
   "version": "1.0.0",
-  "description": "Dynamics Web Api",
+  "description": "DynamicsWebApi is a Microsoft Dynamics CRM Web API helper library",
+  "keywords": [
+    "crm",
+    "web-api",
+    "helper",
+    "dynamics-crm",
+    "dynamics-365",
+    "dynamics-crm-webapi",
+    "dynamics-crm-online"
+  ],
   "main": "lib/dynamics-web-api.js",
   "author": {
     "name": "Aleksandr Rogov"
+  },
+  "devDependencies": {
+    "browserify": "^14.1.0",
+    "chai": "^3.5.0",
+    "mocha": "^3.2.0",
+    "sinon": "^1.17.7"
+  },
+  "dependencies": { },
+  "license": "MIT",
+  "scripts": { "test": "./node_modules/.bin/mocha --reporter spec" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AleksandrRogov/DynamicsWebApi.git"
   }
 }

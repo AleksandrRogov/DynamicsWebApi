@@ -243,4 +243,6 @@ ModelManifest.xml
 **/CRMDeveloperExtensions.config
 /bfg.jar
 
-typings/
+/typings
+/gulpfile.js
+/typings.json

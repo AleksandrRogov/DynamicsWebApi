@@ -2,9 +2,10 @@
 DynamicsWebApi is a Microsoft Dynamics CRM Web API helper library written using JavaScript.
 It is compatible with: Dynamics 365 (online), Dynamics 365 (on-premises), Dynamics CRM 2016, Dynamics CRM Online.
 
-Beta versions are available:
-* [DynamicsWebApi Promises version] (/DynamicsWebApi/Scripts/DynamicsWebApi.js)
-* [DynamicsWebApi Callbacks version] (/DynamicsWebApi/Scripts/DynamicsWebApi.Callbacks.js)
+Stable versions are available!
+I made a decision to convert ASP.NET project to Node.js one, meanwhile __fully tested and stable browser versions__ can be found in `release` folder.
+* [DynamicsWebApi Promises version] (/release/dynamics-web-api.js)
+* [DynamicsWebApi Callbacks version] (/release/dynamics-web-api-callbacks.js)
 
 Any suggestions are welcome!
 

@@ -20,7 +20,7 @@
     <OutputPath>.</OutputPath>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <ProjectTypeGuids>{3AF33F2E-1136-4D97-BBB7-1795711AC8B8};{349c5851-65df-11da-9384-00065b846f21};{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}</ProjectTypeGuids>
-    <ProjectView>ProjectFiles</ProjectView>
+    <ProjectView>ShowAllFiles</ProjectView>
     <NodejsPort>1337</NodejsPort>
     <StartWebBrowser>true</StartWebBrowser>
   </PropertyGroup>
@@ -31,19 +31,48 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="lib\dynamics-web-api-callbacks.js" />
+    <Compile Include="gulpfile.js" />
+    <Compile Include="lib\dwa.js" />
     <Compile Include="lib\dynamics-web-api.js" />
+    <Compile Include="release\dynamics-web-api-callbacks.js" />
+    <Compile Include="release\dynamics-web-api.js" />
+    <Compile Include="release\tests\callbacks.tests.js" />
+    <Compile Include="release\tests\jasmine-ajax.js" />
+    <Compile Include="release\tests\jasmine.js" />
+    <Compile Include="release\tests\main.tests.js" />
+    <Compile Include="release\tests\stubs.js" />
+    <Compile Include="release\tests\yaku.browser.global.min.js" />
+    <Compile Include="tests\callbacks-tests.js" />
+    <Compile Include="tests\main-tests - Copy.js" />
+    <Compile Include="tests\main-tests.js">
+      <TestFramework>
+      </TestFramework>
+    </Compile>
+    <Compile Include="tests\stubs.js" />
+    <Compile Include="tests\UnitTest.js">
+      <SubType>Code</SubType>
+      <TestFramework>Mocha</TestFramework>
+    </Compile>
     <Content Include="package.json" />
     <Content Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="lib\" />
+    <Folder Include="release\" />
+    <Folder Include="release\tests\" />
+    <Folder Include="tests\" />
     <Folder Include="typings\" />
     <Folder Include="typings\globals\" />
+    <Folder Include="typings\globals\chai\" />
+    <Folder Include="typings\globals\mocha\" />
     <Folder Include="typings\globals\node\" />
+    <Folder Include="typings\globals\sinon\" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="typings\globals\chai\index.d.ts" />
+    <TypeScriptCompile Include="typings\globals\mocha\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\node\index.d.ts" />
+    <TypeScriptCompile Include="typings\globals\sinon\index.d.ts" />
     <TypeScriptCompile Include="typings\index.d.ts" />
   </ItemGroup>
   <!-- Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them. -->
