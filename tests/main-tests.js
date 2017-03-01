@@ -10,7 +10,6 @@ var webApiUrl = stubs.webApiUrl;
 var webApiUrl81 = stubs.webApiUrl81;
 var webApiUrl80 = stubs.webApiUrl80;
 var dynamicsWebApiTest = stubs.dynamicsWebApiTest;
-
 var DWA = require("../lib/dwa.js");
 var DynamicsWebApi = require("../lib/dynamics-web-api.js");
 
