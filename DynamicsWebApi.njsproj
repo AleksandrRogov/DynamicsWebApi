@@ -46,11 +46,6 @@
       <TestFramework>Mocha</TestFramework>
     </Compile>
     <Compile Include="tests\stubs.js" />
-    <Compile Include="tests\UnitTest.js">
-      <SubType>Code</SubType>
-      <TestFramework>
-      </TestFramework>
-    </Compile>
     <Content Include="package.json" />
     <Content Include="README.md" />
   </ItemGroup>
