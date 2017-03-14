@@ -21,9 +21,11 @@
     "mocha": "^3.2.0",
     "sinon": "^1.17.7"
   },
-  "dependencies": { },
+  "dependencies": {},
   "license": "MIT",
-  "scripts": { "test": "./node_modules/.bin/mocha --reporter spec" },
+  "scripts": {
+    "test": "./node_modules/.bin/mocha --reporter spec"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/AleksandrRogov/DynamicsWebApi.git"

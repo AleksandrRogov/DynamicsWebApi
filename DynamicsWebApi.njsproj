@@ -5,6 +5,9 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <Name>DynamicsWebApi</Name>
     <RootNamespace>DynamicsWebApi</RootNamespace>
+    <EnableTypeScript>true</EnableTypeScript>
+    <TypeScriptSourceMap>true</TypeScriptSourceMap>
+    <TypeScriptModuleKind>CommonJS</TypeScriptModuleKind>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -20,7 +23,7 @@
     <OutputPath>.</OutputPath>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <ProjectTypeGuids>{3AF33F2E-1136-4D97-BBB7-1795711AC8B8};{349c5851-65df-11da-9384-00065b846f21};{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}</ProjectTypeGuids>
-    <ProjectView>ShowAllFiles</ProjectView>
+    <ProjectView>ProjectFiles</ProjectView>
     <NodejsPort>1337</NodejsPort>
     <StartWebBrowser>true</StartWebBrowser>
   </PropertyGroup>
@@ -33,18 +36,20 @@
   <ItemGroup>
     <Compile Include="gulpfile.js" />
     <Compile Include="lib\dwa.js" />
+    <Compile Include="lib\dynamics-web-api-callbacks.js" />
     <Compile Include="lib\dynamics-web-api.js" />
     <Compile Include="lib\test.js" />
-    <Compile Include="tests\callbacks-tests.js" />
-    <Compile Include="tests\main-tests - Copy.js" />
+    <Compile Include="tests\callbacks-tests.js">
+      <TestFramework>Mocha</TestFramework>
+    </Compile>
     <Compile Include="tests\main-tests.js">
-      <TestFramework>
-      </TestFramework>
+      <TestFramework>Mocha</TestFramework>
     </Compile>
     <Compile Include="tests\stubs.js" />
     <Compile Include="tests\UnitTest.js">
       <SubType>Code</SubType>
-      <TestFramework>Mocha</TestFramework>
+      <TestFramework>
+      </TestFramework>
     </Compile>
     <Content Include="package.json" />
     <Content Include="README.md" />

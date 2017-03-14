@@ -1,477 +1,482 @@
 ﻿var chai = require('chai');
 var expect = chai.expect;
 
-var stubs = require("./stubs.js");
+var sinon = require('sinon');
 
-var Xrm = stubs.Xrm;
-var dataStubs = stubs.dataStubs;
-var responseStubs = stubs.responseStubs;
-var webApiUrl = stubs.webApiUrl;
-var webApiUrl81 = stubs.webApiUrl81;
-var webApiUrl80 = stubs.webApiUrl80;
-var dynamicsWebApiTest = stubs.dynamicsWebApiTest;
+var mocks = require("./stubs.js");
 var DWA = require("../lib/dwa.js");
 var DynamicsWebApi = require("../lib/dynamics-web-api.js");
+var dynamicsWebApiTest = new DynamicsWebApi({ webApiVersion: "8.2" });
 
 describe("dynamicsWebApi.create -", function () {
-    beforeAll(function () {
-        jasmine.Ajax.install();
+    before(function () {
+        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+        var requests = this.requests = [];
+
+        global.XMLHttpRequest.onCreate = function (xhr) {
+            requests.push(xhr);
+        };
     });
 
-    afterAll(function () {
-        jasmine.Ajax.uninstall();
+    after(function () {
+        global.XMLHttpRequest.restore();
     });
 
     describe("basic", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
-            dynamicsWebApiTest.create(dataStubs.testEntity, "tests").then(function (object) {
+        before(function (done) {
+            dynamicsWebApiTest.create(mocks.data.testEntity, "tests").then(function (object) {
                 responseObject = object;
                 done();
-            }).catch(function(object){
+            }).catch(function (object) {
                 responseObject = object;
                 done();
             });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.createReturnId);
+            var response = mocks.responses.createReturnId;
+            this.requests[0].respond(response.status, response.responseHeaders);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.collectionUrl);
+            expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl);
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('POST');
+            expect(this.requests[0].method).to.equal('POST');
         });
 
         it("sends the right data", function () {
-            expect(request.data()).toEqual(dataStubs.testEntity);
+            expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
         });
 
         it("does not have Prefer header", function () {
-            expect(request.requestHeaders['Prefer']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['Prefer']).to.be.undefined;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toBe(dataStubs.testEntityId);
+            expect(responseObject).to.deep.equal(mocks.data.testEntityId);
         });
     });
 
     describe("return representation", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
-            dynamicsWebApiTest.create(dataStubs.testEntity, "tests", DWA.Prefer.ReturnRepresentation).then(function (object) {
-                responseObject = object;
-                done();
-            }).catch(function(object){
-                responseObject = object;
-                done();
-            });
+        before(function (done) {
+            dynamicsWebApiTest
+                .create(mocks.data.testEntity, "tests", DWA.Prefer.ReturnRepresentation)
+                .then(function (object) {
+                    responseObject = object;
+                    done();
+                }).catch(function (object) {
+                    responseObject = object;
+                    done();
+                });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.createReturnRepresentation);
+            var response = mocks.responses.createReturnRepresentation;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.collectionUrl);
+            expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl);
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('POST');
+            expect(this.requests[0].method).to.equal('POST');
         });
 
         it("sends the right data", function () {
-            expect(request.data()).toEqual(dataStubs.testEntity);
+            expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
         });
 
         it("sends the Prefer header", function () {
-            expect(request.requestHeaders['Prefer']).toBe(DWA.Prefer.ReturnRepresentation);
+            expect(this.requests[0].requestHeaders['Prefer']).to.equal(DWA.Prefer.ReturnRepresentation);
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(dataStubs.testEntity);
+            expect(responseObject).to.deep.equal(mocks.data.testEntity);
         });
     });
 });
 
 describe("dynamicsWebApi.update -", function () {
 
-    beforeAll(function () {
-        jasmine.Ajax.install();
+    before(function () {
+        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+        var requests = this.requests = [];
+
+        global.XMLHttpRequest.onCreate = function (xhr) {
+            requests.push(xhr);
+        };
     });
 
-    afterAll(function () {
-        jasmine.Ajax.uninstall();
+    after(function () {
+        global.XMLHttpRequest.restore();
     });
 
     describe("basic", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
-            dynamicsWebApiTest.update(dataStubs.testEntityId, "tests", dataStubs.testEntity)
+        before(function (done) {
+            dynamicsWebApiTest.update(mocks.data.testEntityId, "tests", mocks.data.testEntity)
                 .then(function (object) {
                     responseObject = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.basicEmptyResponseSuccess);
+            var response = mocks.responses.basicEmptyResponseSuccess;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl);
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl);
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('PATCH');
+            expect(this.requests[0].method).to.equal('PATCH');
         });
 
         it("sends the right data", function () {
-            expect(request.data()).toEqual(dataStubs.testEntity);
+            expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
         });
 
         it("does not have Prefer header", function () {
-            expect(request.requestHeaders['Prefer']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['Prefer']).to.be.undefined;
         });
 
         it("sends the right If-Match header", function () {
-            expect(request.requestHeaders['If-Match']).toBe("*");
+            expect(this.requests[0].requestHeaders['If-Match']).to.equal("*");
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toBeUndefined();
+            expect(responseObject).to.be.undefined;
         });
     });
 
     describe("return representation", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
-            dynamicsWebApiTest.update(dataStubs.testEntityId, "tests", dataStubs.testEntity, DWA.Prefer.ReturnRepresentation)
+        before(function (done) {
+            dynamicsWebApiTest.update(mocks.data.testEntityId, "tests", mocks.data.testEntity, DWA.Prefer.ReturnRepresentation)
                 .then(function (object) {
                     responseObject = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.updateReturnRepresentation);
+            var response = mocks.responses.updateReturnRepresentation;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl);
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl);
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('PATCH');
+            expect(this.requests[0].method).to.equal('PATCH');
         });
 
         it("sends the right data", function () {
-            expect(request.data()).toEqual(dataStubs.testEntity);
+            expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
         });
 
         it("sends the Prefer header", function () {
-            expect(request.requestHeaders['Prefer']).toBe(DWA.Prefer.ReturnRepresentation);
+            expect(this.requests[0].requestHeaders['Prefer']).to.equal(DWA.Prefer.ReturnRepresentation);
         });
 
         it("sends the right If-Match header", function () {
-            expect(request.requestHeaders['If-Match']).toBe("*");
+            expect(this.requests[0].requestHeaders['If-Match']).to.equal("*");
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(dataStubs.updatedEntity);
+            expect(responseObject).to.deep.equal(mocks.data.updatedEntity);
         });
     });
 
     describe("select in return representation", function () {
         var responseObject;
         var responseObject2;
-        var request;
-        var request2;
-        beforeAll(function (done) {
+        before(function (done) {
             dynamicsWebApiTest
-                .update(dataStubs.testEntityId, "tests", dataStubs.testEntity, DWA.Prefer.ReturnRepresentation, ["fullname"])
+                .update(mocks.data.testEntityId, "tests", mocks.data.testEntity, DWA.Prefer.ReturnRepresentation, ["fullname"])
                 .then(function (object) {
                     responseObject = object;
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.updateReturnRepresentation);
+            var response = mocks.responses.updateReturnRepresentation;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
 
             dynamicsWebApiTest
-                .update(dataStubs.testEntityId, "tests", dataStubs.testEntity, DWA.Prefer.ReturnRepresentation, ["fullname", "subject"])
+                .update(mocks.data.testEntityId, "tests", mocks.data.testEntity, DWA.Prefer.ReturnRepresentation, ["fullname", "subject"])
                 .then(function (object) {
                     responseObject2 = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject2 = object;
                     done();
                 });
 
-            request2 = jasmine.Ajax.requests.mostRecent();
-            request2.respondWith(responseStubs.updateReturnRepresentation);
+            var response2 = mocks.responses.updateReturnRepresentation;
+            this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl + "?$select=fullname");
-            expect(request2.url).toBe(responseStubs.testEntityUrl + "?$select=fullname,subject");
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl + "?$select=fullname");
+            expect(this.requests[1].url).to.equal(mocks.responses.testEntityUrl + "?$select=fullname,subject");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('PATCH');
-            expect(request2.method).toBe('PATCH');
+            expect(this.requests[0].method).to.equal('PATCH');
+            expect(this.requests[1].method).to.equal('PATCH');
         });
 
         it("sends the right data", function () {
-            expect(request.data()).toEqual(dataStubs.testEntity);
-            expect(request2.data()).toEqual(dataStubs.testEntity);
+            expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
+            expect(JSON.parse(this.requests[1].requestBody)).to.deep.equal(mocks.data.testEntity);
         });
 
         it("sends the Prefer header", function () {
-            expect(request.requestHeaders['Prefer']).toBe(DWA.Prefer.ReturnRepresentation);
-            expect(request2.requestHeaders['Prefer']).toBe(DWA.Prefer.ReturnRepresentation);
+            expect(this.requests[0].requestHeaders['Prefer']).to.equal(DWA.Prefer.ReturnRepresentation);
+            expect(this.requests[1].requestHeaders['Prefer']).to.equal(DWA.Prefer.ReturnRepresentation);
         });
 
         it("sends the right If-Match header", function () {
-            expect(request.requestHeaders['If-Match']).toBe("*");
-            expect(request2.requestHeaders['If-Match']).toBe("*");
+            expect(this.requests[0].requestHeaders['If-Match']).to.equal("*");
+            expect(this.requests[1].requestHeaders['If-Match']).to.equal("*");
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(dataStubs.updatedEntity);
-            expect(responseObject2).toEqual(dataStubs.updatedEntity);
+            expect(responseObject).to.deep.equal(mocks.data.updatedEntity);
+            expect(responseObject2).to.deep.equal(mocks.data.updatedEntity);
         });
     });
 });
 
 describe("dynamicsWebApi.updateSingleProperty -", function () {
 
-    beforeAll(function () {
-        jasmine.Ajax.install();
+    before(function () {
+        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+        var requests = this.requests = [];
+
+        global.XMLHttpRequest.onCreate = function (xhr) {
+            requests.push(xhr);
+        };
     });
 
-    afterAll(function () {
-        jasmine.Ajax.uninstall();
+    after(function () {
+        global.XMLHttpRequest.restore();
     });
 
     describe("basic", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
-            dynamicsWebApiTest.updateSingleProperty(dataStubs.testEntityId, "tests", dataStubs.updatedEntity)
+        before(function (done) {
+            dynamicsWebApiTest.updateSingleProperty(mocks.data.testEntityId, "tests", mocks.data.updatedEntity)
                 .then(function (object) {
                     responseObject = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.basicEmptyResponseSuccess);
+            var response = mocks.responses.basicEmptyResponseSuccess;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl + "/fullname");
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl + "/fullname");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('PUT');
+            expect(this.requests[0].method).to.equal('PUT');
         });
 
         it("sends the right data", function () {
-            expect(request.data()).toEqual({
-                value: dataStubs.updatedEntity.fullname
+            expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal({
+                value: mocks.data.updatedEntity.fullname
             });
         });
 
         it("does not have Prefer header", function () {
-            expect(request.requestHeaders['Prefer']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['Prefer']).to.be.undefined;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toBeUndefined();
+            expect(responseObject).to.be.undefined;
         });
     });
 
     describe("return representation", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
-            dynamicsWebApiTest.updateSingleProperty(dataStubs.testEntityId, "tests", dataStubs.updatedEntity, DWA.Prefer.ReturnRepresentation)
+        before(function (done) {
+            dynamicsWebApiTest.updateSingleProperty(mocks.data.testEntityId, "tests", mocks.data.updatedEntity, DWA.Prefer.ReturnRepresentation)
                 .then(function (object) {
                     responseObject = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.updateReturnRepresentation);
+            var response = mocks.responses.updateReturnRepresentation;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl + "/fullname");
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl + "/fullname");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('PUT');
+            expect(this.requests[0].method).to.equal('PUT');
         });
 
         it("sends the right data", function () {
-            expect(request.data()).toEqual({
-                value: dataStubs.updatedEntity.fullname
+            expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal({
+                value: mocks.data.updatedEntity.fullname
             });
         });
 
         it("sends the Prefer header", function () {
-            expect(request.requestHeaders['Prefer']).toBe(DWA.Prefer.ReturnRepresentation);
+            expect(this.requests[0].requestHeaders['Prefer']).to.equal(DWA.Prefer.ReturnRepresentation);
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(dataStubs.updatedEntity);
+            expect(responseObject).to.deep.equal(mocks.data.updatedEntity);
         });
     });
 });
 
 describe("dynamicsWebApi.upsert -", function () {
 
-    beforeAll(function () {
-        jasmine.Ajax.install();
+    before(function () {
+        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+        var requests = this.requests = [];
+
+        global.XMLHttpRequest.onCreate = function (xhr) {
+            requests.push(xhr);
+        };
     });
 
-    afterAll(function () {
-        jasmine.Ajax.uninstall();
+    after(function () {
+        global.XMLHttpRequest.restore();
     });
 
     describe("basic", function () {
         var responseObject;
         var responseObject2;
-        var request;
-        var request2;
-        beforeAll(function (done) {
-            dynamicsWebApiTest.upsert(dataStubs.testEntityId, "tests", dataStubs.testEntity)
+        before(function (done) {
+            dynamicsWebApiTest.upsert(mocks.data.testEntityId, "tests", mocks.data.testEntity)
                 .then(function (object) {
                     responseObject = object;
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.basicEmptyResponseSuccess);
+            var response = mocks.responses.basicEmptyResponseSuccess;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
 
-            dynamicsWebApiTest.upsert(dataStubs.testEntityId, "tests", dataStubs.testEntity)
+            dynamicsWebApiTest.upsert(mocks.data.testEntityId, "tests", mocks.data.testEntity)
                 .then(function (object) {
                     responseObject2 = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject2 = object;
                     done();
                 });
 
-            request2 = jasmine.Ajax.requests.mostRecent();
-            request2.respondWith(responseStubs.createReturnId);
+            var response2 = mocks.responses.createReturnId;
+            this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl);
-            expect(request2.url).toBe(responseStubs.testEntityUrl);
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl);
+            expect(this.requests[1].url).to.equal(mocks.responses.testEntityUrl);
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('PATCH');
-            expect(request2.method).toBe('PATCH');
+            expect(this.requests[0].method).to.equal('PATCH');
+            expect(this.requests[1].method).to.equal('PATCH');
         });
 
         it("sends the right data", function () {
-            expect(request.data()).toEqual(dataStubs.testEntity);
-            expect(request2.data()).toEqual(dataStubs.testEntity);
+            expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
+            expect(JSON.parse(this.requests[1].requestBody)).to.deep.equal(mocks.data.testEntity);
         });
 
         it("does not have Prefer header", function () {
-            expect(request.requestHeaders['Prefer']).toBeUndefined();
-            expect(request2.requestHeaders['Prefer']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['Prefer']).to.be.undefined;
+            expect(this.requests[1].requestHeaders['Prefer']).to.be.undefined;
         });
 
         it("does not have If-Match header", function () {
-            expect(request.requestHeaders['If-Match']).toBeUndefined();
-            expect(request2.requestHeaders['If-Match']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['If-Match']).to.be.undefined;
+            expect(this.requests[1].requestHeaders['If-Match']).to.be.undefined;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toBeUndefined();
-            expect(responseObject2).toEqual(dataStubs.testEntityId);
+            expect(responseObject).to.be.undefined;
+            expect(responseObject2).to.deep.equal(mocks.data.testEntityId);
         });
     });
 
     describe("return representation", function () {
         var responseObject;
         var responseObject2;
-        var request;
-        var request2;
-        beforeAll(function (done) {
-            dynamicsWebApiTest.upsert(dataStubs.testEntityId, "tests", dataStubs.testEntity, DWA.Prefer.ReturnRepresentation)
+        before(function (done) {
+            dynamicsWebApiTest.upsert(mocks.data.testEntityId, "tests", mocks.data.testEntity, DWA.Prefer.ReturnRepresentation)
                 .then(function (object) {
                     responseObject = object;
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.updateReturnRepresentation);
+            var response = mocks.responses.updateReturnRepresentation;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
 
-            dynamicsWebApiTest.upsert(dataStubs.testEntityId, "tests", dataStubs.testEntity, DWA.Prefer.ReturnRepresentation)
+            dynamicsWebApiTest.upsert(mocks.data.testEntityId, "tests", mocks.data.testEntity, DWA.Prefer.ReturnRepresentation)
                 .then(function (object) {
                     responseObject2 = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject2 = object;
                     done();
                 });
 
-            request2 = jasmine.Ajax.requests.mostRecent();
-            request2.respondWith(responseStubs.createReturnRepresentation);
+            var response2 = mocks.responses.createReturnRepresentation;
+            this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl);
-            expect(request2.url).toBe(responseStubs.testEntityUrl);
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl);
+            expect(this.requests[1].url).to.equal(mocks.responses.testEntityUrl);
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('PATCH');
-            expect(request2.method).toBe('PATCH');
+            expect(this.requests[0].method).to.equal('PATCH');
+            expect(this.requests[1].method).to.equal('PATCH');
         });
 
         it("sends the right data", function () {
-            expect(request.data()).toEqual(dataStubs.testEntity);
-            expect(request2.data()).toEqual(dataStubs.testEntity);
+            expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
+            expect(JSON.parse(this.requests[1].requestBody)).to.deep.equal(mocks.data.testEntity);
         });
 
         it("sends the Prefer header", function () {
-            expect(request.requestHeaders['Prefer']).toBe(DWA.Prefer.ReturnRepresentation);
-            expect(request2.requestHeaders['Prefer']).toBe(DWA.Prefer.ReturnRepresentation);
+            expect(this.requests[0].requestHeaders['Prefer']).to.equal(DWA.Prefer.ReturnRepresentation);
+            expect(this.requests[1].requestHeaders['Prefer']).to.equal(DWA.Prefer.ReturnRepresentation);
         });
 
         it("does not have If-Match header", function () {
-            expect(request.requestHeaders['If-Match']).toBeUndefined();
-            expect(request2.requestHeaders['If-Match']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['If-Match']).to.be.undefined;
+            expect(this.requests[1].requestHeaders['If-Match']).to.be.undefined;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(dataStubs.updatedEntity);
-            expect(responseObject2).toEqual(dataStubs.testEntity);
+            expect(responseObject).to.deep.equal(mocks.data.updatedEntity);
+            expect(responseObject2).to.deep.equal(mocks.data.testEntity);
         });
     });
 
@@ -480,272 +485,273 @@ describe("dynamicsWebApi.upsert -", function () {
         var responseObject2;
         var responseObject3;
         var responseObject4;
-        var request;
-        var request2;
-        var request3;
-        var request4;
-        beforeAll(function (done) {
+        before(function (done) {
             dynamicsWebApiTest
-                .upsert(dataStubs.testEntityId, "tests", dataStubs.testEntity, DWA.Prefer.ReturnRepresentation, ["fullname"])
+                .upsert(mocks.data.testEntityId, "tests", mocks.data.testEntity, DWA.Prefer.ReturnRepresentation, ["fullname"])
                 .then(function (object) {
                     responseObject = object;
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.updateReturnRepresentation);
+            var response = mocks.responses.updateReturnRepresentation;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
 
             dynamicsWebApiTest
-                .upsert(dataStubs.testEntityId, "tests", dataStubs.testEntity, DWA.Prefer.ReturnRepresentation, ["fullname", "subject"])
+                .upsert(mocks.data.testEntityId, "tests", mocks.data.testEntity, DWA.Prefer.ReturnRepresentation, ["fullname", "subject"])
                 .then(function (object) {
                     responseObject2 = object;
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject2 = object;
                 });
 
-            request2 = jasmine.Ajax.requests.mostRecent();
-            request2.respondWith(responseStubs.updateReturnRepresentation);
+            var response2 = mocks.responses.updateReturnRepresentation;
+            this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
 
             dynamicsWebApiTest
-                .upsert(dataStubs.testEntityId, "tests", dataStubs.testEntity, DWA.Prefer.ReturnRepresentation, ["fullname"])
+                .upsert(mocks.data.testEntityId, "tests", mocks.data.testEntity, DWA.Prefer.ReturnRepresentation, ["fullname"])
                 .then(function (object) {
                     responseObject3 = object;
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject3 = object;
                 });
 
-            request3 = jasmine.Ajax.requests.mostRecent();
-            request3.respondWith(responseStubs.createReturnId);
+            var response3 = mocks.responses.createReturnId;
+            this.requests[2].respond(response3.status, response3.responseHeaders, response3.responseText);
 
             dynamicsWebApiTest
-                .upsert(dataStubs.testEntityId, "tests", dataStubs.testEntity, DWA.Prefer.ReturnRepresentation, ["fullname", "subject"])
+                .upsert(mocks.data.testEntityId, "tests", mocks.data.testEntity, DWA.Prefer.ReturnRepresentation, ["fullname", "subject"])
                 .then(function (object) {
                     responseObject4 = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject4 = object;
                     done();
                 });
 
-            request4 = jasmine.Ajax.requests.mostRecent();
-            request4.respondWith(responseStubs.createReturnRepresentation);
+            var response4 = mocks.responses.createReturnRepresentation;
+            this.requests[3].respond(response4.status, response4.responseHeaders, response4.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl + "?$select=fullname");
-            expect(request2.url).toBe(responseStubs.testEntityUrl + "?$select=fullname,subject");
-            expect(request3.url).toBe(responseStubs.testEntityUrl + "?$select=fullname");
-            expect(request4.url).toBe(responseStubs.testEntityUrl + "?$select=fullname,subject");
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl + "?$select=fullname");
+            expect(this.requests[1].url).to.equal(mocks.responses.testEntityUrl + "?$select=fullname,subject");
+            expect(this.requests[2].url).to.equal(mocks.responses.testEntityUrl + "?$select=fullname");
+            expect(this.requests[3].url).to.equal(mocks.responses.testEntityUrl + "?$select=fullname,subject");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('PATCH');
-            expect(request2.method).toBe('PATCH');
-            expect(request3.method).toBe('PATCH');
-            expect(request4.method).toBe('PATCH');
+            expect(this.requests[0].method).to.equal('PATCH');
+            expect(this.requests[1].method).to.equal('PATCH');
+            expect(this.requests[2].method).to.equal('PATCH');
+            expect(this.requests[3].method).to.equal('PATCH');
         });
 
         it("sends the right data", function () {
-            expect(request.data()).toEqual(dataStubs.testEntity);
-            expect(request2.data()).toEqual(dataStubs.testEntity);
-            expect(request3.data()).toEqual(dataStubs.testEntity);
-            expect(request4.data()).toEqual(dataStubs.testEntity);
+            expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
+            expect(JSON.parse(this.requests[1].requestBody)).to.deep.equal(mocks.data.testEntity);
+            expect(JSON.parse(this.requests[2].requestBody)).to.deep.equal(mocks.data.testEntity);
+            expect(JSON.parse(this.requests[3].requestBody)).to.deep.equal(mocks.data.testEntity);
         });
 
         it("sends the Prefer header", function () {
-            expect(request.requestHeaders['Prefer']).toBe(DWA.Prefer.ReturnRepresentation);
-            expect(request2.requestHeaders['Prefer']).toBe(DWA.Prefer.ReturnRepresentation);
-            expect(request3.requestHeaders['Prefer']).toBe(DWA.Prefer.ReturnRepresentation);
-            expect(request4.requestHeaders['Prefer']).toBe(DWA.Prefer.ReturnRepresentation);
+            expect(this.requests[0].requestHeaders['Prefer']).to.equal(DWA.Prefer.ReturnRepresentation);
+            expect(this.requests[1].requestHeaders['Prefer']).to.equal(DWA.Prefer.ReturnRepresentation);
+            expect(this.requests[2].requestHeaders['Prefer']).to.equal(DWA.Prefer.ReturnRepresentation);
+            expect(this.requests[3].requestHeaders['Prefer']).to.equal(DWA.Prefer.ReturnRepresentation);
         });
 
         it("does not have If-Match header", function () {
-            expect(request.requestHeaders['If-Match']).toBeUndefined();
-            expect(request2.requestHeaders['If-Match']).toBeUndefined();
-            expect(request3.requestHeaders['If-Match']).toBeUndefined();
-            expect(request4.requestHeaders['If-Match']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['If-Match']).to.be.undefined;
+            expect(this.requests[1].requestHeaders['If-Match']).to.be.undefined;
+            expect(this.requests[2].requestHeaders['If-Match']).to.be.undefined;
+            expect(this.requests[3].requestHeaders['If-Match']).to.be.undefined;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(dataStubs.updatedEntity);
-            expect(responseObject2).toEqual(dataStubs.updatedEntity);
-            expect(responseObject3).toEqual(dataStubs.testEntityId);
-            expect(responseObject4).toEqual(dataStubs.testEntity);
+            expect(responseObject).to.deep.equal(mocks.data.updatedEntity);
+            expect(responseObject2).to.deep.equal(mocks.data.updatedEntity);
+            expect(responseObject3).to.deep.equal(mocks.data.testEntityId);
+            expect(responseObject4).to.deep.equal(mocks.data.testEntity);
         });
     });
 });
 
 describe("dynamicsWebApi.deleteRecord -", function () {
 
-    beforeAll(function () {
-        jasmine.Ajax.install();
+    before(function () {
+        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+        var requests = this.requests = [];
+
+        global.XMLHttpRequest.onCreate = function (xhr) {
+            requests.push(xhr);
+        };
     });
 
-    afterAll(function () {
-        jasmine.Ajax.uninstall();
+    after(function () {
+        global.XMLHttpRequest.restore();
     });
 
     describe("basic", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
-            dynamicsWebApiTest.deleteRecord(dataStubs.testEntityId, "tests")
+        before(function (done) {
+            dynamicsWebApiTest.deleteRecord(mocks.data.testEntityId, "tests")
                 .then(function (object) {
                     responseObject = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.basicEmptyResponseSuccess);
+            var response = mocks.responses.basicEmptyResponseSuccess;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl);
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl);
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('DELETE');
+            expect(this.requests[0].method).to.equal('DELETE');
         });
 
         it("does not send data", function () {
-            expect(request.data()).toEqual({});
+            expect(this.requests[0].requestBody).to.be.undefined;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toBeUndefined();
+            expect(responseObject).to.be.undefined;
         });
     });
 
     describe("single property", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
-            dynamicsWebApiTest.deleteRecord(dataStubs.testEntityId, "tests", "fullname")
+        before(function (done) {
+            dynamicsWebApiTest.deleteRecord(mocks.data.testEntityId, "tests", "fullname")
                 .then(function (object) {
                     responseObject = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.basicEmptyResponseSuccess);
+            var response = mocks.responses.basicEmptyResponseSuccess;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl + "/fullname");
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl + "/fullname");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('DELETE');
+            expect(this.requests[0].method).to.equal('DELETE');
         });
 
         it("does not send data", function () {
-            expect(request.data()).toEqual({});
+            expect(this.requests[0].requestBody).to.be.undefined;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toBeUndefined();
+            expect(responseObject).to.be.undefined;
         });
     });
 });
 
 describe("dynamicsWebApi.retrieve -", function () {
 
-    beforeAll(function () {
-        jasmine.Ajax.install();
+    before(function () {
+        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+        var requests = this.requests = [];
+
+        global.XMLHttpRequest.onCreate = function (xhr) {
+            requests.push(xhr);
+        };
     });
 
-    afterAll(function () {
-        jasmine.Ajax.uninstall();
+    after(function () {
+        global.XMLHttpRequest.restore();
     });
 
     describe("basic", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
-            dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests")
+        before(function (done) {
+            dynamicsWebApiTest.retrieve(mocks.data.testEntityId, "tests")
                 .then(function (object) {
                     responseObject = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.response200);
+            var response = mocks.responses.response200;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl);
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl);
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('GET');
+            expect(this.requests[0].method).to.equal('GET');
         });
 
         it("does not send data", function () {
-            expect(request.data()).toEqual({});
+            expect(JSON.parse(this.requests[0].requestBody)).to.be.null;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(dataStubs.testEntity);
+            expect(responseObject).to.deep.equal(mocks.data.testEntity);
         });
     });
 
     describe("select basic", function () {
         var responseObject;
         var responseObject2;
-        var request;
-        var request2;
-        beforeAll(function (done) {
-            dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", ["fullname"])
+        before(function (done) {
+            dynamicsWebApiTest.retrieve(mocks.data.testEntityId, "tests", ["fullname"])
                 .then(function (object) {
                     responseObject = object;
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.response200);
+            var response = mocks.responses.response200;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
 
-            dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", ["fullname", "subject"])
+            dynamicsWebApiTest.retrieve(mocks.data.testEntityId, "tests", ["fullname", "subject"])
                 .then(function (object) {
                     responseObject2 = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject2 = object;
                     done();
                 });
 
-            request2 = jasmine.Ajax.requests.mostRecent();
-            request2.respondWith(responseStubs.response200);
+            var response2 = mocks.responses.response200;
+            this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl + "?$select=fullname");
-            expect(request2.url).toBe(responseStubs.testEntityUrl + "?$select=fullname,subject");
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl + "?$select=fullname");
+            expect(this.requests[1].url).to.equal(mocks.responses.testEntityUrl + "?$select=fullname,subject");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('GET');
-            expect(request2.method).toBe('GET');
+            expect(this.requests[0].method).to.equal('GET');
+            expect(this.requests[1].method).to.equal('GET');
         });
 
         it("does not send data", function () {
-            expect(request.data()).toEqual({});
-            expect(request2.data()).toEqual({});
+            expect(JSON.parse(this.requests[0].requestBody)).to.be.null;
+            expect(JSON.parse(this.requests[1].requestBody)).to.be.null;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(dataStubs.testEntity);
-            expect(responseObject2).toEqual(dataStubs.testEntity);
+            expect(responseObject).to.deep.equal(mocks.data.testEntity);
+            expect(responseObject2).to.deep.equal(mocks.data.testEntity);
         });
     });
 
@@ -753,185 +759,178 @@ describe("dynamicsWebApi.retrieve -", function () {
         var responseObject;
         var responseObject2;
         var responseObject3;
-        var request;
-        var request2;
-        var request3;
-        beforeAll(function (done) {
-            dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", ["/reference"])
+        before(function (done) {
+            dynamicsWebApiTest.retrieve(mocks.data.testEntityId, "tests", ["/reference"])
                 .then(function (object) {
                     responseObject = object;
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.response200);
+            var response = mocks.responses.response200;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
 
-            dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", ["/reference", "fullname"])
+            dynamicsWebApiTest.retrieve(mocks.data.testEntityId, "tests", ["/reference", "fullname"])
                 .then(function (object) {
                     responseObject2 = object;
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject2 = object;
                 });
 
-            request2 = jasmine.Ajax.requests.mostRecent();
-            request2.respondWith(responseStubs.response200);
+            var response2 = mocks.responses.response200;
+            this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
 
-            dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", ["/reference", "fullname", "subject"])
+            dynamicsWebApiTest.retrieve(mocks.data.testEntityId, "tests", ["/reference", "fullname", "subject"])
                 .then(function (object) {
                     responseObject3 = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject3 = object;
                     done();
                 });
 
-            request3 = jasmine.Ajax.requests.mostRecent();
-            request3.respondWith(responseStubs.response200);
+            var response3 = mocks.responses.response200;
+            this.requests[2].respond(response3.status, response3.responseHeaders, response3.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl + "/reference");
-            expect(request2.url).toBe(responseStubs.testEntityUrl + "/reference?$select=fullname");
-            expect(request3.url).toBe(responseStubs.testEntityUrl + "/reference?$select=fullname,subject");
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl + "/reference");
+            expect(this.requests[1].url).to.equal(mocks.responses.testEntityUrl + "/reference?$select=fullname");
+            expect(this.requests[2].url).to.equal(mocks.responses.testEntityUrl + "/reference?$select=fullname,subject");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('GET');
-            expect(request2.method).toBe('GET');
-            expect(request3.method).toBe('GET');
+            expect(this.requests[0].method).to.equal('GET');
+            expect(this.requests[1].method).to.equal('GET');
+            expect(this.requests[2].method).to.equal('GET');
         });
 
         it("does not send data", function () {
-            expect(request.data()).toEqual({});
-            expect(request2.data()).toEqual({});
-            expect(request3.data()).toEqual({});
+            expect(JSON.parse(this.requests[0].requestBody)).to.be.null;
+            expect(JSON.parse(this.requests[1].requestBody)).to.be.null;
+            expect(JSON.parse(this.requests[2].requestBody)).to.be.null;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(dataStubs.testEntity);
-            expect(responseObject2).toEqual(dataStubs.testEntity);
-            expect(responseObject3).toEqual(dataStubs.testEntity);
+            expect(responseObject).to.deep.equal(mocks.data.testEntity);
+            expect(responseObject2).to.deep.equal(mocks.data.testEntity);
+            expect(responseObject3).to.deep.equal(mocks.data.testEntity);
         });
     });
 
     describe("reference", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
-            dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", ["reference/$ref"])
+        before(function (done) {
+            dynamicsWebApiTest.retrieve(mocks.data.testEntityId, "tests", ["reference/$ref"])
                 .then(function (object) {
                     responseObject = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.retrieveReferenceResponse);
+            var response = mocks.responses.retrieveReferenceResponse;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
 
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl + "/reference/$ref");
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl + "/reference/$ref");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('GET');
+            expect(this.requests[0].method).to.equal('GET');
         });
 
         it("does not send data", function () {
-            expect(request.data()).toEqual({});
+            expect(JSON.parse(this.requests[0].requestBody)).to.be.null;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(dataStubs.referenceResponseConverted);
+            expect(responseObject).to.deep.equal(mocks.data.referenceResponseConverted);
         });
     });
 
     describe("expand basic", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
-            dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", null, "reference(something)")
+        before(function (done) {
+            dynamicsWebApiTest.retrieve(mocks.data.testEntityId, "tests", null, "reference(something)")
                 .then(function (object) {
                     responseObject = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.response200);
+            var response = mocks.responses.response200;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
 
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl + "?$expand=reference(something)");
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl + "?$expand=reference(something)");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('GET');
+            expect(this.requests[0].method).to.equal('GET');
         });
 
         it("does not send data", function () {
-            expect(request.data()).toEqual({});
+            expect(JSON.parse(this.requests[0].requestBody)).to.be.null;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(dataStubs.testEntity);
+            expect(responseObject).to.deep.equal(mocks.data.testEntity);
         });
     });
 
     describe("select & expand basic", function () {
         var responseObject;
         var responseObject2;
-        var request;
-        var request2;
-        beforeAll(function (done) {
-            dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", ["fullname"], "reference(something)")
+        before(function (done) {
+            dynamicsWebApiTest.retrieve(mocks.data.testEntityId, "tests", ["fullname"], "reference(something)")
                 .then(function (object) {
                     responseObject = object;
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.response200);
+            var response = mocks.responses.response200;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
 
-            dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", ["fullname", "subject"], "reference(something)")
+            dynamicsWebApiTest.retrieve(mocks.data.testEntityId, "tests", ["fullname", "subject"], "reference(something)")
                 .then(function (object) {
                     responseObject2 = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject2 = object;
                     done();
                 });
 
-            request2 = jasmine.Ajax.requests.mostRecent();
-            request2.respondWith(responseStubs.response200);
+            var response2 = mocks.responses.response200;
+            this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl + "?$select=fullname&$expand=reference(something)");
-            expect(request2.url).toBe(responseStubs.testEntityUrl + "?$select=fullname,subject&$expand=reference(something)");
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl + "?$select=fullname&$expand=reference(something)");
+            expect(this.requests[1].url).to.equal(mocks.responses.testEntityUrl + "?$select=fullname,subject&$expand=reference(something)");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('GET');
-            expect(request2.method).toBe('GET');
+            expect(this.requests[0].method).to.equal('GET');
+            expect(this.requests[1].method).to.equal('GET');
         });
 
         it("does not send data", function () {
-            expect(request.data()).toEqual({});
-            expect(request2.data()).toEqual({});
+            expect(JSON.parse(this.requests[0].requestBody)).to.be.null;
+            expect(JSON.parse(this.requests[1].requestBody)).to.be.null;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(dataStubs.testEntity);
-            expect(responseObject2).toEqual(dataStubs.testEntity);
+            expect(responseObject).to.deep.equal(mocks.data.testEntity);
+            expect(responseObject2).to.deep.equal(mocks.data.testEntity);
         });
     });
 
@@ -939,143 +938,143 @@ describe("dynamicsWebApi.retrieve -", function () {
         var responseObject;
         var responseObject2;
         var responseObject3;
-        var request;
-        var request2;
-        var request3;
-        beforeAll(function (done) {
-            dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", ["/reference"], "reference(something)")
+        before(function (done) {
+            dynamicsWebApiTest.retrieve(mocks.data.testEntityId, "tests", ["/reference"], "reference(something)")
                 .then(function (object) {
                     responseObject = object;
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.response200);
+            var response = mocks.responses.response200;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
 
-            dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", ["/reference", "fullname"], "reference(something)")
+            dynamicsWebApiTest.retrieve(mocks.data.testEntityId, "tests", ["/reference", "fullname"], "reference(something)")
                 .then(function (object) {
                     responseObject2 = object;
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject2 = object;
                 });
 
-            request2 = jasmine.Ajax.requests.mostRecent();
-            request2.respondWith(responseStubs.response200);
+            var response2 = mocks.responses.response200;
+            this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
 
-            dynamicsWebApiTest.retrieve(dataStubs.testEntityId, "tests", ["/reference", "fullname", "subject"], "reference(something)")
+            dynamicsWebApiTest.retrieve(mocks.data.testEntityId, "tests", ["/reference", "fullname", "subject"], "reference(something)")
                 .then(function (object) {
                     responseObject3 = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject3 = object;
                     done();
                 });
 
-            request3 = jasmine.Ajax.requests.mostRecent();
-            request3.respondWith(responseStubs.response200);
+            var response3 = mocks.responses.response200;
+            this.requests[2].respond(response3.status, response3.responseHeaders, response3.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl + "/reference?$expand=reference(something)");
-            expect(request2.url).toBe(responseStubs.testEntityUrl + "/reference?$select=fullname&$expand=reference(something)");
-            expect(request3.url).toBe(responseStubs.testEntityUrl + "/reference?$select=fullname,subject&$expand=reference(something)");
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl + "/reference?$expand=reference(something)");
+            expect(this.requests[1].url).to.equal(mocks.responses.testEntityUrl + "/reference?$select=fullname&$expand=reference(something)");
+            expect(this.requests[2].url).to.equal(mocks.responses.testEntityUrl + "/reference?$select=fullname,subject&$expand=reference(something)");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('GET');
-            expect(request2.method).toBe('GET');
-            expect(request3.method).toBe('GET');
+            expect(this.requests[0].method).to.equal('GET');
+            expect(this.requests[1].method).to.equal('GET');
+            expect(this.requests[2].method).to.equal('GET');
         });
 
         it("does not send data", function () {
-            expect(request.data()).toEqual({});
-            expect(request2.data()).toEqual({});
-            expect(request3.data()).toEqual({});
+            expect(JSON.parse(this.requests[0].requestBody)).to.be.null;
+            expect(JSON.parse(this.requests[1].requestBody)).to.be.null;
+            expect(JSON.parse(this.requests[2].requestBody)).to.be.null;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(dataStubs.testEntity);
-            expect(responseObject2).toEqual(dataStubs.testEntity);
-            expect(responseObject3).toEqual(dataStubs.testEntity);
+            expect(responseObject).to.deep.equal(mocks.data.testEntity);
+            expect(responseObject2).to.deep.equal(mocks.data.testEntity);
+            expect(responseObject3).to.deep.equal(mocks.data.testEntity);
         });
     });
 });
 
 describe("dynamicsWebApi.count -", function () {
 
-    beforeAll(function () {
-        jasmine.Ajax.install();
+    before(function () {
+        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+        var requests = this.requests = [];
+
+        global.XMLHttpRequest.onCreate = function (xhr) {
+            requests.push(xhr);
+        };
     });
 
-    afterAll(function () {
-        jasmine.Ajax.uninstall();
+    after(function () {
+        global.XMLHttpRequest.restore();
     });
 
     describe("basic", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
+        before(function (done) {
             dynamicsWebApiTest.count("tests")
                 .then(function (object) {
                     responseObject = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.countBasic);
+            var response = mocks.responses.countBasic;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.collectionUrl + "/$count");
+            expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl + "/$count");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('GET');
+            expect(this.requests[0].method).to.equal('GET');
         });
 
         it("does not send data", function () {
-            expect(request.data()).toEqual({});
+            expect(JSON.parse(this.requests[0].requestBody)).to.be.null;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(parseInt(responseStubs.countBasic.responseText));
+            expect(responseObject).to.deep.equal(parseInt(mocks.responses.countBasic.responseText));
         });
     });
     describe("filter", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
+        before(function (done) {
             dynamicsWebApiTest.count("tests", "name eq 'name'")
                 .then(function (object) {
                     responseObject = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.multipleWithCountResponse);
+            var response = mocks.responses.multipleWithCountResponse;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.collectionUrl + "?$filter=name%20eq%20'name'&$count=true");
+            expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl + "?$filter=name%20eq%20'name'&$count=true");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('GET');
+            expect(this.requests[0].method).to.equal('GET');
         });
 
         it("does not send data", function () {
-            expect(request.data()).toEqual({});
+            expect(JSON.parse(this.requests[0].requestBody)).to.be.null;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(dataStubs.multipleWithCount["@odata.count"]);
+            expect(responseObject).to.deep.equal(mocks.data.multipleWithCount["@odata.count"]);
         });
     });
 });
@@ -1083,7 +1082,7 @@ describe("dynamicsWebApi.count -", function () {
 describe("dynamicsWebApi._getPagingCookie -", function () {
     it("paginCookie is empty", function () {
         var result = dynamicsWebApiTest.__forTestsOnly__.getPagingCookie("", 2);
-        expect(result).toEqual({
+        expect(result).to.deep.equal({
             cookie: "",
             page: 2,
             nextPage: 3
@@ -1091,537 +1090,550 @@ describe("dynamicsWebApi._getPagingCookie -", function () {
     });
 
     it("pagingCookie is normal", function () {
-        var result = dynamicsWebApiTest.__forTestsOnly__.getPagingCookie(dataStubs.fetchXmls.cookiePage2, 2);
-        expect(result).toEqual(dataStubs.fetchXmls.fetchXmlResultPage2Cookie.PagingInfo);
+        var result = dynamicsWebApiTest.__forTestsOnly__.getPagingCookie(mocks.data.fetchXmls.cookiePage2, 2);
+        expect(result).to.deep.equal(mocks.data.fetchXmls.fetchXmlResultPage2Cookie.PagingInfo);
 
-        result = dynamicsWebApiTest.__forTestsOnly__.getPagingCookie(dataStubs.fetchXmls.cookiePage1, 2);
-        expect(result).toEqual(dataStubs.fetchXmls.fetchXmlResultPage1Cookie.PagingInfo);
+        result = dynamicsWebApiTest.__forTestsOnly__.getPagingCookie(mocks.data.fetchXmls.cookiePage1, 2);
+        expect(result).to.deep.equal(mocks.data.fetchXmls.fetchXmlResultPage1Cookie.PagingInfo);
 
-        result = dynamicsWebApiTest.__forTestsOnly__.getPagingCookie(dataStubs.fetchXmls.cookiePage2);
-        expect(result).toEqual(dataStubs.fetchXmls.fetchXmlResultPage2Cookie.PagingInfo);
+        result = dynamicsWebApiTest.__forTestsOnly__.getPagingCookie(mocks.data.fetchXmls.cookiePage2);
+        expect(result).to.deep.equal(mocks.data.fetchXmls.fetchXmlResultPage2Cookie.PagingInfo);
 
     });
 });
 
 describe("dynamicsWebApi.executeFetchXml -", function () {
 
-    beforeAll(function () {
-        jasmine.Ajax.install();
+    before(function () {
+        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+        var requests = this.requests = [];
+
+        global.XMLHttpRequest.onCreate = function (xhr) {
+            requests.push(xhr);
+        };
     });
 
-    afterAll(function () {
-        jasmine.Ajax.uninstall();
+    after(function () {
+        global.XMLHttpRequest.restore();
     });
 
     describe("basic", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
+        before(function (done) {
 
-            dynamicsWebApiTest.executeFetchXml("tests", dataStubs.fetchXmls.fetchXml)
+            dynamicsWebApiTest.executeFetchXml("tests", mocks.data.fetchXmls.fetchXml)
                 .then(function (object) {
                     responseObject = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.fetchXmlResponsePage1Cookie);
+            var response = mocks.responses.fetchXmlResponsePage1Cookie;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.collectionUrl + "?fetchXml=" + escape(escape(dataStubs.fetchXmls.fetchXml1)));
+            expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl + "?fetchXml=" + escape(escape(mocks.data.fetchXmls.fetchXml1)));
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('GET');
+            expect(this.requests[0].method).to.equal('GET');
         });
 
         it("does not send data", function () {
-            expect(request.data()).toEqual({});
+            expect(JSON.parse(this.requests[0].requestBody)).to.be.null;
         });
 
         it("does not send the Prefer header", function () {
-            expect(request.requestHeaders['Prefer']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['Prefer']).to.be.undefined;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(dataStubs.fetchXmls.fetchXmlResultPage1Cookie);
+            expect(responseObject).to.deep.equal(mocks.data.fetchXmls.fetchXmlResultPage1Cookie);
         });
     });
 
     describe("paging", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
-            var pagingInfo = dataStubs.fetchXmls.fetchXmlResultPage1Cookie.PagingInfo;
-            dynamicsWebApiTest.executeFetchXml("tests", dataStubs.fetchXmls.fetchXml, null, pagingInfo.nextPage, pagingInfo.cookie)
+        before(function (done) {
+            var pagingInfo = mocks.data.fetchXmls.fetchXmlResultPage1Cookie.PagingInfo;
+            dynamicsWebApiTest.executeFetchXml("tests", mocks.data.fetchXmls.fetchXml, null, pagingInfo.nextPage, pagingInfo.cookie)
                 .then(function (object) {
                     responseObject = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.fetchXmlResponsePage2Cookie);
+            var response = mocks.responses.fetchXmlResponsePage2Cookie;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.collectionUrl + "?fetchXml=" + escape(escape(dataStubs.fetchXmls.fetchXml2cookie)));
+            expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl + "?fetchXml=" + escape(escape(mocks.data.fetchXmls.fetchXml2cookie)));
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('GET');
+            expect(this.requests[0].method).to.equal('GET');
         });
 
         it("does not send data", function () {
-            expect(request.data()).toEqual({});
+            expect(JSON.parse(this.requests[0].requestBody)).to.be.null;
         });
 
         it("does not send the Prefer header", function () {
-            expect(request.requestHeaders['Prefer']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['Prefer']).to.be.undefined;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(dataStubs.fetchXmls.fetchXmlResultPage2Cookie);
+            expect(responseObject).to.deep.equal(mocks.data.fetchXmls.fetchXmlResultPage2Cookie);
         });
     });
 
     describe("paging - no cookie", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
+        before(function (done) {
 
-            dynamicsWebApiTest.executeFetchXml("tests", dataStubs.fetchXmls.fetchXml)
+            dynamicsWebApiTest.executeFetchXml("tests", mocks.data.fetchXmls.fetchXml)
                 .then(function (object) {
                     responseObject = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.fetchXmlResponsePage1);
+            var response = mocks.responses.fetchXmlResponsePage1;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.collectionUrl + "?fetchXml=" + escape(escape(dataStubs.fetchXmls.fetchXml1)));
+            expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl + "?fetchXml=" + escape(escape(mocks.data.fetchXmls.fetchXml1)));
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('GET');
+            expect(this.requests[0].method).to.equal('GET');
         });
 
         it("does not send data", function () {
-            expect(request.data()).toEqual({});
+            expect(JSON.parse(this.requests[0].requestBody)).to.be.null;
         });
 
         it("does not send the Prefer header", function () {
-            expect(request.requestHeaders['Prefer']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['Prefer']).to.be.undefined;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(dataStubs.fetchXmls.fetchXmlResultPage1);
+            expect(responseObject).to.deep.equal(mocks.data.fetchXmls.fetchXmlResultPage1);
         });
     });
 
     describe("with prefer", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
-            var pagingInfo = dataStubs.fetchXmls.fetchXmlResultPage1Cookie.PagingInfo;
-            dynamicsWebApiTest.executeFetchXml("tests", dataStubs.fetchXmls.fetchXml, DWA.Prefer.Annotations.FormattedValue, pagingInfo.nextPage, pagingInfo.cookie)
+        before(function (done) {
+            var pagingInfo = mocks.data.fetchXmls.fetchXmlResultPage1Cookie.PagingInfo;
+            dynamicsWebApiTest.executeFetchXml("tests", mocks.data.fetchXmls.fetchXml, DWA.Prefer.Annotations.FormattedValue, pagingInfo.nextPage, pagingInfo.cookie)
                 .then(function (object) {
                     responseObject = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.fetchXmlResponsePage2Cookie);
+            var response = mocks.responses.fetchXmlResponsePage2Cookie;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.collectionUrl + "?fetchXml=" + escape(escape(dataStubs.fetchXmls.fetchXml2cookie)));
+            expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl + "?fetchXml=" + escape(escape(mocks.data.fetchXmls.fetchXml2cookie)));
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('GET');
+            expect(this.requests[0].method).to.equal('GET');
         });
 
         it("does not send data", function () {
-            expect(request.data()).toEqual({});
+            expect(JSON.parse(this.requests[0].requestBody)).to.be.null;
         });
 
         it("sends the correct Prefer header", function () {
-            expect(request.requestHeaders['Prefer']).toBe('odata.include-annotations="' + DWA.Prefer.Annotations.FormattedValue + '"')
+            expect(this.requests[0].requestHeaders['Prefer']).to.equal('odata.include-annotations="' + DWA.Prefer.Annotations.FormattedValue + '"')
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(dataStubs.fetchXmls.fetchXmlResultPage2Cookie);
+            expect(responseObject).to.deep.equal(mocks.data.fetchXmls.fetchXmlResultPage2Cookie);
         });
     });
 });
 
 describe("dynamicsWebApi.associate -", function () {
 
-    beforeAll(function () {
-        jasmine.Ajax.install();
+    before(function () {
+        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+        var requests = this.requests = [];
+
+        global.XMLHttpRequest.onCreate = function (xhr) {
+            requests.push(xhr);
+        };
     });
 
-    afterAll(function () {
-        jasmine.Ajax.uninstall();
+    after(function () {
+        global.XMLHttpRequest.restore();
     });
 
     describe("basic", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
-            dynamicsWebApiTest.associate("tests", dataStubs.testEntityId, "tests_records", "records", dataStubs.testEntityId2)
+        before(function (done) {
+            dynamicsWebApiTest.associate("tests", mocks.data.testEntityId, "tests_records", "records", mocks.data.testEntityId2)
                 .then(function (object) {
                     responseObject = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.basicEmptyResponseSuccess);
+            var response = mocks.responses.basicEmptyResponseSuccess;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl + "/tests_records/$ref");
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl + "/tests_records/$ref");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('POST');
+            expect(this.requests[0].method).to.equal('POST');
         });
 
         it("sends the right data", function () {
-            expect(request.data()).toEqual({
-                "@odata.id": webApiUrl + "records(" + dataStubs.testEntityId2 + ")"
+            expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal({
+                "@odata.id": mocks.webApiUrl + "records(" + mocks.data.testEntityId2 + ")"
             });
         });
 
         it("does not have MSCRMCallerID header", function () {
-            expect(request.requestHeaders['MSCRMCallerID']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.be.undefined;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toBeUndefined();
+            expect(responseObject).to.be.undefined;
         });
     });
 
     describe("impersonation", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
-            dynamicsWebApiTest.associate("tests", dataStubs.testEntityId, "tests_records", "records", dataStubs.testEntityId2, dataStubs.testEntityId3)
+        before(function (done) {
+            dynamicsWebApiTest.associate("tests", mocks.data.testEntityId, "tests_records", "records", mocks.data.testEntityId2, mocks.data.testEntityId3)
                 .then(function (object) {
                     responseObject = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.updateReturnRepresentation);
+            var response = mocks.responses.updateReturnRepresentation;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl + "/tests_records/$ref");
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl + "/tests_records/$ref");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('POST');
+            expect(this.requests[0].method).to.equal('POST');
         });
 
         it("sends the right data", function () {
-            expect(request.data()).toEqual({
-                "@odata.id": webApiUrl + "records(" + dataStubs.testEntityId2 + ")"
+            expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal({
+                "@odata.id": mocks.webApiUrl + "records(" + mocks.data.testEntityId2 + ")"
             });
         });
 
         it("sends the correct MSCRMCallerID header", function () {
-            expect(request.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId3);
+            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.equal(mocks.data.testEntityId3);
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toBeUndefined();
+            expect(responseObject).to.be.undefined;
         });
     });
 });
 
 describe("dynamicsWebApi.disassociate -", function () {
 
-    beforeAll(function () {
-        jasmine.Ajax.install();
+    before(function () {
+        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+        var requests = this.requests = [];
+
+        global.XMLHttpRequest.onCreate = function (xhr) {
+            requests.push(xhr);
+        };
     });
 
-    afterAll(function () {
-        jasmine.Ajax.uninstall();
+    after(function () {
+        global.XMLHttpRequest.restore();
     });
 
     describe("basic", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
-            dynamicsWebApiTest.disassociate("tests", dataStubs.testEntityId, "tests_records", dataStubs.testEntityId2)
+        before(function (done) {
+            dynamicsWebApiTest.disassociate("tests", mocks.data.testEntityId, "tests_records", mocks.data.testEntityId2)
                 .then(function (object) {
                     responseObject = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.basicEmptyResponseSuccess);
+            var response = mocks.responses.basicEmptyResponseSuccess;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl + "/tests_records(" + dataStubs.testEntityId2 + ")/$ref");
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl + "/tests_records(" + mocks.data.testEntityId2 + ")/$ref");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('DELETE');
+            expect(this.requests[0].method).to.equal('DELETE');
         });
 
         it("does not send the data", function () {
-            expect(request.data()).toEqual({});
+            expect(this.requests[0].requestBody).to.be.undefined;
         });
 
         it("does not have MSCRMCallerID header", function () {
-            expect(request.requestHeaders['MSCRMCallerID']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.be.undefined;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toBeUndefined();
+            expect(responseObject).to.be.undefined;
         });
     });
 
     describe("impersonation", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
-            dynamicsWebApiTest.disassociate("tests", dataStubs.testEntityId, "tests_records", dataStubs.testEntityId2, dataStubs.testEntityId3)
+        before(function (done) {
+            dynamicsWebApiTest.disassociate("tests", mocks.data.testEntityId, "tests_records", mocks.data.testEntityId2, mocks.data.testEntityId3)
                 .then(function (object) {
                     responseObject = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.updateReturnRepresentation);
+            var response = mocks.responses.updateReturnRepresentation;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl + "/tests_records(" + dataStubs.testEntityId2 + ")/$ref");
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl + "/tests_records(" + mocks.data.testEntityId2 + ")/$ref");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('DELETE');
+            expect(this.requests[0].method).to.equal('DELETE');
         });
 
         it("does not send the data", function () {
-            expect(request.data()).toEqual({});
+            expect(this.requests[0].requestBody).to.be.undefined;
         });
 
         it("sends the correct MSCRMCallerID header", function () {
-            expect(request.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId3);
+            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.equal(mocks.data.testEntityId3);
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toBeUndefined();
+            expect(responseObject).to.be.undefined;
         });
     });
 });
 
 describe("dynamicsWebApi.associateSingleValued -", function () {
 
-    beforeAll(function () {
-        jasmine.Ajax.install();
+    before(function () {
+        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+        var requests = this.requests = [];
+
+        global.XMLHttpRequest.onCreate = function (xhr) {
+            requests.push(xhr);
+        };
     });
 
-    afterAll(function () {
-        jasmine.Ajax.uninstall();
+    after(function () {
+        global.XMLHttpRequest.restore();
     });
 
     describe("basic", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
-            dynamicsWebApiTest.associateSingleValued("tests", dataStubs.testEntityId, "tests_records", "records", dataStubs.testEntityId2)
+        before(function (done) {
+            dynamicsWebApiTest.associateSingleValued("tests", mocks.data.testEntityId, "tests_records", "records", mocks.data.testEntityId2)
                 .then(function (object) {
                     responseObject = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.basicEmptyResponseSuccess);
+            var response = mocks.responses.basicEmptyResponseSuccess;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl + "/tests_records/$ref");
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl + "/tests_records/$ref");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('PUT');
+            expect(this.requests[0].method).to.equal('PUT');
         });
 
         it("sends the right data", function () {
-            expect(request.data()).toEqual({
-                "@odata.id": webApiUrl + "records(" + dataStubs.testEntityId2 + ")"
+            expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal({
+                "@odata.id": mocks.webApiUrl + "records(" + mocks.data.testEntityId2 + ")"
             });
         });
 
         it("does not have MSCRMCallerID header", function () {
-            expect(request.requestHeaders['MSCRMCallerID']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.be.undefined;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toBeUndefined();
+            expect(responseObject).to.be.undefined;
         });
     });
 
     describe("impersonation", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
-            dynamicsWebApiTest.associateSingleValued("tests", dataStubs.testEntityId, "tests_records", "records", dataStubs.testEntityId2, dataStubs.testEntityId3)
+        before(function (done) {
+            dynamicsWebApiTest.associateSingleValued("tests", mocks.data.testEntityId, "tests_records", "records", mocks.data.testEntityId2, mocks.data.testEntityId3)
                 .then(function (object) {
                     responseObject = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.updateReturnRepresentation);
+            var response = mocks.responses.updateReturnRepresentation;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl + "/tests_records/$ref");
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl + "/tests_records/$ref");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('PUT');
+            expect(this.requests[0].method).to.equal('PUT');
         });
 
         it("sends the right data", function () {
-            expect(request.data()).toEqual({
-                "@odata.id": webApiUrl + "records(" + dataStubs.testEntityId2 + ")"
+            expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal({
+                "@odata.id": mocks.webApiUrl + "records(" + mocks.data.testEntityId2 + ")"
             });
         });
 
         it("sends the correct MSCRMCallerID header", function () {
-            expect(request.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId3);
+            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.equal(mocks.data.testEntityId3);
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toBeUndefined();
+            expect(responseObject).to.be.undefined;
         });
     });
 });
 
 describe("dynamicsWebApi.disassociateSingleValued -", function () {
 
-    beforeAll(function () {
-        jasmine.Ajax.install();
+    before(function () {
+        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+        var requests = this.requests = [];
+
+        global.XMLHttpRequest.onCreate = function (xhr) {
+            requests.push(xhr);
+        };
     });
 
-    afterAll(function () {
-        jasmine.Ajax.uninstall();
+    after(function () {
+        global.XMLHttpRequest.restore();
     });
 
     describe("basic", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
-            dynamicsWebApiTest.disassociateSingleValued("tests", dataStubs.testEntityId, "tests_records")
+        before(function (done) {
+            dynamicsWebApiTest.disassociateSingleValued("tests", mocks.data.testEntityId, "tests_records")
                 .then(function (object) {
                     responseObject = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.basicEmptyResponseSuccess);
+            var response = mocks.responses.basicEmptyResponseSuccess;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl + "/tests_records/$ref");
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl + "/tests_records/$ref");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('DELETE');
+            expect(this.requests[0].method).to.equal('DELETE');
         });
 
         it("does not send the data", function () {
-            expect(request.data()).toEqual({});
+            expect(this.requests[0].requestBody).to.be.undefined;
         });
 
         it("does not have MSCRMCallerID header", function () {
-            expect(request.requestHeaders['MSCRMCallerID']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.be.undefined;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toBeUndefined();
+            expect(responseObject).to.be.undefined;
         });
     });
 
     describe("impersonation", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
-            dynamicsWebApiTest.disassociateSingleValued("tests", dataStubs.testEntityId, "tests_records", dataStubs.testEntityId3)
+        before(function (done) {
+            dynamicsWebApiTest.disassociateSingleValued("tests", mocks.data.testEntityId, "tests_records", mocks.data.testEntityId3)
                 .then(function (object) {
                     responseObject = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.updateReturnRepresentation);
+            var response = mocks.responses.updateReturnRepresentation;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl + "/tests_records/$ref");
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl + "/tests_records/$ref");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('DELETE');
+            expect(this.requests[0].method).to.equal('DELETE');
         });
 
         it("does not send the data", function () {
-            expect(request.data()).toEqual({});
+            expect(this.requests[0].requestBody).to.be.undefined;
         });
 
         it("sends the correct MSCRMCallerID header", function () {
-            expect(request.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId3);
+            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.equal(mocks.data.testEntityId3);
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toBeUndefined();
+            expect(responseObject).to.be.undefined;
         });
     });
 });
@@ -1629,430 +1641,428 @@ describe("dynamicsWebApi.disassociateSingleValued -", function () {
 describe("dynamicsWebApi._buildFunctionParameters - ", function () {
     it("no parameters", function () {
         var result = dynamicsWebApiTest.__forTestsOnly__.buildFunctionParameters();
-        expect(result).toBe("()");
+        expect(result).to.equal("()");
     });
     it("1 parameter", function () {
         var result = dynamicsWebApiTest.__forTestsOnly__.buildFunctionParameters({ param1: "value1" });
-        expect(result).toBe("(param1=@p1)?@p1='value1'");
+        expect(result).to.equal("(param1=@p1)?@p1='value1'");
     });
     it("2 parameters", function () {
         var result = dynamicsWebApiTest.__forTestsOnly__.buildFunctionParameters({ param1: "value1", param2: 2 });
-        expect(result).toBe("(param1=@p1,param2=@p2)?@p1='value1'&@p2=2");
+        expect(result).to.equal("(param1=@p1,param2=@p2)?@p1='value1'&@p2=2");
     });
     it("3 parameters", function () {
         var result = dynamicsWebApiTest.__forTestsOnly__.buildFunctionParameters({ param1: "value1", param2: 2, param3: "value2" });
-        expect(result).toBe("(param1=@p1,param2=@p2,param3=@p3)?@p1='value1'&@p2=2&@p3='value2'");
+        expect(result).to.equal("(param1=@p1,param2=@p2,param3=@p3)?@p1='value1'&@p2=2&@p3='value2'");
     });
 });
 
 describe("dynamicsWebApi.executeFunction -", function () {
 
-    beforeAll(function () {
-        jasmine.Ajax.install();
+    before(function () {
+        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+        var requests = this.requests = [];
+
+        global.XMLHttpRequest.onCreate = function (xhr) {
+            requests.push(xhr);
+        };
     });
 
-    afterAll(function () {
-        jasmine.Ajax.uninstall();
+    after(function () {
+        global.XMLHttpRequest.restore();
     });
 
     describe("unbound", function () {
         var responseObject;
         var responseObject2;
-        var request;
-        var request2;
-        beforeAll(function (done) {
+        before(function (done) {
             dynamicsWebApiTest.executeUnboundFunction("FUN")
                 .then(function (object) {
                     responseObject = object;
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.response200);
+            var response = mocks.responses.response200;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
 
             dynamicsWebApiTest.executeUnboundFunction("FUN", { param1: "value1", param2: 2 })
                 .then(function (object) {
                     responseObject2 = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject2 = object;
                     done();
                 });
 
-            request2 = jasmine.Ajax.requests.mostRecent();
-            request2.respondWith(responseStubs.response200);
+            var response2 = mocks.responses.response200;
+            this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(webApiUrl + "FUN()");
-            expect(request2.url).toBe(webApiUrl + "FUN(param1=@p1,param2=@p2)?@p1='value1'&@p2=2");
+            expect(this.requests[0].url).to.equal(mocks.webApiUrl + "FUN()");
+            expect(this.requests[1].url).to.equal(mocks.webApiUrl + "FUN(param1=@p1,param2=@p2)?@p1='value1'&@p2=2");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('GET');
-            expect(request2.method).toBe('GET');
+            expect(this.requests[0].method).to.equal('GET');
+            expect(this.requests[1].method).to.equal('GET');
         });
 
         it("does not send the data", function () {
-            expect(request.data()).toEqual({});
-            expect(request2.data()).toEqual({});
+            expect(JSON.parse(this.requests[0].requestBody)).to.be.null;
+            expect(JSON.parse(this.requests[1].requestBody)).to.be.null;
         });
 
         it("does not have MSCRMCallerID header", function () {
-            expect(request.requestHeaders['MSCRMCallerID']).toBeUndefined();
-            expect(request2.requestHeaders['MSCRMCallerID']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.be.undefined;
+            expect(this.requests[1].requestHeaders['MSCRMCallerID']).to.be.undefined;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(dataStubs.testEntity);
-            expect(responseObject2).toEqual(dataStubs.testEntity);
+            expect(responseObject).to.deep.equal(mocks.data.testEntity);
+            expect(responseObject2).to.deep.equal(mocks.data.testEntity);
         });
     });
 
     describe("unbound impersonation", function () {
         var responseObject;
         var responseObject2;
-        var request;
-        var request2;
-        beforeAll(function (done) {
-            dynamicsWebApiTest.executeUnboundFunction("FUN", null, dataStubs.testEntityId)
+        before(function (done) {
+            dynamicsWebApiTest.executeUnboundFunction("FUN", null, mocks.data.testEntityId)
                 .then(function (object) {
                     responseObject = object;
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.response200);
+            var response = mocks.responses.response200;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
 
-            dynamicsWebApiTest.executeUnboundFunction("FUN", { param1: "value1", param2: 2 }, dataStubs.testEntityId)
+            dynamicsWebApiTest.executeUnboundFunction("FUN", { param1: "value1", param2: 2 }, mocks.data.testEntityId)
                 .then(function (object) {
                     responseObject2 = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject2 = object;
                     done();
                 });
 
-            request2 = jasmine.Ajax.requests.mostRecent();
-            request2.respondWith(responseStubs.response200);
+            var response2 = mocks.responses.response200;
+            this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(webApiUrl + "FUN()");
-            expect(request2.url).toBe(webApiUrl + "FUN(param1=@p1,param2=@p2)?@p1='value1'&@p2=2");
+            expect(this.requests[0].url).to.equal(mocks.webApiUrl + "FUN()");
+            expect(this.requests[1].url).to.equal(mocks.webApiUrl + "FUN(param1=@p1,param2=@p2)?@p1='value1'&@p2=2");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('GET');
-            expect(request2.method).toBe('GET');
+            expect(this.requests[0].method).to.equal('GET');
+            expect(this.requests[1].method).to.equal('GET');
         });
 
         it("does not send the data", function () {
-            expect(request.data()).toEqual({});
-            expect(request2.data()).toEqual({});
+            expect(JSON.parse(this.requests[0].requestBody)).to.be.null;
+            expect(JSON.parse(this.requests[1].requestBody)).to.be.null;
         });
 
         it("sends the correct MSCRMCallerID header", function () {
-            expect(request.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId);
-            expect(request2.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId);
+            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.equal(mocks.data.testEntityId);
+            expect(this.requests[1].requestHeaders['MSCRMCallerID']).to.equal(mocks.data.testEntityId);
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(dataStubs.testEntity);
-            expect(responseObject2).toEqual(dataStubs.testEntity);
+            expect(responseObject).to.deep.equal(mocks.data.testEntity);
+            expect(responseObject2).to.deep.equal(mocks.data.testEntity);
         });
     });
 
     describe("bound", function () {
         var responseObject;
         var responseObject2;
-        var request;
-        var request2;
-        beforeAll(function (done) {
-            dynamicsWebApiTest.executeBoundFunction(dataStubs.testEntityId, "tests", "FUN")
+        before(function (done) {
+            dynamicsWebApiTest.executeBoundFunction(mocks.data.testEntityId, "tests", "FUN")
                 .then(function (object) {
                     responseObject = object;
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.response200);
+            var response = mocks.responses.response200;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
 
-            dynamicsWebApiTest.executeBoundFunction(dataStubs.testEntityId, "tests", "FUN", { param1: "value1", param2: 2 })
+            dynamicsWebApiTest.executeBoundFunction(mocks.data.testEntityId, "tests", "FUN", { param1: "value1", param2: 2 })
                 .then(function (object) {
                     responseObject2 = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject2 = object;
                     done();
                 });
 
-            request2 = jasmine.Ajax.requests.mostRecent();
-            request2.respondWith(responseStubs.basicEmptyResponseSuccess);
+            var response2 = mocks.responses.basicEmptyResponseSuccess;
+            this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl + "/FUN()");
-            expect(request2.url).toBe(responseStubs.testEntityUrl + "/FUN(param1=@p1,param2=@p2)?@p1='value1'&@p2=2");
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl + "/FUN()");
+            expect(this.requests[1].url).to.equal(mocks.responses.testEntityUrl + "/FUN(param1=@p1,param2=@p2)?@p1='value1'&@p2=2");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('GET');
-            expect(request2.method).toBe('GET');
+            expect(this.requests[0].method).to.equal('GET');
+            expect(this.requests[1].method).to.equal('GET');
         });
 
         it("does not send the data", function () {
-            expect(request.data()).toEqual({});
-            expect(request2.data()).toEqual({});
+            expect(JSON.parse(this.requests[0].requestBody)).to.be.null;
+            expect(JSON.parse(this.requests[1].requestBody)).to.be.null;
         });
 
         it("does not have MSCRMCallerID header", function () {
-            expect(request.requestHeaders['MSCRMCallerID']).toBeUndefined();
-            expect(request2.requestHeaders['MSCRMCallerID']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.be.undefined;
+            expect(this.requests[1].requestHeaders['MSCRMCallerID']).to.be.undefined;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(dataStubs.testEntity);
-            expect(responseObject2).toBeUndefined();
+            expect(responseObject).to.deep.equal(mocks.data.testEntity);
+            expect(responseObject2).to.be.undefined;
         });
     });
 
     describe("bound impersonation", function () {
         var responseObject;
         var responseObject2;
-        var request;
-        var request2;
-        beforeAll(function (done) {
-            dynamicsWebApiTest.executeBoundFunction(dataStubs.testEntityId, "tests", "FUN", null, dataStubs.testEntityId)
+        before(function (done) {
+            dynamicsWebApiTest.executeBoundFunction(mocks.data.testEntityId, "tests", "FUN", null, mocks.data.testEntityId)
                 .then(function (object) {
                     responseObject = object;
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.response200);
+            var response = mocks.responses.response200;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
 
-            dynamicsWebApiTest.executeBoundFunction(dataStubs.testEntityId, "tests", "FUN", { param1: "value1", param2: 2 }, dataStubs.testEntityId)
+            dynamicsWebApiTest.executeBoundFunction(mocks.data.testEntityId, "tests", "FUN", { param1: "value1", param2: 2 }, mocks.data.testEntityId)
                 .then(function (object) {
                     responseObject2 = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject2 = object;
                     done();
                 });
 
-            request2 = jasmine.Ajax.requests.mostRecent();
-            request2.respondWith(responseStubs.response200);
+            var response2 = mocks.responses.response200;
+            this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl + "/FUN()");
-            expect(request2.url).toBe(responseStubs.testEntityUrl + "/FUN(param1=@p1,param2=@p2)?@p1='value1'&@p2=2");
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl + "/FUN()");
+            expect(this.requests[1].url).to.equal(mocks.responses.testEntityUrl + "/FUN(param1=@p1,param2=@p2)?@p1='value1'&@p2=2");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('GET');
-            expect(request2.method).toBe('GET');
+            expect(this.requests[0].method).to.equal('GET');
+            expect(this.requests[1].method).to.equal('GET');
         });
 
         it("does not send the data", function () {
-            expect(request.data()).toEqual({});
-            expect(request2.data()).toEqual({});
+            expect(JSON.parse(this.requests[0].requestBody)).to.be.null;
+            expect(JSON.parse(this.requests[1].requestBody)).to.be.null;
         });
 
         it("sends the correct MSCRMCallerID header", function () {
-            expect(request.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId);
-            expect(request2.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId);
+            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.equal(mocks.data.testEntityId);
+            expect(this.requests[1].requestHeaders['MSCRMCallerID']).to.equal(mocks.data.testEntityId);
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(dataStubs.testEntity);
-            expect(responseObject2).toEqual(dataStubs.testEntity);
+            expect(responseObject).to.deep.equal(mocks.data.testEntity);
+            expect(responseObject2).to.deep.equal(mocks.data.testEntity);
         });
     });
 });
 
 describe("dynamicsWebApi.executeAction -", function () {
 
-    beforeAll(function () {
-        jasmine.Ajax.install();
+    before(function () {
+        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+        var requests = this.requests = [];
+
+        global.XMLHttpRequest.onCreate = function (xhr) {
+            requests.push(xhr);
+        };
     });
 
-    afterAll(function () {
-        jasmine.Ajax.uninstall();
+    after(function () {
+        global.XMLHttpRequest.restore();
     });
 
     describe("unbound", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
-            dynamicsWebApiTest.executeUnboundAction("FUN", responseStubs.actionRequest)
+        before(function (done) {
+            dynamicsWebApiTest.executeUnboundAction("FUN", mocks.responses.actionRequest)
                 .then(function (object) {
                     responseObject = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.basicEmptyResponseSuccess);
+            var response = mocks.responses.basicEmptyResponseSuccess;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(webApiUrl + "FUN");
+            expect(this.requests[0].url).to.equal(mocks.webApiUrl + "FUN");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('POST');
+            expect(this.requests[0].method).to.equal('POST');
         });
 
         it("does not send the data", function () {
-            expect(request.data()).toEqual(responseStubs.actionRequestModified);
+            expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.responses.actionRequestModified);
         });
 
         it("does not have MSCRMCallerID header", function () {
-            expect(request.requestHeaders['MSCRMCallerID']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.be.undefined;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toBeUndefined();
+            expect(responseObject).to.be.undefined;
         });
     });
 
     describe("unbound impersonation", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
-            dynamicsWebApiTest.executeUnboundAction("FUN", responseStubs.actionRequest, dataStubs.testEntityId2)
+        before(function (done) {
+            dynamicsWebApiTest.executeUnboundAction("FUN", mocks.responses.actionRequest, mocks.data.testEntityId2)
                 .then(function (object) {
                     responseObject = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.basicEmptyResponseSuccess);
+            var response = mocks.responses.basicEmptyResponseSuccess;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(webApiUrl + "FUN");
+            expect(this.requests[0].url).to.equal(mocks.webApiUrl + "FUN");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('POST');
+            expect(this.requests[0].method).to.equal('POST');
         });
 
         it("does not send the data", function () {
-            expect(request.data()).toEqual(responseStubs.actionRequestModified);
+            expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.responses.actionRequestModified);
         });
 
         it("sends the correct MSCRMCallerID header", function () {
-            expect(request.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId2);
+            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.equal(mocks.data.testEntityId2);
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toBeUndefined();
+            expect(responseObject).to.be.undefined;
         });
     });
 
     describe("bound", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
-            dynamicsWebApiTest.executeBoundAction(dataStubs.testEntityId, "tests", "FUN", responseStubs.actionRequest)
+        before(function (done) {
+            dynamicsWebApiTest.executeBoundAction(mocks.data.testEntityId, "tests", "FUN", mocks.responses.actionRequest)
                 .then(function (object) {
                     responseObject = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.response200);
+            var response = mocks.responses.response200;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl + "/FUN");
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl + "/FUN");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('POST');
+            expect(this.requests[0].method).to.equal('POST');
         });
 
         it("does not send the data", function () {
-            expect(request.data()).toEqual(responseStubs.actionRequestModified);
+            expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.responses.actionRequestModified);
         });
 
         it("does not have MSCRMCallerID header", function () {
-            expect(request.requestHeaders['MSCRMCallerID']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.be.undefined;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(dataStubs.testEntity);
+            expect(responseObject).to.deep.equal(mocks.data.testEntity);
         });
     });
 
     describe("bound impersonation", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
-            dynamicsWebApiTest.executeBoundAction(dataStubs.testEntityId, "tests", "FUN", responseStubs.actionRequest, dataStubs.testEntityId2)
+        before(function (done) {
+            dynamicsWebApiTest.executeBoundAction(mocks.data.testEntityId, "tests", "FUN", mocks.responses.actionRequest, mocks.data.testEntityId2)
                 .then(function (object) {
                     responseObject = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.response200);
+            var response = mocks.responses.response200;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl + "/FUN");
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl + "/FUN");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('POST');
+            expect(this.requests[0].method).to.equal('POST');
         });
 
         it("does not send the data", function () {
-            expect(request.data()).toEqual(responseStubs.actionRequestModified);
+            expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.responses.actionRequestModified);
         });
 
         it("sends the correct MSCRMCallerID header", function () {
-            expect(request.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId2);
+            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.equal(mocks.data.testEntityId2);
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(dataStubs.testEntity);
+            expect(responseObject).to.deep.equal(mocks.data.testEntity);
         });
     });
 });
 
 describe("dynamicsWebApi._convertOptions -", function () {
-    var stubUrl = webApiUrl + "tests";
+    var stubUrl = mocks.webApiUrl + "tests";
     //{ url: url, query: query, headers: headers }
     it("request is empty", function () {
         var dwaRequest;
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl, "&");
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(null, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions({}, "", stubUrl, "&");
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
 
     });
 
@@ -2062,7 +2072,7 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "$count=true", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "$count=true", headers: {} });
     });
 
     it("count=false", function () {
@@ -2071,7 +2081,7 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
     it("expand is empty", function () {
@@ -2080,21 +2090,21 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
 
         dwaRequest = {
             expand: null
         };
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
 
         dwaRequest = {
             expand: []
         };
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
     it("expand - filter without expand.property", function () {
@@ -2105,7 +2115,7 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
 
         dwaRequest = {
             expand: [{
@@ -2115,7 +2125,7 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
     it("expand - property", function () {
@@ -2126,7 +2136,7 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "$expand=property", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property", headers: {} });
     });
 
     it("expand - property,filter empty", function () {
@@ -2138,7 +2148,7 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "$expand=property", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property", headers: {} });
 
         dwaRequest = {
             expand: [{
@@ -2148,7 +2158,7 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "$expand=property", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property", headers: {} });
     });
 
     it("expand - property,filter", function () {
@@ -2160,7 +2170,7 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "$expand=property($filter=" + encodeURI("name eq 'name'") + ")", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property($filter=" + encodeURI("name eq 'name'") + ")", headers: {} });
     });
 
     it("expand - property,orderBy empty", function () {
@@ -2172,7 +2182,7 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "$expand=property", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property", headers: {} });
 
         dwaRequest = {
             expand: [{
@@ -2182,7 +2192,7 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "$expand=property", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property", headers: {} });
     });
 
     it("expand - property,orderBy", function () {
@@ -2194,7 +2204,7 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "$expand=property($orderBy=name)", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property($orderBy=name)", headers: {} });
 
         dwaRequest = {
             expand: [{
@@ -2204,7 +2214,7 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "$expand=property($orderBy=name,subject)", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property($orderBy=name,subject)", headers: {} });
     });
 
     it("expand - property,select empty", function () {
@@ -2216,7 +2226,7 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "$expand=property", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property", headers: {} });
 
         dwaRequest = {
             expand: [{
@@ -2226,7 +2236,7 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "$expand=property", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property", headers: {} });
     });
 
     it("expand - property,select", function () {
@@ -2238,7 +2248,7 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "$expand=property($select=name)", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property($select=name)", headers: {} });
 
         dwaRequest = {
             expand: [{
@@ -2248,7 +2258,7 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "$expand=property($select=name,subject)", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property($select=name,subject)", headers: {} });
     });
 
     it("expand - property,top empty or <=0", function () {
@@ -2260,7 +2270,7 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "$expand=property", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property", headers: {} });
 
         dwaRequest = {
             expand: [{
@@ -2270,7 +2280,7 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "$expand=property", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property", headers: {} });
 
         dwaRequest = {
             expand: [{
@@ -2280,7 +2290,7 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "$expand=property", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property", headers: {} });
     });
 
     it("expand - property,top", function () {
@@ -2292,7 +2302,7 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "$expand=property($top=3)", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property($top=3)", headers: {} });
     });
 
     it("expand - different properties", function () {
@@ -2305,7 +2315,7 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "$expand=property($select=name,subject;$top=3)", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property($select=name,subject;$top=3)", headers: {} });
 
         dwaRequest = {
             expand: [{
@@ -2317,7 +2327,7 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "$expand=property($select=name,subject;$top=3;$orderBy=order)", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property($select=name,subject;$top=3;$orderBy=order)", headers: {} });
     });
 
     it("filter empty", function () {
@@ -2326,14 +2336,14 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
 
         dwaRequest = {
             filter: null
         };
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
     it("filter", function () {
@@ -2342,7 +2352,7 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "$filter=name eq 'name'", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "$filter=name eq 'name'", headers: {} });
     });
 
     it("ifmatch empty", function () {
@@ -2351,14 +2361,14 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
 
         dwaRequest = {
             ifmatch: null
         };
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
     it("ifmatch", function () {
@@ -2367,7 +2377,7 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: { "If-Match": "*" } });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: { "If-Match": "*" } });
     });
 
     it("ifnonematch empty", function () {
@@ -2376,14 +2386,14 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
 
         dwaRequest = {
             ifnonematch: null
         };
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
     it("ifnonematch", function () {
@@ -2392,7 +2402,7 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: { "If-None-Match": "*" } });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: { "If-None-Match": "*" } });
     });
 
     it("impersonate empty", function () {
@@ -2401,23 +2411,23 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
 
         dwaRequest = {
             impersonate: null
         };
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
     it("impersonate", function () {
         var dwaRequest = {
-            impersonate: dataStubs.testEntityId
+            impersonate: mocks.data.testEntityId
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: { "MSCRMCallerID": dataStubs.testEntityId } });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: { "MSCRMCallerID": mocks.data.testEntityId } });
     });
 
     it("includeAnnotations empty", function () {
@@ -2426,14 +2436,14 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
 
         dwaRequest = {
             includeAnnotations: null
         };
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
     it("includeAnnotations", function () {
@@ -2442,7 +2452,7 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: { Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.AssociatedNavigationProperty + '"' } });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: { Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.AssociatedNavigationProperty + '"' } });
     });
 
     it("maxPageSize empty or <=0", function () {
@@ -2451,21 +2461,21 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
 
         dwaRequest = {
             maxPageSize: null
         };
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
 
         dwaRequest = {
             maxPageSize: -2
         };
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
     it("maxPageSize", function () {
@@ -2474,7 +2484,7 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: { Prefer: 'odata.maxpagesize=10' } });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: { Prefer: 'odata.maxpagesize=10' } });
     });
 
     it("navigationProperty empty", function () {
@@ -2483,14 +2493,14 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
 
         dwaRequest = {
             navigationProperty: null
         };
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
     it("navigationProperty", function () {
@@ -2499,7 +2509,7 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl + "/nav", query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl + "/nav", query: "", headers: {} });
     });
 
     it("orderBy empty", function () {
@@ -2508,14 +2518,14 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
 
         dwaRequest = {
             orderBy: null
         };
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
     it("orderBy", function () {
@@ -2524,14 +2534,14 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "$orderBy=name", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "$orderBy=name", headers: {} });
 
         dwaRequest = {
             orderBy: ["name", "subject"]
         };
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({
+        expect(result).to.deep.equal({
             url: stubUrl, query: "$orderBy=name,subject", headers: {}
         });
     });
@@ -2542,14 +2552,14 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
 
         dwaRequest = {
             returnRepresentation: null
         };
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
     it("returnRepresentation", function () {
@@ -2558,7 +2568,7 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: { Prefer: DWA.Prefer.ReturnRepresentation } });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: { Prefer: DWA.Prefer.ReturnRepresentation } });
     });
 
     it("select empty", function () {
@@ -2567,14 +2577,14 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
 
         dwaRequest = {
             select: null
         };
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
     it("select", function () {
@@ -2583,14 +2593,14 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "$select=name", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "$select=name", headers: {} });
 
         dwaRequest = {
             select: ["name", "subject"]
         };
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "$select=name,subject", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "$select=name,subject", headers: {} });
     });
 
     it("select navigation property", function () {
@@ -2599,21 +2609,21 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "retrieve", stubUrl);
-        expect(result).toEqual({ url: stubUrl + "/nav", query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl + "/nav", query: "", headers: {} });
 
         dwaRequest = {
             select: ["/nav", "subject"]
         };
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "retrieve", stubUrl);
-        expect(result).toEqual({ url: stubUrl + "/nav", query: "$select=subject", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl + "/nav", query: "$select=subject", headers: {} });
 
         dwaRequest = {
             select: ["/nav", "subject", "fullname"]
         };
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "retrieve", stubUrl);
-        expect(result).toEqual({ url: stubUrl + "/nav", query: "$select=subject,fullname", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl + "/nav", query: "$select=subject,fullname", headers: {} });
     });
 
     it("select reference", function () {
@@ -2622,7 +2632,7 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "retrieve", stubUrl);
-        expect(result).toEqual({ url: stubUrl + "/nav/$ref", query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl + "/nav/$ref", query: "", headers: {} });
     });
 
     it("top empty or <=0", function () {
@@ -2631,21 +2641,21 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
 
         dwaRequest = {
             top: -1
         };
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
 
         dwaRequest = {
             top: null
         };
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
     it("top", function () {
@@ -2654,7 +2664,7 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "$top=3", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "$top=3", headers: {} });
     });
 
     it("savedQuery empty", function () {
@@ -2663,23 +2673,23 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
 
         dwaRequest = {
             savedQuery: null
         };
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
     it("savedQuery", function () {
         var dwaRequest = {
-            savedQuery: dataStubs.testEntityId
+            savedQuery: mocks.data.testEntityId
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "savedQuery=" + dataStubs.testEntityId, headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "savedQuery=" + mocks.data.testEntityId, headers: {} });
     });
 
     it("userQuery empty", function () {
@@ -2688,23 +2698,23 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
 
         dwaRequest = {
             userQuery: null
         };
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
     it("userQuery", function () {
         var dwaRequest = {
-            userQuery: dataStubs.testEntityId
+            userQuery: mocks.data.testEntityId
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "userQuery=" + dataStubs.testEntityId, headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "userQuery=" + mocks.data.testEntityId, headers: {} });
     });
 
     it("multiple options", function () {
@@ -2715,7 +2725,7 @@ describe("dynamicsWebApi._convertOptions -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "$select=name,subject&$top=5&$orderBy=order", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "$select=name,subject&$top=5&$orderBy=order", headers: {} });
 
         dwaRequest.expand = [{
             property: "property",
@@ -2727,26 +2737,26 @@ describe("dynamicsWebApi._convertOptions -", function () {
         }];
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "$select=name,subject&$top=5&$orderBy=order&$expand=property($select=name;$orderBy=order),property2($select=name3)", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "$select=name,subject&$top=5&$orderBy=order&$expand=property($select=name;$orderBy=order),property2($select=name3)", headers: {} });
 
         dwaRequest.expand = null;
         dwaRequest.returnRepresentation = true;
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "$select=name,subject&$top=5&$orderBy=order", headers: { Prefer: DWA.Prefer.ReturnRepresentation } });
+        expect(result).to.deep.equal({ url: stubUrl, query: "$select=name,subject&$top=5&$orderBy=order", headers: { Prefer: DWA.Prefer.ReturnRepresentation } });
 
         dwaRequest.top = 0;
         dwaRequest.count = true;
-        dwaRequest.impersonate = dataStubs.testEntityId;
+        dwaRequest.impersonate = mocks.data.testEntityId;
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl, query: "$select=name,subject&$count=true&$orderBy=order", headers: { Prefer: DWA.Prefer.ReturnRepresentation, MSCRMCallerID: dataStubs.testEntityId } });
+        expect(result).to.deep.equal({ url: stubUrl, query: "$select=name,subject&$count=true&$orderBy=order", headers: { Prefer: DWA.Prefer.ReturnRepresentation, MSCRMCallerID: mocks.data.testEntityId } });
 
         dwaRequest.impersonate = null;
         dwaRequest.navigationProperty = "nav";
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-        expect(result).toEqual({ url: stubUrl + "/nav", query: "$select=name,subject&$count=true&$orderBy=order", headers: { Prefer: DWA.Prefer.ReturnRepresentation } });
+        expect(result).to.deep.equal({ url: stubUrl + "/nav", query: "$select=name,subject&$count=true&$orderBy=order", headers: { Prefer: DWA.Prefer.ReturnRepresentation } });
 
         dwaRequest.navigationProperty = null;
         dwaRequest.returnRepresentation = false;
@@ -2754,7 +2764,7 @@ describe("dynamicsWebApi._convertOptions -", function () {
         dwaRequest.select[0] = "/nav";
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "retrieve", stubUrl);
-        expect(result).toEqual({ url: stubUrl + "/nav", query: "$select=subject&$count=true&$orderBy=order", headers: { Prefer: 'odata.include-annotations="*"' } });
+        expect(result).to.deep.equal({ url: stubUrl + "/nav", query: "$select=subject&$count=true&$orderBy=order", headers: { Prefer: 'odata.include-annotations="*"' } });
     });
 });
 
@@ -2766,7 +2776,7 @@ describe("dynamicsWebApi._convertRequestToLink -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertRequestToLink(dwaRequest);
-        expect(result).toEqual({ url: "cols", headers: {} });
+        expect(result).to.deep.equal({ url: "cols", headers: {} });
     });
 
     it("collection empty - throw error", function () {
@@ -2778,13 +2788,13 @@ describe("dynamicsWebApi._convertRequestToLink -", function () {
             dynamicsWebApiTest.__forTestsOnly__.convertRequestToLink(dwaRequest);
         }
 
-        expect(test).toThrowError(/request\.collection/);
+        expect(test).to.throw(/request\.collection/);
 
         dwaRequest.collection = 0;
-        expect(test).toThrowError(/request\.collection/);
+        expect(test).to.throw(/request\.collection/);
 
         dwaRequest.collection = null;
-        expect(test).toThrowError(/request\.collection/);
+        expect(test).to.throw(/request\.collection/);
     });
 
     it("collection, id empty", function () {
@@ -2794,12 +2804,12 @@ describe("dynamicsWebApi._convertRequestToLink -", function () {
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertRequestToLink(dwaRequest);
-        expect(result).toEqual({ url: "cols", headers: {} });
+        expect(result).to.deep.equal({ url: "cols", headers: {} });
 
         dwaRequest.id = "";
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertRequestToLink(dwaRequest);
-        expect(result).toEqual({ url: "cols", headers: {} });
+        expect(result).to.deep.equal({ url: "cols", headers: {} });
     });
 
     it("collection, id - wrong format throw error", function () {
@@ -2812,111 +2822,113 @@ describe("dynamicsWebApi._convertRequestToLink -", function () {
             dynamicsWebApiTest.__forTestsOnly__.convertRequestToLink(dwaRequest);
         }
 
-        expect(test).toThrowError(/request\.id/);
+        expect(test).to.throw(/request\.id/);
     });
 
     it("collection, id", function () {
         var dwaRequest = {
             collection: "cols",
-            id: dataStubs.testEntityId
+            id: mocks.data.testEntityId
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertRequestToLink(dwaRequest);
-        expect(result).toEqual({ url: "cols(" + dataStubs.testEntityId + ")", headers: {} });
+        expect(result).to.deep.equal({ url: "cols(" + mocks.data.testEntityId + ")", headers: {} });
     });
 
     it("full", function () {
         var dwaRequest = {
             collection: "cols",
-            id: dataStubs.testEntityId,
+            id: mocks.data.testEntityId,
             select: ["name"],
             returnRepresentation: true
         };
 
         var result = dynamicsWebApiTest.__forTestsOnly__.convertRequestToLink(dwaRequest);
-        expect(result).toEqual({ url: "cols(" + dataStubs.testEntityId + ")?$select=name", headers: { Prefer: DWA.Prefer.ReturnRepresentation } });
+        expect(result).to.deep.equal({ url: "cols(" + mocks.data.testEntityId + ")?$select=name", headers: { Prefer: DWA.Prefer.ReturnRepresentation } });
 
         dwaRequest.navigationProperty = "nav";
 
         result = dynamicsWebApiTest.__forTestsOnly__.convertRequestToLink(dwaRequest);
-        expect(result).toEqual({ url: "cols(" + dataStubs.testEntityId + ")/nav?$select=name", headers: { Prefer: DWA.Prefer.ReturnRepresentation } });
+        expect(result).to.deep.equal({ url: "cols(" + mocks.data.testEntityId + ")/nav?$select=name", headers: { Prefer: DWA.Prefer.ReturnRepresentation } });
     });
 });
 
 describe("dynamicsWebApi.updateRequest -", function () {
     var dwaRequest = {
-        id: dataStubs.testEntityId,
+        id: mocks.data.testEntityId,
         collection: "tests",
-        entity: dataStubs.testEntity
+        entity: mocks.data.testEntity
     }
 
-    beforeAll(function () {
-        jasmine.Ajax.install();
+    before(function () {
+        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+        var requests = this.requests = [];
+
+        global.XMLHttpRequest.onCreate = function (xhr) {
+            requests.push(xhr);
+        };
     });
 
-    afterAll(function () {
-        jasmine.Ajax.uninstall();
+    after(function () {
+        global.XMLHttpRequest.restore();
     });
 
     describe("basic", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
+        before(function (done) {
             dynamicsWebApiTest.updateRequest(dwaRequest)
                 .then(function (object) {
                     responseObject = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.basicEmptyResponseSuccess);
+            var response = mocks.responses.basicEmptyResponseSuccess;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl);
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl);
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('PATCH');
+            expect(this.requests[0].method).to.equal('PATCH');
         });
 
         it("sends the right data", function () {
-            expect(request.data()).toEqual(dataStubs.testEntity);
+            expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
         });
 
         it("does not have Prefer header", function () {
-            expect(request.requestHeaders['Prefer']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['Prefer']).to.be.undefined;
         });
 
         it("sends the right If-Match header", function () {
-            expect(request.requestHeaders['If-Match']).toBe("*");
+            expect(this.requests[0].requestHeaders['If-Match']).to.equal("*");
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toBe(true);
+            expect(responseObject).to.equal(true);
         });
     });
 
     describe("return representation", function () {
         var responseObject;
         var responseObject2;
-        var request;
-        var request2;
-        beforeAll(function (done) {
+        before(function (done) {
             dwaRequest.returnRepresentation = true;
 
             dynamicsWebApiTest.updateRequest(dwaRequest)
                 .then(function (object) {
                     responseObject = object;
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.updateReturnRepresentation);
+            var response = mocks.responses.updateReturnRepresentation;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
 
             dwaRequest.select = ["fullname", "subject"];
 
@@ -2924,43 +2936,43 @@ describe("dynamicsWebApi.updateRequest -", function () {
                 .then(function (object) {
                     responseObject2 = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject2 = object;
                     done();
                 });
 
-            request2 = jasmine.Ajax.requests.mostRecent();
-            request2.respondWith(responseStubs.updateReturnRepresentation);
+            var response2 = mocks.responses.updateReturnRepresentation;
+            this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl);
-            expect(request2.url).toBe(responseStubs.testEntityUrl + "?$select=fullname,subject");
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl);
+            expect(this.requests[1].url).to.equal(mocks.responses.testEntityUrl + "?$select=fullname,subject");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('PATCH');
-            expect(request2.method).toBe('PATCH');
+            expect(this.requests[0].method).to.equal('PATCH');
+            expect(this.requests[1].method).to.equal('PATCH');
         });
 
         it("sends the right data", function () {
-            expect(request.data()).toEqual(dataStubs.testEntity);
-            expect(request2.data()).toEqual(dataStubs.testEntity);
+            expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
+            expect(JSON.parse(this.requests[1].requestBody)).to.deep.equal(mocks.data.testEntity);
         });
 
         it("sends the Prefer header", function () {
-            expect(request.requestHeaders['Prefer']).toBe(DWA.Prefer.ReturnRepresentation);
-            expect(request2.requestHeaders['Prefer']).toBe(DWA.Prefer.ReturnRepresentation);
+            expect(this.requests[0].requestHeaders['Prefer']).to.equal(DWA.Prefer.ReturnRepresentation);
+            expect(this.requests[1].requestHeaders['Prefer']).to.equal(DWA.Prefer.ReturnRepresentation);
         });
 
         it("sends the right If-Match header", function () {
-            expect(request.requestHeaders['If-Match']).toBe("*");
-            expect(request2.requestHeaders['If-Match']).toBe("*");
+            expect(this.requests[0].requestHeaders['If-Match']).to.equal("*");
+            expect(this.requests[1].requestHeaders['If-Match']).to.equal("*");
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(dataStubs.updatedEntity);
-            expect(responseObject2).toEqual(dataStubs.updatedEntity);
+            expect(responseObject).to.deep.equal(mocks.data.updatedEntity);
+            expect(responseObject2).to.deep.equal(mocks.data.updatedEntity);
         });
     });
 
@@ -2968,22 +2980,20 @@ describe("dynamicsWebApi.updateRequest -", function () {
         var responseObject;
         var responseObject2;
         var responseObject3;
-        var request;
-        var request2;
-        var request3;
-        beforeAll(function (done) {
+        before(function (done) {
+            dwaRequest.select = ["fullname", "subject"];
             dwaRequest.ifmatch = "match";
             dwaRequest.returnRepresentation = false;
             dynamicsWebApiTest
                 .updateRequest(dwaRequest)
                 .then(function (object) {
                     responseObject = object;
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.basicEmptyResponseSuccess);
+            var response = mocks.responses.basicEmptyResponseSuccess;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
 
             dwaRequest.returnRepresentation = true;
 
@@ -2995,8 +3005,8 @@ describe("dynamicsWebApi.updateRequest -", function () {
                     responseObject2 = object;
                 });
 
-            request2 = jasmine.Ajax.requests.mostRecent();
-            request2.respondWith(responseStubs.upsertPreventUpdateResponse);
+            var response2 = mocks.responses.upsertPreventUpdateResponse;
+            this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
 
             dynamicsWebApiTest
                 .updateRequest(dwaRequest)
@@ -3008,61 +3018,66 @@ describe("dynamicsWebApi.updateRequest -", function () {
                     done();
                 });
 
-            request3 = jasmine.Ajax.requests.mostRecent();
-            request3.respondWith(responseStubs.upsertPreventCreateResponse);
+            var response3 = mocks.responses.upsertPreventCreateResponse;
+            this.requests[2].respond(response3.status, response3.responseHeaders, response3.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl + "?$select=fullname,subject");
-            expect(request2.url).toBe(responseStubs.testEntityUrl + "?$select=fullname,subject");
-            expect(request3.url).toBe(responseStubs.testEntityUrl + "?$select=fullname,subject");
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl + "?$select=fullname,subject");
+            expect(this.requests[1].url).to.equal(mocks.responses.testEntityUrl + "?$select=fullname,subject");
+            expect(this.requests[2].url).to.equal(mocks.responses.testEntityUrl + "?$select=fullname,subject");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('PATCH');
-            expect(request2.method).toBe('PATCH');
-            expect(request3.method).toBe('PATCH');
+            expect(this.requests[0].method).to.equal('PATCH');
+            expect(this.requests[1].method).to.equal('PATCH');
+            expect(this.requests[2].method).to.equal('PATCH');
         });
 
         it("sends the right data", function () {
-            expect(request.data()).toEqual(dataStubs.testEntity);
-            expect(request2.data()).toEqual(dataStubs.testEntity);
-            expect(request3.data()).toEqual(dataStubs.testEntity);
+            expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
+            expect(JSON.parse(this.requests[1].requestBody)).to.deep.equal(mocks.data.testEntity);
+            expect(JSON.parse(this.requests[2].requestBody)).to.deep.equal(mocks.data.testEntity);
         });
 
         it("sends the Prefer header", function () {
-            expect(request.requestHeaders['Prefer']).toBeUndefined();
-            expect(request2.requestHeaders['Prefer']).toBe(DWA.Prefer.ReturnRepresentation);
-            expect(request3.requestHeaders['Prefer']).toBe(DWA.Prefer.ReturnRepresentation);
+            expect(this.requests[0].requestHeaders['Prefer']).to.be.undefined;
+            expect(this.requests[1].requestHeaders['Prefer']).to.equal(DWA.Prefer.ReturnRepresentation);
+            expect(this.requests[2].requestHeaders['Prefer']).to.equal(DWA.Prefer.ReturnRepresentation);
         });
 
         it("sends the right If-Match header", function () {
-            expect(request.requestHeaders['If-Match']).toBe("match");
-            expect(request2.requestHeaders['If-Match']).toBe("match");
-            expect(request3.requestHeaders['If-Match']).toBe("match");
+            expect(this.requests[0].requestHeaders['If-Match']).to.equal("match");
+            expect(this.requests[1].requestHeaders['If-Match']).to.equal("match");
+            expect(this.requests[2].requestHeaders['If-Match']).to.equal("match");
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(true);
-            expect(responseObject2).toEqual(false);
-            expect(responseObject3.status).toEqual(404);
+            expect(responseObject).to.deep.equal(true);
+            expect(responseObject2).to.deep.equal(false);
+            expect(responseObject3.status).to.deep.equal(404);
         });
     });
 });
 
 describe("dynamicsWebApi.upsertRequest -", function () {
     var dwaRequest = {
-        id: dataStubs.testEntityId,
+        id: mocks.data.testEntityId,
         collection: "tests",
-        entity: dataStubs.testEntity
+        entity: mocks.data.testEntity
     }
 
-    beforeAll(function () {
-        jasmine.Ajax.install();
+    before(function () {
+        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+        var requests = this.requests = [];
+
+        global.XMLHttpRequest.onCreate = function (xhr) {
+            requests.push(xhr);
+        };
     });
 
-    afterAll(function () {
-        jasmine.Ajax.uninstall();
+    after(function () {
+        global.XMLHttpRequest.restore();
     });
 
     describe("basic & return representation", function () {
@@ -3070,42 +3085,38 @@ describe("dynamicsWebApi.upsertRequest -", function () {
         var responseObject2;
         var responseObject3;
         var responseObject4;
-        var request;
-        var request2;
-        var request3;
-        var request4;
-        beforeAll(function (done) {
+        before(function (done) {
             dynamicsWebApiTest.upsertRequest(dwaRequest)
                 .then(function (object) {
                     responseObject = object;
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.basicEmptyResponseSuccess);
+            var response = mocks.responses.basicEmptyResponseSuccess;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
 
             dynamicsWebApiTest.upsertRequest(dwaRequest)
                 .then(function (object) {
                     responseObject2 = object;
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject2 = object;
                 });
 
-            request2 = jasmine.Ajax.requests.mostRecent();
-            request2.respondWith(responseStubs.createReturnId);
+            var response2 = mocks.responses.createReturnId;
+            this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
 
             dwaRequest.returnRepresentation = true;
 
             dynamicsWebApiTest.upsertRequest(dwaRequest)
                 .then(function (object) {
                     responseObject3 = object;
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject3 = object;
                 });
 
-            request3 = jasmine.Ajax.requests.mostRecent();
-            request3.respondWith(responseStubs.updateReturnRepresentation);
+            var response3 = mocks.responses.updateReturnRepresentation;
+            this.requests[2].respond(response3.status, response3.responseHeaders, response3.responseText);
 
             dwaRequest.select = ["name"];
 
@@ -3113,62 +3124,62 @@ describe("dynamicsWebApi.upsertRequest -", function () {
                 .then(function (object) {
                     responseObject4 = object;
                     done();
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject4 = object;
                     done();
                 });
 
-            request4 = jasmine.Ajax.requests.mostRecent();
-            request4.respondWith(responseStubs.updateReturnRepresentation);
+            var response4 = mocks.responses.updateReturnRepresentation;
+            this.requests[3].respond(response4.status, response4.responseHeaders, response4.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl);
-            expect(request2.url).toBe(responseStubs.testEntityUrl);
-            expect(request3.url).toBe(responseStubs.testEntityUrl);
-            expect(request4.url).toBe(responseStubs.testEntityUrl + "?$select=name");
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl);
+            expect(this.requests[1].url).to.equal(mocks.responses.testEntityUrl);
+            expect(this.requests[2].url).to.equal(mocks.responses.testEntityUrl);
+            expect(this.requests[3].url).to.equal(mocks.responses.testEntityUrl + "?$select=name");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('PATCH');
-            expect(request2.method).toBe('PATCH');
-            expect(request3.method).toBe('PATCH');
-            expect(request4.method).toBe('PATCH');
+            expect(this.requests[0].method).to.equal('PATCH');
+            expect(this.requests[1].method).to.equal('PATCH');
+            expect(this.requests[2].method).to.equal('PATCH');
+            expect(this.requests[3].method).to.equal('PATCH');
         });
 
         it("sends the right data", function () {
-            expect(request.data()).toEqual(dataStubs.testEntity);
-            expect(request2.data()).toEqual(dataStubs.testEntity);
-            expect(request3.data()).toEqual(dataStubs.testEntity);
-            expect(request4.data()).toEqual(dataStubs.testEntity);
+            expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
+            expect(JSON.parse(this.requests[1].requestBody)).to.deep.equal(mocks.data.testEntity);
+            expect(JSON.parse(this.requests[2].requestBody)).to.deep.equal(mocks.data.testEntity);
+            expect(JSON.parse(this.requests[3].requestBody)).to.deep.equal(mocks.data.testEntity);
         });
 
         it("sends the right Prefer header", function () {
-            expect(request.requestHeaders['Prefer']).toBeUndefined();
-            expect(request2.requestHeaders['Prefer']).toBeUndefined();
-            expect(request3.requestHeaders['Prefer']).toBe(DWA.Prefer.ReturnRepresentation);
-            expect(request4.requestHeaders['Prefer']).toBe(DWA.Prefer.ReturnRepresentation);
+            expect(this.requests[0].requestHeaders['Prefer']).to.be.undefined;
+            expect(this.requests[1].requestHeaders['Prefer']).to.be.undefined;
+            expect(this.requests[2].requestHeaders['Prefer']).to.equal(DWA.Prefer.ReturnRepresentation);
+            expect(this.requests[3].requestHeaders['Prefer']).to.equal(DWA.Prefer.ReturnRepresentation);
         });
 
         it("does not have If-Match header", function () {
-            expect(request.requestHeaders['If-Match']).toBeUndefined();
-            expect(request2.requestHeaders['If-Match']).toBeUndefined();
-            expect(request3.requestHeaders['If-Match']).toBeUndefined();
-            expect(request4.requestHeaders['If-Match']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['If-Match']).to.be.undefined;
+            expect(this.requests[1].requestHeaders['If-Match']).to.be.undefined;
+            expect(this.requests[2].requestHeaders['If-Match']).to.be.undefined;
+            expect(this.requests[3].requestHeaders['If-Match']).to.be.undefined;
         });
 
         it("does not have If-None-Match header", function () {
-            expect(request.requestHeaders['If-None-Match']).toBeUndefined();
-            expect(request2.requestHeaders['If-None-Match']).toBeUndefined();
-            expect(request3.requestHeaders['If-None-Match']).toBeUndefined();
-            expect(request4.requestHeaders['If-None-Match']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['If-None-Match']).to.be.undefined;
+            expect(this.requests[1].requestHeaders['If-None-Match']).to.be.undefined;
+            expect(this.requests[2].requestHeaders['If-None-Match']).to.be.undefined;
+            expect(this.requests[3].requestHeaders['If-None-Match']).to.be.undefined;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toBeUndefined();
-            expect(responseObject2).toEqual(dataStubs.testEntityId);
-            expect(responseObject3).toEqual(dataStubs.updatedEntity);
-            expect(responseObject4).toEqual(dataStubs.updatedEntity);
+            expect(responseObject).to.be.undefined;
+            expect(responseObject2).to.deep.equal(mocks.data.testEntityId);
+            expect(responseObject3).to.deep.equal(mocks.data.updatedEntity);
+            expect(responseObject4).to.deep.equal(mocks.data.updatedEntity);
         });
     });
 
@@ -3176,10 +3187,7 @@ describe("dynamicsWebApi.upsertRequest -", function () {
         var responseObject;
         var responseObject2;
         var responseObject3;
-        var request;
-        var request2;
-        var request3;
-        beforeAll(function (done) {
+        before(function (done) {
             dwaRequest.select = null;
             dwaRequest.returnRepresentation = false;
             dwaRequest.ifmatch = "*";
@@ -3187,24 +3195,24 @@ describe("dynamicsWebApi.upsertRequest -", function () {
             dynamicsWebApiTest.upsertRequest(dwaRequest)
                 .then(function (object) {
                     responseObject = object;
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.upsertPreventCreateResponse);
+            var response = mocks.responses.upsertPreventCreateResponse;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
 
             dwaRequest.returnRepresentation = true;
 
             dynamicsWebApiTest.upsertRequest(dwaRequest)
                 .then(function (object) {
                     responseObject2 = object;
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject2 = object;
                 });
 
-            request2 = jasmine.Ajax.requests.mostRecent();
-            request2.respondWith(responseStubs.createReturnRepresentation);
+            var response2 = mocks.responses.createReturnRepresentation;
+            this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
 
             dynamicsWebApiTest.upsertRequest(dwaRequest)
                 .then(function (object) {
@@ -3215,50 +3223,50 @@ describe("dynamicsWebApi.upsertRequest -", function () {
                     done();
                 });
 
-            request3 = jasmine.Ajax.requests.mostRecent();
-            request3.respondWith(responseStubs.upsertPreventUpdateResponse);
+            var response3 = mocks.responses.upsertPreventUpdateResponse;
+            this.requests[2].respond(response3.status, response3.responseHeaders, response3.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl);
-            expect(request2.url).toBe(responseStubs.testEntityUrl);
-            expect(request3.url).toBe(responseStubs.testEntityUrl);
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl);
+            expect(this.requests[1].url).to.equal(mocks.responses.testEntityUrl);
+            expect(this.requests[2].url).to.equal(mocks.responses.testEntityUrl);
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('PATCH');
-            expect(request2.method).toBe('PATCH');
-            expect(request3.method).toBe('PATCH');
+            expect(this.requests[0].method).to.equal('PATCH');
+            expect(this.requests[1].method).to.equal('PATCH');
+            expect(this.requests[2].method).to.equal('PATCH');
         });
 
         it("sends the right data", function () {
-            expect(request.data()).toEqual(dataStubs.testEntity);
-            expect(request2.data()).toEqual(dataStubs.testEntity);
-            expect(request3.data()).toEqual(dataStubs.testEntity);
+            expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
+            expect(JSON.parse(this.requests[1].requestBody)).to.deep.equal(mocks.data.testEntity);
+            expect(JSON.parse(this.requests[2].requestBody)).to.deep.equal(mocks.data.testEntity);
         });
 
         it("sends the right Prefer header", function () {
-            expect(request.requestHeaders['Prefer']).toBeUndefined();
-            expect(request2.requestHeaders['Prefer']).toBe(DWA.Prefer.ReturnRepresentation);
-            expect(request3.requestHeaders['Prefer']).toBe(DWA.Prefer.ReturnRepresentation);
+            expect(this.requests[0].requestHeaders['Prefer']).to.be.undefined;
+            expect(this.requests[1].requestHeaders['Prefer']).to.equal(DWA.Prefer.ReturnRepresentation);
+            expect(this.requests[2].requestHeaders['Prefer']).to.equal(DWA.Prefer.ReturnRepresentation);
         });
 
         it("sends the correct If-Match header", function () {
-            expect(request.requestHeaders['If-Match']).toBe("*");
-            expect(request2.requestHeaders['If-Match']).toBe("*");
-            expect(request3.requestHeaders['If-Match']).toBe("*");
+            expect(this.requests[0].requestHeaders['If-Match']).to.equal("*");
+            expect(this.requests[1].requestHeaders['If-Match']).to.equal("*");
+            expect(this.requests[2].requestHeaders['If-Match']).to.equal("*");
         });
 
         it("does not have If-None-Match header", function () {
-            expect(request.requestHeaders['If-None-Match']).toBeUndefined();
-            expect(request2.requestHeaders['If-None-Match']).toBeUndefined();
-            expect(request3.requestHeaders['If-None-Match']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['If-None-Match']).to.be.undefined;
+            expect(this.requests[1].requestHeaders['If-None-Match']).to.be.undefined;
+            expect(this.requests[2].requestHeaders['If-None-Match']).to.be.undefined;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toBeUndefined();
-            expect(responseObject2).toEqual(dataStubs.testEntity);
-            expect(responseObject3.status).toBe(responseStubs.upsertPreventUpdateResponse.status);
+            expect(responseObject).to.be.undefined;
+            expect(responseObject2).to.deep.equal(mocks.data.testEntity);
+            expect(responseObject3.status).to.equal(mocks.responses.upsertPreventUpdateResponse.status);
         });
     });
 
@@ -3266,10 +3274,7 @@ describe("dynamicsWebApi.upsertRequest -", function () {
         var responseObject;
         var responseObject2;
         var responseObject3;
-        var request;
-        var request2;
-        var request3;
-        beforeAll(function (done) {
+        before(function (done) {
             dwaRequest.select = null;
             dwaRequest.returnRepresentation = false;
             dwaRequest.ifmatch = null;
@@ -3278,12 +3283,12 @@ describe("dynamicsWebApi.upsertRequest -", function () {
             dynamicsWebApiTest.upsertRequest(dwaRequest)
                 .then(function (object) {
                     responseObject = object;
-                }).catch(function(object){
+                }).catch(function (object) {
                     responseObject = object;
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.upsertPreventUpdateResponse);
+            var response = mocks.responses.upsertPreventUpdateResponse;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
 
             dwaRequest.returnRepresentation = true;
 
@@ -3294,8 +3299,8 @@ describe("dynamicsWebApi.upsertRequest -", function () {
                     responseObject2 = object;
                 });
 
-            request2 = jasmine.Ajax.requests.mostRecent();
-            request2.respondWith(responseStubs.createReturnRepresentation);
+            var response2 = mocks.responses.createReturnRepresentation;
+            this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
 
             dynamicsWebApiTest.upsertRequest(dwaRequest)
                 .then(function (object) {
@@ -3306,73 +3311,77 @@ describe("dynamicsWebApi.upsertRequest -", function () {
                     done();
                 });
 
-            request3 = jasmine.Ajax.requests.mostRecent();
-            request3.respondWith(responseStubs.upsertPreventCreateResponse);
+            var response3 = mocks.responses.upsertPreventCreateResponse;
+            this.requests[2].respond(response3.status, response3.responseHeaders, response3.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl);
-            expect(request2.url).toBe(responseStubs.testEntityUrl);
-            expect(request3.url).toBe(responseStubs.testEntityUrl);
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl);
+            expect(this.requests[1].url).to.equal(mocks.responses.testEntityUrl);
+            expect(this.requests[2].url).to.equal(mocks.responses.testEntityUrl);
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('PATCH');
-            expect(request2.method).toBe('PATCH');
-            expect(request3.method).toBe('PATCH');
+            expect(this.requests[0].method).to.equal('PATCH');
+            expect(this.requests[1].method).to.equal('PATCH');
+            expect(this.requests[2].method).to.equal('PATCH');
         });
 
         it("sends the right data", function () {
-            expect(request.data()).toEqual(dataStubs.testEntity);
-            expect(request2.data()).toEqual(dataStubs.testEntity);
-            expect(request3.data()).toEqual(dataStubs.testEntity);
+            expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
+            expect(JSON.parse(this.requests[1].requestBody)).to.deep.equal(mocks.data.testEntity);
+            expect(JSON.parse(this.requests[2].requestBody)).to.deep.equal(mocks.data.testEntity);
         });
 
         it("sends the right Prefer header", function () {
-            expect(request.requestHeaders['Prefer']).toBeUndefined();
-            expect(request2.requestHeaders['Prefer']).toBe(DWA.Prefer.ReturnRepresentation);
-            expect(request3.requestHeaders['Prefer']).toBe(DWA.Prefer.ReturnRepresentation);
+            expect(this.requests[0].requestHeaders['Prefer']).to.be.undefined;
+            expect(this.requests[1].requestHeaders['Prefer']).to.equal(DWA.Prefer.ReturnRepresentation);
+            expect(this.requests[2].requestHeaders['Prefer']).to.equal(DWA.Prefer.ReturnRepresentation);
         });
 
         it("does not have If-Match header", function () {
-            expect(request.requestHeaders['If-Match']).toBeUndefined();
-            expect(request2.requestHeaders['If-Match']).toBeUndefined();
-            expect(request3.requestHeaders['If-Match']).toBeUndefined();;
+            expect(this.requests[0].requestHeaders['If-Match']).to.be.undefined;
+            expect(this.requests[1].requestHeaders['If-Match']).to.be.undefined;
+            expect(this.requests[2].requestHeaders['If-Match']).to.be.undefined;;
         });
 
         it("sends the correct If-None-Match header", function () {
-            expect(request.requestHeaders['If-None-Match']).toBe("*");
-            expect(request2.requestHeaders['If-None-Match']).toBe("*");
-            expect(request3.requestHeaders['If-None-Match']).toBe("*");
+            expect(this.requests[0].requestHeaders['If-None-Match']).to.equal("*");
+            expect(this.requests[1].requestHeaders['If-None-Match']).to.equal("*");
+            expect(this.requests[2].requestHeaders['If-None-Match']).to.equal("*");
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toBeUndefined();
-            expect(responseObject2).toEqual(dataStubs.testEntity);
-            expect(responseObject3.status).toBe(responseStubs.upsertPreventCreateResponse.status);
+            expect(responseObject).to.be.undefined;
+            expect(responseObject2).to.deep.equal(mocks.data.testEntity);
+            expect(responseObject3.status).to.equal(mocks.responses.upsertPreventCreateResponse.status);
         });
     });
 });
 
 describe("dynamicsWebApi.retrieveRequest -", function () {
 
-    beforeAll(function () {
-        jasmine.Ajax.install();
+    before(function () {
+        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+        var requests = this.requests = [];
+
+        global.XMLHttpRequest.onCreate = function (xhr) {
+            requests.push(xhr);
+        };
     });
 
-    afterAll(function () {
-        jasmine.Ajax.uninstall();
+    after(function () {
+        global.XMLHttpRequest.restore();
     });
 
     describe("basic", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
+        before(function (done) {
             var dwaRequest = {
-                id: dataStubs.testEntityId,
+                id: mocks.data.testEntityId,
                 collection: "tests",
                 expand: [{ property: "prop" }],
-                impersonate: dataStubs.testEntityId2,
+                impersonate: mocks.data.testEntityId2,
                 ifmatch: "match"
             };
 
@@ -3385,44 +3394,43 @@ describe("dynamicsWebApi.retrieveRequest -", function () {
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.response200);
+            var response = mocks.responses.response200;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl + "?$expand=prop");
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl + "?$expand=prop");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('GET');
+            expect(this.requests[0].method).to.equal('GET');
         });
 
         it("does not send data", function () {
-            expect(request.data()).toEqual({});
+            expect(JSON.parse(this.requests[0].requestBody)).to.be.null;
         });
 
         it("sends the correct If-Match header", function () {
-            expect(request.requestHeaders['If-Match']).toBe("match");
+            expect(this.requests[0].requestHeaders['If-Match']).to.equal("match");
         });
 
         it("sends the correct MSCRMCallerID header", function () {
-            expect(request.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId2);
+            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.equal(mocks.data.testEntityId2);
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(dataStubs.testEntity);
+            expect(responseObject).to.deep.equal(mocks.data.testEntity);
         });
     });
 
     describe("retrieve reference", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
+        before(function (done) {
             var dwaRequest = {
-                id: dataStubs.testEntityId,
+                id: mocks.data.testEntityId,
                 collection: "tests",
                 select: ["ownerid/$ref"],
-                impersonate: dataStubs.testEntityId2,
+                impersonate: mocks.data.testEntityId2,
                 ifmatch: "match"
             };
 
@@ -3435,50 +3443,54 @@ describe("dynamicsWebApi.retrieveRequest -", function () {
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.retrieveReferenceResponse);
+            var response = mocks.responses.retrieveReferenceResponse;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl + "/ownerid/$ref");
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl + "/ownerid/$ref");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('GET');
+            expect(this.requests[0].method).to.equal('GET');
         });
 
         it("does not send data", function () {
-            expect(request.data()).toEqual({});
+            expect(JSON.parse(this.requests[0].requestBody)).to.be.null;
         });
 
         it("sends the correct If-Match header", function () {
-            expect(request.requestHeaders['If-Match']).toBe("match");
+            expect(this.requests[0].requestHeaders['If-Match']).to.equal("match");
         });
 
         it("sends the correct MSCRMCallerID header", function () {
-            expect(request.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId2);
+            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.equal(mocks.data.testEntityId2);
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(dataStubs.referenceResponseConverted);
+            expect(responseObject).to.deep.equal(mocks.data.referenceResponseConverted);
         });
     });
 });
 
 describe("dynamicsWebApi.retrieveMultiple -", function () {
 
-    beforeAll(function () {
-        jasmine.Ajax.install();
+    before(function () {
+        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+        var requests = this.requests = [];
+
+        global.XMLHttpRequest.onCreate = function (xhr) {
+            requests.push(xhr);
+        };
     });
 
-    afterAll(function () {
-        jasmine.Ajax.uninstall();
+    after(function () {
+        global.XMLHttpRequest.restore();
     });
 
     describe("basic", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
+        before(function (done) {
             dynamicsWebApiTest.retrieveMultiple("tests")
                 .then(function (object) {
                     responseObject = object;
@@ -3488,41 +3500,39 @@ describe("dynamicsWebApi.retrieveMultiple -", function () {
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.multipleResponse);
+            var response = mocks.responses.multipleResponse;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.collectionUrl);
+            expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl);
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('GET');
+            expect(this.requests[0].method).to.equal('GET');
         });
 
         it("does not send data", function () {
-            expect(request.data()).toEqual({});
+            expect(JSON.parse(this.requests[0].requestBody)).to.be.null;
         });
 
         it("does not send If-Match header", function () {
-            expect(request.requestHeaders['If-Match']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['If-Match']).to.be.undefined;
         });
 
         it("does not send MSCRMCallerID header", function () {
-            expect(request.requestHeaders['MSCRMCallerID']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.be.undefined;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(responseStubs.multiple());
+            expect(responseObject).to.deep.equal(mocks.responses.multiple());
         });
     });
 
     describe("select", function () {
         var responseObject;
         var responseObject2;
-        var request;
-        var request2;
-        beforeAll(function (done) {
+        before(function (done) {
             dynamicsWebApiTest.retrieveMultiple("tests", ["fullname"])
                 .then(function (object) {
                     responseObject = object;
@@ -3530,8 +3540,8 @@ describe("dynamicsWebApi.retrieveMultiple -", function () {
                     responseObject = object;
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.multipleResponse);
+            var response = mocks.responses.multipleResponse;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
 
             dynamicsWebApiTest.retrieveMultiple("tests", ["fullname", "subject"])
                 .then(function (object) {
@@ -3542,47 +3552,45 @@ describe("dynamicsWebApi.retrieveMultiple -", function () {
                     done();
                 });
 
-            request2 = jasmine.Ajax.requests.mostRecent();
-            request2.respondWith(responseStubs.multipleResponse);
+            var response2 = mocks.responses.multipleResponse;
+            this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.collectionUrl + "?$select=fullname");
-            expect(request2.url).toBe(responseStubs.collectionUrl + "?$select=fullname,subject");
+            expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl + "?$select=fullname");
+            expect(this.requests[1].url).to.equal(mocks.responses.collectionUrl + "?$select=fullname,subject");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('GET');
-            expect(request2.method).toBe('GET');
+            expect(this.requests[0].method).to.equal('GET');
+            expect(this.requests[1].method).to.equal('GET');
         });
 
         it("does not send data", function () {
-            expect(request.data()).toEqual({});
-            expect(request2.data()).toEqual({});
+            expect(JSON.parse(this.requests[0].requestBody)).to.be.null;
+            expect(JSON.parse(this.requests[1].requestBody)).to.be.null;
         });
 
         it("does not send If-Match header", function () {
-            expect(request.requestHeaders['If-Match']).toBeUndefined();
-            expect(request2.requestHeaders['If-Match']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['If-Match']).to.be.undefined;
+            expect(this.requests[1].requestHeaders['If-Match']).to.be.undefined;
         });
 
         it("does not send MSCRMCallerID header", function () {
-            expect(request.requestHeaders['MSCRMCallerID']).toBeUndefined();
-            expect(request2.requestHeaders['MSCRMCallerID']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.be.undefined;
+            expect(this.requests[1].requestHeaders['MSCRMCallerID']).to.be.undefined;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(responseStubs.multiple());
-            expect(responseObject2).toEqual(responseStubs.multiple());
+            expect(responseObject).to.deep.equal(mocks.responses.multiple());
+            expect(responseObject2).to.deep.equal(mocks.responses.multiple());
         });
     });
 
     describe("filter", function () {
         var responseObject;
         var responseObject2;
-        var request;
-        var request2;
-        beforeAll(function (done) {
+        before(function (done) {
             dynamicsWebApiTest.retrieveMultiple("tests", null, "name eq 'name'")
                 .then(function (object) {
                     responseObject = object;
@@ -3590,8 +3598,8 @@ describe("dynamicsWebApi.retrieveMultiple -", function () {
                     responseObject = object;
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.multipleResponse);
+            var response = mocks.responses.multipleResponse;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
 
             dynamicsWebApiTest.retrieveMultiple("tests", ["fullname"], "name eq 'name'")
                 .then(function (object) {
@@ -3602,47 +3610,45 @@ describe("dynamicsWebApi.retrieveMultiple -", function () {
                     done();
                 });
 
-            request2 = jasmine.Ajax.requests.mostRecent();
-            request2.respondWith(responseStubs.multipleResponse);
+            var response2 = mocks.responses.multipleResponse;
+            this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.collectionUrl + "?$filter=name%20eq%20'name'");
-            expect(request2.url).toBe(responseStubs.collectionUrl + "?$select=fullname&$filter=name%20eq%20'name'");
+            expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl + "?$filter=name%20eq%20'name'");
+            expect(this.requests[1].url).to.equal(mocks.responses.collectionUrl + "?$select=fullname&$filter=name%20eq%20'name'");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('GET');
-            expect(request2.method).toBe('GET');
+            expect(this.requests[0].method).to.equal('GET');
+            expect(this.requests[1].method).to.equal('GET');
         });
 
         it("does not send data", function () {
-            expect(request.data()).toEqual({});
-            expect(request2.data()).toEqual({});
+            expect(JSON.parse(this.requests[0].requestBody)).to.be.null;
+            expect(JSON.parse(this.requests[1].requestBody)).to.be.null;
         });
 
         it("does not send If-Match header", function () {
-            expect(request.requestHeaders['If-Match']).toBeUndefined();
-            expect(request2.requestHeaders['If-Match']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['If-Match']).to.be.undefined;
+            expect(this.requests[1].requestHeaders['If-Match']).to.be.undefined;
         });
 
         it("does not send MSCRMCallerID header", function () {
-            expect(request.requestHeaders['MSCRMCallerID']).toBeUndefined();
-            expect(request2.requestHeaders['MSCRMCallerID']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.be.undefined;
+            expect(this.requests[1].requestHeaders['MSCRMCallerID']).to.be.undefined;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(responseStubs.multiple());
-            expect(responseObject2).toEqual(responseStubs.multiple());
+            expect(responseObject).to.deep.equal(mocks.responses.multiple());
+            expect(responseObject2).to.deep.equal(mocks.responses.multiple());
         });
     });
 
     describe("next page link", function () {
         var responseObject;
         var responseObject2;
-        var request;
-        var request2;
-        beforeAll(function (done) {
+        before(function (done) {
             dynamicsWebApiTest.retrieveMultiple("tests")
                 .then(function (object) {
                     responseObject = object;
@@ -3650,10 +3656,10 @@ describe("dynamicsWebApi.retrieveMultiple -", function () {
                     responseObject = object;
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.multipleWithLinkResponse);
+            var response = mocks.responses.multipleWithLinkResponse;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
 
-            dynamicsWebApiTest.retrieveMultiple(null, null, null, responseStubs.multipleWithLink().oDataNextLink)
+            dynamicsWebApiTest.retrieveMultiple(null, null, null, mocks.responses.multipleWithLink().oDataNextLink)
                 .then(function (object) {
                     responseObject2 = object;
                     done();
@@ -3662,38 +3668,38 @@ describe("dynamicsWebApi.retrieveMultiple -", function () {
                     done();
                 });
 
-            request2 = jasmine.Ajax.requests.mostRecent();
-            request2.respondWith(responseStubs.multipleResponse);
+            var response2 = mocks.responses.multipleResponse;
+            this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.collectionUrl);
-            expect(request2.url).toBe(responseStubs.multipleWithLink().oDataNextLink);
+            expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl);
+            expect(this.requests[1].url).to.equal(mocks.responses.multipleWithLink().oDataNextLink);
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('GET');
-            expect(request2.method).toBe('GET');
+            expect(this.requests[0].method).to.equal('GET');
+            expect(this.requests[1].method).to.equal('GET');
         });
 
         it("does not send data", function () {
-            expect(request.data()).toEqual({});
-            expect(request2.data()).toEqual({});
+            expect(JSON.parse(this.requests[0].requestBody)).to.be.null;
+            expect(JSON.parse(this.requests[1].requestBody)).to.be.null;
         });
 
         it("does not send If-Match header", function () {
-            expect(request.requestHeaders['If-Match']).toBeUndefined();
-            expect(request2.requestHeaders['If-Match']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['If-Match']).to.be.undefined;
+            expect(this.requests[1].requestHeaders['If-Match']).to.be.undefined;
         });
 
         it("does not send MSCRMCallerID header", function () {
-            expect(request.requestHeaders['MSCRMCallerID']).toBeUndefined();
-            expect(request2.requestHeaders['MSCRMCallerID']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.be.undefined;
+            expect(this.requests[1].requestHeaders['MSCRMCallerID']).to.be.undefined;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(responseStubs.multipleWithLink());
-            expect(responseObject2).toEqual(responseStubs.multiple());
+            expect(responseObject).to.deep.equal(mocks.responses.multipleWithLink());
+            expect(responseObject2).to.deep.equal(mocks.responses.multiple());
         });
     });
 });
@@ -3705,20 +3711,23 @@ describe("dynamicsWebApi.retrieveMultipleRequest -", function () {
         includeAnnotations: DWA.Prefer.Annotations.FormattedValue
     };
 
-    beforeAll(function () {
-        jasmine.Ajax.install();
+    before(function () {
+        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+        var requests = this.requests = [];
+
+        global.XMLHttpRequest.onCreate = function (xhr) {
+            requests.push(xhr);
+        };
     });
 
-    afterAll(function () {
-        jasmine.Ajax.uninstall();
+    after(function () {
+        global.XMLHttpRequest.restore();
     });
 
     describe("basic", function () {
         var responseObject;
         var responseObject2;
-        var request;
-        var request2;
-        beforeAll(function (done) {
+        before(function (done) {
             dynamicsWebApiTest.retrieveMultipleRequest(dwaRequest)
                 .then(function (object) {
                     responseObject = object;
@@ -3726,8 +3735,8 @@ describe("dynamicsWebApi.retrieveMultipleRequest -", function () {
                     responseObject = object;
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.multipleResponse);
+            var response = mocks.responses.multipleResponse;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
 
             dwaRequest.count = true;
 
@@ -3740,54 +3749,52 @@ describe("dynamicsWebApi.retrieveMultipleRequest -", function () {
                     done();
                 });
 
-            request2 = jasmine.Ajax.requests.mostRecent();
-            request2.respondWith(responseStubs.multipleWithCountResponse);
+            var response2 = mocks.responses.multipleWithCountResponse;
+            this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.collectionUrl + "?$select=name");
-            expect(request2.url).toBe(responseStubs.collectionUrl + "?$select=name&$count=true");
+            expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl + "?$select=name");
+            expect(this.requests[1].url).to.equal(mocks.responses.collectionUrl + "?$select=name&$count=true");
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('GET');
-            expect(request2.method).toBe('GET');
+            expect(this.requests[0].method).to.equal('GET');
+            expect(this.requests[1].method).to.equal('GET');
         });
 
         it("does not send data", function () {
-            expect(request.data()).toEqual({});
-            expect(request2.data()).toEqual({});
+            expect(JSON.parse(this.requests[0].requestBody)).to.be.null;
+            expect(JSON.parse(this.requests[1].requestBody)).to.be.null;
         });
 
         it("does not send If-Match header", function () {
-            expect(request.requestHeaders['If-Match']).toBeUndefined();
-            expect(request2.requestHeaders['If-Match']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['If-Match']).to.be.undefined;
+            expect(this.requests[1].requestHeaders['If-Match']).to.be.undefined;
         });
 
         it("sends the correct Prefer header", function () {
-            expect(request.requestHeaders['Prefer']).toBe('odata.include-annotations="' + DWA.Prefer.Annotations.FormattedValue + '"');
-            expect(request2.requestHeaders['Prefer']).toBe('odata.include-annotations="' + DWA.Prefer.Annotations.FormattedValue + '"');
+            expect(this.requests[0].requestHeaders['Prefer']).to.equal('odata.include-annotations="' + DWA.Prefer.Annotations.FormattedValue + '"');
+            expect(this.requests[1].requestHeaders['Prefer']).to.equal('odata.include-annotations="' + DWA.Prefer.Annotations.FormattedValue + '"');
         });
 
         it("does not send MSCRMCallerID header", function () {
-            expect(request.requestHeaders['MSCRMCallerID']).toBeUndefined();
-            expect(request2.requestHeaders['MSCRMCallerID']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.be.undefined;
+            expect(this.requests[1].requestHeaders['MSCRMCallerID']).to.be.undefined;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(responseStubs.multiple());
-            expect(responseObject2).toEqual(responseStubs.multipleWithCount());
+            expect(responseObject).to.deep.equal(mocks.responses.multiple());
+            expect(responseObject2).to.deep.equal(mocks.responses.multipleWithCount());
         });
     });
 
     describe("next page link", function () {
         var responseObject;
         var responseObject2;
-        var request;
-        var request2;
-        beforeAll(function (done) {
+        before(function (done) {
             dwaRequest.count = false;
-            dwaRequest.impersonate = dataStubs.testEntityId2;
+            dwaRequest.impersonate = mocks.data.testEntityId2;
 
             dynamicsWebApiTest.retrieveMultipleRequest(dwaRequest)
                 .then(function (object) {
@@ -3796,10 +3803,10 @@ describe("dynamicsWebApi.retrieveMultipleRequest -", function () {
                     responseObject = object;
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.multipleWithLinkResponse);
+            var response = mocks.responses.multipleWithLinkResponse;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
 
-            dynamicsWebApiTest.retrieveMultipleRequest(dwaRequest, responseStubs.multipleWithLink().oDataNextLink)
+            dynamicsWebApiTest.retrieveMultipleRequest(dwaRequest, mocks.responses.multipleWithLink().oDataNextLink)
                 .then(function (object) {
                     responseObject2 = object;
                     done();
@@ -3808,38 +3815,38 @@ describe("dynamicsWebApi.retrieveMultipleRequest -", function () {
                     done();
                 });
 
-            request2 = jasmine.Ajax.requests.mostRecent();
-            request2.respondWith(responseStubs.multipleResponse);
+            var response2 = mocks.responses.multipleResponse;
+            this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.collectionUrl + "?$select=name");
-            expect(request2.url).toBe(responseStubs.multipleWithLink().oDataNextLink);
+            expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl + "?$select=name");
+            expect(this.requests[1].url).to.equal(mocks.responses.multipleWithLink().oDataNextLink);
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('GET');
-            expect(request2.method).toBe('GET');
+            expect(this.requests[0].method).to.equal('GET');
+            expect(this.requests[1].method).to.equal('GET');
         });
 
         it("does not send data", function () {
-            expect(request.data()).toEqual({});
-            expect(request2.data()).toEqual({});
+            expect(JSON.parse(this.requests[0].requestBody)).to.be.null;
+            expect(JSON.parse(this.requests[1].requestBody)).to.be.null;
         });
 
         it("sends the correct Prefer header", function () {
-            expect(request.requestHeaders['Prefer']).toBe('odata.include-annotations="' + DWA.Prefer.Annotations.FormattedValue + '"');
-            expect(request2.requestHeaders['Prefer']).toBe('odata.include-annotations="' + DWA.Prefer.Annotations.FormattedValue + '"');
+            expect(this.requests[0].requestHeaders['Prefer']).to.equal('odata.include-annotations="' + DWA.Prefer.Annotations.FormattedValue + '"');
+            expect(this.requests[1].requestHeaders['Prefer']).to.equal('odata.include-annotations="' + DWA.Prefer.Annotations.FormattedValue + '"');
         });
 
         it("sends the correct MSCRMCallerID header", function () {
-            expect(request.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId2);
-            expect(request2.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId2);
+            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.equal(mocks.data.testEntityId2);
+            expect(this.requests[1].requestHeaders['MSCRMCallerID']).to.equal(mocks.data.testEntityId2);
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toEqual(responseStubs.multipleWithLink());
-            expect(responseObject2).toEqual(responseStubs.multiple());
+            expect(responseObject).to.deep.equal(mocks.responses.multipleWithLink());
+            expect(responseObject2).to.deep.equal(mocks.responses.multiple());
         });
     });
 });
@@ -3848,22 +3855,26 @@ describe("dynamicsWebApi.deleteRequest -", function () {
 
     var dwaRequest = {
         collection: "tests",
-        id: dataStubs.testEntityId,
-        impersonate: dataStubs.testEntityId2
+        id: mocks.data.testEntityId,
+        impersonate: mocks.data.testEntityId2
     };
 
-    beforeAll(function () {
-        jasmine.Ajax.install();
+    before(function () {
+        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+        var requests = this.requests = [];
+
+        global.XMLHttpRequest.onCreate = function (xhr) {
+            requests.push(xhr);
+        };
     });
 
-    afterAll(function () {
-        jasmine.Ajax.uninstall();
+    after(function () {
+        global.XMLHttpRequest.restore();
     });
 
     describe("basic", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
+        before(function (done) {
             dynamicsWebApiTest.deleteRequest(dwaRequest)
                 .then(function (object) {
                     responseObject = object;
@@ -3873,32 +3884,32 @@ describe("dynamicsWebApi.deleteRequest -", function () {
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.basicEmptyResponseSuccess);
+            var response = mocks.responses.basicEmptyResponseSuccess;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl);
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl);
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('DELETE');
+            expect(this.requests[0].method).to.equal('DELETE');
         });
 
         it("does not send data", function () {
-            expect(request.data()).toEqual({});
+            expect(this.requests[0].requestBody).to.be.undefined;
         });
 
         it("sends the correct MSCRMCallerID header", function () {
-            expect(request.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId2);
+            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.equal(mocks.data.testEntityId2);
         });
 
         it("does not send If-Match header", function () {
-            expect(request.requestHeaders['If-Match']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['If-Match']).to.be.undefined;
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toBe(true);
+            expect(responseObject).to.equal(true);
         });
     });
 
@@ -3906,10 +3917,7 @@ describe("dynamicsWebApi.deleteRequest -", function () {
         var responseObject;
         var responseObject2;
         var responseObject3;
-        var request;
-        var request2;
-        var request3;
-        beforeAll(function (done) {
+        before(function (done) {
             dwaRequest.ifmatch = "match";
             dynamicsWebApiTest.deleteRequest(dwaRequest)
                 .then(function (object) {
@@ -3918,8 +3926,8 @@ describe("dynamicsWebApi.deleteRequest -", function () {
                     responseObject = object;
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.basicEmptyResponseSuccess);
+            var response = mocks.responses.basicEmptyResponseSuccess;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
 
             dynamicsWebApiTest.deleteRequest(dwaRequest)
                 .then(function (object) {
@@ -3928,8 +3936,8 @@ describe("dynamicsWebApi.deleteRequest -", function () {
                     responseObject2 = object;
                 });
 
-            request2 = jasmine.Ajax.requests.mostRecent();
-            request2.respondWith(responseStubs.upsertPreventUpdateResponse);
+            var response2 = mocks.responses.upsertPreventUpdateResponse;
+            this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
 
             dynamicsWebApiTest.deleteRequest(dwaRequest)
                 .then(function (object) {
@@ -3940,44 +3948,44 @@ describe("dynamicsWebApi.deleteRequest -", function () {
                     done();
                 });
 
-            request3 = jasmine.Ajax.requests.mostRecent();
-            request3.respondWith(responseStubs.upsertPreventCreateResponse);
+            var response3 = mocks.responses.upsertPreventCreateResponse;
+            this.requests[2].respond(response3.status, response3.responseHeaders, response3.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.testEntityUrl);
-            expect(request2.url).toBe(responseStubs.testEntityUrl);
-            expect(request3.url).toBe(responseStubs.testEntityUrl);
+            expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl);
+            expect(this.requests[1].url).to.equal(mocks.responses.testEntityUrl);
+            expect(this.requests[2].url).to.equal(mocks.responses.testEntityUrl);
         });
 
         it("uses the correct method", function () {
-            expect(request.method).toBe('DELETE');
-            expect(request2.method).toBe('DELETE');
-            expect(request3.method).toBe('DELETE');
+            expect(this.requests[0].method).to.equal('DELETE');
+            expect(this.requests[1].method).to.equal('DELETE');
+            expect(this.requests[2].method).to.equal('DELETE');
         });
 
         it("does not send data", function () {
-            expect(request.data()).toEqual({});
-            expect(request2.data()).toEqual({});
-            expect(request3.data()).toEqual({});
+            expect(this.requests[0].requestBody).to.be.undefined;
+            expect(this.requests[1].requestBody).to.be.undefined;
+            expect(this.requests[2].requestBody).to.be.undefined;
         });
 
         it("sends the correct MSCRMCallerID header", function () {
-            expect(request.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId2);
-            expect(request2.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId2);
-            expect(request3.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId2);
+            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.equal(mocks.data.testEntityId2);
+            expect(this.requests[1].requestHeaders['MSCRMCallerID']).to.equal(mocks.data.testEntityId2);
+            expect(this.requests[2].requestHeaders['MSCRMCallerID']).to.equal(mocks.data.testEntityId2);
         });
 
         it("sends the correct If-Match header", function () {
-            expect(request.requestHeaders['If-Match']).toBe("match");
-            expect(request2.requestHeaders['If-Match']).toBe("match");
-            expect(request3.requestHeaders['If-Match']).toBe("match");
+            expect(this.requests[0].requestHeaders['If-Match']).to.equal("match");
+            expect(this.requests[1].requestHeaders['If-Match']).to.equal("match");
+            expect(this.requests[2].requestHeaders['If-Match']).to.equal("match");
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).toBe(true);
-            expect(responseObject2).toBe(false);
-            expect(responseObject3.status).toBe(404);
+            expect(responseObject).to.equal(true);
+            expect(responseObject2).to.equal(false);
+            expect(responseObject3.status).to.equal(404);
         });
     });
 });
@@ -3985,19 +3993,23 @@ describe("dynamicsWebApi.deleteRequest -", function () {
 describe("dynamicsWebApi.constructor -", function () {
     var dynamicsWebApi80 = new DynamicsWebApi();
 
-    beforeAll(function () {
-        jasmine.Ajax.install();
+    before(function () {
+        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+        var requests = this.requests = [];
+
+        global.XMLHttpRequest.onCreate = function (xhr) {
+            requests.push(xhr);
+        };
     });
 
-    afterAll(function () {
-        jasmine.Ajax.uninstall();
+    after(function () {
+        global.XMLHttpRequest.restore();
     });
 
     describe("webApiVersion and impersonate", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
-            dynamicsWebApi80.create(dataStubs.testEntity, "tests")
+        before(function (done) {
+            dynamicsWebApi80.create(mocks.data.testEntity, "tests")
                 .then(function (object) {
                     responseObject = object;
                     done();
@@ -4006,37 +4018,41 @@ describe("dynamicsWebApi.constructor -", function () {
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.createReturnId);
+            var response = mocks.responses.createReturnId;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(webApiUrl80 + "tests");
+            expect(this.requests[0].url).to.equal(mocks.webApiUrl80 + "tests");
         });
 
         it("does not send MSCRMCallerID header", function () {
-            expect(request.requestHeaders['MSCRMCallerID']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.be.undefined;
         });
     });
 });
 
 describe("dynamicsWebApi.setConfig -", function () {
     var dynamicsWebApi81 = new DynamicsWebApi();
-    dynamicsWebApi81.setConfig({ webApiVersion: "8.1", impersonate: dataStubs.testEntityId2 });
+    dynamicsWebApi81.setConfig({ webApiVersion: "8.1", impersonate: mocks.data.testEntityId2 });
 
-    beforeAll(function () {
-        jasmine.Ajax.install();
+    before(function () {
+        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+        var requests = this.requests = [];
+
+        global.XMLHttpRequest.onCreate = function (xhr) {
+            requests.push(xhr);
+        };
     });
 
-    afterAll(function () {
-        jasmine.Ajax.uninstall();
+    after(function () {
+        global.XMLHttpRequest.restore();
     });
 
     describe("webApiVersion and impersonate", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
-            dynamicsWebApi81.create(dataStubs.testEntity, "tests")
+        before(function (done) {
+            dynamicsWebApi81.create(mocks.data.testEntity, "tests")
                 .then(function (object) {
                     responseObject = object;
                     done();
@@ -4045,24 +4061,23 @@ describe("dynamicsWebApi.setConfig -", function () {
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.createReturnId);
+            var response = mocks.responses.createReturnId;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(webApiUrl81 + "tests");
+            expect(this.requests[0].url).to.equal(mocks.webApiUrl81 + "tests");
         });
 
         it("sends the correct MSCRMCallerID header", function () {
-            expect(request.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId2);
+            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.equal(mocks.data.testEntityId2);
         });
     });
 
     describe("impersonate overriden with a request.impersonate", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
-            dynamicsWebApi81.retrieveMultipleRequest({ collection: "tests", impersonate: dataStubs.testEntityId3 })
+        before(function (done) {
+            dynamicsWebApi81.retrieveMultipleRequest({ collection: "tests", impersonate: mocks.data.testEntityId3 })
                 .then(function (object) {
                     responseObject = object;
                     done();
@@ -4071,24 +4086,23 @@ describe("dynamicsWebApi.setConfig -", function () {
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.multipleResponse);
+            var response = mocks.responses.multipleResponse;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(webApiUrl81 + "tests");
+            expect(this.requests[0].url).to.equal(mocks.webApiUrl81 + "tests");
         });
 
         it("sends the correct MSCRMCallerID header", function () {
-            expect(request.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId3);
+            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.equal(mocks.data.testEntityId3);
         });
     });
 
-    describe("webApiVersion is overriden by webApiUrl", function () {
+    describe("webApiVersion is overriden by mocks.webApiUrl", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
-            dynamicsWebApi81.setConfig({ webApiUrl: webApiUrl });
+        before(function (done) {
+            dynamicsWebApi81.setConfig({ webApiUrl: mocks.webApiUrl });
             dynamicsWebApi81.retrieveMultipleRequest({ collection: "tests" })
                 .then(function (object) {
                     responseObject = object;
@@ -4098,38 +4112,42 @@ describe("dynamicsWebApi.setConfig -", function () {
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.multipleResponse);
+            var response = mocks.responses.multipleResponse;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.collectionUrl);
+            expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl);
         });
 
         it("sends the correct MSCRMCallerID header", function () {
-            expect(request.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId2);
+            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.equal(mocks.data.testEntityId2);
         });
     });
 });
 
 describe("dynamicsWebApi.initializeInstance -", function () {
     var dynamicsWebApi81 = new DynamicsWebApi();
-    dynamicsWebApi81.setConfig({ webApiVersion: "8.1", impersonate: dataStubs.testEntityId2 });
+    dynamicsWebApi81.setConfig({ webApiVersion: "8.1", impersonate: mocks.data.testEntityId2 });
     dynamicsWebApiCopy = dynamicsWebApi81.initializeInstance();
 
-    beforeAll(function () {
-        jasmine.Ajax.install();
+    before(function () {
+        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+        var requests = this.requests = [];
+
+        global.XMLHttpRequest.onCreate = function (xhr) {
+            requests.push(xhr);
+        };
     });
 
-    afterAll(function () {
-        jasmine.Ajax.uninstall();
+    after(function () {
+        global.XMLHttpRequest.restore();
     });
 
     describe("current instance copied with its config", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
-            dynamicsWebApiCopy.create(dataStubs.testEntity, "tests")
+        before(function (done) {
+            dynamicsWebApiCopy.create(mocks.data.testEntity, "tests")
                 .then(function (object) {
                     responseObject = object;
                     done();
@@ -4138,23 +4156,22 @@ describe("dynamicsWebApi.initializeInstance -", function () {
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.createReturnId);
+            var response = mocks.responses.createReturnId;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(webApiUrl81 + "tests");
+            expect(this.requests[0].url).to.equal(mocks.webApiUrl81 + "tests");
         });
 
         it("sends the correct MSCRMCallerID header", function () {
-            expect(request.requestHeaders['MSCRMCallerID']).toBe(dataStubs.testEntityId2);
+            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.equal(mocks.data.testEntityId2);
         });
     });
 
     describe("config changed", function () {
         var responseObject;
-        var request;
-        beforeAll(function (done) {
+        before(function (done) {
             dynamicsWebApiCopy = dynamicsWebApi81.initializeInstance({ webApiVersion: "8.2" });
             dynamicsWebApiCopy.retrieveMultipleRequest({ collection: "tests" })
                 .then(function (object) {
@@ -4165,16 +4182,16 @@ describe("dynamicsWebApi.initializeInstance -", function () {
                     done();
                 });
 
-            request = jasmine.Ajax.requests.mostRecent();
-            request.respondWith(responseStubs.multipleResponse);
+            var response = mocks.responses.multipleResponse;
+            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(request.url).toBe(responseStubs.collectionUrl);
+            expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl);
         });
 
         it("does not send MSCRMCallerID header", function () {
-            expect(request.requestHeaders['MSCRMCallerID']).toBeUndefined();
+            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.be.undefined;
         });
     });
 });
