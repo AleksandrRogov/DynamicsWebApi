@@ -12,7 +12,7 @@ Any suggestions are welcome!
 ## Table of Contents
 
 * [Quick Start](#quick-start)
-  * [Configuration] (#configuration)
+  * [Configuration](#configuration)
     * [Configuration Object Properties](#configuration-object-properties)
   * [Intellisense](#intellisense)
 * [Request Examples](#request-examples)
