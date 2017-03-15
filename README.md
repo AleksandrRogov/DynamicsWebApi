@@ -1,11 +1,11 @@
 # DynamicsWebApi for Microsoft Dynamics CRM Web API
-DynamicsWebApi is a Microsoft Dynamics CRM Web API helper library written using JavaScript.
+DynamicsWebApi is a Microsoft Dynamics CRM Web API helper library written in JavaScript.
 It is compatible with: Dynamics 365 (online), Dynamics 365 (on-premises), Dynamics CRM 2016, Dynamics CRM Online.
 
 Stable versions are available!
 I made a decision to convert ASP.NET project to Node.js one, meanwhile __fully tested and stable browser versions__ can be found in `scripts` folder.
-* [DynamicsWebApi Promises version] (/scripts/dynamics-web-api.js)
-* [DynamicsWebApi Callbacks version] (/scripts/dynamics-web-api-callbacks.js)
+* [DynamicsWebApi Promises version](/scripts/dynamics-web-api.js)
+* [DynamicsWebApi Callbacks version](/scripts/dynamics-web-api-callbacks.js)
 
 Any suggestions are welcome!
 
@@ -13,27 +13,27 @@ Any suggestions are welcome!
 
 * [Quick Start](#quick-start)
   * [Configuration] (#configuration)
-    * [Configuration Object Properties] (#configuration-object-properties)
-  * [Intellisense] (#intellisense)
-* [Request Examples] (#request-examples)
-  * [Create a record] (#create-a-record)
-  * [Update a record] (#update-a-record)
-  * [Update a single property value] (#update-a-single-property-value)
-  * [Upsert a record] (#upsert-a-record)
-  * [Delete a record] (#delete-a-record)
-	* [Delete a single property value] (#delete-a-single-property-value)
-  * [Retrieve a record] (#retrieve-a-record)
-  * [Retrieve multiple records] (#retrieve-multiple-records)
-  * [Count] (#count)
-  * [Associate] (#associate)
-  * [Associate for a single-valued navigation property] (#associate-for-a-single-valued-navigation-property)
-  * [Disassociate] (#disassociate)
-  * [Disassociate for a single-valued navigation property] (#disassociate-for-a-single-valued-navigation-property)
-  * [Fetch XML Request] (#fetch-xml-request)
-  * [Execute Web API functions] (#execute-web-api-functions)
-  * [Execute Web API actions] (#execute-web-api-actions)
-* [JavaScript Promises] (#javascript-promises)
-* [JavaScript Callbacks] (#javascript-callbacks)
+    * [Configuration Object Properties](#configuration-object-properties)
+  * [Intellisense](#intellisense)
+* [Request Examples](#request-examples)
+  * [Create a record](#create-a-record)
+  * [Update a record](#update-a-record)
+  * [Update a single property value](#update-a-single-property-value)
+  * [Upsert a record](#upsert-a-record)
+  * [Delete a record](#delete-a-record)
+	* [Delete a single property value](#delete-a-single-property-value)
+  * [Retrieve a record](#retrieve-a-record)
+  * [Retrieve multiple records](#retrieve-multiple-records)
+  * [Count](#count)
+  * [Associate](#associate)
+  * [Associate for a single-valued navigation property](#associate-for-a-single-valued-navigation-property)
+  * [Disassociate](#disassociate)
+  * [Disassociate for a single-valued navigation property](#disassociate-for-a-single-valued-navigation-property)
+  * [Fetch XML Request](#fetch-xml-request)
+  * [Execute Web API functions](#execute-web-api-functions)
+  * [Execute Web API actions](#execute-web-api-actions)
+* [JavaScript Promises](#javascript-promises)
+* [JavaScript Callbacks](#javascript-callbacks)
 
 ## Quick Start
 In order to use a library DynamicsWebApi.js needs to be added as a Web Resource in CRM.
@@ -149,8 +149,8 @@ entity | Object | `updateRequest`, `upsertRequest` | A JavaScript object with pr
 expand | Array | `retrieveRequest`, `updateRequest`, `upsertRequest` | An array of Expand Objects (described below the table) representing the $expand OData System Query Option value to control which related records are also returned.
 filter | String | `retrieveRequest`, `retrieveMultipleRequest` | Use the $filter system query option to set criteria for which entities will be returned.
 id | String | `retrieveRequest`, `updateRequest`, `upsertRequest`, `deleteRequest` | A String representing the GUID value for the record.
-ifmatch | String | `retrieveRequest`, `updateRequest`, `upsertRequest`, `deleteRequest` | Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests. [More info] (https://msdn.microsoft.com/en-us/library/mt607711.aspx).
-ifnonematch | String | `retrieveRequest`, `upsertRequest` | Sets If-None-Match header value that enables to use conditional retrieval in applicable requests. [More info] (https://msdn.microsoft.com/en-us/library/mt607711.aspx).
+ifmatch | String | `retrieveRequest`, `updateRequest`, `upsertRequest`, `deleteRequest` | Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests. [More info](https://msdn.microsoft.com/en-us/library/mt607711.aspx).
+ifnonematch | String | `retrieveRequest`, `upsertRequest` | Sets If-None-Match header value that enables to use conditional retrieval in applicable requests. [More info](https://msdn.microsoft.com/en-us/library/mt607711.aspx).
 impersonate | String | All | A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
 includeAnnotations | String | `retrieveRequest`, `retrieveMultipleRequest` | Sets Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
 maxPageSize | Number | `retrieveMultipleRequest` | Sets the odata.maxpagesize preference value to request the number of entities returned in the response.
@@ -173,7 +173,7 @@ property | String | A name of a single-valued navigation property which needs to
 select | Array | An Array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
 top | Number | Limit the number of results returned by using the $top system query option.
 
-According to CRM developers ([here](http://stackoverflow.com/a/34742977/2042071) and [here] (https://community.dynamics.com/crm/b/joegilldynamicscrm/archive/2016/03/23/web-api-querying-with-expand) 
+According to CRM developers ([here](http://stackoverflow.com/a/34742977/2042071) and [here](https://community.dynamics.com/crm/b/joegilldynamicscrm/archive/2016/03/23/web-api-querying-with-expand) 
 $expand does not work for retrieveMultiple requests which is claimed as a bug of CRM Web API.
 As well as multi-level expands are not implemented yet. This situation may be changed with the future updates in the platform. Please look for the news!
 
@@ -412,7 +412,7 @@ dynamicsWebApi.retrieveRequest(request).then(function (record) {
 #### Retrieve a reference to related record using a single-valued navigation property
 
 It is possible to retrieve a reference to the related entity (it works both in Basic and Advanced requests): `select: ["ownerid/$ref"]`. The parameter
-must be the only one, it must be the name of a [single-valued navigation property] (https://msdn.microsoft.com/en-us/library/mt607990.aspx#Anchor_5) 
+must be the only one, it must be the name of a [single-valued navigation property](https://msdn.microsoft.com/en-us/library/mt607990.aspx#Anchor_5) 
 and it must have a suffix `/$ref` attached to it. The returned object will be `DWA.Types.ReferenceResponse`. Example:
 
 ```js
@@ -429,7 +429,7 @@ dynamicsWebApi.retrieve(leadid, "leads", ["ownerid/$ref"]).then(function (refere
 #### Retrieve a related record data using a single-valued navigation property
 
 In order to retrieve a related record by a signle-valued navigation property you need to add a prefix "/" to the __first__ element in a `select` array: 
-`select: ["/ownerid", "fullname"]`. The first element must be the name of a [single-valued navigation property] (https://msdn.microsoft.com/en-us/library/mt607990.aspx#Anchor_5) 
+`select: ["/ownerid", "fullname"]`. The first element must be the name of a [single-valued navigation property](https://msdn.microsoft.com/en-us/library/mt607990.aspx#Anchor_5) 
 and it must contain a prefix "/"; all other elements in a `select` array will represent attributes of __the related entity__. Examples:
 
 ```js
@@ -537,7 +537,9 @@ dynamicsWebApi.associate("accounts", accountId, "lead_parent_account", "leads", 
 
 ### Associate for a single-valued navigation property
 
-The name of a single-valued navigation property can be retrieved by using a `GET` request with a header `Prefer:odata.include-annotations=Microsoft.Dynamics.CRM.associatednavigationproperty`, then individual records in the response will contain the property `@Microsoft.Dynamics.CRM.associatednavigationproperty` which is the name of the needed navigation property. Usually it will be equal to a schema name of the entity attribute.
+The name of a single-valued navigation property can be retrieved by using a `GET` request with a header `Prefer:odata.include-annotations=Microsoft.Dynamics.CRM.associatednavigationproperty`, 
+then individual records in the response will contain the property `@Microsoft.Dynamics.CRM.associatednavigationproperty` which is the name of the needed navigation property. 
+Usually it will be equal to a schema name of the entity attribute.
 
 For example, there is an entity with a logical name `new_test`, it has a lookup attribute to `lead` entity called `new_parentlead` and schema name `new_ParentLead` which is needed single-valued navigation property.
 

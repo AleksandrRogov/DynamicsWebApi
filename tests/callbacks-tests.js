@@ -5,29 +5,23 @@ var sinon = require('sinon');
 
 var mocks = require("./stubs.js");
 var DWA = require("../lib/dwa.js");
-var DynamicsWebApi = require("../lib/dynamics-web-api-callbacks.js");
-var dynamicsWebApiTest = new DynamicsWebApi({ webApiVersion: "8.2" });
+var DynamicsWebApiCallbacks = require("../lib/dynamics-web-api-callbacks.js");
+var dynamicsWebApiTest = new DynamicsWebApiCallbacks({ webApiVersion: "8.2" });
 
 describe("callbacks -", function () {
 
     describe("dynamicsWebApi.create -", function () {
 
-        before(function () {
-            global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-            var requests = this.requests = [];
-
-            global.XMLHttpRequest.onCreate = function (xhr) {
-                requests.push(xhr);
-            };
-        });
-
-        after(function () {
-            global.XMLHttpRequest.restore();
-        });
-
         describe("basic", function () {
             var responseObject;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.create(mocks.data.testEntity, "tests", function (object) {
                     responseObject = object;
                     done();
@@ -42,6 +36,10 @@ describe("callbacks -", function () {
 
             it("sends the request to the right end point", function () {
                 expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("uses the correct method", function () {
@@ -64,6 +62,13 @@ describe("callbacks -", function () {
         describe("return representation", function () {
             var responseObject;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.create(mocks.data.testEntity, "tests", function (object) {
                     responseObject = object;
                     done();
@@ -78,6 +83,10 @@ describe("callbacks -", function () {
 
             it("sends the request to the right end point", function () {
                 expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("uses the correct method", function () {
@@ -100,22 +109,16 @@ describe("callbacks -", function () {
 
     describe("dynamicsWebApi.update -", function () {
 
-        before(function () {
-            global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-            var requests = this.requests = [];
-
-            global.XMLHttpRequest.onCreate = function (xhr) {
-                requests.push(xhr);
-            };
-        });
-
-        after(function () {
-            global.XMLHttpRequest.restore();
-        });
-
         describe("basic", function () {
             var responseObject;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.update(mocks.data.testEntityId, "tests", mocks.data.testEntity, function (object) {
                     responseObject = object;
                     done();
@@ -130,6 +133,10 @@ describe("callbacks -", function () {
 
             it("sends the request to the right end point", function () {
                 expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("uses the correct method", function () {
@@ -156,6 +163,13 @@ describe("callbacks -", function () {
         describe("return representation", function () {
             var responseObject;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.update(mocks.data.testEntityId, "tests", mocks.data.testEntity, function (object) {
                     responseObject = object;
                     done();
@@ -170,6 +184,10 @@ describe("callbacks -", function () {
 
             it("sends the request to the right end point", function () {
                 expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("uses the correct method", function () {
@@ -197,6 +215,13 @@ describe("callbacks -", function () {
             var responseObject;
             var responseObject2;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest
                     .update(mocks.data.testEntityId, "tests", mocks.data.testEntity, function (object) {
                         responseObject = object;
@@ -218,6 +243,10 @@ describe("callbacks -", function () {
 
                 var response2 = mocks.responses.updateReturnRepresentation;
                 this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("sends the request to the right end point", function () {
@@ -254,22 +283,16 @@ describe("callbacks -", function () {
 
     describe("dynamicsWebApi.updateSingleProperty -", function () {
 
-        before(function () {
-            global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-            var requests = this.requests = [];
-
-            global.XMLHttpRequest.onCreate = function (xhr) {
-                requests.push(xhr);
-            };
-        });
-
-        after(function () {
-            global.XMLHttpRequest.restore();
-        });
-
         describe("basic", function () {
             var responseObject;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.updateSingleProperty(mocks.data.testEntityId, "tests", mocks.data.updatedEntity, function (object) {
                     responseObject = object;
                     done();
@@ -280,6 +303,10 @@ describe("callbacks -", function () {
 
                 var response = mocks.responses.basicEmptyResponseSuccess;
                 this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("sends the request to the right end point", function () {
@@ -308,6 +335,13 @@ describe("callbacks -", function () {
         describe("return representation", function () {
             var responseObject;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.updateSingleProperty(mocks.data.testEntityId, "tests", mocks.data.updatedEntity, function (object) {
                     responseObject = object;
                     done();
@@ -318,6 +352,10 @@ describe("callbacks -", function () {
 
                 var response = mocks.responses.updateReturnRepresentation;
                 this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("sends the request to the right end point", function () {
@@ -346,23 +384,17 @@ describe("callbacks -", function () {
 
     describe("dynamicsWebApi.upsert -", function () {
 
-        before(function () {
-            global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-            var requests = this.requests = [];
-
-            global.XMLHttpRequest.onCreate = function (xhr) {
-                requests.push(xhr);
-            };
-        });
-
-        after(function () {
-            global.XMLHttpRequest.restore();
-        });
-
         describe("basic", function () {
             var responseObject;
             var responseObject2;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.upsert(mocks.data.testEntityId, "tests", mocks.data.testEntity, function (object) {
                     responseObject = object;
                 }, function (object) {
@@ -387,6 +419,10 @@ describe("callbacks -", function () {
             it("sends the request to the right end point", function () {
                 expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl);
                 expect(this.requests[1].url).to.equal(mocks.responses.testEntityUrl);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("uses the correct method", function () {
@@ -419,6 +455,13 @@ describe("callbacks -", function () {
             var responseObject;
             var responseObject2;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.upsert(mocks.data.testEntityId, "tests", mocks.data.testEntity, function (object) {
                     responseObject = object;
                 }, function (object) {
@@ -443,6 +486,10 @@ describe("callbacks -", function () {
             it("sends the request to the right end point", function () {
                 expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl);
                 expect(this.requests[1].url).to.equal(mocks.responses.testEntityUrl);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("uses the correct method", function () {
@@ -477,6 +524,13 @@ describe("callbacks -", function () {
             var responseObject3;
             var responseObject4;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest
                     .upsert(mocks.data.testEntityId, "tests", mocks.data.testEntity, function (object) {
                         responseObject = object;
@@ -518,6 +572,10 @@ describe("callbacks -", function () {
 
                 var response4 = mocks.responses.createReturnRepresentation;
                 this.requests[3].respond(response4.status, response4.responseHeaders, response4.responseText);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("sends the request to the right end point", function () {
@@ -566,22 +624,16 @@ describe("callbacks -", function () {
 
     describe("dynamicsWebApi.deleteRecord -", function () {
 
-        before(function () {
-            global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-            var requests = this.requests = [];
-
-            global.XMLHttpRequest.onCreate = function (xhr) {
-                requests.push(xhr);
-            };
-        });
-
-        after(function () {
-            global.XMLHttpRequest.restore();
-        });
-
         describe("basic", function () {
             var responseObject;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.deleteRecord(mocks.data.testEntityId, "tests", function (object) {
                     responseObject = object;
                     done();
@@ -596,6 +648,10 @@ describe("callbacks -", function () {
 
             it("sends the request to the right end point", function () {
                 expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("uses the correct method", function () {
@@ -614,6 +670,13 @@ describe("callbacks -", function () {
         describe("single property", function () {
             var responseObject;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.deleteRecord(mocks.data.testEntityId, "tests", function (object) {
                     responseObject = object;
                     done();
@@ -624,6 +687,10 @@ describe("callbacks -", function () {
 
                 var response = mocks.responses.basicEmptyResponseSuccess;
                 this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("sends the request to the right end point", function () {
@@ -646,22 +713,16 @@ describe("callbacks -", function () {
 
     describe("dynamicsWebApi.retrieve -", function () {
 
-        before(function () {
-            global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-            var requests = this.requests = [];
-
-            global.XMLHttpRequest.onCreate = function (xhr) {
-                requests.push(xhr);
-            };
-        });
-
-        after(function () {
-            global.XMLHttpRequest.restore();
-        });
-
         describe("basic", function () {
             var responseObject;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.retrieve(mocks.data.testEntityId, "tests", function (object) {
                     responseObject = object;
                     done();
@@ -676,6 +737,10 @@ describe("callbacks -", function () {
 
             it("sends the request to the right end point", function () {
                 expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("uses the correct method", function () {
@@ -695,6 +760,13 @@ describe("callbacks -", function () {
             var responseObject;
             var responseObject2;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.retrieve(mocks.data.testEntityId, "tests", function (object) {
                     responseObject = object;
                 }, function (object) {
@@ -714,6 +786,10 @@ describe("callbacks -", function () {
 
                 var response2 = mocks.responses.response200;
                 this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("sends the request to the right end point", function () {
@@ -742,6 +818,13 @@ describe("callbacks -", function () {
             var responseObject2;
             var responseObject3;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.retrieve(mocks.data.testEntityId, "tests", function (object) {
                     responseObject = object;
                 }, function (object) {
@@ -800,6 +883,13 @@ describe("callbacks -", function () {
         describe("reference", function () {
             var responseObject;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.retrieve(mocks.data.testEntityId, "tests", function (object) {
                     responseObject = object;
                     done();
@@ -833,6 +923,13 @@ describe("callbacks -", function () {
         describe("expand basic", function () {
             var responseObject;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.retrieve(mocks.data.testEntityId, "tests", function (object) {
                     responseObject = object;
                     done();
@@ -844,6 +941,10 @@ describe("callbacks -", function () {
                 var response = mocks.responses.response200;
                 this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
 
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("sends the request to the right end point", function () {
@@ -867,6 +968,13 @@ describe("callbacks -", function () {
             var responseObject;
             var responseObject2;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.retrieve(mocks.data.testEntityId, "tests", function (object) {
                     responseObject = object;
                 }, function (object) {
@@ -886,6 +994,10 @@ describe("callbacks -", function () {
 
                 var response2 = mocks.responses.response200;
                 this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("sends the request to the right end point", function () {
@@ -914,6 +1026,13 @@ describe("callbacks -", function () {
             var responseObject2;
             var responseObject3;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.retrieve(mocks.data.testEntityId, "tests", function (object) {
                     responseObject = object;
                 }, function (object) {
@@ -972,22 +1091,16 @@ describe("callbacks -", function () {
 
     describe("dynamicsWebApi.count -", function () {
 
-        before(function () {
-            global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-            var requests = this.requests = [];
-
-            global.XMLHttpRequest.onCreate = function (xhr) {
-                requests.push(xhr);
-            };
-        });
-
-        after(function () {
-            global.XMLHttpRequest.restore();
-        });
-
         describe("basic", function () {
             var responseObject;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.count("tests", function (object) {
                     responseObject = object;
                     done();
@@ -998,6 +1111,10 @@ describe("callbacks -", function () {
 
                 var response = mocks.responses.countBasic;
                 this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("sends the request to the right end point", function () {
@@ -1019,6 +1136,13 @@ describe("callbacks -", function () {
         describe("filter", function () {
             var responseObject;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.count("tests", function (object) {
                     responseObject = object;
                     done();
@@ -1074,22 +1198,16 @@ describe("callbacks -", function () {
 
     describe("dynamicsWebApi.executeFetchXml -", function () {
 
-        before(function () {
-            global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-            var requests = this.requests = [];
-
-            global.XMLHttpRequest.onCreate = function (xhr) {
-                requests.push(xhr);
-            };
-        });
-
-        after(function () {
-            global.XMLHttpRequest.restore();
-        });
-
         describe("basic", function () {
             var responseObject;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
 
                 dynamicsWebApiTest.executeFetchXml("tests", mocks.data.fetchXmls.fetchXml, function (object) {
                     responseObject = object;
@@ -1101,6 +1219,10 @@ describe("callbacks -", function () {
 
                 var response = mocks.responses.fetchXmlResponsePage1Cookie;
                 this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("sends the request to the right end point", function () {
@@ -1127,6 +1249,13 @@ describe("callbacks -", function () {
         describe("paging", function () {
             var responseObject;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 var pagingInfo = mocks.data.fetchXmls.fetchXmlResultPage1Cookie.PagingInfo;
                 dynamicsWebApiTest.executeFetchXml("tests", mocks.data.fetchXmls.fetchXml, function (object) {
                     responseObject = object;
@@ -1138,6 +1267,10 @@ describe("callbacks -", function () {
 
                 var response = mocks.responses.fetchXmlResponsePage2Cookie;
                 this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("sends the request to the right end point", function () {
@@ -1164,6 +1297,13 @@ describe("callbacks -", function () {
         describe("paging - no cookie", function () {
             var responseObject;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
 
                 dynamicsWebApiTest.executeFetchXml("tests", mocks.data.fetchXmls.fetchXml, function (object) {
                     responseObject = object;
@@ -1175,6 +1315,10 @@ describe("callbacks -", function () {
 
                 var response = mocks.responses.fetchXmlResponsePage1;
                 this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("sends the request to the right end point", function () {
@@ -1201,6 +1345,13 @@ describe("callbacks -", function () {
         describe("with prefer", function () {
             var responseObject;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 var pagingInfo = mocks.data.fetchXmls.fetchXmlResultPage1Cookie.PagingInfo;
                 dynamicsWebApiTest.executeFetchXml("tests", mocks.data.fetchXmls.fetchXml, function (object) {
                     responseObject = object;
@@ -1212,6 +1363,10 @@ describe("callbacks -", function () {
 
                 var response = mocks.responses.fetchXmlResponsePage2Cookie;
                 this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("sends the request to the right end point", function () {
@@ -1238,22 +1393,16 @@ describe("callbacks -", function () {
 
     describe("dynamicsWebApi.associate -", function () {
 
-        before(function () {
-            global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-            var requests = this.requests = [];
-
-            global.XMLHttpRequest.onCreate = function (xhr) {
-                requests.push(xhr);
-            };
-        });
-
-        after(function () {
-            global.XMLHttpRequest.restore();
-        });
-
         describe("basic", function () {
             var responseObject;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.associate("tests", mocks.data.testEntityId, "tests_records", "records", mocks.data.testEntityId2, function (object) {
                     responseObject = object;
                     done();
@@ -1264,6 +1413,10 @@ describe("callbacks -", function () {
 
                 var response = mocks.responses.basicEmptyResponseSuccess;
                 this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("sends the request to the right end point", function () {
@@ -1292,6 +1445,13 @@ describe("callbacks -", function () {
         describe("impersonation", function () {
             var responseObject;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.associate("tests", mocks.data.testEntityId, "tests_records", "records", mocks.data.testEntityId2, function (object) {
                     responseObject = object;
                     done();
@@ -1302,6 +1462,10 @@ describe("callbacks -", function () {
 
                 var response = mocks.responses.updateReturnRepresentation;
                 this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("sends the request to the right end point", function () {
@@ -1330,22 +1494,16 @@ describe("callbacks -", function () {
 
     describe("dynamicsWebApi.disassociate -", function () {
 
-        before(function () {
-            global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-            var requests = this.requests = [];
-
-            global.XMLHttpRequest.onCreate = function (xhr) {
-                requests.push(xhr);
-            };
-        });
-
-        after(function () {
-            global.XMLHttpRequest.restore();
-        });
-
         describe("basic", function () {
             var responseObject;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.disassociate("tests", mocks.data.testEntityId, "tests_records", mocks.data.testEntityId2, function (object) {
                     responseObject = object;
                     done();
@@ -1356,6 +1514,10 @@ describe("callbacks -", function () {
 
                 var response = mocks.responses.basicEmptyResponseSuccess;
                 this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("sends the request to the right end point", function () {
@@ -1382,6 +1544,13 @@ describe("callbacks -", function () {
         describe("impersonation", function () {
             var responseObject;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.disassociate("tests", mocks.data.testEntityId, "tests_records", mocks.data.testEntityId2, function (object) {
                     responseObject = object;
                     done();
@@ -1392,6 +1561,10 @@ describe("callbacks -", function () {
 
                 var response = mocks.responses.updateReturnRepresentation;
                 this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("sends the request to the right end point", function () {
@@ -1418,22 +1591,16 @@ describe("callbacks -", function () {
 
     describe("dynamicsWebApi.associateSingleValued -", function () {
 
-        before(function () {
-            global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-            var requests = this.requests = [];
-
-            global.XMLHttpRequest.onCreate = function (xhr) {
-                requests.push(xhr);
-            };
-        });
-
-        after(function () {
-            global.XMLHttpRequest.restore();
-        });
-
         describe("basic", function () {
             var responseObject;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.associateSingleValued("tests", mocks.data.testEntityId, "tests_records", "records", mocks.data.testEntityId2, function (object) {
                     responseObject = object;
                     done();
@@ -1444,6 +1611,10 @@ describe("callbacks -", function () {
 
                 var response = mocks.responses.basicEmptyResponseSuccess;
                 this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("sends the request to the right end point", function () {
@@ -1472,6 +1643,13 @@ describe("callbacks -", function () {
         describe("impersonation", function () {
             var responseObject;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.associateSingleValued("tests", mocks.data.testEntityId, "tests_records", "records", mocks.data.testEntityId2, function (object) {
                     responseObject = object;
                     done();
@@ -1482,6 +1660,10 @@ describe("callbacks -", function () {
 
                 var response = mocks.responses.updateReturnRepresentation;
                 this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("sends the request to the right end point", function () {
@@ -1510,22 +1692,16 @@ describe("callbacks -", function () {
 
     describe("dynamicsWebApi.disassociateSingleValued -", function () {
 
-        before(function () {
-            global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-            var requests = this.requests = [];
-
-            global.XMLHttpRequest.onCreate = function (xhr) {
-                requests.push(xhr);
-            };
-        });
-
-        after(function () {
-            global.XMLHttpRequest.restore();
-        });
-
         describe("basic", function () {
             var responseObject;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.disassociateSingleValued("tests", mocks.data.testEntityId, "tests_records", function (object) {
                     responseObject = object;
                     done();
@@ -1536,6 +1712,10 @@ describe("callbacks -", function () {
 
                 var response = mocks.responses.basicEmptyResponseSuccess;
                 this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("sends the request to the right end point", function () {
@@ -1562,6 +1742,13 @@ describe("callbacks -", function () {
         describe("impersonation", function () {
             var responseObject;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.disassociateSingleValued("tests", mocks.data.testEntityId, "tests_records", function (object) {
                     responseObject = object;
                     done();
@@ -1572,6 +1759,10 @@ describe("callbacks -", function () {
 
                 var response = mocks.responses.updateReturnRepresentation;
                 this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("sends the request to the right end point", function () {
@@ -1617,23 +1808,17 @@ describe("callbacks -", function () {
 
     describe("dynamicsWebApi.executeFunction -", function () {
 
-        before(function () {
-            global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-            var requests = this.requests = [];
-
-            global.XMLHttpRequest.onCreate = function (xhr) {
-                requests.push(xhr);
-            };
-        });
-
-        after(function () {
-            global.XMLHttpRequest.restore();
-        });
-
         describe("unbound", function () {
             var responseObject;
             var responseObject2;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.executeUnboundFunction("FUN", function (object) {
                     responseObject = object;
                 }, function (object) {
@@ -1685,6 +1870,13 @@ describe("callbacks -", function () {
             var responseObject;
             var responseObject2;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.executeUnboundFunction("FUN", function (object) {
                     responseObject = object;
                 }, function (object) {
@@ -1736,6 +1928,13 @@ describe("callbacks -", function () {
             var responseObject;
             var responseObject2;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.executeBoundFunction(mocks.data.testEntityId, "tests", "FUN", function (object) {
                     responseObject = object;
                 }, function (object) {
@@ -1787,6 +1986,13 @@ describe("callbacks -", function () {
             var responseObject;
             var responseObject2;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.executeBoundFunction(mocks.data.testEntityId, "tests", "FUN", function (object) {
                     responseObject = object;
                 }, function (object) {
@@ -1837,22 +2043,16 @@ describe("callbacks -", function () {
 
     describe("dynamicsWebApi.executeAction -", function () {
 
-        before(function () {
-            global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-            var requests = this.requests = [];
-
-            global.XMLHttpRequest.onCreate = function (xhr) {
-                requests.push(xhr);
-            };
-        });
-
-        after(function () {
-            global.XMLHttpRequest.restore();
-        });
-
         describe("unbound", function () {
             var responseObject;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.executeUnboundAction("FUN", mocks.responses.actionRequest, function (object) {
                     responseObject = object;
                     done();
@@ -1863,6 +2063,10 @@ describe("callbacks -", function () {
 
                 var response = mocks.responses.basicEmptyResponseSuccess;
                 this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("sends the request to the right end point", function () {
@@ -1889,6 +2093,13 @@ describe("callbacks -", function () {
         describe("unbound impersonation", function () {
             var responseObject;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.executeUnboundAction("FUN", mocks.responses.actionRequest, function (object) {
                     responseObject = object;
                     done();
@@ -1899,6 +2110,10 @@ describe("callbacks -", function () {
 
                 var response = mocks.responses.basicEmptyResponseSuccess;
                 this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("sends the request to the right end point", function () {
@@ -1925,6 +2140,13 @@ describe("callbacks -", function () {
         describe("bound", function () {
             var responseObject;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.executeBoundAction(mocks.data.testEntityId, "tests", "FUN", mocks.responses.actionRequest, function (object) {
                     responseObject = object;
                     done();
@@ -1935,6 +2157,10 @@ describe("callbacks -", function () {
 
                 var response = mocks.responses.response200;
                 this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("sends the request to the right end point", function () {
@@ -1961,6 +2187,13 @@ describe("callbacks -", function () {
         describe("bound impersonation", function () {
             var responseObject;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.executeBoundAction(mocks.data.testEntityId, "tests", "FUN", mocks.responses.actionRequest, function (object) {
                     responseObject = object;
                     done();
@@ -1971,6 +2204,10 @@ describe("callbacks -", function () {
 
                 var response = mocks.responses.response200;
                 this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("sends the request to the right end point", function () {
@@ -2806,22 +3043,16 @@ describe("callbacks -", function () {
             entity: mocks.data.testEntity
         }
 
-        before(function () {
-            global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-            var requests = this.requests = [];
-
-            global.XMLHttpRequest.onCreate = function (xhr) {
-                requests.push(xhr);
-            };
-        });
-
-        after(function () {
-            global.XMLHttpRequest.restore();
-        });
-
         describe("basic", function () {
             var responseObject;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.updateRequest(dwaRequest, function (object) {
                     responseObject = object;
                     done();
@@ -2836,6 +3067,10 @@ describe("callbacks -", function () {
 
             it("sends the request to the right end point", function () {
                 expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("uses the correct method", function () {
@@ -2863,6 +3098,13 @@ describe("callbacks -", function () {
             var responseObject;
             var responseObject2;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dwaRequest.returnRepresentation = true;
 
                 dynamicsWebApiTest.updateRequest(dwaRequest, function (object) {
@@ -2886,6 +3128,10 @@ describe("callbacks -", function () {
 
                 var response2 = mocks.responses.updateReturnRepresentation;
                 this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("sends the request to the right end point", function () {
@@ -2924,6 +3170,13 @@ describe("callbacks -", function () {
             var responseObject2;
             var responseObject3;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dwaRequest.select = ["fullname", "subject"];
                 dwaRequest.ifmatch = "match";
                 dwaRequest.returnRepresentation = false;
@@ -2960,6 +3213,10 @@ describe("callbacks -", function () {
 
                 var response3 = mocks.responses.upsertPreventCreateResponse;
                 this.requests[2].respond(response3.status, response3.responseHeaders, response3.responseText);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("sends the request to the right end point", function () {
@@ -3007,25 +3264,19 @@ describe("callbacks -", function () {
             entity: mocks.data.testEntity
         }
 
-        before(function () {
-            global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-            var requests = this.requests = [];
-
-            global.XMLHttpRequest.onCreate = function (xhr) {
-                requests.push(xhr);
-            };
-        });
-
-        after(function () {
-            global.XMLHttpRequest.restore();
-        });
-
         describe("basic & return representation", function () {
             var responseObject;
             var responseObject2;
             var responseObject3;
             var responseObject4;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.upsertRequest(dwaRequest, function (object) {
                     responseObject = object;
                 }, function (object) {
@@ -3067,6 +3318,10 @@ describe("callbacks -", function () {
 
                 var response4 = mocks.responses.updateReturnRepresentation;
                 this.requests[3].respond(response4.status, response4.responseHeaders, response4.responseText);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("sends the request to the right end point", function () {
@@ -3124,6 +3379,13 @@ describe("callbacks -", function () {
             var responseObject2;
             var responseObject3;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dwaRequest.select = null;
                 dwaRequest.returnRepresentation = false;
                 dwaRequest.ifmatch = "*";
@@ -3208,6 +3470,13 @@ describe("callbacks -", function () {
             var responseObject2;
             var responseObject3;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dwaRequest.select = null;
                 dwaRequest.returnRepresentation = false;
                 dwaRequest.ifmatch = null;
@@ -3291,22 +3560,16 @@ describe("callbacks -", function () {
 
     describe("dynamicsWebApi.retrieveRequest -", function () {
 
-        before(function () {
-            global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-            var requests = this.requests = [];
-
-            global.XMLHttpRequest.onCreate = function (xhr) {
-                requests.push(xhr);
-            };
-        });
-
-        after(function () {
-            global.XMLHttpRequest.restore();
-        });
-
         describe("basic", function () {
             var responseObject;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 var dwaRequest = {
                     id: mocks.data.testEntityId,
                     collection: "tests",
@@ -3355,6 +3618,13 @@ describe("callbacks -", function () {
         describe("retrieve reference", function () {
             var responseObject;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 var dwaRequest = {
                     id: mocks.data.testEntityId,
                     collection: "tests",
@@ -3403,22 +3673,16 @@ describe("callbacks -", function () {
 
     describe("dynamicsWebApi.retrieveMultiple -", function () {
 
-        before(function () {
-            global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-            var requests = this.requests = [];
-
-            global.XMLHttpRequest.onCreate = function (xhr) {
-                requests.push(xhr);
-            };
-        });
-
-        after(function () {
-            global.XMLHttpRequest.restore();
-        });
-
         describe("basic", function () {
             var responseObject;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.retrieveMultiple("tests", function (object) {
                     responseObject = object;
                     done();
@@ -3433,6 +3697,10 @@ describe("callbacks -", function () {
 
             it("sends the request to the right end point", function () {
                 expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("uses the correct method", function () {
@@ -3460,6 +3728,13 @@ describe("callbacks -", function () {
             var responseObject;
             var responseObject2;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.retrieveMultiple("tests", function (object) {
                     responseObject = object;
                 }, function (object) {
@@ -3479,6 +3754,10 @@ describe("callbacks -", function () {
 
                 var response2 = mocks.responses.multipleResponse;
                 this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("sends the request to the right end point", function () {
@@ -3516,6 +3795,13 @@ describe("callbacks -", function () {
             var responseObject;
             var responseObject2;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.retrieveMultiple("tests", function (object) {
                     responseObject = object;
                 }, function (object) {
@@ -3572,6 +3858,13 @@ describe("callbacks -", function () {
             var responseObject;
             var responseObject2;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.retrieveMultiple("tests", function (object) {
                     responseObject = object;
                 }, function (object) {
@@ -3596,6 +3889,10 @@ describe("callbacks -", function () {
             it("sends the request to the right end point", function () {
                 expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl);
                 expect(this.requests[1].url).to.equal(mocks.responses.multipleWithLink().oDataNextLink);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("uses the correct method", function () {
@@ -3632,23 +3929,17 @@ describe("callbacks -", function () {
             includeAnnotations: DWA.Prefer.Annotations.FormattedValue
         };
 
-        before(function () {
-            global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-            var requests = this.requests = [];
-
-            global.XMLHttpRequest.onCreate = function (xhr) {
-                requests.push(xhr);
-            };
-        });
-
-        after(function () {
-            global.XMLHttpRequest.restore();
-        });
-
         describe("basic", function () {
             var responseObject;
             var responseObject2;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.retrieveMultipleRequest(dwaRequest, function (object) {
                     responseObject = object;
                 }, function (object) {
@@ -3670,6 +3961,10 @@ describe("callbacks -", function () {
 
                 var response2 = mocks.responses.multipleWithCountResponse;
                 this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("sends the request to the right end point", function () {
@@ -3712,6 +4007,13 @@ describe("callbacks -", function () {
             var responseObject;
             var responseObject2;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dwaRequest.count = false;
                 dwaRequest.impersonate = mocks.data.testEntityId2;
 
@@ -3734,6 +4036,10 @@ describe("callbacks -", function () {
 
                 var response2 = mocks.responses.multipleResponse;
                 this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("sends the request to the right end point", function () {
@@ -3776,22 +4082,16 @@ describe("callbacks -", function () {
             impersonate: mocks.data.testEntityId2
         };
 
-        before(function () {
-            global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-            var requests = this.requests = [];
-
-            global.XMLHttpRequest.onCreate = function (xhr) {
-                requests.push(xhr);
-            };
-        });
-
-        after(function () {
-            global.XMLHttpRequest.restore();
-        });
-
         describe("basic", function () {
             var responseObject;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dynamicsWebApiTest.deleteRequest(dwaRequest, function (object) {
                     responseObject = object;
                     done();
@@ -3806,6 +4106,10 @@ describe("callbacks -", function () {
 
             it("sends the request to the right end point", function () {
                 expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
             it("uses the correct method", function () {
@@ -3834,6 +4138,13 @@ describe("callbacks -", function () {
             var responseObject2;
             var responseObject3;
             before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
                 dwaRequest.ifmatch = "match";
                 dynamicsWebApiTest.deleteRequest(dwaRequest, function (object) {
                     responseObject = object;
@@ -3871,6 +4182,10 @@ describe("callbacks -", function () {
                 expect(this.requests[2].url).to.equal(mocks.responses.testEntityUrl);
             });
 
+            after(function () {
+                global.XMLHttpRequest.restore();
+            });
+
             it("uses the correct method", function () {
                 expect(this.requests[0].method).to.equal('DELETE');
                 expect(this.requests[1].method).to.equal('DELETE');
@@ -3902,204 +4217,219 @@ describe("callbacks -", function () {
             });
         });
     });
-});
 
-describe("dynamicsWebApi.constructor -", function () {
-    var dynamicsWebApi80 = new DynamicsWebApi();
+    describe("dynamicsWebApi.constructor -", function () {
+        var dynamicsWebApi80 = new DynamicsWebApiCallbacks();
 
-    before(function () {
-        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-        var requests = this.requests = [];
+        describe("webApiVersion and impersonate", function () {
+            var responseObject;
+            before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
 
-        global.XMLHttpRequest.onCreate = function (xhr) {
-            requests.push(xhr);
-        };
-    });
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
 
-    after(function () {
-        global.XMLHttpRequest.restore();
-    });
+                dynamicsWebApi80.create(mocks.data.testEntity, "tests", function (object) {
+                    responseObject = object;
+                    done();
+                }, function (object) {
+                    responseObject = object;
+                    done();
+                });
 
-    describe("webApiVersion and impersonate", function () {
-        var responseObject;
-        before(function (done) {
-            dynamicsWebApi80.create(mocks.data.testEntity, "tests", function (object) {
-                responseObject = object;
-                done();
-            }, function (object) {
-                responseObject = object;
-                done();
+                var response = mocks.responses.createReturnId;
+                this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
             });
 
-            var response = mocks.responses.createReturnId;
-            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
-        });
-
-        it("sends the request to the right end point", function () {
-            expect(this.requests[0].url).to.equal(mocks.webApiUrl80 + "tests");
-        });
-
-        it("does not send MSCRMCallerID header", function () {
-            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.be.undefined;
-        });
-    });
-});
-
-describe("dynamicsWebApi.setConfig -", function () {
-    var dynamicsWebApi81 = new DynamicsWebApi();
-    dynamicsWebApi81.setConfig({ webApiVersion: "8.1", impersonate: mocks.data.testEntityId2 });
-
-    before(function () {
-        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-        var requests = this.requests = [];
-
-        global.XMLHttpRequest.onCreate = function (xhr) {
-            requests.push(xhr);
-        };
-    });
-
-    after(function () {
-        global.XMLHttpRequest.restore();
-    });
-
-    describe("webApiVersion and impersonate", function () {
-        var responseObject;
-        before(function (done) {
-            dynamicsWebApi81.create(mocks.data.testEntity, "tests", function (object) {
-                responseObject = object;
-                done();
-            }, function (object) {
-                responseObject = object;
-                done();
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
-            var response = mocks.responses.createReturnId;
-            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
-        });
-
-        it("sends the request to the right end point", function () {
-            expect(this.requests[0].url).to.equal(mocks.webApiUrl81 + "tests");
-        });
-
-        it("sends the correct MSCRMCallerID header", function () {
-            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.equal(mocks.data.testEntityId2);
-        });
-    });
-
-    describe("impersonate overriden with a request.impersonate", function () {
-        var responseObject;
-        before(function (done) {
-            dynamicsWebApi81.retrieveMultipleRequest({ collection: "tests", impersonate: mocks.data.testEntityId3 }, function (object) {
-                responseObject = object;
-                done();
-            }, function (object) {
-                responseObject = object;
-                done();
+            it("sends the request to the right end point", function () {
+                expect(this.requests[0].url).to.equal(mocks.webApiUrl80 + "tests");
             });
 
-            var response = mocks.responses.multipleResponse;
-            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
-        });
-
-        it("sends the request to the right end point", function () {
-            expect(this.requests[0].url).to.equal(mocks.webApiUrl81 + "tests");
-        });
-
-        it("sends the correct MSCRMCallerID header", function () {
-            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.equal(mocks.data.testEntityId3);
+            it("does not send MSCRMCallerID header", function () {
+                expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.be.undefined;
+            });
         });
     });
 
-    describe("webApiVersion is overriden by mocks.webApiUrl", function () {
-        var responseObject;
-        before(function (done) {
-            dynamicsWebApi81.setConfig({ webApiUrl: mocks.webApiUrl });
-            dynamicsWebApi81.retrieveMultipleRequest({ collection: "tests" }, function (object) {
-                responseObject = object;
-                done();
-            }, function (object) {
-                responseObject = object;
-                done();
+    describe("dynamicsWebApi.setConfig -", function () {
+        var dynamicsWebApi81 = new DynamicsWebApiCallbacks();
+        dynamicsWebApi81.setConfig({ webApiVersion: "8.1", impersonate: mocks.data.testEntityId2 });
+
+        describe("webApiVersion and impersonate", function () {
+            var responseObject;
+            before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
+                dynamicsWebApi81.create(mocks.data.testEntity, "tests", function (object) {
+                    responseObject = object;
+                    done();
+                }, function (object) {
+                    responseObject = object;
+                    done();
+                });
+
+                var response = mocks.responses.createReturnId;
+                this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
             });
 
-            var response = mocks.responses.multipleResponse;
-            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
-        });
-
-        it("sends the request to the right end point", function () {
-            expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl);
-        });
-
-        it("sends the correct MSCRMCallerID header", function () {
-            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.equal(mocks.data.testEntityId2);
-        });
-    });
-});
-
-describe("dynamicsWebApi.initializeInstance -", function () {
-    var dynamicsWebApi81 = new DynamicsWebApi();
-    dynamicsWebApi81.setConfig({ webApiVersion: "8.1", impersonate: mocks.data.testEntityId2 });
-    dynamicsWebApiCopy = dynamicsWebApi81.initializeInstance();
-
-    before(function () {
-        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-        var requests = this.requests = [];
-
-        global.XMLHttpRequest.onCreate = function (xhr) {
-            requests.push(xhr);
-        };
-    });
-
-    after(function () {
-        global.XMLHttpRequest.restore();
-    });
-
-    describe("current instance copied with its config", function () {
-        var responseObject;
-        before(function (done) {
-            dynamicsWebApiCopy.create(mocks.data.testEntity, "tests", function (object) {
-                responseObject = object;
-                done();
-            }, function (object) {
-                responseObject = object;
-                done();
+            after(function () {
+                global.XMLHttpRequest.restore();
             });
 
-            var response = mocks.responses.createReturnId;
-            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+            it("sends the request to the right end point", function () {
+                expect(this.requests[0].url).to.equal(mocks.webApiUrl81 + "tests");
+            });
+
+            it("sends the correct MSCRMCallerID header", function () {
+                expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.equal(mocks.data.testEntityId2);
+            });
         });
 
-        it("sends the request to the right end point", function () {
-            expect(this.requests[0].url).to.equal(mocks.webApiUrl81 + "tests");
+        describe("impersonate overriden with a request.impersonate", function () {
+            var responseObject;
+            before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
+                dynamicsWebApi81.retrieveMultipleRequest({ collection: "tests", impersonate: mocks.data.testEntityId3 }, function (object) {
+                    responseObject = object;
+                    done();
+                }, function (object) {
+                    responseObject = object;
+                    done();
+                });
+
+                var response = mocks.responses.multipleResponse;
+                this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+            });
+
+            it("sends the request to the right end point", function () {
+                expect(this.requests[0].url).to.equal(mocks.webApiUrl81 + "tests");
+            });
+
+            it("sends the correct MSCRMCallerID header", function () {
+                expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.equal(mocks.data.testEntityId3);
+            });
         });
 
-        it("sends the correct MSCRMCallerID header", function () {
-            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.equal(mocks.data.testEntityId2);
+        describe("webApiVersion is overriden by mocks.webApiUrl", function () {
+            var responseObject;
+            before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
+                dynamicsWebApi81.setConfig({ webApiUrl: mocks.webApiUrl });
+                dynamicsWebApi81.retrieveMultipleRequest({ collection: "tests" }, function (object) {
+                    responseObject = object;
+                    done();
+                }, function (object) {
+                    responseObject = object;
+                    done();
+                });
+
+                var response = mocks.responses.multipleResponse;
+                this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+            });
+
+            it("sends the request to the right end point", function () {
+                expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl);
+            });
+
+            it("sends the correct MSCRMCallerID header", function () {
+                expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.equal(mocks.data.testEntityId2);
+            });
         });
     });
 
-    describe("config changed", function () {
-        var responseObject;
-        before(function (done) {
-            dynamicsWebApiCopy = dynamicsWebApi81.initializeInstance({ webApiVersion: "8.2" });
-            dynamicsWebApiCopy.retrieveMultipleRequest({ collection: "tests" }, function (object) {
-                responseObject = object;
-                done();
-            }, function (object) {
-                responseObject = object;
-                done();
+    describe("dynamicsWebApi.initializeInstance -", function () {
+        var dynamicsWebApi81 = new DynamicsWebApiCallbacks();
+        dynamicsWebApi81.setConfig({ webApiVersion: "8.1", impersonate: mocks.data.testEntityId2 });
+        var dynamicsWebApiCopy = dynamicsWebApi81.initializeInstance();
+
+        describe("current instance copied with its config", function () {
+            var responseObject;
+            before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
+                dynamicsWebApiCopy.create(mocks.data.testEntity, "tests", function (object) {
+                    responseObject = object;
+                    done();
+                }, function (object) {
+                    responseObject = object;
+                    done();
+                });
+
+                var response = mocks.responses.createReturnId;
+                this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
             });
 
-            var response = mocks.responses.multipleResponse;
-            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+            after(function () {
+                global.XMLHttpRequest.restore();
+            });
+
+            it("sends the request to the right end point", function () {
+                expect(this.requests[0].url).to.equal(mocks.webApiUrl81 + "tests");
+            });
+
+            it("sends the correct MSCRMCallerID header", function () {
+                expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.equal(mocks.data.testEntityId2);
+            });
         });
 
-        it("sends the request to the right end point", function () {
-            expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl);
-        });
+        describe("config changed", function () {
+            var responseObject;
+            before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
 
-        it("does not send MSCRMCallerID header", function () {
-            expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.be.undefined;
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
+                dynamicsWebApiCopy = dynamicsWebApi81.initializeInstance({ webApiVersion: "8.2" });
+                dynamicsWebApiCopy.retrieveMultipleRequest({ collection: "tests" }, function (object) {
+                    responseObject = object;
+                    done();
+                }, function (object) {
+                    responseObject = object;
+                    done();
+                });
+
+                var response = mocks.responses.multipleResponse;
+                this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+            });
+
+            it("sends the request to the right end point", function () {
+                expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl);
+            });
+
+            it("does not send MSCRMCallerID header", function () {
+                expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.be.undefined;
+            });
         });
     });
 });

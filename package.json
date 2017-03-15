@@ -24,7 +24,7 @@
   "dependencies": {},
   "license": "MIT",
   "scripts": {
-    "test": "./node_modules/.bin/mocha --reporter spec"
+    "test": "mocha tests/*-tests.js --reporter spec"
   },
   "repository": {
     "type": "git",
