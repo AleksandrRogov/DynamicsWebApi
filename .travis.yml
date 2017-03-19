@@ -1,6 +1,6 @@
 ﻿language: node_js
 node_js:
-  - "node"
+  - "6"
 
 email:
   on_failure: change
