@@ -1,9 +1,6 @@
-﻿language: node_js
+﻿sudo: false
+language: node_js
 node_js:
-  - node
-notifications:
-    email:
-      on_failure: change
-      on_success: change
+  - "node"
 after_success:
   - npm run coveralls
