@@ -34,7 +34,8 @@
     "test-coverage": "rimraf coverage && istanbul cover node_modules/mocha/bin/_mocha tests/*-tests.js",
     "build": "rimraf dist && rimraf coverage && webpack",
     "preversion": "npm test",
-    "version": "npm run build",
+    "version": "npm run build && git add -A dist",
+    "postversion": "git push && git push --tags",
     "coveralls": "npm run test-coverage -- --report lcovonly && cat ./coverage/lcov.info | coveralls"
   },
   "repository": {
