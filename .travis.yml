@@ -1,0 +1,14 @@
+﻿language: node_js
+node_js:
+  - "stable"
+
+email:
+  on_failure: change
+  on_success: change
+
+after_success:
+  - npm run coveralls
+
+branches:
+  only:
+    - master

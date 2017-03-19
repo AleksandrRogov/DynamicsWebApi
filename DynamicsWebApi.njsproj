@@ -49,6 +49,9 @@
     <Compile Include="webpack.config.js">
       <SubType>Code</SubType>
     </Compile>
+    <Content Include=".travis.yml">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="package.json" />
     <Content Include="README.md" />
   </ItemGroup>

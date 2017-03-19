@@ -1,11 +1,12 @@
 # DynamicsWebApi for Microsoft Dynamics CRM Web API
+
+[![Travis branch](https://img.shields.io/travis/rust-lang/rust/master.svg?style=flat-square)](https://travis-ci.org/AleksandrRogov/DynamicsWebApi.svg?branch=master)
+[![Coveralls](https://img.shields.io/coveralls/jekyll/jekyll.svg?style=flat-square)](https://coveralls.io/github/AleksandrRogov/DynamicsWebApi?branch=master)
+
 DynamicsWebApi is a Microsoft Dynamics CRM Web API helper library written in JavaScript.
 It is compatible with: Dynamics 365 (online), Dynamics 365 (on-premises), Dynamics CRM 2016, Dynamics CRM Online.
 
-Stable versions are available!
-I made a decision to convert ASP.NET project to Node.js one, meanwhile __fully tested and stable browser versions__ can be found in `scripts` folder.
-* [DynamicsWebApi Promises version](/scripts/dynamics-web-api.js)
-* [DynamicsWebApi Callbacks version](/scripts/dynamics-web-api-callbacks.js)
+Libraries for browsers can be found in the "[dist](/dist/)" folder.
 
 Any suggestions are welcome!
 

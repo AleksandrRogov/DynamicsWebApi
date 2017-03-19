@@ -17,8 +17,11 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
+    "coveralls": "^2.12.0",
     "gulp": "^3.9.1",
+    "istanbul": "^0.4.5",
     "mocha": "^3.2.0",
+    "mocha-lcov-reporter": "^1.3.0",
     "rimraf": "^2.6.1",
     "sinon": "^1.17.7",
     "webpack": "^2.2.1",
@@ -27,8 +30,12 @@
   "dependencies": {},
   "license": "MIT",
   "scripts": {
-    "build": "rimraf dist && webpack",
-    "test": "mocha tests/*-tests.js"
+    "test": "mocha tests/*-tests.js",
+    "test-coverage": "rimraf coverage && istanbul cover node_modules/mocha/bin/_mocha tests/*-tests.js",
+    "build": "rimraf dist && rimraf coverage && webpack",
+    "preversion": "npm test",
+    "version": "npm run build",
+    "coveralls": "npm run coverage -- --report lcovonly && cat ./coverage/lcov.info | coveralls"
   },
   "repository": {
     "type": "git",
