@@ -596,7 +596,7 @@ dynamicsWebApi.executeFetchXml("accounts", fetchXml).then(function (response) {
 })
 .catch(function (error) {
     //catch an error
-})
+});
 ```
 
 #### Paging
@@ -629,7 +629,7 @@ dynamicsWebApi.executeFetchXml("accounts", fetchXml).then(function (response) {
     /// <param name="response" type="DWA.Types.FetchXmlResponse">Request response</param>
 	//page 3
 	//and so on... or use a loop.
-}) 
+})
 //catch...
 ```
 

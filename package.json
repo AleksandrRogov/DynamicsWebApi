@@ -16,15 +16,19 @@
     "name": "Aleksandr Rogov"
   },
   "devDependencies": {
-    "browserify": "^14.1.0",
     "chai": "^3.5.0",
+    "gulp": "^3.9.1",
     "mocha": "^3.2.0",
-    "sinon": "^1.17.7"
+    "rimraf": "^2.6.1",
+    "sinon": "^1.17.7",
+    "webpack": "^2.2.1",
+    "webpack-strip-block": "^0.1.0"
   },
   "dependencies": {},
   "license": "MIT",
   "scripts": {
-    "test": "mocha tests/*-tests.js --reporter spec"
+    "build": "rimraf dist && webpack",
+    "test": "mocha tests/*-tests.js"
   },
   "repository": {
     "type": "git",
