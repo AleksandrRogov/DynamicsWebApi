@@ -1,6 +1,6 @@
 ﻿language: node_js
 node_js:
-  - "stable"
+  - "node"
 
 email:
   on_failure: change
