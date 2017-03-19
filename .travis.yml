@@ -1,14 +1,9 @@
 ﻿language: node_js
 node_js:
-  - "6"
-
-email:
-  on_failure: change
-  on_success: change
-
+  - node
+notifications:
+    email:
+      on_failure: change
+      on_success: change
 after_success:
   - npm run coveralls
-
-branches:
-  only:
-    - master
