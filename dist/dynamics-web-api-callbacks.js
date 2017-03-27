@@ -74,7 +74,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 1);
+/******/ 	return __webpack_require__(__webpack_require__.s = 5);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -148,26 +148,164 @@ module.exports = DWA;
 
 /***/ }),
 /* 1 */
+/***/ (function(module, exports) {
+
+String.prototype.endsWith = function (searchString, position) {
+    var subjectString = this.toString();
+    if (typeof position !== 'number' || !isFinite(position) || Math.floor(position) !== position || position > subjectString.length) {
+        position = subjectString.length;
+    }
+    position -= searchString.length;
+    var lastIndex = subjectString.lastIndexOf(searchString, position);
+    return lastIndex !== -1 && lastIndex === position;
+};
+
+String.prototype.startsWith = function (searchString, position) {
+    position = position || 0;
+    return this.substr(position, searchString.length) === searchString;
+};
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+var dateReviver = __webpack_require__(3);
+var parseResponseHeaders = __webpack_require__(4);
+
+/**
+ * Sends a request to given URL with given parameters
+ *
+ * @param {string} method - Method of the request.
+ * @param {string} uri - Request URI.
+ * @param {Function} successCallback - A callback called on success of the request.
+ * @param {Function} errorCallback - A callback called when a request failed.
+ * @param {string} [data] - Data to send in the request.
+ * @param {Object} [additionalHeaders] - Object with headers. IMPORTANT! This object does not contain default headers needed for every request.
+ */
+var xhrRequest = function (method, uri, data, additionalHeaders, successCallback, errorCallback) {
+    var request = new XMLHttpRequest();
+    request.open(method, encodeURI(uri), true);
+    request.setRequestHeader("OData-MaxVersion", "4.0");
+    request.setRequestHeader("OData-Version", "4.0");
+    request.setRequestHeader("Accept", "application/json");
+    request.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+
+    //set additional headers
+    if (additionalHeaders != null) {
+        for (var key in additionalHeaders) {
+            request.setRequestHeader(key, additionalHeaders[key]);
+        }
+    }
+
+    request.onreadystatechange = function () {
+        console.log(request.readyState);
+        if (request.readyState === 4) {
+            switch (request.status) {
+                case 200: // Success with content returned in response body.
+                case 201: // Success with content returned in response body.
+                case 204: // Success with no content returned in response body.
+                case 304: {// Success with Not Modified
+                    var responseData = null;
+                    if (request.responseText) {
+                        responseData = JSON.parse(request.responseText, dateReviver);
+                    }
+
+                    var response = {
+                        data: responseData,
+                        headers: parseResponseHeaders(request.getAllResponseHeaders()),
+                        status: request.status
+                    };
+
+                    successCallback(response);
+                    break;
+                }
+                default: // All other statuses are error cases.
+                    var error;
+                    try {
+                        error = JSON.parse(request.response).error;
+                    } catch (e) {
+                        error = new Error("Unexpected Error");
+                    }
+                    error.status = request.status;
+                    errorCallback(error);
+                    break;
+            }
+
+            request = null;
+        }
+    };
+
+    request.onerror = function () {
+        errorCallback({ message: "Network Error" });
+        request = null;
+    };
+
+    request.ontimeout = function (error) {
+        errorCallback({ message: "Request Timed Out" });
+        request = null;
+    };
+
+    data
+        ? request.send(data)
+        : request.send();
+};
+
+module.exports = xhrRequest;
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports) {
+
+module.exports = function dateReviver(key, value) {
+    ///<summary>
+    /// Private function to convert matching string values to Date objects.
+    ///</summary>
+    ///<param name="key" type="String">
+    /// The key used to identify the object property
+    ///</param>
+    ///<param name="value" type="String">
+    /// The string value representing a date
+    ///</param>
+    var a;
+    if (typeof value === 'string') {
+        a = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.exec(value);
+        if (a) {
+            return new Date(value);
+        }
+    }
+    return value;
+};
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports) {
+
+module.exports = function parseResponseHeaders(headerStr) {
+    var headers = {};
+    if (!headerStr) {
+        return headers;
+    }
+    var headerPairs = headerStr.split('\u000d\u000a');
+    for (var i = 0, ilen = headerPairs.length; i < ilen; i++) {
+        var headerPair = headerPairs[i];
+        var index = headerPair.indexOf('\u003a\u0020');
+        if (index > 0) {
+            headers[headerPair.substring(0, index)] = headerPair.substring(index + 2);
+        }
+    }
+    return headers;
+};
+
+/***/ }),
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var DWA = __webpack_require__(0);
 
-if (!String.prototype.endsWith) {
-    String.prototype.endsWith = function (searchString, position) {
-        var subjectString = this.toString();
-        if (typeof position !== 'number' || !isFinite(position) || Math.floor(position) !== position || position > subjectString.length) {
-            position = subjectString.length;
-        }
-        position -= searchString.length;
-        var lastIndex = subjectString.lastIndexOf(searchString, position);
-        return lastIndex !== -1 && lastIndex === position;
-    };
-}
-if (!String.prototype.startsWith) {
-    String.prototype.startsWith = function (searchString, position) {
-        position = position || 0;
-        return this.substr(position, searchString.length) === searchString;
-    };
+//string es6 polyfill
+if (!String.prototype.endsWith || !String.prototype.startsWith) {
+    __webpack_require__(1);
 }
 
 /**
@@ -196,7 +334,7 @@ function DynamicsWebApi(config) {
             if (typeof Xrm != "undefined") {
                 return Xrm.Page.context;
             }
-            else { throw new Error("Context is not available."); }
+            else { throw new Error("Xrm Context is not available."); }
         }
     };
 
@@ -229,26 +367,6 @@ function DynamicsWebApi(config) {
             value = _webApiUrl + value;
         }
 
-        return value;
-    };
-
-    var _dateReviver = function (key, value) {
-        ///<summary>
-        /// Private function to convert matching string values to Date objects.
-        ///</summary>
-        ///<param name="key" type="String">
-        /// The key used to identify the object property
-        ///</param>
-        ///<param name="value" type="String">
-        /// The string value representing a date
-        ///</param>
-        var a;
-        if (typeof value === 'string') {
-            a = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.exec(value);
-            if (a) {
-                return new Date(value);
-            }
-        }
         return value;
     };
 
@@ -376,26 +494,10 @@ function DynamicsWebApi(config) {
         }
     }
 
-    var _parseResponseHeaders = function (headerStr) {
-        var headers = {};
-        if (!headerStr) {
-            return headers;
-        }
-        var headerPairs = headerStr.split('\u000d\u000a');
-        for (var i = 0, ilen = headerPairs.length; i < ilen; i++) {
-            var headerPair = headerPairs[i];
-            var index = headerPair.indexOf('\u003a\u0020');
-            if (index > 0) {
-                headers[headerPair.substring(0, index)] = headerPair.substring(index + 2);
-            }
-        }
-        return headers;
-    }
-
     /**
      * Sends a request to given URL with given parameters
      *
-     * @param {string} action - Method of the request.
+     * @param {string} method - Method of the request.
      * @param {string} uri - Request URI.
      * @param {Function} successCallback - A callback called on success of the request.
      * @param {Function} errorCallback - A callback called when a request failed.
@@ -403,64 +505,25 @@ function DynamicsWebApi(config) {
      * @param {Object} [additionalHeaders] - Object with additional headers. IMPORTANT! This object does not contain default headers needed for every request.
      * @returns {Promise}
      */
-    var _sendRequest = function (action, uri, successCallback, errorCallback, data, additionalHeaders) {
-
-        var request = new XMLHttpRequest();
-        request.open(action, encodeURI(_webApiUrl + uri), true);
-        request.setRequestHeader("OData-MaxVersion", "4.0");
-        request.setRequestHeader("OData-Version", "4.0");
-        request.setRequestHeader("Accept", "application/json");
-        request.setRequestHeader("Content-Type", "application/json; charset=utf-8");
-
+    var _sendRequest = function (method, uri, successCallback, errorCallback, data, additionalHeaders) {
         if (_impersonateUserId && (!additionalHeaders || (additionalHeaders && !additionalHeaders["MSCRMCallerID"]))) {
-            request.setRequestHeader("MSCRMCallerID", _impersonateUserId);
+            if (!additionalHeaders) {
+                additionalHeaders = {};
+            }
+            additionalHeaders['MSCRMCallerID'] = _impersonateUserId;
         }
 
-        //set additional headers
-        if (additionalHeaders != null) {
-            var headerKeys = Object.keys(additionalHeaders);
-            for (var i = 0; i < headerKeys.length; i++) {
-                request.setRequestHeader(headerKeys[i], additionalHeaders[headerKeys[i]]);
-            }
+        var stringifiedData;
+        if (data) {
+            stringifiedData = JSON.stringify(data, _propertyReplacer);
         }
 
-        request.onreadystatechange = function () {
-            if (this.readyState === 4) {
-                request.onreadystatechange = null;
-                switch (this.status) {
-                    case 200: // Success with content returned in response body.
-                    case 201: // Success with content returned in response body.
-                    case 204: // Success with no content returned in response body.
-                    case 304: {// Success with Not Modified
-                        var responseData = null;
-                        if (this.responseText) {
-                            responseData = JSON.parse(this.responseText, _dateReviver);
-                        }
+        var executeRequest;
+        if (typeof XMLHttpRequest !== 'undefined') {
+            executeRequest = __webpack_require__(2);
+        }
 
-                        var response = {
-                            data: responseData,
-                            headers: _parseResponseHeaders(this.getAllResponseHeaders()),
-                            status: this.status
-                        };
-
-                        successCallback(response);
-                        break;
-                    }
-                    default: // All other statuses are error cases.
-                        //var error;
-                        //try {
-                        //    error = JSON.parse(request.response).error;
-                        //} catch (e) {
-                        //    error = new Error("Unexpected Error");
-                        //}
-                        errorCallback(this);
-                        break;
-                }
-            }
-        };
-        data
-            ? request.send(JSON.stringify(data, _propertyReplacer))
-            : request.send();
+        executeRequest(method, _webApiUrl + uri, stringifiedData, additionalHeaders, successCallback, errorCallback);
     }
 
     /**
@@ -559,7 +622,7 @@ function DynamicsWebApi(config) {
 
             if (options.orderBy != null && options.orderBy.length) {
                 _arrayParameterCheck(options.orderBy, "DynamicsWebApi." + functionName, "request.orderBy");
-                optionsArray.push("$orderBy=" + options.orderBy.join(','));
+                optionsArray.push("$orderby=" + options.orderBy.join(','));
             }
 
             if (options.returnRepresentation) {

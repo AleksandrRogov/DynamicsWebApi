@@ -10,7 +10,7 @@ global.Xrm = {
     }
 };
 
-var DWA = require("../lib/dwa.js");
+var DWA = require("../lib/dwa");
 var webApiUrl = "https://testorg.crm.dynamics.com/api/data/v8.2/";
 var webApiUrl81 = "https://testorg.crm.dynamics.com/api/data/v8.1/";
 var webApiUrl80 = "https://testorg.crm.dynamics.com/api/data/v8.0/";
@@ -233,10 +233,16 @@ var responseStubs = {
         }
     },
     upsertPreventCreateResponse: {
-        status: 404
+        status: 404,
+        responseText: JSON.stringify({
+            error: { message: "message" }
+        })
     },
     upsertPreventUpdateResponse: {
-        status: 412
+        status: 412,
+        responseText: JSON.stringify({
+            error: { message: "message" }
+        })
     },
     multipleWithLink: function () {
         var stub = dataStubs.multipleWithLink;

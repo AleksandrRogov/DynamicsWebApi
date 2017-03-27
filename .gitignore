@@ -249,3 +249,5 @@ ModelManifest.xml
 /lib/test.js
 /scripts
 /coverage
+/tests/browser
+/tests/todo

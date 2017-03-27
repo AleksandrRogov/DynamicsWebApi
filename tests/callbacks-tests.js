@@ -3,9 +3,9 @@ var expect = chai.expect;
 
 var sinon = require('sinon');
 
-var mocks = require("./stubs.js");
-var DWA = require("../lib/dwa.js");
-var DynamicsWebApiCallbacks = require("../lib/dynamics-web-api-callbacks.js");
+var mocks = require("./stubs");
+var DWA = require("../lib/dwa");
+var DynamicsWebApiCallbacks = require("../lib/dynamics-web-api-callbacks");
 var dynamicsWebApiTest = new DynamicsWebApiCallbacks({ webApiVersion: "8.2" });
 
 describe("callbacks -", function () {
@@ -2387,7 +2387,7 @@ describe("callbacks -", function () {
             };
 
             var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-            expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property($orderBy=name)", headers: {} });
+            expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property($orderby=name)", headers: {} });
 
             dwaRequest = {
                 expand: [{
@@ -2397,7 +2397,7 @@ describe("callbacks -", function () {
             };
 
             result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-            expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property($orderBy=name,subject)", headers: {} });
+            expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property($orderby=name,subject)", headers: {} });
         });
 
         it("expand - property,select empty", function () {
@@ -2510,7 +2510,7 @@ describe("callbacks -", function () {
             };
 
             result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-            expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property($select=name,subject;$top=3;$orderBy=order)", headers: {} });
+            expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property($select=name,subject;$top=3;$orderby=order)", headers: {} });
         });
 
         it("filter empty", function () {
@@ -2717,7 +2717,7 @@ describe("callbacks -", function () {
             };
 
             var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-            expect(result).to.deep.equal({ url: stubUrl, query: "$orderBy=name", headers: {} });
+            expect(result).to.deep.equal({ url: stubUrl, query: "$orderby=name", headers: {} });
 
             dwaRequest = {
                 orderBy: ["name", "subject"]
@@ -2725,7 +2725,7 @@ describe("callbacks -", function () {
 
             result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
             expect(result).to.deep.equal({
-                url: stubUrl, query: "$orderBy=name,subject", headers: {}
+                url: stubUrl, query: "$orderby=name,subject", headers: {}
             });
         });
 
@@ -2908,7 +2908,7 @@ describe("callbacks -", function () {
             };
 
             var result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-            expect(result).to.deep.equal({ url: stubUrl, query: "$select=name,subject&$top=5&$orderBy=order", headers: {} });
+            expect(result).to.deep.equal({ url: stubUrl, query: "$select=name,subject&$top=5&$orderby=order", headers: {} });
 
             dwaRequest.expand = [{
                 property: "property",
@@ -2920,26 +2920,26 @@ describe("callbacks -", function () {
             }];
 
             result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-            expect(result).to.deep.equal({ url: stubUrl, query: "$select=name,subject&$top=5&$orderBy=order&$expand=property($select=name;$orderBy=order),property2($select=name3)", headers: {} });
+            expect(result).to.deep.equal({ url: stubUrl, query: "$select=name,subject&$top=5&$orderby=order&$expand=property($select=name;$orderby=order),property2($select=name3)", headers: {} });
 
             dwaRequest.expand = null;
             dwaRequest.returnRepresentation = true;
 
             result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-            expect(result).to.deep.equal({ url: stubUrl, query: "$select=name,subject&$top=5&$orderBy=order", headers: { Prefer: DWA.Prefer.ReturnRepresentation } });
+            expect(result).to.deep.equal({ url: stubUrl, query: "$select=name,subject&$top=5&$orderby=order", headers: { Prefer: DWA.Prefer.ReturnRepresentation } });
 
             dwaRequest.top = 0;
             dwaRequest.count = true;
             dwaRequest.impersonate = mocks.data.testEntityId;
 
             result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-            expect(result).to.deep.equal({ url: stubUrl, query: "$select=name,subject&$count=true&$orderBy=order", headers: { Prefer: DWA.Prefer.ReturnRepresentation, MSCRMCallerID: mocks.data.testEntityId } });
+            expect(result).to.deep.equal({ url: stubUrl, query: "$select=name,subject&$count=true&$orderby=order", headers: { Prefer: DWA.Prefer.ReturnRepresentation, MSCRMCallerID: mocks.data.testEntityId } });
 
             dwaRequest.impersonate = null;
             dwaRequest.navigationProperty = "nav";
 
             result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "", stubUrl);
-            expect(result).to.deep.equal({ url: stubUrl + "/nav", query: "$select=name,subject&$count=true&$orderBy=order", headers: { Prefer: DWA.Prefer.ReturnRepresentation } });
+            expect(result).to.deep.equal({ url: stubUrl + "/nav", query: "$select=name,subject&$count=true&$orderby=order", headers: { Prefer: DWA.Prefer.ReturnRepresentation } });
 
             dwaRequest.navigationProperty = null;
             dwaRequest.returnRepresentation = false;
@@ -2947,7 +2947,7 @@ describe("callbacks -", function () {
             dwaRequest.select[0] = "/nav";
 
             result = dynamicsWebApiTest.__forTestsOnly__.convertOptions(dwaRequest, "retrieve", stubUrl);
-            expect(result).to.deep.equal({ url: stubUrl + "/nav", query: "$select=subject&$count=true&$orderBy=order", headers: { Prefer: 'odata.include-annotations="*"' } });
+            expect(result).to.deep.equal({ url: stubUrl + "/nav", query: "$select=subject&$count=true&$orderby=order", headers: { Prefer: 'odata.include-annotations="*"' } });
         });
     });
 
