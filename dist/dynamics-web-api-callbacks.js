@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.1.2 (c) 2017 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.1.3 (c) 2017 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -199,7 +199,6 @@ var xhrRequest = function (method, uri, data, additionalHeaders, successCallback
     }
 
     request.onreadystatechange = function () {
-        console.log(request.readyState);
         if (request.readyState === 4) {
             switch (request.status) {
                 case 200: // Success with content returned in response body.

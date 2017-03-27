@@ -1,4 +1,4 @@
-/*! dynamics-web-api v1.1.2 (c) 2017 Aleksandr Rogov */
+/*! dynamics-web-api v1.1.3 (c) 2017 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -199,7 +199,6 @@ var xhrRequest = function (method, uri, data, additionalHeaders, successCallback
     }
 
     request.onreadystatechange = function () {
-        console.log(request.readyState);
         if (request.readyState === 4) {
             switch (request.status) {
                 case 200: // Success with content returned in response body.
@@ -729,21 +728,21 @@ function DynamicsWebApi(config) {
      * @returns {Promise}
      */
     this.retrieveRequest = function (request) {
-        return Promise.resolve(request).then(function (request) {
-            _parameterCheck(request, "DynamicsWebApi.retrieve", "request");
+        //return Promise.resolve(request).then(function (request) {
+        _parameterCheck(request, "DynamicsWebApi.retrieve", "request");
 
-            var result = convertRequestToLink(request, "retrieve");
+        var result = convertRequestToLink(request, "retrieve");
 
-            //copy locally
-            var select = request.select;
-            return _sendRequest("GET", result.url, null, result.headers).then(function (response) {
-                if (select != null && select.length == 1 && select[0].endsWith("/$ref") && response.data["@odata.id"] != null) {
-                    return _convertToReferenceObject(response.data);
-                }
+        //copy locally
+        var select = request.select;
+        return _sendRequest("GET", result.url, null, result.headers).then(function (response) {
+            if (select != null && select.length == 1 && select[0].endsWith("/$ref") && response.data["@odata.id"] != null) {
+                return _convertToReferenceObject(response.data);
+            }
 
-                return response.data;
-            });
+            return response.data;
         });
+        //});
     };
 
     /**
