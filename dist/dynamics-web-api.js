@@ -1,4 +1,4 @@
-/*! dynamics-web-api v1.1.3 (c) 2017 Aleksandr Rogov */
+/*! dynamics-web-api v1.1.4 (c) 2017 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -74,7 +74,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 9);
+/******/ 	return __webpack_require__(__webpack_require__.s = 11);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -587,7 +587,24 @@ var Utility = {
      * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
      * @returns {string}
      */
-    buildFunctionParameters: __webpack_require__(8)
+    buildFunctionParameters: __webpack_require__(8),
+
+    /**
+     * Parses a paging cookie returned in response
+     *
+     * @param {string} pageCookies - Page cookies returned in @Microsoft.Dynamics.CRM.fetchxmlpagingcookie.
+     * @param {number} currentPageNumber - A current page number. Fix empty paging-cookie for complex fetch xmls.
+     * @returns {{cookie: "", number: 0, next: 1}}
+     */
+    getFetchXmlPagingCookie: __webpack_require__(10),
+
+    /**
+     * Converts a response to a reference object
+     *
+     * @param {Object} responseData - Response object
+     * @returns {ReferenceObject}
+     */
+    convertToReferenceObject: __webpack_require__(9)
 }
 
 module.exports = Utility;
@@ -674,6 +691,65 @@ module.exports = function buildFunctionParameters(parameters) {
 
 /***/ }),
 /* 9 */
+/***/ (function(module, exports) {
+
+/**
+ * @typedef {Object} ReferenceObject
+ * @property {string} id Id of the Entity record
+ * @property {string} collection Collection name that the record belongs to
+ * @property {string} oDataContext OData context returned in the response
+ */
+
+/**
+ * Converts a response to a reference object
+ *
+ * @param {Object} responseData - Response object
+ * @returns {ReferenceObject}
+ */
+module.exports = function convertToReferenceObject(responseData) {
+    var result = /\/(\w+)\(([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})/i.exec(responseData["@odata.id"]);
+    return { id: result[2], collection: result[1], oDataContext: responseData["@odata.context"] };
+}
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports) {
+
+/**
+ * Parses a paging cookie returned in response
+ *
+ * @param {string} pageCookies - Page cookies returned in @Microsoft.Dynamics.CRM.fetchxmlpagingcookie.
+ * @param {number} currentPageNumber - A current page number. Fix empty paging-cookie for complex fetch xmls.
+ * @returns {{cookie: "", number: 0, next: 1}}
+ */
+module.exports = function getFetchXmlPagingCookie(pageCookies, currentPageNumber) {
+    pageCookies = pageCookies ? pageCookies : "";
+    currentPageNumber = currentPageNumber ? currentPageNumber : 1;
+
+    //get the page cokies
+    pageCookies = unescape(unescape(pageCookies));
+
+    var info = /pagingcookie="(<cookie page="(\d+)".+<\/cookie>)/.exec(pageCookies);
+
+    if (info != null) {
+        var page = parseInt(info[2]);
+        return {
+            cookie: info[1].replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '\'').replace(/\'/g, '&' + 'quot;'),
+            page: page,
+            nextPage: page + 1
+        };
+    } else {
+        //http://stackoverflow.com/questions/41262772/execution-of-fetch-xml-using-web-api-dynamics-365 workaround
+        return {
+            cookie: "",
+            page: currentPageNumber,
+            nextPage: currentPageNumber + 1
+        }
+    }
+}
+
+/***/ }),
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var DWA = __webpack_require__(0);
@@ -811,11 +887,6 @@ function DynamicsWebApi(config) {
     if (config != null)
         this.setConfig(config);
 
-    var _convertToReferenceObject = function (responseData) {
-        var result = /\/(\w+)\(([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})/i.exec(responseData["@odata.id"]);
-        return { id: result[2], collection: result[1], oDataContext: responseData["@odata.context"] };
-    }
-
     /**
      * Sends an asynchronous request to create a new record.
      *
@@ -865,7 +936,7 @@ function DynamicsWebApi(config) {
             var select = request.select;
             return _sendRequest("GET", result.url, null, result.headers).then(function (response) {
                 if (select != null && select.length == 1 && select[0].endsWith("/$ref") && response.data["@odata.id"] != null) {
-                    return _convertToReferenceObject(response.data);
+                    return Utility.convertToReferenceObject(response.data);
                 }
 
                 return response.data;
@@ -920,7 +991,7 @@ function DynamicsWebApi(config) {
 
         return _sendRequest("GET", url).then(function (response) {
             if (select != null && select.length == 1 && select[0].endsWith("/$ref") && response.data["@odata.id"] != null) {
-                return _convertToReferenceObject(response.data);
+                return Utility.convertToReferenceObject(response.data);
             }
 
             return response.data;
@@ -1321,41 +1392,6 @@ function DynamicsWebApi(config) {
     }
 
     /**
-     * Parses a paging cookie returned in response
-     *
-     * @param {string} pageCookies - Page cookies returned in @Microsoft.Dynamics.CRM.fetchxmlpagingcookie.
-     * @param {number} currentPageNumber - A current page number. Fix empty paging-cookie for complex fetch xmls.
-     * @returns {{cookie: "", number: 0, next: 1}}
-     */
-    var _getPagingCookie = function (pageCookies, currentPageNumber) {
-        try {
-            //get the page cokies
-            pageCookies = unescape(unescape(pageCookies));
-
-            var info = /pagingcookie="(<cookie page="(\d+)".+<\/cookie>)/.exec(pageCookies);
-
-            if (info != null) {
-                var page = parseInt(info[2]);
-                return {
-                    cookie: info[1].replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '\'').replace(/\'/g, '&' + 'quot;'),
-                    page: page,
-                    nextPage: page + 1
-                };
-            } else {
-                //http://stackoverflow.com/questions/41262772/execution-of-fetch-xml-using-web-api-dynamics-365 workaround
-                return {
-                    cookie: "",
-                    page: currentPageNumber,
-                    nextPage: currentPageNumber + 1
-                }
-            }
-
-        } catch (e) {
-            throw new Error(e);
-        }
-    }
-
-    /**
      * Sends an asynchronous request to count records. Returns: DWA.Types.FetchXmlResponse
      *
      * @param {string} collection - An object that represents all possible options for a current request.
@@ -1403,7 +1439,7 @@ function DynamicsWebApi(config) {
             .then(function (response) {
 
                 if (response.data['@Microsoft.Dynamics.CRM.fetchxmlpagingcookie'] != null) {
-                    response.data.PagingInfo = _getPagingCookie(response.data['@Microsoft.Dynamics.CRM.fetchxmlpagingcookie'], pageNumber);
+                    response.data.PagingInfo = Utility.getFetchXmlPagingCookie(response.data['@Microsoft.Dynamics.CRM.fetchxmlpagingcookie'], pageNumber);
                 }
 
                 if (response.data['@odata.context'] != null) {
@@ -1669,7 +1705,6 @@ function DynamicsWebApi(config) {
 
         return new DynamicsWebApi(config);
     }
-
 };
 
 module.exports = DynamicsWebApi;
