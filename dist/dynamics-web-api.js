@@ -74,7 +74,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 5);
+/******/ 	return __webpack_require__(__webpack_require__.s = 9);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -150,6 +150,145 @@ module.exports = DWA;
 /* 1 */
 /***/ (function(module, exports) {
 
+function throwParameterError(functionName, parameterName, type) {
+    throw new Error(type
+        ? functionName + " requires the " + parameterName + " parameter is a " + type
+        : functionName + " requires the " + parameterName + " parameter.");
+};
+
+var ErrorHelper = {
+    errorHandler: function (req) {
+        ///<summary>
+        /// Private function return an Error object to the errorCallback
+        ///</summary>
+        ///<param name="req" type="XMLHttpRequest">
+        /// The XMLHttpRequest response that returned an error.
+        ///</param>
+        ///<returns>Error</returns>
+        return new Error("Error : " +
+            req.status + ": " +
+            req.message);
+    },
+
+    parameterCheck: function (parameter, functionName, parameterName, type) {
+        ///<summary>
+        /// Private function used to check whether required parameters are null or undefined
+        ///</summary>
+        ///<param name="parameter" type="Object">
+        /// The parameter to check;
+        ///</param>
+        ///<param name="message" type="String">
+        /// The error message text to include when the error is thrown.
+        ///</param>
+        if ((typeof parameter === "undefined") || parameter === null || parameter == "") {
+            throwParameterError(functionName, parameterName, type);
+        }
+    },
+
+    stringParameterCheck: function (parameter, functionName, parameterName) {
+        ///<summary>
+        /// Private function used to check whether required parameters are null or undefined
+        ///</summary>
+        ///<param name="parameter" type="String">
+        /// The string parameter to check;
+        ///</param>
+        ///<param name="message" type="String">
+        /// The error message text to include when the error is thrown.
+        ///</param>
+        if (typeof parameter != "string") {
+            throwParameterError(functionName, parameterName, "String");
+        }
+    },
+
+    arrayParameterCheck: function (parameter, functionName, parameterName) {
+        ///<summary>
+        /// Private function used to check whether required parameters are null or undefined
+        ///</summary>
+        ///<param name="parameter" type="String">
+        /// The string parameter to check;
+        ///</param>
+        ///<param name="message" type="String">
+        /// The error message text to include when the error is thrown.
+        ///</param>
+        if (parameter.constructor !== Array) {
+            throwParameterError(functionName, parameterName, "Array");
+        }
+    },
+
+    numberParameterCheck : function (parameter, functionName, parameterName) {
+        ///<summary>
+        /// Private function used to check whether required parameters are null or undefined
+        ///</summary>
+        ///<param name="parameter" type="Number">
+        /// The string parameter to check;
+        ///</param>
+        ///<param name="message" type="String">
+        /// The error message text to include when the error is thrown.
+        ///</param>
+        if (typeof parameter != "number") {
+            throwParameterError(functionName, parameterName, "Number");
+        }
+    },
+
+    boolParameterCheck: function (parameter, functionName, parameterName) {
+        ///<summary>
+        /// Private function used to check whether required parameters are null or undefined
+        ///</summary>
+        ///<param name="parameter" type="Boolean">
+        /// The string parameter to check;
+        ///</param>
+        ///<param name="message" type="String">
+        /// The error message text to include when the error is thrown.
+        ///</param>
+        if (typeof parameter != "boolean") {
+            throwParameterError(functionName, parameterName, "Boolean");
+        }
+    },
+
+    guidParameterCheck: function (parameter, functionName, parameterName) {
+        ///<summary>
+        /// Private function used to check whether required parameter is a valid GUID
+        ///</summary>
+        ///<param name="parameter" type="String">
+        /// The GUID parameter to check;
+        ///</param>
+        ///<param name="message" type="String">
+        /// The error message text to include when the error is thrown.
+        ///</param>
+        /// <returns type="String" />
+
+        try {
+            var match = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(parameter)[0];
+
+            return match;
+        }
+        catch (error) {
+            throwParameterError(functionName, parameterName, "GUID String");
+        }
+    },
+
+    callbackParameterCheck: function (callbackParameter, functionName, parameterName) {
+        ///<summary>
+        /// Private function used to check whether required callback parameters are functions
+        ///</summary>
+        ///<param name="callbackParameter" type="Function">
+        /// The callback parameter to check;
+        ///</param>
+        ///<param name="message" type="String">
+        /// The error message text to include when the error is thrown.
+        ///</param>
+        if (typeof callbackParameter != "function") {
+            throwParameterError(functionName, parameterName, "Function");
+        }
+    }
+};
+
+module.exports = ErrorHelper;
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports) {
+
 String.prototype.endsWith = function (searchString, position) {
     var subjectString = this.toString();
     if (typeof position !== 'number' || !isFinite(position) || Math.floor(position) !== position || position > subjectString.length) {
@@ -166,12 +305,12 @@ String.prototype.startsWith = function (searchString, position) {
 };
 
 /***/ }),
-/* 2 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
-var dateReviver = __webpack_require__(3);
-var parseResponseHeaders = __webpack_require__(4);
+var dateReviver = __webpack_require__(6);
+var parseResponseHeaders = __webpack_require__(7);
 
 /**
  * Sends a request to given URL with given parameters
@@ -253,7 +392,208 @@ var xhrRequest = function (method, uri, data, additionalHeaders, successCallback
 module.exports = xhrRequest;
 
 /***/ }),
-/* 3 */
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var DWA = __webpack_require__(0);
+var ErrorHelper = __webpack_require__(1);
+
+/**
+ * @typedef {Object} ConvertedRequestOptions
+ * @property {string} url URL (without query)
+ * @property {string} query Query String
+ * @property {Object} headers Heades object (always an Object; can be empty: {})
+ */
+
+/**
+ * @typedef {Object} ConvertedRequest
+ * @property {string} url URL (including Query String)
+ * @property {Object} headers Heades object (always an Object; can be empty: {})
+ */
+
+/**
+ * Converts optional parameters of the request to URL. If expand parameter exists this function is called recursively.
+ *
+ * @param {Object} request - Request object
+ * @param {string} functionName - Name of the function that converts a request (for Error Handling)
+ * @param {string} url - URL beginning (with required parameters)
+ * @param {string} [joinSymbol] - URL beginning (with required parameters)
+ * @returns {ConvertedRequestOptions}
+ */
+function convertRequestOptions (request, functionName, url, joinSymbol) {
+    var headers = {};
+    var requestArray = [];
+    joinSymbol = joinSymbol != null ? joinSymbol : "&";
+
+    if (request) {
+        if (request.navigationProperty) {
+            ErrorHelper.stringParameterCheck(request.navigationProperty, "DynamicsWebApi." + functionName, "request.navigationProperty");
+            url += "/" + request.navigationProperty;
+        }
+
+        if (request.select != null && request.select.length) {
+            ErrorHelper.arrayParameterCheck(request.select, "DynamicsWebApi." + functionName, "request.select");
+
+            if (functionName == "retrieve" && request.select.length == 1 && request.select[0].endsWith("/$ref")) {
+                url += "/" + request.select[0];
+            }
+            else {
+                if (request.select[0].startsWith("/") && functionName == "retrieve") {
+                    if (request.navigationProperty == null) {
+                        url += request.select.shift();
+                    }
+                    else {
+                        request.select.shift();
+                    }
+                }
+
+                //check if anything left in the array
+                if (request.select.length) {
+                    requestArray.push("$select=" + request.select.join(','));
+                }
+            }
+        }
+
+        if (request.filter) {
+            ErrorHelper.stringParameterCheck(request.filter, "DynamicsWebApi." + functionName, "request.filter");
+            requestArray.push("$filter=" + request.filter);
+        }
+
+        if (request.savedQuery) {
+            requestArray.push("savedQuery=" + ErrorHelper.guidParameterCheck(request.savedQuery, "DynamicsWebApi." + functionName, "request.savedQuery"));
+        }
+
+        if (request.userQuery) {
+            requestArray.push("userQuery=" + ErrorHelper.guidParameterCheck(request.userQuery, "DynamicsWebApi." + functionName, "request.userQuery"));
+        }
+
+        if (request.maxPageSize && request.maxPageSize > 0) {
+            ErrorHelper.numberParameterCheck(request.maxPageSize, "DynamicsWebApi." + functionName, "request.maxPageSize");
+            headers['Prefer'] = 'odata.maxpagesize=' + request.maxPageSize;
+        }
+
+        if (request.count) {
+            ErrorHelper.boolParameterCheck(request.count, "DynamicsWebApi." + functionName, "request.count");
+            requestArray.push("$count=" + request.count);
+        }
+
+        if (request.top && request.top > 0) {
+            ErrorHelper.numberParameterCheck(request.top, "DynamicsWebApi." + functionName, "request.top");
+            requestArray.push("$top=" + request.top);
+        }
+
+        if (request.orderBy != null && request.orderBy.length) {
+            ErrorHelper.arrayParameterCheck(request.orderBy, "DynamicsWebApi." + functionName, "request.orderBy");
+            requestArray.push("$orderby=" + request.orderBy.join(','));
+        }
+
+        if (request.returnRepresentation) {
+            ErrorHelper.boolParameterCheck(request.returnRepresentation, "DynamicsWebApi." + functionName, "request.returnRepresentation");
+            headers['Prefer'] = DWA.Prefer.ReturnRepresentation;
+        }
+
+        if (request.includeAnnotations) {
+            ErrorHelper.stringParameterCheck(request.includeAnnotations, "DynamicsWebApi." + functionName, "request.includeAnnotations");
+            headers['Prefer'] = 'odata.include-annotations="' + request.includeAnnotations + '"';
+        }
+
+        if (request.ifmatch != null && request.ifnonematch != null) {
+            throw Error("DynamicsWebApi." + functionName + ". Either one of request.ifmatch or request.ifnonematch parameters shoud be used in a call, not both.")
+        }
+
+        if (request.ifmatch) {
+            ErrorHelper.stringParameterCheck(request.ifmatch, "DynamicsWebApi." + functionName, "request.ifmatch");
+            headers['If-Match'] = request.ifmatch;
+        }
+
+        if (request.ifnonematch) {
+            ErrorHelper.stringParameterCheck(request.ifnonematch, "DynamicsWebApi." + functionName, "request.ifnonematch");
+            headers['If-None-Match'] = request.ifnonematch;
+        }
+
+        if (request.impersonate) {
+            ErrorHelper.stringParameterCheck(request.impersonate, "DynamicsWebApi." + functionName, "request.impersonate");
+            headers['MSCRMCallerID'] = ErrorHelper.guidParameterCheck(request.impersonate, "DynamicsWebApi." + functionName, "request.impersonate");
+        }
+
+        if (request.expand != null && request.expand.length) {
+            ErrorHelper.arrayParameterCheck(request.expand, "DynamicsWebApi." + functionName, "request.expand");
+            var expandRequestArray = [];
+            for (var i = 0; i < request.expand.length; i++) {
+                if (request.expand[i].property) {
+                    var expandConverted = convertRequestOptions(request.expand[i], functionName + " $expand", null, ";");
+                    var expandQuery = expandConverted.query;
+                    if (expandQuery && expandQuery.length) {
+                        expandQuery = "(" + expandQuery + ")";
+                    }
+                    expandRequestArray.push(request.expand[i].property + expandQuery);
+                }
+            }
+            if (expandRequestArray.length) {
+                requestArray.push("$expand=" + encodeURI(expandRequestArray.join(",")));
+            }
+        }
+    }
+
+    return { url: url, query: requestArray.join(joinSymbol), headers: headers };
+}
+
+/**
+ * Converts a request object to URL link
+ *
+ * @param {Object} request - Request object
+ * @param {string} [functionName] - Name of the function that converts a request (for Error Handling only)
+ * @returns {ConvertedRequest}
+ */
+function convertRequest(request, functionName) {
+
+    if (!request.collection) {
+        ErrorHelper.parameterCheck(request.collection, "DynamicsWebApi." + functionName, "request.collection");
+    }
+    else {
+        ErrorHelper.stringParameterCheck(request.collection, "DynamicsWebApi." + functionName, "request.collection");
+    }
+
+    var url = request.collection.toLowerCase();
+
+    if (request.id) {
+        request.id = ErrorHelper.guidParameterCheck(request.id, "DynamicsWebApi." + functionName, "request.id");
+        url += "(" + request.id + ")";
+    }
+
+    var result = convertRequestOptions(request, functionName, url);
+
+    if (result.query)
+        result.url += "?" + result.query;
+
+    return { url: result.url, headers: result.headers };
+};
+
+var RequestConverter = {
+    convertRequestOptions: convertRequestOptions,
+    convertRequest: convertRequest
+};
+
+module.exports = RequestConverter;
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var Utility = {
+    /**
+     * Builds parametes for a funciton. Returns '()' (if no parameters) or '([params])?[query]'
+     *
+     * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
+     * @returns {string}
+     */
+    buildFunctionParameters: __webpack_require__(8)
+}
+
+module.exports = Utility;
+
+/***/ }),
+/* 6 */
 /***/ (function(module, exports) {
 
 module.exports = function dateReviver(key, value) {
@@ -277,7 +617,7 @@ module.exports = function dateReviver(key, value) {
 };
 
 /***/ }),
-/* 4 */
+/* 7 */
 /***/ (function(module, exports) {
 
 module.exports = function parseResponseHeaders(headerStr) {
@@ -297,15 +637,56 @@ module.exports = function parseResponseHeaders(headerStr) {
 };
 
 /***/ }),
-/* 5 */
+/* 8 */
+/***/ (function(module, exports) {
+
+/**
+ * Builds parametes for a funciton. Returns '()' (if no parameters) or '([params])?[query]'
+ *
+ * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
+ * @returns {string}
+ */
+module.exports = function buildFunctionParameters(parameters) {
+    if (parameters) {
+        var parameterNames = Object.keys(parameters);
+        var functionParameters = "";
+        var urlQuery = "";
+
+        for (var i = 1; i <= parameterNames.length; i++) {
+            var parameterName = parameterNames[i - 1];
+            var value = parameters[parameterName];
+
+            if (i > 1) {
+                functionParameters += ",";
+                urlQuery += "&";
+            }
+
+            functionParameters += parameterName + "=@p" + i;
+            urlQuery += "@p" + i + "=" + ((typeof value == "string") ? "'" + value + "'" : value);
+        }
+
+        return "(" + functionParameters + ")?" + urlQuery;
+    }
+    else {
+        return "()";
+    }
+};
+
+/***/ }),
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var DWA = __webpack_require__(0);
+var Utility = __webpack_require__(5);
+var RequestConverter = __webpack_require__(4);
+var ErrorHelper = __webpack_require__(1);
 
 //string es6 polyfill
 if (!String.prototype.endsWith || !String.prototype.startsWith) {
-    __webpack_require__(1);
+    __webpack_require__(2);
 }
+
+
 
 /**
  * Configuration object for DynamicsWebApi
@@ -396,122 +777,13 @@ function DynamicsWebApi(config) {
 
         var executeRequest;
         if (typeof XMLHttpRequest !== 'undefined') {
-            executeRequest = __webpack_require__(2);
+            executeRequest = __webpack_require__(3);
         }
 
         return new Promise(function (resolve, reject) {
             executeRequest(method, _webApiUrl + uri, stringifiedData, additionalHeaders, resolve, reject);
         });
     };
-
-    var _errorHandler = function (req) {
-        ///<summary>
-        /// Private function return an Error object to the errorCallback
-        ///</summary>
-        ///<param name="req" type="XMLHttpRequest">
-        /// The XMLHttpRequest response that returned an error.
-        ///</param>
-        ///<returns>Error</returns>
-        return new Error("Error : " +
-            req.status + ": " +
-            req.statusText + ": " +
-            JSON.parse(req.responseText).error.message);
-    };
-
-    var _parameterCheck = function (parameter, functionName, parameterName, type) {
-        ///<summary>
-        /// Private function used to check whether required parameters are null or undefined
-        ///</summary>
-        ///<param name="parameter" type="Object">
-        /// The parameter to check;
-        ///</param>
-        ///<param name="message" type="String">
-        /// The error message text to include when the error is thrown.
-        ///</param>
-        if ((typeof parameter === "undefined") || parameter === null || parameter == "") {
-            throw new Error(type
-                ? functionName + " requires the " + parameterName + " parameter with type: " + type
-                : functionName + " requires the " + parameterName + " parameter.");
-        }
-    };
-    var _stringParameterCheck = function (parameter, functionName, parameterName) {
-        ///<summary>
-        /// Private function used to check whether required parameters are null or undefined
-        ///</summary>
-        ///<param name="parameter" type="String">
-        /// The string parameter to check;
-        ///</param>
-        ///<param name="message" type="String">
-        /// The error message text to include when the error is thrown.
-        ///</param>
-        if (typeof parameter != "string") {
-            throw new Error(functionName + " requires the " + parameterName + " parameter is a String.");
-        }
-    };
-    var _arrayParameterCheck = function (parameter, functionName, parameterName) {
-        ///<summary>
-        /// Private function used to check whether required parameters are null or undefined
-        ///</summary>
-        ///<param name="parameter" type="String">
-        /// The string parameter to check;
-        ///</param>
-        ///<param name="message" type="String">
-        /// The error message text to include when the error is thrown.
-        ///</param>
-        if (parameter.constructor !== Array) {
-            throw new Error(functionName + " requires the " + parameterName + " parameter is an Array.");
-        }
-    };
-    var _numberParameterCheck = function (parameter, functionName, parameterName) {
-        ///<summary>
-        /// Private function used to check whether required parameters are null or undefined
-        ///</summary>
-        ///<param name="parameter" type="Number">
-        /// The string parameter to check;
-        ///</param>
-        ///<param name="message" type="String">
-        /// The error message text to include when the error is thrown.
-        ///</param>
-        if (typeof parameter != "number") {
-            throw new Error(functionName + " requires the " + parameterName + " parameter is a Number.");
-        }
-    };
-    var _boolParameterCheck = function (parameter, functionName, parameterName) {
-        ///<summary>
-        /// Private function used to check whether required parameters are null or undefined
-        ///</summary>
-        ///<param name="parameter" type="Boolean">
-        /// The string parameter to check;
-        ///</param>
-        ///<param name="message" type="String">
-        /// The error message text to include when the error is thrown.
-        ///</param>
-        if (typeof parameter != "boolean") {
-            throw new Error(functionName + " requires the " + parameterName + " parameter is a Boolean.");
-        }
-    };
-
-    var _guidParameterCheck = function (parameter, functionName, parameterName) {
-        ///<summary>
-        /// Private function used to check whether required parameter is a valid GUID
-        ///</summary>
-        ///<param name="parameter" type="String">
-        /// The GUID parameter to check;
-        ///</param>
-        ///<param name="message" type="String">
-        /// The error message text to include when the error is thrown.
-        ///</param>
-        /// <returns type="String" />
-
-        try {
-            var match = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(parameter)[0];
-
-            return match;
-        }
-        catch (error) {
-            throw new Error(functionName + " requires the " + parameterName + " parameter is a GUID String.");
-        }
-    }
 
     /**
      * Sets the configuration parameters for DynamicsWebApi helper.
@@ -521,18 +793,18 @@ function DynamicsWebApi(config) {
     this.setConfig = function (config) {
 
         if (config.webApiVersion) {
-            _stringParameterCheck(config.webApiVersion, "DynamicsWebApi.setConfig", "config.webApiVersion");
+            ErrorHelper.stringParameterCheck(config.webApiVersion, "DynamicsWebApi.setConfig", "config.webApiVersion");
             _webApiVersion = config.webApiVersion;
             _webApiUrl = _initUrl();
         }
 
         if (config.webApiUrl) {
-            _stringParameterCheck(config.webApiUrl, "DynamicsWebApi.setConfig", "config.webApiUrl");
+            ErrorHelper.stringParameterCheck(config.webApiUrl, "DynamicsWebApi.setConfig", "config.webApiUrl");
             _webApiUrl = config.webApiUrl;
         }
 
         if (config.impersonate) {
-            _impersonateUserId = _guidParameterCheck(config.impersonate, "DynamicsWebApi.setConfig", "config.impersonate");
+            _impersonateUserId = ErrorHelper.guidParameterCheck(config.impersonate, "DynamicsWebApi.setConfig", "config.impersonate");
         }
     }
 
@@ -544,152 +816,6 @@ function DynamicsWebApi(config) {
         return { id: result[2], collection: result[1], oDataContext: responseData["@odata.context"] };
     }
 
-    var convertOptions = function (options, functionName, url, joinSymbol) {
-        /// <param name="options" type="dwaRequest">Options</param>
-
-        var headers = {};
-        var optionsArray = [];
-        joinSymbol = joinSymbol != null ? joinSymbol : "&";
-
-        if (options) {
-            if (options.navigationProperty) {
-                _stringParameterCheck(options.navigationProperty, "DynamicsWebApi." + functionName, "request.navigationProperty");
-                url += "/" + options.navigationProperty;
-            }
-
-            if (options.select != null && options.select.length) {
-                _arrayParameterCheck(options.select, "DynamicsWebApi." + functionName, "request.select");
-
-                if (functionName == "retrieve" && options.select.length == 1 && options.select[0].endsWith("/$ref")) {
-                    url += "/" + options.select[0];
-                }
-                else {
-                    if (options.select[0].startsWith("/") && functionName == "retrieve") {
-                        if (options.navigationProperty == null) {
-                            url += options.select.shift();
-                        }
-                        else {
-                            options.select.shift();
-                        }
-                    }
-
-                    //check if anything left in the array
-                    if (options.select.length) {
-                        optionsArray.push("$select=" + options.select.join(','));
-                    }
-                }
-            }
-
-            if (options.filter) {
-                _stringParameterCheck(options.filter, "DynamicsWebApi." + functionName, "request.filter");
-                optionsArray.push("$filter=" + options.filter);
-            }
-
-            if (options.savedQuery) {
-                optionsArray.push("savedQuery=" + _guidParameterCheck(options.savedQuery, "DynamicsWebApi." + functionName, "request.savedQuery"));
-            }
-
-            if (options.userQuery) {
-                optionsArray.push("userQuery=" + _guidParameterCheck(options.userQuery, "DynamicsWebApi." + functionName, "request.userQuery"));
-            }
-
-            if (options.maxPageSize && options.maxPageSize > 0) {
-                _numberParameterCheck(options.maxPageSize, "DynamicsWebApi." + functionName, "request.maxPageSize");
-                headers['Prefer'] = 'odata.maxpagesize=' + options.maxPageSize;
-            }
-
-            if (options.count) {
-                _boolParameterCheck(options.count, "DynamicsWebApi." + functionName, "request.count");
-                optionsArray.push("$count=" + options.count);
-            }
-
-            if (options.top && options.top > 0) {
-                _numberParameterCheck(options.top, "DynamicsWebApi." + functionName, "request.top");
-                optionsArray.push("$top=" + options.top);
-            }
-
-            if (options.orderBy != null && options.orderBy.length) {
-                _arrayParameterCheck(options.orderBy, "DynamicsWebApi." + functionName, "request.orderBy");
-                optionsArray.push("$orderby=" + options.orderBy.join(','));
-            }
-
-            if (options.returnRepresentation) {
-                _boolParameterCheck(options.returnRepresentation, "DynamicsWebApi." + functionName, "request.returnRepresentation");
-                headers['Prefer'] = DWA.Prefer.ReturnRepresentation;
-            }
-
-            if (options.includeAnnotations) {
-                _stringParameterCheck(options.includeAnnotations, "DynamicsWebApi." + functionName, "request.includeAnnotations");
-                headers['Prefer'] = 'odata.include-annotations="' + options.includeAnnotations + '"';
-            }
-
-            if (options.ifmatch != null && options.ifnonematch != null) {
-                throw Error("DynamicsWebApi." + functionName + ". Either one of request.ifmatch or request.ifnonematch parameters shoud be used in a call, not both.")
-            }
-
-            if (options.ifmatch) {
-                _stringParameterCheck(options.ifmatch, "DynamicsWebApi." + functionName, "request.ifmatch");
-                headers['If-Match'] = options.ifmatch;
-            }
-
-            if (options.ifnonematch) {
-                _stringParameterCheck(options.ifnonematch, "DynamicsWebApi." + functionName, "request.ifnonematch");
-                headers['If-None-Match'] = options.ifnonematch;
-            }
-
-            if (options.impersonate) {
-                _stringParameterCheck(options.impersonate, "DynamicsWebApi." + functionName, "request.impersonate");
-                headers['MSCRMCallerID'] = _guidParameterCheck(options.impersonate, "DynamicsWebApi." + functionName, "request.impersonate");
-            }
-
-            if (options.expand != null && options.expand.length) {
-                _arrayParameterCheck(options.expand, "DynamicsWebApi." + functionName, "request.expand");
-                var expandOptionsArray = [];
-                for (var i = 0; i < options.expand.length; i++) {
-                    if (options.expand[i].property) {
-                        var expandOptions = convertOptions(options.expand[i], functionName + " $expand", null, ";").query;
-                        if (expandOptions.length) {
-                            expandOptions = "(" + expandOptions + ")";
-                        }
-                        expandOptionsArray.push(options.expand[i].property + expandOptions);
-                    }
-                }
-                if (expandOptionsArray.length) {
-                    optionsArray.push("$expand=" + encodeURI(expandOptionsArray.join(",")));
-                }
-            }
-        }
-
-        return { url: url, query: optionsArray.join(joinSymbol), headers: headers };
-    }
-
-    var convertRequestToLink = function (options, functionName) {
-        /// <summary>Builds the Web Api query string based on a passed options object parameter.</summary>
-        /// <param name="options" type="dwaRequest">Options</param>
-        /// <returns type="String" />
-
-        if (!options.collection) {
-            _parameterCheck(options.collection, "DynamicsWebApi." + functionName, "request.collection");
-        }
-        else {
-            _stringParameterCheck(options.collection, "DynamicsWebApi." + functionName, "request.collection");
-        }
-
-        var url = options.collection.toLowerCase();
-
-        if (options.id) {
-            _guidParameterCheck(options.id, "DynamicsWebApi." + functionName, "request.id");
-            url += "(" + options.id + ")";
-        }
-
-        var result = convertOptions(options, functionName, url);
-
-        if (result.query)
-            result.url += "?" + result.query;
-
-        return { url: result.url, headers: result.headers };
-    };
-
     /**
      * Sends an asynchronous request to create a new record.
      *
@@ -699,13 +825,13 @@ function DynamicsWebApi(config) {
      * @returns {Promise}
      */
     this.create = function (object, collection, prefer) {
-        _parameterCheck(object, "DynamicsWebApi.create", "object");
-        _stringParameterCheck(collection, "DynamicsWebApi.create", "collection");
+        ErrorHelper.parameterCheck(object, "DynamicsWebApi.create", "object");
+        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.create", "collection");
 
         var headers = {};
 
         if (prefer != null) {
-            _stringParameterCheck(prefer, "DynamicsWebApi.create", "prefer");
+            ErrorHelper.stringParameterCheck(prefer, "DynamicsWebApi.create", "prefer");
             headers["Prefer"] = prefer;
         }
 
@@ -715,7 +841,9 @@ function DynamicsWebApi(config) {
                     return response.data;
                 }
 
-                var entityUrl = response.headers['OData-EntityId'];
+                var entityUrl = response.headers['OData-EntityId']
+                    ? response.headers['OData-EntityId']
+                    : response.headers['odata-entityid'];
                 var id = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(entityUrl)[0];
                 return id;
             });
@@ -728,20 +856,20 @@ function DynamicsWebApi(config) {
      * @returns {Promise}
      */
     this.retrieveRequest = function (request) {
-        //return Promise.resolve(request).then(function (request) {
-        _parameterCheck(request, "DynamicsWebApi.retrieve", "request");
+        //return Promise.resolve().then(function () {
+            ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieve", "request");
 
-        var result = convertRequestToLink(request, "retrieve");
+            var result = RequestConverter.convertRequest(request, "retrieve");
 
-        //copy locally
-        var select = request.select;
-        return _sendRequest("GET", result.url, null, result.headers).then(function (response) {
-            if (select != null && select.length == 1 && select[0].endsWith("/$ref") && response.data["@odata.id"] != null) {
-                return _convertToReferenceObject(response.data);
-            }
+            //copy locally
+            var select = request.select;
+            return _sendRequest("GET", result.url, null, result.headers).then(function (response) {
+                if (select != null && select.length == 1 && select[0].endsWith("/$ref") && response.data["@odata.id"] != null) {
+                    return _convertToReferenceObject(response.data);
+                }
 
-            return response.data;
-        });
+                return response.data;
+            });
         //});
     };
 
@@ -756,16 +884,16 @@ function DynamicsWebApi(config) {
      */
     this.retrieve = function (id, collection, select, expand) {
 
-        _stringParameterCheck(id, "DynamicsWebApi.retrieve", "id");
-        id = _guidParameterCheck(id, "DynamicsWebApi.retrieve", "id")
-        _stringParameterCheck(collection, "DynamicsWebApi.retrieve", "collection");
+        ErrorHelper.stringParameterCheck(id, "DynamicsWebApi.retrieve", "id");
+        id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.retrieve", "id")
+        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.retrieve", "collection");
 
         var url = collection.toLowerCase() + "(" + id + ")";
 
         var queryOptions = [];
 
         if (select != null && select.length) {
-            _arrayParameterCheck(select, "DynamicsWebApi.retrieve", "select");
+            ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.retrieve", "select");
 
             if (select.length == 1 && select[0].endsWith("/$ref") && select[0].endsWith("/$ref")) {
                 url += "/" + select[0];
@@ -783,7 +911,7 @@ function DynamicsWebApi(config) {
         }
 
         if (expand != null) {
-            _stringParameterCheck(expand, "DynamicsWebApi.retrieve", "expand");
+            ErrorHelper.stringParameterCheck(expand, "DynamicsWebApi.retrieve", "expand");
             queryOptions.push("$expand=" + expand);
         }
 
@@ -807,10 +935,10 @@ function DynamicsWebApi(config) {
      */
     this.updateRequest = function (request) {
 
-        _parameterCheck(request, "DynamicsWebApi.update", "request");
-        _parameterCheck(request.entity, "DynamicsWebApi.update", "request.entity");
+        ErrorHelper.parameterCheck(request, "DynamicsWebApi.update", "request");
+        ErrorHelper.parameterCheck(request.entity, "DynamicsWebApi.update", "request.entity");
 
-        var result = convertRequestToLink(request, "update");
+        var result = RequestConverter.convertRequest(request, "update");
 
         if (request.ifmatch == null) {
             result.headers['If-Match'] = '*'; //to prevent upsert
@@ -848,22 +976,22 @@ function DynamicsWebApi(config) {
      */
     this.update = function (id, collection, object, prefer, select) {
 
-        _stringParameterCheck(id, "DynamicsWebApi.update", "id");
-        id = _guidParameterCheck(id, "DynamicsWebApi.update", "id")
-        _parameterCheck(object, "DynamicsWebApi.update", "object");
-        _stringParameterCheck(collection, "DynamicsWebApi.update", "collection");
+        ErrorHelper.stringParameterCheck(id, "DynamicsWebApi.update", "id");
+        id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.update", "id")
+        ErrorHelper.parameterCheck(object, "DynamicsWebApi.update", "object");
+        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.update", "collection");
 
         var headers = { "If-Match": "*" }; //to prevent upsert
 
         if (prefer != null) {
-            _stringParameterCheck(prefer, "DynamicsWebApi.update", "prefer");
+            ErrorHelper.stringParameterCheck(prefer, "DynamicsWebApi.update", "prefer");
             headers["Prefer"] = prefer;
         }
 
         var systemQueryOptions = "";
 
         if (select != null) {
-            _arrayParameterCheck(select, "DynamicsWebApi.update", "select");
+            ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.update", "select");
 
             if (select.length > 0) {
                 systemQueryOptions = "?$select=" + select.join(",");
@@ -889,10 +1017,10 @@ function DynamicsWebApi(config) {
      */
     this.updateSingleProperty = function (id, collection, keyValuePair, prefer) {
 
-        _stringParameterCheck(id, "DynamicsWebApi.updateSingleProperty", "id");
-        id = _guidParameterCheck(id, "DynamicsWebApi.updateSingleProperty", "id")
-        _parameterCheck(keyValuePair, "DynamicsWebApi.updateSingleProperty", "keyValuePair");
-        _stringParameterCheck(collection, "DynamicsWebApi.updateSingleProperty", "collection");
+        ErrorHelper.stringParameterCheck(id, "DynamicsWebApi.updateSingleProperty", "id");
+        id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.updateSingleProperty", "id")
+        ErrorHelper.parameterCheck(keyValuePair, "DynamicsWebApi.updateSingleProperty", "keyValuePair");
+        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.updateSingleProperty", "collection");
 
         var key = Object.keys(keyValuePair)[0];
         var keyValue = keyValuePair[key];
@@ -900,7 +1028,7 @@ function DynamicsWebApi(config) {
         var header = {};
 
         if (prefer != null) {
-            _stringParameterCheck(prefer, "DynamicsWebApi.updateSingleProperty", "prefer");
+            ErrorHelper.stringParameterCheck(prefer, "DynamicsWebApi.updateSingleProperty", "prefer");
             header["Prefer"] = prefer;
         }
 
@@ -920,9 +1048,9 @@ function DynamicsWebApi(config) {
      */
     this.deleteRequest = function (request) {
 
-        _parameterCheck(request, "DynamicsWebApi.delete", "request")
+        ErrorHelper.parameterCheck(request, "DynamicsWebApi.delete", "request")
 
-        var result = convertRequestToLink(request, "delete");
+        var result = RequestConverter.convertRequest(request, "delete");
 
         //copy locally
         var ifmatch = request.ifmatch;
@@ -950,12 +1078,12 @@ function DynamicsWebApi(config) {
      */
     this.deleteRecord = function (id, collection, propertyName) {
 
-        _stringParameterCheck(id, "DynamicsWebApi.deleteRequest", "id");
-        id = _guidParameterCheck(id, "DynamicsWebApi.deleteRequest", "id")
-        _stringParameterCheck(collection, "DynamicsWebApi.deleteRequest", "collection");
+        ErrorHelper.stringParameterCheck(id, "DynamicsWebApi.deleteRequest", "id");
+        id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.deleteRequest", "id")
+        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.deleteRequest", "collection");
 
         if (propertyName != null)
-            _stringParameterCheck(propertyName, "DynamicsWebApi.deleteRequest", "propertyName");
+            ErrorHelper.stringParameterCheck(propertyName, "DynamicsWebApi.deleteRequest", "propertyName");
 
         var url = collection.toLowerCase() + "(" + id + ")";
 
@@ -975,18 +1103,20 @@ function DynamicsWebApi(config) {
      */
     this.upsertRequest = function (request) {
 
-        _parameterCheck(request, "DynamicsWebApi.upsert", "request")
-        _parameterCheck(request.entity, "DynamicsWebApi.upsert", "request.entity")
+        ErrorHelper.parameterCheck(request, "DynamicsWebApi.upsert", "request")
+        ErrorHelper.parameterCheck(request.entity, "DynamicsWebApi.upsert", "request.entity")
 
-        var result = convertRequestToLink(request, "upsert");
+        var result = RequestConverter.convertRequest(request, "upsert");
 
         //copy locally
         var ifnonematch = request.ifnonematch;
         var ifmatch = request.ifmatch;
         return _sendRequest("PATCH", result.url, request.entity, result.headers)
             .then(function (response) {
-                if (response.headers['OData-EntityId']) {
-                    var entityUrl = response.headers['OData-EntityId'];
+                if (response.headers['OData-EntityId'] || response.headers['odata-entityid']) {
+                    var entityUrl = response.headers['OData-EntityId']
+                        ? response.headers['OData-EntityId']
+                        : response.headers['odata-entityid'];
                     var id = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(entityUrl)[0];
                     return id;
                 }
@@ -994,7 +1124,6 @@ function DynamicsWebApi(config) {
                     return response.data;
                 }
             }).catch(function (error) {
-                /// <param name="error" type="XMLHttpRequest">Description</param>
                 if (ifnonematch && error.status == 412) {
                     //if prevent update
                     return;
@@ -1020,23 +1149,23 @@ function DynamicsWebApi(config) {
      */
     this.upsert = function (id, collection, object, prefer, select) {
 
-        _stringParameterCheck(id, "DynamicsWebApi.upsert", "id");
-        id = _guidParameterCheck(id, "DynamicsWebApi.upsert", "id")
+        ErrorHelper.stringParameterCheck(id, "DynamicsWebApi.upsert", "id");
+        id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.upsert", "id")
 
-        _parameterCheck(object, "DynamicsWebApi.upsert", "object");
-        _stringParameterCheck(collection, "DynamicsWebApi.upsert", "collection");
+        ErrorHelper.parameterCheck(object, "DynamicsWebApi.upsert", "object");
+        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.upsert", "collection");
 
         var headers = {};
 
         if (prefer != null) {
-            _stringParameterCheck(prefer, "DynamicsWebApi.upsert", "prefer");
+            ErrorHelper.stringParameterCheck(prefer, "DynamicsWebApi.upsert", "prefer");
             headers["Prefer"] = prefer;
         }
 
         var systemQueryOptions = "";
 
         if (select != null) {
-            _arrayParameterCheck(select, "DynamicsWebApi.upsert", "select");
+            ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.upsert", "select");
 
             if (select.length > 0) {
                 systemQueryOptions = "?$select=" + select.join(",");
@@ -1045,8 +1174,11 @@ function DynamicsWebApi(config) {
 
         return _sendRequest("PATCH", collection.toLowerCase() + "(" + id + ")" + systemQueryOptions, object, headers)
             .then(function (response) {
-                if (response.headers['OData-EntityId']) {
-                    var entityUrl = response.headers['OData-EntityId'];
+                if (response.headers['OData-EntityId'] || response.headers['odata-entityid']) {
+                    var entityUrl = response.headers['OData-EntityId']
+                        ? response.headers['OData-EntityId']
+                        : response.headers['odata-entityid'];
+
                     var id = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(entityUrl)[0];
                     return id;
                 }
@@ -1069,11 +1201,11 @@ function DynamicsWebApi(config) {
             request.collection = "any";
         }
 
-        var result = convertRequestToLink(request, "retrieveMultiple");
+        var result = RequestConverter.convertRequest(request, "retrieveMultiple");
 
         if (nextPageLink) {
-            _stringParameterCheck(nextPageLink, "DynamicsWebApi.retrieveMultiple", "nextPageLink");
-            result.url = unescape(nextPageLink).replace(_webApiUrl, "");
+            ErrorHelper.stringParameterCheck(nextPageLink, "DynamicsWebApi.retrieveMultiple", "nextPageLink");
+            result.url = nextPageLink.replace(_webApiUrl, "");
         }
 
         //copy locally
@@ -1112,10 +1244,10 @@ function DynamicsWebApi(config) {
             request.collection = "any";
         }
 
-        var result = convertRequestToLink(request, "retrieveMultiple");
+        var result = RequestConverter.convertRequest(request, "retrieveMultiple");
 
         if (nextPageLink) {
-            _stringParameterCheck(nextPageLink, "DynamicsWebApi.retrieveMultiple", "nextPageLink");
+            ErrorHelper.stringParameterCheck(nextPageLink, "DynamicsWebApi.retrieveMultiple", "nextPageLink");
             result.url = unescape(nextPageLink).replace(_webApiUrl, "");
         }
 
@@ -1149,7 +1281,7 @@ function DynamicsWebApi(config) {
      */
     this.count = function (collection, filter) {
         if (filter == null || (filter != null && !filter.length)) {
-            _stringParameterCheck(collection, "DynamicsWebApi.count", "collection");
+            ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.count", "collection");
 
             //if filter has not been specified then simplify the request
             return _sendRequest("GET", collection.toLowerCase() + "/$count")
@@ -1236,18 +1368,18 @@ function DynamicsWebApi(config) {
      */
     this.executeFetchXml = function (collection, fetchXml, includeAnnotations, pageNumber, pagingCookie, impersonateUserId) {
 
-        _stringParameterCheck(collection, "DynamicsWebApi.executeFetchXml", "type");
-        _stringParameterCheck(fetchXml, "DynamicsWebApi.executeFetchXml", "fetchXml");
+        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.executeFetchXml", "type");
+        ErrorHelper.stringParameterCheck(fetchXml, "DynamicsWebApi.executeFetchXml", "fetchXml");
 
         if (pageNumber == null) {
             pageNumber = 1;
         }
 
-        _numberParameterCheck(pageNumber, "DynamicsWebApi.executeFetchXml", "pageNumber");
+        ErrorHelper.numberParameterCheck(pageNumber, "DynamicsWebApi.executeFetchXml", "pageNumber");
         var replacementString = "$1 page='" + pageNumber + "'";
 
         if (pagingCookie != null) {
-            _stringParameterCheck(pagingCookie, "DynamicsWebApi.executeFetchXml", "pagingCookie");
+            ErrorHelper.stringParameterCheck(pagingCookie, "DynamicsWebApi.executeFetchXml", "pagingCookie");
             replacementString += " paging-cookie='" + pagingCookie + "'";
         }
 
@@ -1256,12 +1388,12 @@ function DynamicsWebApi(config) {
 
         var headers = {};
         if (includeAnnotations != null) {
-            _stringParameterCheck(includeAnnotations, "DynamicsWebApi.executeFetchXml", "includeAnnotations");
+            ErrorHelper.stringParameterCheck(includeAnnotations, "DynamicsWebApi.executeFetchXml", "includeAnnotations");
             headers['Prefer'] = 'odata.include-annotations="' + includeAnnotations + '"';
         }
 
         if (impersonateUserId != null) {
-            impersonateUserId = _guidParameterCheck(impersonateUserId, "DynamicsWebApi.executeFetchXml", "impersonateUserId");
+            impersonateUserId = ErrorHelper.guidParameterCheck(impersonateUserId, "DynamicsWebApi.executeFetchXml", "impersonateUserId");
             header["MSCRMCallerID"] = impersonateUserId;
         }
 
@@ -1294,16 +1426,16 @@ function DynamicsWebApi(config) {
      * @returns {Promise}
      */
     this.associate = function (primaryCollection, primaryId, relationshipName, relatedCollection, relatedId, impersonateUserId) {
-        _stringParameterCheck(primaryCollection, "DynamicsWebApi.associate", "primarycollection");
-        _stringParameterCheck(relatedCollection, "DynamicsWebApi.associate", "relatedcollection");
-        _stringParameterCheck(relationshipName, "DynamicsWebApi.associate", "relationshipName");
-        primaryId = _guidParameterCheck(primaryId, "DynamicsWebApi.associate", "primaryId");
-        relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.associate", "relatedId");
+        ErrorHelper.stringParameterCheck(primaryCollection, "DynamicsWebApi.associate", "primarycollection");
+        ErrorHelper.stringParameterCheck(relatedCollection, "DynamicsWebApi.associate", "relatedcollection");
+        ErrorHelper.stringParameterCheck(relationshipName, "DynamicsWebApi.associate", "relationshipName");
+        primaryId = ErrorHelper.guidParameterCheck(primaryId, "DynamicsWebApi.associate", "primaryId");
+        relatedId = ErrorHelper.guidParameterCheck(relatedId, "DynamicsWebApi.associate", "relatedId");
 
         var header = {};
 
         if (impersonateUserId != null) {
-            impersonateUserId = _guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
+            impersonateUserId = ErrorHelper.guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
             header["MSCRMCallerID"] = impersonateUserId;
         }
 
@@ -1323,15 +1455,15 @@ function DynamicsWebApi(config) {
      * @returns {Promise}
      */
     this.disassociate = function (primaryCollection, primaryId, relationshipName, relatedId, impersonateUserId) {
-        _stringParameterCheck(primaryCollection, "DynamicsWebApi.disassociate", "primarycollection");
-        _stringParameterCheck(relationshipName, "DynamicsWebApi.disassociate", "relationshipName");
-        primaryId = _guidParameterCheck(primaryId, "DynamicsWebApi.disassociate", "primaryId");
-        relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.disassociate", "relatedId");
+        ErrorHelper.stringParameterCheck(primaryCollection, "DynamicsWebApi.disassociate", "primarycollection");
+        ErrorHelper.stringParameterCheck(relationshipName, "DynamicsWebApi.disassociate", "relationshipName");
+        primaryId = ErrorHelper.guidParameterCheck(primaryId, "DynamicsWebApi.disassociate", "primaryId");
+        relatedId = ErrorHelper.guidParameterCheck(relatedId, "DynamicsWebApi.disassociate", "relatedId");
 
         var header = {};
 
         if (impersonateUserId != null) {
-            impersonateUserId = _guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
+            impersonateUserId = ErrorHelper.guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
             header["MSCRMCallerID"] = impersonateUserId;
         }
 
@@ -1352,16 +1484,16 @@ function DynamicsWebApi(config) {
      */
     this.associateSingleValued = function (collection, id, singleValuedNavigationPropertyName, relatedCollection, relatedId, impersonateUserId) {
 
-        _stringParameterCheck(collection, "DynamicsWebApi.associateSingleValued", "collection");
-        id = _guidParameterCheck(id, "DynamicsWebApi.associateSingleValued", "id");
-        relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.associateSingleValued", "relatedId");
-        _stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.associateSingleValued", "singleValuedNavigationPropertyName");
-        _stringParameterCheck(relatedCollection, "DynamicsWebApi.associateSingleValued", "relatedcollection");
+        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.associateSingleValued", "collection");
+        id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.associateSingleValued", "id");
+        relatedId = ErrorHelper.guidParameterCheck(relatedId, "DynamicsWebApi.associateSingleValued", "relatedId");
+        ErrorHelper.stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.associateSingleValued", "singleValuedNavigationPropertyName");
+        ErrorHelper.stringParameterCheck(relatedCollection, "DynamicsWebApi.associateSingleValued", "relatedcollection");
 
         var header = {};
 
         if (impersonateUserId != null) {
-            impersonateUserId = _guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
+            impersonateUserId = ErrorHelper.guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
             header["MSCRMCallerID"] = impersonateUserId;
         }
 
@@ -1381,14 +1513,14 @@ function DynamicsWebApi(config) {
      */
     this.disassociateSingleValued = function (collection, id, singleValuedNavigationPropertyName, impersonateUserId) {
 
-        _stringParameterCheck(collection, "DynamicsWebApi.disassociateSingleValued", "collection");
-        id = _guidParameterCheck(id, "DynamicsWebApi.disassociateSingleValued", "id");
-        _stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.disassociateSingleValued", "singleValuedNavigationPropertyName");
+        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.disassociateSingleValued", "collection");
+        id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.disassociateSingleValued", "id");
+        ErrorHelper.stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.disassociateSingleValued", "singleValuedNavigationPropertyName");
 
         var header = {};
 
         if (impersonateUserId != null) {
-            impersonateUserId = _guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
+            impersonateUserId = ErrorHelper.guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
             header["MSCRMCallerID"] = impersonateUserId;
         }
 
@@ -1423,38 +1555,6 @@ function DynamicsWebApi(config) {
     }
 
     /**
-     * Builds parametes for a funciton. Returns '()' (if no parameters) or '([params])?[query]'
-     *
-     * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
-     * @returns {string}
-     */
-    var _buildFunctionParameters = function (parameters) {
-        if (parameters) {
-            var parameterNames = Object.keys(parameters);
-            var functionParameters = "";
-            var urlQuery = "";
-
-            for (var i = 1; i <= parameterNames.length; i++) {
-                var parameterName = parameterNames[i - 1];
-                var value = parameters[parameterName];
-
-                if (i > 1) {
-                    functionParameters += ",";
-                    urlQuery += "&";
-                }
-
-                functionParameters += parameterName + "=@p" + i;
-                urlQuery += "@p" + i + "=" + ((typeof value == "string") ? "'" + value + "'" : value);
-            }
-
-            return "(" + functionParameters + ")?" + urlQuery;
-        }
-        else {
-            return "()";
-        }
-    }
-
-    /**
      * Executes a function
      *
      * @param {string} id - A String representing the GUID value for the record.
@@ -1466,12 +1566,12 @@ function DynamicsWebApi(config) {
      */
     var _executeFunction = function (functionName, parameters, collection, id, impersonateUserId) {
 
-        _stringParameterCheck(functionName, "DynamicsWebApi.executeFunction", "functionName");
-        var url = functionName + _buildFunctionParameters(parameters);
+        ErrorHelper.stringParameterCheck(functionName, "DynamicsWebApi.executeFunction", "functionName");
+        var url = functionName + Utility.buildFunctionParameters(parameters);
 
         if (collection != null) {
-            _stringParameterCheck(collection, "DynamicsWebApi.executeFunction", "collection");
-            id = _guidParameterCheck(id, "DynamicsWebApi.executeFunction", "id");
+            ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.executeFunction", "collection");
+            id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.executeFunction", "id");
 
             url = collection + "(" + id + ")/" + url;
         }
@@ -1479,7 +1579,7 @@ function DynamicsWebApi(config) {
         var header = {};
 
         if (impersonateUserId != null) {
-            header["MSCRMCallerID"] = _guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
+            header["MSCRMCallerID"] = ErrorHelper.guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
         }
 
         return _sendRequest("GET", url, null, header).then(function (response) {
@@ -1527,12 +1627,12 @@ function DynamicsWebApi(config) {
      */
     var _executeAction = function (actionName, requestObject, collection, id, impersonateUserId) {
 
-        _stringParameterCheck(actionName, "DynamicsWebApi.executeAction", "actionName");
+        ErrorHelper.stringParameterCheck(actionName, "DynamicsWebApi.executeAction", "actionName");
         var url = actionName;
 
         if (collection != null) {
-            _stringParameterCheck(collection, "DynamicsWebApi.executeAction", "collection");
-            id = _guidParameterCheck(id, "DynamicsWebApi.executeAction", "id");
+            ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.executeAction", "collection");
+            id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.executeAction", "id");
 
             url = collection + "(" + id + ")/" + url;
         }
@@ -1540,7 +1640,7 @@ function DynamicsWebApi(config) {
         var header = {};
 
         if (impersonateUserId != null) {
-            impersonateUserId = _guidParameterCheck(impersonateUserId, "DynamicsWebApi.executeAction", "impersonateUserId");
+            impersonateUserId = ErrorHelper.guidParameterCheck(impersonateUserId, "DynamicsWebApi.executeAction", "impersonateUserId");
             header["MSCRMCallerID"] = impersonateUserId;
         }
 

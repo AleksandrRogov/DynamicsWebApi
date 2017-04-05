@@ -38,6 +38,12 @@
     <Compile Include="lib\dwa.js" />
     <Compile Include="lib\dynamics-web-api-callbacks.js" />
     <Compile Include="lib\dynamics-web-api.js" />
+    <Compile Include="lib\helpers\ErrorHelper.js">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="lib\utilities\buildFunctionParameters.js">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="lib\polyfills\string-es6.js">
       <SubType>Code</SubType>
     </Compile>
@@ -50,21 +56,38 @@
     <Compile Include="lib\requests\http.js" />
     <Compile Include="lib\requests\xhr.js" />
     <Compile Include="lib\test.js" />
+    <Compile Include="lib\utilities\convertToReferenceObject.js">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="lib\utilities\getFetchXmlPagingCookie.js">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="lib\utilities\RequestConverter.js">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="lib\utilities\Utility.js">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="tests\browser\callbacks-tests.js" />
     <Compile Include="tests\browser\main-tests.js" />
     <Compile Include="tests\callbacks-tests.js">
       <TestFramework>
       </TestFramework>
     </Compile>
+    <Compile Include="tests\common-tests.js">
+      <SubType>Code</SubType>
+      <TestFramework>Mocha</TestFramework>
+    </Compile>
     <Compile Include="tests\main-tests.js">
       <TestFramework>
       </TestFramework>
     </Compile>
-    <Compile Include="tests\todo\callbacks-tests.js" />
-    <Compile Include="tests\todo\main-tests.js" />
     <Compile Include="tests\stubs.js">
       <TestFramework>
       </TestFramework>
+    </Compile>
+    <Compile Include="tests\xhr-tests.js">
+      <SubType>Code</SubType>
     </Compile>
     <Compile Include="webpack.config.js">
       <SubType>Code</SubType>
@@ -77,13 +100,14 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="lib\" />
+    <Folder Include="lib\helpers\" />
+    <Folder Include="lib\utilities\" />
     <Folder Include="lib\polyfills\" />
     <Folder Include="lib\requests\" />
     <Folder Include="lib\requests\helpers\" />
     <Folder Include="dist\" />
     <Folder Include="tests\" />
     <Folder Include="tests\browser\" />
-    <Folder Include="tests\todo\" />
     <Folder Include="typings\" />
     <Folder Include="typings\globals\" />
     <Folder Include="typings\globals\chai\" />

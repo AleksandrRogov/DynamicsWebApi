@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.1.3 (c) 2017 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.1.4 (c) 2017 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -689,7 +689,7 @@ function DynamicsWebApi(config) {
         var url = options.collection.toLowerCase();
 
         if (options.id) {
-            _guidParameterCheck(options.id, "DynamicsWebApi." + functionName, "request.id");
+            options.id = _guidParameterCheck(options.id, "DynamicsWebApi." + functionName, "request.id");
             url += "(" + options.id + ")";
         }
 

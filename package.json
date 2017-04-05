@@ -34,6 +34,8 @@
     "test": "mocha tests/*-tests.js",
     "test-coverage": "rimraf coverage && istanbul cover node_modules/mocha/bin/_mocha tests/*-tests.js",
     "build": "rimraf dist && rimraf coverage && webpack",
+    "release-patch": "version patch -m \"Release %s\"",
+    "release-minor": "version minor -m \"Release %s\"",
     "preversion": "npm test",
     "version": "npm run build && git add -A dist",
     "postversion": "git push && git push --tags",

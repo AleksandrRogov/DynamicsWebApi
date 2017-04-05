@@ -4,16 +4,16 @@ global.Xrm = {
     Page: {
         context: {
             getClientUrl: function () {
-                return "https://testorg.crm.dynamics.com";
+                return "http://testorg.crm.dynamics.com";
             }
         }
     }
 };
 
 var DWA = require("../lib/dwa");
-var webApiUrl = "https://testorg.crm.dynamics.com/api/data/v8.2/";
-var webApiUrl81 = "https://testorg.crm.dynamics.com/api/data/v8.1/";
-var webApiUrl80 = "https://testorg.crm.dynamics.com/api/data/v8.0/";
+var webApiUrl = "http://testorg.crm.dynamics.com/api/data/v8.2/";
+var webApiUrl81 = "http://testorg.crm.dynamics.com/api/data/v8.1/";
+var webApiUrl80 = "http://testorg.crm.dynamics.com/api/data/v8.0/";
 
 var dataStubs = {
     testEntityId: "00000000-0000-0000-0000-000000000001",
