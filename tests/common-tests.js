@@ -6,6 +6,7 @@ var Utility = require('../lib/utilities/Utility');
 var RequestConverter = require('../lib/utilities/RequestConverter');
 var ErrorHelper = require('../lib/helpers/ErrorHelper');
 var mocks = require("./stubs");
+var dateReviver = require('../lib/requests/helpers/dateReviver');
 
 describe("Utility.buildFunctionParameters - ", function () {
     it("no parameters", function () {
@@ -878,18 +879,156 @@ describe("RequestConverter.convertRequest -", function () {
     });
 });
 
+describe("ErrorHelper.handleErrorResponse", function () {
+    it("returns a correct error object", function () {
+        var errorResponse = {
+            status: 500,
+            message: "Invalid"
+        };
+
+        expect(function () {
+            ErrorHelper.handleErrorResponse(errorResponse);
+        }).to.throw("Error: 500: Invalid");
+    });
+});
+
+describe("ErrorHelper.parameterCheck", function () {
+    it("does not return anything", function () {
+        var result = ErrorHelper.parameterCheck(2, "fun", "param", "type");
+        expect(result).to.be.undefined;
+    });
+    it("when parameter is null it throws an error", function () {
+        expect(function () {
+            ErrorHelper.parameterCheck(null, "fun", "param", "type");
+        }).to.throw("fun requires the param parameter to be of type type");
+    });
+    it("throws Error with message without type", function () {
+        expect(function () {
+            ErrorHelper.parameterCheck(null, "fun", "param");
+        }).to.throw("fun requires the param parameter");
+    });
+});
+
+describe("ErrorHelper.stringParameterCheck", function () {
+    it("does not return anything", function () {
+        var result = ErrorHelper.stringParameterCheck("2", "fun", "param");
+        expect(result).to.be.undefined;
+    });
+    it("when parameter is wrong it throws an error", function () {
+        expect(function () {
+            ErrorHelper.stringParameterCheck(4, "fun", "param");
+        }).to.throw("fun requires the param parameter to be of type String");
+    });
+});
+
+describe("ErrorHelper.arrayParameterCheck", function () {
+    it("does not return anything", function () {
+        var result = ErrorHelper.arrayParameterCheck([], "fun", "param");
+        expect(result).to.be.undefined;
+    });
+    it("when parameter is wrong it throws an error", function () {
+        expect(function () {
+            ErrorHelper.arrayParameterCheck({}, "fun", "param");
+        }).to.throw("fun requires the param parameter to be of type Array");
+    });
+});
+
+describe("ErrorHelper.numberParameterCheck", function () {
+    it("does not return anything", function () {
+        var result = ErrorHelper.numberParameterCheck(54, "fun", "param");
+        expect(result).to.be.undefined;
+    });
+    it("when parameter is a string-number then the function does not return anything", function () {
+        var result = ErrorHelper.numberParameterCheck("54", "fun", "param");
+        expect(result).to.be.undefined;
+    });
+    it("when parameter is wrong it throws an error", function () {
+        expect(function () {
+            ErrorHelper.numberParameterCheck("a word", "fun", "param");
+        }).to.throw("fun requires the param parameter to be of type Number");
+    });
+});
+
+describe("ErrorHelper.boolParameterCheck", function () {
+    it("does not return anything", function () {
+        var result = ErrorHelper.boolParameterCheck(false, "fun", "param");
+        expect(result).to.be.undefined;
+    });
+    it("when parameter is wrong it throws an error", function () {
+        expect(function () {
+            ErrorHelper.boolParameterCheck("a word", "fun", "param");
+        }).to.throw("fun requires the param parameter to be of type Boolean");
+    });
+});
+
+describe("ErrorHelper.callbackParameterCheck", function () {
+    it("does not return anything", function () {
+        var result = ErrorHelper.callbackParameterCheck(function () { }, "fun", "param");
+        expect(result).to.be.undefined;
+    });
+    it("when parameter is wrong it throws an error", function () {
+        expect(function () {
+            ErrorHelper.callbackParameterCheck("a word", "fun", "param");
+        }).to.throw("fun requires the param parameter to be of type Function");
+    });
+});
+
 describe("ErrorHelper.guidParameterCheck", function () {
     it("parses guid in brackets and removes them", function () {
         var guid = "{00000000-0000-0000-0000-000000000001}";
-
         var result = ErrorHelper.guidParameterCheck(guid);
-
         expect(result).to.eq("00000000-0000-0000-0000-000000000001");
     });
 
-    it("throws an error with a specified message", function() {
-        expect(function() {
+    it("throws an error", function () {
+        expect(function () {
             ErrorHelper.guidParameterCheck("ds", "fun", "param");
-        }).to.throw("fun requires the param parameter is a GUID String");
+        }).to.throw("fun requires the param parameter to be of type GUID String");
+    });
+});
+
+describe("dateReviver", function () {
+    it("returns date when a string matches exact 'YYYY-MM-DDTHH:MM:SSZ' teamplate", function () {
+        var result = dateReviver('any', '2016-12-22T23:22:12Z');
+        expect(result).to.deep.equal(new Date('2016-12-22T23:22:12Z'));
+    });
+
+    it("returns the same value when a string does not match exact 'YYYY-MM-DDTHH:MM:SSZ' teamplate", function () {
+        var result = dateReviver('any', 'other');
+        expect(result).to.equal('other');
+    });
+
+    it("returns the same value when its type is not String", function () {
+        var result = dateReviver('any', 54);
+        expect(result).to.equal(54);
+    });
+});
+
+describe("DWA.Types", function () {
+    it("ResponseBase", function () {
+        expect(new DWA.Types.ResponseBase().oDataContext).to.eq("");
+    });
+
+    it("Response", function () {
+        expect(new DWA.Types.Response().value).to.deep.equal({});
+    });
+
+    it("ReferenceResponse", function () {
+        expect(new DWA.Types.ReferenceResponse()).to.deep
+            .equal({ oDataContext: "", id: "", collection: "" });
+    });
+
+    it("MultipleResponse", function () {
+        expect(new DWA.Types.MultipleResponse()).to.deep
+            .equal({ oDataContext: "", oDataNextLink: "", oDataCount: 0, value: []});
+    });
+
+    it("FetchXmlResponse", function () {
+        expect(new DWA.Types.FetchXmlResponse()).to.deep
+            .equal({
+                oDataContext: "", value: [], PagingInfo: {
+                    cookie: "", page: 0, nextPage: 1
+                }
+            });
     });
 });
