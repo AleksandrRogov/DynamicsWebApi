@@ -14,7 +14,7 @@ Any suggestions are welcome!
 
 * [Getting Started](#getting-started)
   * [DynamicsWebApi as a Dynamics 365 web resource](#dynamicswebapi-as-a-dynamics-365-web-resource)
-  * [DynamicsWebApi for Node.js](#dynamicswebapi-for-node-js)
+  * [DynamicsWebApi for Node.js](#dynamicswebapi-for-nodejs)
   * [Configuration](#configuration)
     * [Configuration Parameters](#configuration-parameters)
 * [Request Examples](#request-examples)
@@ -60,13 +60,13 @@ DynamicsWebApi can be used as Node.js module to access Dynamics 365 Web API usin
 First of all, install a package from NPM:
 
 ```shell
-npm install dynamics-web api --save
+npm install dynamics-web-api --save
 ```
 
 Then include it in your file:
 
 ```js
-var DynamicsWebApi = require ('dynamics-web-api');
+var DynamicsWebApi = require('dynamics-web-api');
 ```
 
 At this moment DynamicsWebApi does not fetch authorization tokens, so you will need to acquire OAuth token in your code and pass it to the DynamicsWebApi.
@@ -75,15 +75,18 @@ Token can be aquired using [ADAL for Node.js](https://github.com/AzureAD/azure-a
 Here is a sample using `adal-node`:
 
 ```js
-var DynamicsWebApi = require ('dynamics-web-api');
+var DynamicsWebApi = require('dynamics-web-api');
 var AuthenticationContext = require('adal-node').AuthenticationContext;
 
 //the following settings should be taken from Azure for your application
 //and stored in app settings file or in global variables
 
-var authorityUrl = 'https://login.windows.net/00000000-0000-0000-0000-000000000011/oauth2/token'; //OAuth Token Endpoint
-var resource = 'https://myorg.crm.dynamics.com';          //CRM Organization URL
-var clientId = '00000000-0000-0000-0000-000000000001';    //Dynamics 365 Client Id when registered in Azure
+//OAuth Token Endpoint
+var authorityUrl = 'https://login.windows.net/00000000-0000-0000-0000-000000000011/oauth2/token';
+//CRM Organization URL
+var resource = 'https://myorg.crm.dynamics.com';
+//Dynamics 365 Client Id when registered in Azure
+var clientId = '00000000-0000-0000-0000-000000000001';
 var username = 'crm-user-name';
 var password = 'crm-user-password';
 
@@ -91,16 +94,19 @@ var adalContext = new AuthenticationContext(authorityUrl);
 
 //add a callback as a parameter for your function
 function acquireToken(dynamicsWebApiCallback){
-    //call a necessary function in adal-node object to get a token
-    adalContext.acquireTokenWithUsernamePassword(resource, username, password, clientId, function tokenCallback(error, token) {
+    //a callback for adal-node
+    function adalCallback(error, token) {
         if (!err){
-            //call a callback only when a token has been retrieved
+            //call DynamicsWebApi callback only when a token has been retrieved
             dynamicsWebApiCallback(token);
         }
         else{
             console.log('Token has not been retrieved. Error: ' + error.stack);
         }
-    });
+    }
+
+    //call a necessary function in adal-node object to get a token
+    adalContext.acquireTokenWithUsernamePassword(resource, username, password, clientId, adalCallback);
 }
 
 //create DynamicsWebApi object
@@ -736,6 +742,7 @@ Thank you for your patience!
 
 ## JavaScript Promises
 Please use the following library that implements [ES6 Promises](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise): [DynamicsWebApi with Promises](/scripts/dynamics-web-api.js).
+
 It is highly recommended to use one of the Promise Polyfills (Yaku, ES6 Promise and etc.) if DynamicsWebApi is intended to be used in the browsers.
 
 ## JavaScript Callbacks
