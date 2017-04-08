@@ -6,23 +6,24 @@
 DynamicsWebApi is a Microsoft Dynamics CRM Web API helper library written in JavaScript.
 It is compatible with: Dynamics 365 (online), Dynamics 365 (on-premises), Dynamics CRM 2016, Dynamics CRM Online.
 
-Libraries for browsers can be found in the "[dist](/dist/)" folder.
+Libraries for browsers can be found in [dist](/dist/) folder.
 
 Any suggestions are welcome!
 
 ## Table of Contents
 
-* [Quick Start](#quick-start)
+* [Getting Started](#getting-started)
+  * [DynamicsWebApi as a Dynamics 365 web resource](#dynamicswebapi-as-a-dynamics-365-web-resource)
+  * [DynamicsWebApi for Node.js](#dynamicswebapi-for-node-js)
   * [Configuration](#configuration)
-    * [Configuration Object Properties](#configuration-object-properties)
-  * [Intellisense](#intellisense)
+    * [Configuration Parameters](#configuration-parameters)
 * [Request Examples](#request-examples)
   * [Create a record](#create-a-record)
   * [Update a record](#update-a-record)
   * [Update a single property value](#update-a-single-property-value)
   * [Upsert a record](#upsert-a-record)
   * [Delete a record](#delete-a-record)
-	* [Delete a single property value](#delete-a-single-property-value)
+    * [Delete a single property value](#delete-a-single-property-value)
   * [Retrieve a record](#retrieve-a-record)
   * [Retrieve multiple records](#retrieve-multiple-records)
   * [Count](#count)
@@ -36,93 +37,112 @@ Any suggestions are welcome!
 * [JavaScript Promises](#javascript-promises)
 * [JavaScript Callbacks](#javascript-callbacks)
 
-## Quick Start
-In order to use a library DynamicsWebApi.js needs to be added as a Web Resource in CRM.
+## Getting Started
 
-### Configuration
-To initialize a new instance of DynamicsWebApi helper with a different configuration, please use the following code:
+### DynamicsWebApi as a Dynamics 365 web resource
+In order to use DynamicsWebApi inside Dynamics 365 you need to download a browser version of the library, it can be found in [dist](/dist/) folder.
+
+Upload a script as a JavaScript Web Resource, place on the entity or refer to it in your HTML Web Resource and then initialize the main object:
 
 ```js
-var dynamicsWebApi = new DynamicsWebApi({ webApiVersion: "8.1" });
+var dynamicsWebApi = new DynamicsWebApi(); //by default Web API v8.0 used if you do not set a configuration object.
+
+dynamicsWebApi.executeUnboundFunction("WhoAmI").then(function (response) {
+    Xrm.Utility.alertDialog('Hello Dynamics 365! My id is: ' + response.UserId);
+}).catch(function(error){
+    console.log(error.message);
+});
 ```
 
-To set a configuration dynamically (if needed):
+### DynamicsWebApi for Node.js
+DynamicsWebApi can be used as Node.js module to access Dynamics 365 Web API using OAuth. 
+
+First of all, install a package from NPM:
+
+```shell
+npm install dynamics-web api --save
+```
+
+Then include it in your file:
 
 ```js
+var DynamicsWebApi = require ('dynamics-web-api');
+```
+
+At this moment DynamicsWebApi does not fetch authorization tokens, so you will need to acquire OAuth token in your code and pass it to the DynamicsWebApi.
+Token can be aquired using [ADAL for Node.js](https://github.com/AzureAD/azure-activedirectory-library-for-nodejs) or you can write your own functionality, as it is described [here](http://alexanderdevelopment.net/post/2016/11/23/dynamics-365-and-node-js-integration-using-the-web-api/).
+
+Here is a sample using `adal-node`:
+
+```js
+var DynamicsWebApi = require ('dynamics-web-api');
+var AuthenticationContext = require('adal-node').AuthenticationContext;
+
+//the following settings should be taken from Azure for your application
+//and stored in app settings file or in global variables
+
+var authorityUrl = 'https://login.windows.net/00000000-0000-0000-0000-000000000011/oauth2/token'; //OAuth Token Endpoint
+var resource = 'https://myorg.crm.dynamics.com';          //CRM Organization URL
+var clientId = '00000000-0000-0000-0000-000000000001';    //Dynamics 365 Client Id when registered in Azure
+var username = 'crm-user-name';
+var password = 'crm-user-password';
+
+var adalContext = new AuthenticationContext(authorityUrl);
+
+//add a callback as a parameter for your function
+function acquireToken(dynamicsWebApiCallback){
+    //call a necessary function in adal-node object to get a token
+    adalContext.acquireTokenWithUsernamePassword(resource, username, password, clientId, function tokenCallback(error, token) {
+        if (!err){
+            //call a callback only when a token has been retrieved
+            dynamicsWebApiCallback(token);
+        }
+        else{
+            console.log('Token has not been retrieved. Error: ' + error.stack);
+        }
+    });
+}
+
+//create DynamicsWebApi object
+var dynamicsWebApi = new DynamicsWebApi({ 
+    webApiUrl: 'https:/myorg.api.crm.dynamics.com/api/data/v8.2/',
+    onTokenRefresh: acquireToken
+});
+
+//call any function
+dynamicsWebApi.executeUnboundFunction("WhoAmI").then(function (response) {
+    console.log('Hello Dynamics 365! My id is: ' + response.UserId);
+}).catch(function(error){
+    console.log(error.message);
+});
+```
+
+### Configuration
+To initialize a new instance of DynamicsWebApi with a configuration object, please use the following code:
+
+```js
+//config can be passed directly to the constructor
+var dynamicsWebApi = new DynamicsWebApi({ webApiVersion: "8.2" });
+```
+
+You can set a configuration dynamically if needed:
+
+```js
+//or can be set dynamically
 dynamicsWebApi.setConfig({ webApiVersion: "8.2" });
 ```
 
-#### Configuration Object Properties
+#### Configuration Parameters
 Property Name | Type | Description
 ------------ | ------------- | -------------
-__impersonate__ | String | A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
-__webApiUrl__ | String | A complete URL string to Web API. Example of the URL: "https:/myorg.crm.dynamics.com/api/data/v8.2/". If it is specified then webApiVersion property will not be used even if it is not empty. 
-__webApiVersion__ | String | Version of the Web API. By default version "8.0" used.
+impersonate | String | A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+onTokenRefresh | Function | A callback function that triggered when DynamicsWebApi requests a new OAuth token. (At this moment it is done before each call to Dynamics 365, as [recommended by Microsoft](https://msdn.microsoft.com/en-ca/library/gg327838.aspx#Anchor_2)).
+webApiUrl | String | A complete URL string to Web API. Example of the URL: "https:/myorg.api.crm.dynamics.com/api/data/v8.2/". If it is specified then webApiVersion property will not be used even if it is not empty. 
+webApiVersion | String | Version of the Web API. Default version is "8.0".
 
-At this moment the library only works inside CRM.
-
-### Intellisense
-
-The work on a rich Intellisense experience is still on going but developers can already use some of the features.
-
-#### DWA Object
-
-DWA is a JavaScript object located inside DynamicsWebApi library file. This object enables Intellisense for Visual Studio and therefore improves an overall productivity of a software developer.
-The object contains several child objects which are described below.
-
-##### DWA.Types
-`DWA.Types` contains various objects (or so called Types) that are used in DynamicsWebApi and can be used by developers to enable Intellisense for some of the functions.
-At this moment only Reponse objects are described there.
-
-The following example shows how to use `DWA.Types` in the code:
-
-Let's assume that we needed to write a retrieveMultipleRequest.
-
-```js
-dynamicsWebApi.retrieveMultipleRequest(request).then(function (response) {
-	//properties of the response object are not known
-})
-```
-
-This function returns an object which properties are not known at the runtime. This problem
-can be easily resolved by using XML Documentation Comments for JavaScript.
-
-```js
-dynamicsWebApi.retrieveMultipleRequest(request).then(function (response) {
-    /// <param name="response" type="DWA.Types.MultipleResponse">Request response</param>
-
-	//now Intellisense is working
-	var count = response.oDataCount;
-    var nextPageLink = response.oDataNextLink;
-    var records = response.value;
-})
-```
-
-The following types are described at this moment: `DWA.Types.ReferenceResponse`, `DWA.Types.FetchXmlResponse` and `DWA.Types.MultipleResponse`.
-
-##### DWA.Prefer
-`DWA.Prefer` contains various values that can header "Prefer" to be set with. Most of the existing operations support such header. The following list describes which
-header values can be used for which operations.
-
-* `DWA.Prefer.ReturnRepresentation` - `create`, `update`, `updateSingleProperty` - allows developers to retrieve just created or updated object in a single request.
-* `DWA.Prefer.Annotations` - `retrieveRequest`, `retrieveMultipleRequest`, `executeFetchXml` - allows to retrieve additional information about lookups, option sets and etc.
-
-Examples:
-
-```js
-
-//DWA.Prefer.ReturnRepresentation ("return=representation")
-dynamicsWebApi.update(recordId, "leads", lead, DWA.Prefer.ReturnRepresentation); // then... catch...
-
-//DWA.Prefer.Annotations.FormattedValue ("OData.Community.Display.V1.FormattedValue")
-var request = {
-    id: recordId,
-    collection: "leads",
-    includeAnnotations: DWA.Prefer.Annotations.FormattedValue
-};
-
-dynamicsWebApi.retrieveRequest(request); //then... catch...
-```
+Configuration property `webApiVersion` is required only when DynamicsWebApi used inside of CRM. 
+Property `webApiUrl` is required when DynamicsWebApi used externally. 
+If both configuration properties set `webApiUrl` will have the highest priority than `webApiVersion`, so the last one will be skipped.
 
 ## Request Examples
 
@@ -160,6 +180,7 @@ orderBy | Array | `retrieveMultipleRequest` | An Array (of Strings) representing
 returnRepresentation | Boolean | `updateRequest`, `upsertRequest` | Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
 savedQuery | String | `retrieveRequest` | A String representing the GUID value of the saved query.
 select | Array | `retrieveRequest`, `retrieveMultipleRequest`, `updateRequest`, `upsertRequest` | An Array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
+token | String | All | Authorization Token. If set, onTokenRefresh will not be called.
 top | Number | `retrieveMultipleRequest` | Limit the number of results returned by using the $top system query option. Do not use $top with $count!
 userQuery | String | `retrieveRequest` | A String representing the GUID value of the user query.
 
@@ -210,7 +231,7 @@ var leadId = '7d577253-3ef0-4a0a-bb7f-8335c2596e70';
 //and specify fields with values that need to be updated
 var lead = {
     subject: "Test update",
-	jobtitle: "Developer"
+    jobtitle: "Developer"
 }
 //perform an update operation
 dynamicsWebApi.update(leadId, "leads", lead).then(function () {
@@ -227,9 +248,9 @@ dynamicsWebApi.update(leadId, "leads", lead).then(function () {
 var request = {
     id: '7d577253-3ef0-4a0a-bb7f-8335c2596e70',
     collection: "leads",
-	entity: {
+    entity: {
         subject: "Test update",
-		jobtitle: "Developer"
+        jobtitle: "Developer"
     },
     returnRepresentation: true,
     select: ["fullname"]
@@ -237,7 +258,7 @@ var request = {
 
 dynamicsWebApi.updateRequest(request).then(function (response) {
     var fullname = response.fullname;
-	//do something with a fullname of a recently updated entity record
+    //do something with a fullname of a recently updated entity record
 })
 .catch(function (error) {
     //catch an error
@@ -342,14 +363,14 @@ var request = {
 
 dynamicsWebApi.deleteRequest(request).then(function (isDeleted) {
     if (isDeleted){
-		//the record has been deleted
-	}
-	else{
-		//the record has not been deleted
-	}
+        //the record has been deleted
+    }
+    else{
+        //the record has not been deleted
+    }
 })
 .catch(function (error) {
-	//catch an error
+    //catch an error
 });
 ```
 
@@ -393,13 +414,11 @@ var request = {
     select: ["fullname", "subject"],
 
     //ETag value with the If-None-Match header to request data to be retrieved only 
-	//if it has changed since the last time it was retrieved.
+    //if it has changed since the last time it was retrieved.
     ifnonematch: 'W/"468026"',
 
-	//DWA object can be found at the top of the library file. 
-	//It is helpful when used inside Visual Studio for better Intellisense experience.
-	//Retrieved record will contain formatted values
-	includeAnnotations: DWA.Prefer.Annotations.FormattedValue
+    //Retrieved record will contain formatted values
+    includeAnnotations: "OData.Community.Display.V1.FormattedValue"
 };
 
 dynamicsWebApi.retrieveRequest(request).then(function (record) {
@@ -414,16 +433,15 @@ dynamicsWebApi.retrieveRequest(request).then(function (record) {
 
 It is possible to retrieve a reference to the related entity (it works both in Basic and Advanced requests): `select: ["ownerid/$ref"]`. The parameter
 must be the only one, it must be the name of a [single-valued navigation property](https://msdn.microsoft.com/en-us/library/mt607990.aspx#Anchor_5) 
-and it must have a suffix `/$ref` attached to it. The returned object will be `DWA.Types.ReferenceResponse`. Example:
+and it must have a suffix `/$ref` attached to it. Example:
 
 ```js
 var leadId = '7d577253-3ef0-4a0a-bb7f-8335c2596e70';
 
 //perform a retrieve operaion
 dynamicsWebApi.retrieve(leadid, "leads", ["ownerid/$ref"]).then(function (reference) {
-    /// <param name="reference" type="DWA.Types.ReferenceResponse">Response</param>
     var ownerId = reference.id;
-	var collectionName = reference.collection; // systemusers or teams
+    var collectionName = reference.collection; // systemusers or teams
 }) //.catch ...
 ```
 
@@ -438,10 +456,10 @@ var recordId = '7d577253-3ef0-4a0a-bb7f-8335c2596e70';
 
 //perform a retrieve operaion
 dynamicsWebApi.retrieve(recordId, "new_tests", ["/new_ParentLead", "fullname", "subject"])
-	.then(function (leadRecord) {
-		var fullname = leadRecord.fullname;
-		//and etc...
-	}) //.catch ...
+    .then(function (leadRecord) {
+        var fullname = leadRecord.fullname;
+        //and etc...
+    }) //.catch ...
 ```
 
 In advanced request you have a choice to specify a `request.navigationProperty` or use it in the same way as for the Basic function.
@@ -464,7 +482,7 @@ request = {
 
 dynamicsWebApi.retrieveRequest(request).then(function (leadRecord) {
     var fullname = leadRecord.fullname;
-	//and etc...
+    //and etc...
 }) // .catch...
 ```
 
@@ -548,11 +566,11 @@ For example, there is an entity with a logical name `new_test`, it has a lookup 
 var new_testid = '00000000-0000-0000-0000-000000000001';
 var leadId = '00000000-0000-0000-0000-000000000002';
 dynamicsWebApi.associateSingleValued("new_tests", new_testid, "new_ParentLead", "leads", leadId)
-	.then(function () {
-		//success
-	}).catch(function (error) {
-		//catch an error
-	});
+    .then(function () {
+        //success
+    }).catch(function (error) {
+        //catch an error
+    });
 ```
 
 ### Disassociate
@@ -584,16 +602,16 @@ dynamicsWebApi.disassociateSingleValued("new_tests", new_testid, "new_ParentLead
 ```js
 //build a fetch xml
 var fetchXml = "<fetch mapping='logical'>" +
-					"<entity name='account'>" +
-						"<attribute name='accountid'/>" +
-						"<attribute name='name'/>" +
-					"</entity>" +
-				"</fetch>";
+                    "<entity name='account'>" +
+                        "<attribute name='accountid'/>" +
+                        "<attribute name='name'/>" +
+                    "</entity>" +
+               "</fetch>";
 
 dynamicsWebApi.executeFetchXml("accounts", fetchXml).then(function (response) {
     /// <param name="response" type="DWA.Types.FetchXmlResponse">Request response</param>
 
-	//do something with results here; access records response.value[0].accountid 
+    //do something with results here; access records response.value[0].accountid 
 })
 .catch(function (error) {
     //catch an error
@@ -605,31 +623,31 @@ dynamicsWebApi.executeFetchXml("accounts", fetchXml).then(function (response) {
 ```js
 //build a fetch xml
 var fetchXml = "<fetch mapping='logical' count='5'>" +
-					"<entity name='account'>" +
-						"<attribute name='accountid'/>" +
-						"<attribute name='name'/>" +
-					"</entity>" +
-				"</fetch>";
+                   "<entity name='account'>" +
+                       "<attribute name='accountid'/>" +
+                       "<attribute name='name'/>" +
+                   "</entity>" +
+               "</fetch>";
 
 dynamicsWebApi.executeFetchXml("accounts", fetchXml).then(function (response) {
     /// <param name="response" type="DWA.Types.FetchXmlResponse">Request response</param>
-	
-	//do something with results here; access records response.value[0].accountid
-
-	return dynamicsWebApi
-        .executeFetchXml("accounts", fetchXml, null, response.PagingInfo.nextPage, response.PagingInfo.cookie);
-}).then(function (response) {
-    /// <param name="response" type="DWA.Types.FetchXmlResponse">Request response</param>
     
-	//page 2
-	//do something with results here; access records response.value[0].accountid
+    //do something with results here; access records response.value[0].accountid
 
     return dynamicsWebApi
         .executeFetchXml("accounts", fetchXml, null, response.PagingInfo.nextPage, response.PagingInfo.cookie);
 }).then(function (response) {
     /// <param name="response" type="DWA.Types.FetchXmlResponse">Request response</param>
-	//page 3
-	//and so on... or use a loop.
+    
+    //page 2
+    //do something with results here; access records response.value[0].accountid
+
+    return dynamicsWebApi
+        .executeFetchXml("accounts", fetchXml, null, response.PagingInfo.nextPage, response.PagingInfo.cookie);
+}).then(function (response) {
+    /// <param name="response" type="DWA.Types.FetchXmlResponse">Request response</param>
+    //page 3
+    //and so on... or use a loop.
 })
 //catch...
 ```
@@ -641,11 +659,11 @@ dynamicsWebApi.executeFetchXml("accounts", fetchXml).then(function (response) {
 ```js
 var teamId = "00000000-0000-0000-0000-000000000001";
 dynamicsWebApi.executeBoundFunction(teamId, "teams", "Microsoft.Dynamics.CRM.RetrieveTeamPrivileges")
-	.then(function (response) {
-		//do something with a response
-	}).catch(function (error) {
-		//catch an error
-	});
+    .then(function (response) {
+        //do something with a response
+    }).catch(function (error) {
+        //catch an error
+    });
 ```
 
 #### Unbound functions
@@ -676,12 +694,12 @@ var actionRequest = {
     }
 };
 dynamicsWebApi.executeBoundAction(queueId, "queues", "Microsoft.Dynamics.CRM.AddToQueue", actionRequest)
-	.then(function (result) {
-		var queueItemId = result.QueueItemId;
-	})
-	.catch(function (error) {
-		//catch an error
-	});
+    .then(function (result) {
+        var queueItemId = result.QueueItemId;
+    })
+    .catch(function (error) {
+        //catch an error
+    });
 ```
 
 #### Unbound actions
@@ -693,8 +711,8 @@ var actionRequest = {
     OpportunityClose: {
         subject: "Won Opportunity",
 
-		//DynamicsWebApi will add full url if the property contains @odata.bind suffix
-		//but it is also possible to specify a full url to the entity record
+        //DynamicsWebApi will add full url if the property contains @odata.bind suffix
+        //but it is also possible to specify a full url to the entity record
         "opportunityid@odata.bind": "opportunities(" + opportunityId + ")"
     }
 };
@@ -718,9 +736,7 @@ Thank you for your patience!
 
 ## JavaScript Promises
 Please use the following library that implements [ES6 Promises](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise): [DynamicsWebApi with Promises](/scripts/dynamics-web-api.js).
-
-### Recommended
-* [Yaku](https://github.com/ysmood/yaku) - ES6-Promise polyfill.
+It is highly recommended to use one of the Promise Polyfills (Yaku, ES6 Promise and etc.) if DynamicsWebApi is intended to be used in the browsers.
 
 ## JavaScript Callbacks
 Please use the following library that implements Callbacks : [DynamicsWebApi with Callbacks](/scripts/dynamics-web-api-callbacks.js).

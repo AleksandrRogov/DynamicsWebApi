@@ -1,6 +1,7 @@
 ﻿var chai = require('chai');
 var expect = chai.expect;
 var nock = require('nock');
+var sinon = require('sinon');
 
 var mocks = require("./stubs");
 var DWA = require("../lib/dwa");
@@ -2579,6 +2580,144 @@ describe("callbacks -", function () {
 
             it("all requests have been made", function () {
                 expect(scope.isDone()).to.be.true;
+            });
+        });
+
+        describe("authorization", function() {
+            var scope;
+            before(function() {
+                var response = mocks.responses.multipleResponse;
+                scope = nock(mocks.webApiUrl, {
+                    reqheaders: {
+                        Authorization: "Bearer: token001"
+                    }
+                })
+                    .get("/tests")
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function() {
+                nock.cleanAll();
+            });
+
+            it("sends the request to the right end point and returns a response", function(done) {
+                var getToken = function(callback) {
+                    var adalCallback = function(token) {
+                        callback(token);
+                    };
+
+                    adalCallback("token001");
+                };
+
+                var dynamicsWebApiAuth = new DynamicsWebApiCallbacks({ onTokenRefresh: getToken, webApiUrl: mocks.webApiUrl });
+                dynamicsWebApiAuth.retrieveMultipleRequest({ collection: "tests" }, function(object) {
+                        expect(object).to.deep.equal(mocks.responses.multiple());
+                        done();
+                    }, function(object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function() {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+
+        describe("two requests use different authorization tokens", function() {
+            var scope;
+            var scope2;
+            before(function() {
+                var response = mocks.responses.multipleResponse;
+                scope = nock(mocks.webApiUrl, {
+                    reqheaders: {
+                        Authorization: "Bearer: token001"
+                    }
+                })
+                    .get("/tests")
+                    .reply(response.status, response.responseText, response.responseHeaders);
+
+                scope2 = nock(mocks.webApiUrl, {
+                    reqheaders: {
+                        Authorization: "Bearer: token002"
+                    }
+                })
+                    .get("/tests")
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function() {
+                nock.cleanAll();
+            });
+
+            var i = 0;
+            var getToken = function(callback) {
+                var adalCallback = function(token) {
+                    callback(token);
+                };
+
+                adalCallback("token00" + ++i);
+            };
+
+            it("sends the request to the right end point and returns a response", function(done) {
+                var dynamicsWebApiAuth = new DynamicsWebApiCallbacks({ onTokenRefresh: getToken, webApiUrl: mocks.webApiUrl });
+                dynamicsWebApiAuth.retrieveMultipleRequest({ collection: "tests" }, function(object) {
+                    expect(object).to.deep.equal(mocks.responses.multiple());
+                }, function(object) {
+                    expect(object).to.be.undefined;
+                });
+
+                dynamicsWebApiAuth.retrieveMultipleRequest({ collection: "tests" }, function(object) {
+                    expect(object).to.deep.equal(mocks.responses.multiple());
+                    done();
+                }, function(object) {
+                    expect(object).to.be.undefined;
+                    done();
+                });
+            });
+
+            it("all requests have been made", function() {
+                expect(scope.isDone()).to.be.true;
+                expect(scope2.isDone()).to.be.true;
+            });
+        });
+
+        describe("when token set in the request it overrides token returned from a callback", function() {
+            var scope;
+            before(function() {
+                var response = mocks.responses.multipleResponse;
+                scope = nock(mocks.webApiUrl, {
+                    reqheaders: {
+                        Authorization: "Bearer: overriden"
+                    }
+                })
+                    .get("/tests")
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function() {
+                nock.cleanAll();
+            });
+
+            var getToken = sinon.spy(function any(callback) { callback("token001") });
+
+            it("sends the request to the right end point and returns a response", function(done) {
+                var dynamicsWebApiAuth = new DynamicsWebApiCallbacks({ onTokenRefresh: getToken, webApiUrl: mocks.webApiUrl });
+                dynamicsWebApiAuth.retrieveMultipleRequest({ collection: "tests", token: "overriden" }, function(object) {
+                    expect(object).to.deep.equal(mocks.responses.multiple());
+                    done();
+                }, function(object) {
+                    expect(object).to.be.undefined;
+                    done();
+                });
+            });
+
+            it("all requests have been made", function() {
+                expect(scope.isDone()).to.be.true;
+            });
+
+            it("and token refresh callback has not been called", function() {
+                expect(getToken.notCalled).to.be.true;
             });
         });
     });

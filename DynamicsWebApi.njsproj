@@ -65,6 +65,9 @@
     <Compile Include="lib\utilities\RequestConverter.js">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="lib\requests\sendRequest.js">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="lib\utilities\Utility.js">
       <SubType>Code</SubType>
     </Compile>
@@ -79,8 +82,7 @@
       <TestFramework>Mocha</TestFramework>
     </Compile>
     <Compile Include="tests\main-tests.js">
-      <TestFramework>
-      </TestFramework>
+      <TestFramework>Mocha</TestFramework>
     </Compile>
     <Compile Include="tests\stubs.js">
       <TestFramework>
