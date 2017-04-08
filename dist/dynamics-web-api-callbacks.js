@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.1.4 (c) 2017 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.2.0 (c) 2017 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -74,7 +74,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 11);
+/******/ 	return __webpack_require__(__webpack_require__.s = 12);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -152,12 +152,12 @@ module.exports = DWA;
 
 function throwParameterError(functionName, parameterName, type) {
     throw new Error(type
-        ? functionName + " requires the " + parameterName + " parameter is a " + type
+        ? functionName + " requires the " + parameterName + " parameter to be of type " + type
         : functionName + " requires the " + parameterName + " parameter.");
 };
 
 var ErrorHelper = {
-    errorHandler: function (req) {
+    handleErrorResponse: function (req) {
         ///<summary>
         /// Private function return an Error object to the errorCallback
         ///</summary>
@@ -165,7 +165,7 @@ var ErrorHelper = {
         /// The XMLHttpRequest response that returned an error.
         ///</param>
         ///<returns>Error</returns>
-        return new Error("Error : " +
+        throw new Error("Error: " +
             req.status + ": " +
             req.message);
     },
@@ -226,6 +226,11 @@ var ErrorHelper = {
         /// The error message text to include when the error is thrown.
         ///</param>
         if (typeof parameter != "number") {
+            if (typeof parameter === "string" && parameter) {
+                if (!isNaN(parseInt(parameter))) {
+                    return;
+                }
+            }
             throwParameterError(functionName, parameterName, "Number");
         }
     },
@@ -309,9 +314,6 @@ String.prototype.startsWith = function (searchString, position) {
 /***/ (function(module, exports, __webpack_require__) {
 
 
-var dateReviver = __webpack_require__(6);
-var parseResponseHeaders = __webpack_require__(7);
-
 /**
  * Sends a request to given URL with given parameters
  *
@@ -319,77 +321,56 @@ var parseResponseHeaders = __webpack_require__(7);
  * @param {string} uri - Request URI.
  * @param {Function} successCallback - A callback called on success of the request.
  * @param {Function} errorCallback - A callback called when a request failed.
- * @param {string} [data] - Data to send in the request.
- * @param {Object} [additionalHeaders] - Object with headers. IMPORTANT! This object does not contain default headers needed for every request.
+ * @param {Object} config - DynamicsWebApi config.
+ * @param {Object} [data] - Data to send in the request.
+ * @param {Object} [additionalHeaders] - Object with additional headers. IMPORTANT! This object does not contain default headers needed for every request.
+ * @returns {Promise}
  */
-var xhrRequest = function (method, uri, data, additionalHeaders, successCallback, errorCallback) {
-    var request = new XMLHttpRequest();
-    request.open(method, encodeURI(uri), true);
-    request.setRequestHeader("OData-MaxVersion", "4.0");
-    request.setRequestHeader("OData-Version", "4.0");
-    request.setRequestHeader("Accept", "application/json");
-    request.setRequestHeader("Content-Type", "application/json; charset=utf-8");
-
-    //set additional headers
-    if (additionalHeaders != null) {
-        for (var key in additionalHeaders) {
-            request.setRequestHeader(key, additionalHeaders[key]);
+module.exports = function sendRequest(method, uri, config, data, additionalHeaders, successCallback, errorCallback) {
+    if (config.impersonate && (!additionalHeaders || (additionalHeaders && !additionalHeaders["MSCRMCallerID"]))) {
+        if (!additionalHeaders) {
+            additionalHeaders = {};
         }
+        additionalHeaders['MSCRMCallerID'] = config.impersonate;
     }
 
-    request.onreadystatechange = function () {
-        if (request.readyState === 4) {
-            switch (request.status) {
-                case 200: // Success with content returned in response body.
-                case 201: // Success with content returned in response body.
-                case 204: // Success with no content returned in response body.
-                case 304: {// Success with Not Modified
-                    var responseData = null;
-                    if (request.responseText) {
-                        responseData = JSON.parse(request.responseText, dateReviver);
-                    }
-
-                    var response = {
-                        data: responseData,
-                        headers: parseResponseHeaders(request.getAllResponseHeaders()),
-                        status: request.status
-                    };
-
-                    successCallback(response);
-                    break;
-                }
-                default: // All other statuses are error cases.
-                    var error;
-                    try {
-                        error = JSON.parse(request.response).error;
-                    } catch (e) {
-                        error = new Error("Unexpected Error");
-                    }
-                    error.status = request.status;
-                    errorCallback(error);
-                    break;
+    var stringifiedData;
+    if (data) {
+        stringifiedData = JSON.stringify(data, function (key, value) {
+            /// <param name="key" type="String">Description</param>
+            if (key.endsWith("@odata.bind") && typeof value === "string" && !value.startsWith(config.webApiUrl)) {
+                value = config.webApiUrl + value;
             }
 
-            request = null;
+            return value;
+        });
+    }
+
+    var executeRequest;
+    if (typeof XMLHttpRequest !== 'undefined') {
+        executeRequest = __webpack_require__(8);
+    }
+
+
+    var sendInternalRequest = function (token) {
+        if (token) {
+            if (!additionalHeaders) {
+                additionalHeaders = {};
+            }
+            additionalHeaders['Authorization'] = "Bearer: " + token;
         }
+
+        executeRequest(method, config.webApiUrl + uri, stringifiedData, additionalHeaders, successCallback, errorCallback);
     };
 
-    request.onerror = function () {
-        errorCallback({ message: "Network Error" });
-        request = null;
-    };
-
-    request.ontimeout = function (error) {
-        errorCallback({ message: "Request Timed Out" });
-        request = null;
-    };
-
-    data
-        ? request.send(data)
-        : request.send();
+    //call a token refresh callback only if it is set and there is no "Authorization" header set yet
+    if (config.onTokenRefresh && (!additionalHeaders || (additionalHeaders && !additionalHeaders["Authorization"]))) {
+        config.onTokenRefresh(sendInternalRequest);
+    }
+    else {
+        sendInternalRequest();
+    }
 };
-
-module.exports = xhrRequest;
 
 /***/ }),
 /* 4 */
@@ -516,6 +497,11 @@ function convertRequestOptions (request, functionName, url, joinSymbol) {
             headers['MSCRMCallerID'] = ErrorHelper.guidParameterCheck(request.impersonate, "DynamicsWebApi." + functionName, "request.impersonate");
         }
 
+        if (request.token) {
+            ErrorHelper.stringParameterCheck(request.token, "DynamicsWebApi." + functionName, "request.token");
+            headers["Authorization"] = "Bearer: " + request.token;
+        }
+
         if (request.expand != null && request.expand.length) {
             ErrorHelper.arrayParameterCheck(request.expand, "DynamicsWebApi." + functionName, "request.expand");
             var expandRequestArray = [];
@@ -587,7 +573,7 @@ var Utility = {
      * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
      * @returns {string}
      */
-    buildFunctionParameters: __webpack_require__(8),
+    buildFunctionParameters: __webpack_require__(9),
 
     /**
      * Parses a paging cookie returned in response
@@ -596,7 +582,7 @@ var Utility = {
      * @param {number} currentPageNumber - A current page number. Fix empty paging-cookie for complex fetch xmls.
      * @returns {{cookie: "", number: 0, next: 1}}
      */
-    getFetchXmlPagingCookie: __webpack_require__(10),
+    getFetchXmlPagingCookie: __webpack_require__(11),
 
     /**
      * Converts a response to a reference object
@@ -604,7 +590,7 @@ var Utility = {
      * @param {Object} responseData - Response object
      * @returns {ReferenceObject}
      */
-    convertToReferenceObject: __webpack_require__(9)
+    convertToReferenceObject: __webpack_require__(10)
 }
 
 module.exports = Utility;
@@ -655,6 +641,93 @@ module.exports = function parseResponseHeaders(headerStr) {
 
 /***/ }),
 /* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+var dateReviver = __webpack_require__(6);
+var parseResponseHeaders = __webpack_require__(7);
+
+/**
+ * Sends a request to given URL with given parameters
+ *
+ * @param {string} method - Method of the request.
+ * @param {string} uri - Request URI.
+ * @param {Function} successCallback - A callback called on success of the request.
+ * @param {Function} errorCallback - A callback called when a request failed.
+ * @param {string} [data] - Data to send in the request.
+ * @param {Object} [additionalHeaders] - Object with headers. IMPORTANT! This object does not contain default headers needed for every request.
+ */
+var xhrRequest = function (method, uri, data, additionalHeaders, successCallback, errorCallback) {
+    var request = new XMLHttpRequest();
+    request.open(method, encodeURI(uri), true);
+    request.setRequestHeader("OData-MaxVersion", "4.0");
+    request.setRequestHeader("OData-Version", "4.0");
+    request.setRequestHeader("Accept", "application/json");
+    request.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+
+    //set additional headers
+    if (additionalHeaders != null) {
+        for (var key in additionalHeaders) {
+            request.setRequestHeader(key, additionalHeaders[key]);
+        }
+    }
+
+    request.onreadystatechange = function () {
+        if (request.readyState === 4) {
+            switch (request.status) {
+                case 200: // Success with content returned in response body.
+                case 201: // Success with content returned in response body.
+                case 204: // Success with no content returned in response body.
+                case 304: {// Success with Not Modified
+                    var responseData = null;
+                    if (request.responseText) {
+                        responseData = JSON.parse(request.responseText, dateReviver);
+                    }
+
+                    var response = {
+                        data: responseData,
+                        headers: parseResponseHeaders(request.getAllResponseHeaders()),
+                        status: request.status
+                    };
+
+                    successCallback(response);
+                    break;
+                }
+                default: // All other statuses are error cases.
+                    var error;
+                    try {
+                        error = JSON.parse(request.response).error;
+                    } catch (e) {
+                        error = new Error("Unexpected Error");
+                    }
+                    error.status = request.status;
+                    errorCallback(error);
+                    break;
+            }
+
+            request = null;
+        }
+    };
+
+    request.onerror = function () {
+        errorCallback({ message: "Network Error" });
+        request = null;
+    };
+
+    request.ontimeout = function (error) {
+        errorCallback({ message: "Request Timed Out" });
+        request = null;
+    };
+
+    data
+        ? request.send(data)
+        : request.send();
+};
+
+module.exports = xhrRequest;
+
+/***/ }),
+/* 9 */
 /***/ (function(module, exports) {
 
 /**
@@ -690,7 +763,7 @@ module.exports = function buildFunctionParameters(parameters) {
 };
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports) {
 
 /**
@@ -712,7 +785,7 @@ module.exports = function convertToReferenceObject(responseData) {
 }
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports) {
 
 /**
@@ -749,7 +822,7 @@ module.exports = function getFetchXmlPagingCookie(pageCookies, currentPageNumber
 }
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var DWA = __webpack_require__(0);
@@ -779,176 +852,90 @@ if (!String.prototype.endsWith || !String.prototype.startsWith) {
  */
 function DynamicsWebApi(config) {
 
+    var _internalConfig = {
+        webApiVersion: "8.0",
+        webApiUrl: "",
+        impersonate: null
+    };
+
+    if (!config) {
+        config = _internalConfig;
+    }
+
     var _context = function () {
-        ///<summary>
-        /// Private function to the context object.
-        ///</summary>
-        ///<returns>Context</returns>
-        if (typeof GetGlobalContext != "undefined")
-        { return GetGlobalContext(); }
+
+        if (typeof GetGlobalContext != "undefined") {
+            return GetGlobalContext();
+        }
         else {
             if (typeof Xrm != "undefined") {
                 return Xrm.Page.context;
             }
-            else { throw new Error("Xrm Context is not available."); }
+            else {
+                throw new Error("Xrm Context is not available.");
+            }
         }
     };
 
     var _getClientUrl = function () {
-        ///<summary>
-        /// Private function to return the server URL from the context
-        ///</summary>
-        ///<returns>String</returns>
 
-        var clientUrl = Xrm.Page.context.getClientUrl();
+        var context = _context();
 
-        if (clientUrl.match(/\/$/)) {
-            clientUrl = clientUrl.substring(0, clientUrl.length - 1);
+        if (context) {
+            var clientUrl = context.getClientUrl();
+
+            if (clientUrl.match(/\/$/)) {
+                clientUrl = clientUrl.substring(0, clientUrl.length - 1);
+            }
+            return clientUrl;
         }
-        return clientUrl;
+
+        return "";
     };
 
-    var _impersonateUserId = null;
-    var _webApiVersion = "8.0";
-
     var _initUrl = function () {
-        return _getClientUrl() + "/api/data/v" + _webApiVersion + "/";
-    }
+        return _getClientUrl() + "/api/data/v" + _internalConfig.webApiVersion + "/";
+    };
 
-    var _webApiUrl = _initUrl();
+    /**
+     * Sets the configuration parameters for DynamicsWebApi helper.
+     *
+     * @param {DWAConfig} config - configuration object
+     */
+    this.setConfig = function (config) {
+
+        if (config.webApiVersion) {
+            ErrorHelper.stringParameterCheck(config.webApiVersion, "DynamicsWebApi.setConfig", "config.webApiVersion");
+            _internalConfig.webApiVersion = config.webApiVersion;
+        }
+
+        if (config.webApiUrl) {
+            ErrorHelper.stringParameterCheck(config.webApiUrl, "DynamicsWebApi.setConfig", "config.webApiUrl");
+            _internalConfig.webApiUrl = config.webApiUrl;
+        } else {
+            _internalConfig.webApiUrl = _initUrl();
+        }
+
+        if (config.impersonate) {
+            _internalConfig.impersonate = ErrorHelper.guidParameterCheck(config.impersonate, "DynamicsWebApi.setConfig", "config.impersonate");
+        }
+
+        if (config.onTokenRefresh) {
+            ErrorHelper.callbackParameterCheck(config.onTokenRefresh, "DynamicsWebApi.setConfig", "config.onTokenRefresh");
+            _internalConfig.onTokenRefresh = config.onTokenRefresh;
+        }
+    };
+
+    this.setConfig(config);
 
     var _propertyReplacer = function (key, value) {
         /// <param name="key" type="String">Description</param>
-        if (key.endsWith("@odata.bind") && typeof value === "string" && !value.startsWith(_webApiUrl)) {
-            value = _webApiUrl + value;
+        if (key.endsWith("@odata.bind") && typeof value === "string" && !value.startsWith(_internalConfig.webApiUrl)) {
+            value = _internalConfig.webApiUrl + value;
         }
 
         return value;
     };
-
-    var _errorHandler = function (req) {
-        ///<summary>
-        /// Private function return an Error object to the errorCallback
-        ///</summary>
-        ///<param name="req" type="XMLHttpRequest">
-        /// The XMLHttpRequest response that returned an error.
-        ///</param>
-        ///<returns>Error</returns>
-        return new Error("Error : " +
-            req.status + ": " +
-            req.statusText + ": " +
-            JSON.parse(req.responseText).error.message);
-    };
-
-    var _parameterCheck = function (parameter, functionName, parameterName, type) {
-        ///<summary>
-        /// Private function used to check whether required parameters are null or undefined
-        ///</summary>
-        ///<param name="parameter" type="Object">
-        /// The parameter to check;
-        ///</param>
-        ///<param name="message" type="String">
-        /// The error message text to include when the error is thrown.
-        ///</param>
-        if ((typeof parameter === "undefined") || parameter === null || parameter == "") {
-            throw new Error(type
-                ? functionName + " requires the " + parameterName + " parameter with type: " + type
-                : functionName + " requires the " + parameterName + " parameter.");
-        }
-    };
-    var _stringParameterCheck = function (parameter, functionName, parameterName) {
-        ///<summary>
-        /// Private function used to check whether required parameters are null or undefined
-        ///</summary>
-        ///<param name="parameter" type="String">
-        /// The string parameter to check;
-        ///</param>
-        ///<param name="message" type="String">
-        /// The error message text to include when the error is thrown.
-        ///</param>
-        if (typeof parameter != "string") {
-            throw new Error(functionName + " requires the " + parameterName + " parameter is a String.");
-        }
-    };
-    var _arrayParameterCheck = function (parameter, functionName, parameterName) {
-        ///<summary>
-        /// Private function used to check whether required parameters are null or undefined
-        ///</summary>
-        ///<param name="parameter" type="String">
-        /// The string parameter to check;
-        ///</param>
-        ///<param name="message" type="String">
-        /// The error message text to include when the error is thrown.
-        ///</param>
-        if (parameter.constructor !== Array) {
-            throw new Error(functionName + " requires the " + parameterName + " parameter is an Array.");
-        }
-    };
-    var _numberParameterCheck = function (parameter, functionName, parameterName) {
-        ///<summary>
-        /// Private function used to check whether required parameters are null or undefined
-        ///</summary>
-        ///<param name="parameter" type="Number">
-        /// The string parameter to check;
-        ///</param>
-        ///<param name="message" type="String">
-        /// The error message text to include when the error is thrown.
-        ///</param>
-        if (typeof parameter != "number") {
-            throw new Error(functionName + " requires the " + parameterName + " parameter is a Number.");
-        }
-    };
-    var _boolParameterCheck = function (parameter, functionName, parameterName) {
-        ///<summary>
-        /// Private function used to check whether required parameters are null or undefined
-        ///</summary>
-        ///<param name="parameter" type="Boolean">
-        /// The string parameter to check;
-        ///</param>
-        ///<param name="message" type="String">
-        /// The error message text to include when the error is thrown.
-        ///</param>
-        if (typeof parameter != "boolean") {
-            throw new Error(functionName + " requires the " + parameterName + " parameter is a Boolean.");
-        }
-    };
-
-    var _guidParameterCheck = function (parameter, functionName, parameterName) {
-        ///<summary>
-        /// Private function used to check whether required parameter is a valid GUID
-        ///</summary>
-        ///<param name="parameter" type="String">
-        /// The GUID parameter to check;
-        ///</param>
-        ///<param name="message" type="String">
-        /// The error message text to include when the error is thrown.
-        ///</param>
-        /// <returns type="String" />
-
-        try {
-            var match = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(parameter)[0];
-
-            return match;
-        }
-        catch (error) {
-            throw new Error(functionName + " requires the " + parameterName + " parameter is a GUID String.");
-        }
-    }
-
-    var _callbackParameterCheck = function (callbackParameter, functionName, parameterName) {
-        ///<summary>
-        /// Private function used to check whether required callback parameters are functions
-        ///</summary>
-        ///<param name="callbackParameter" type="Function">
-        /// The callback parameter to check;
-        ///</param>
-        ///<param name="message" type="String">
-        /// The error message text to include when the error is thrown.
-        ///</param>
-        if (typeof callbackParameter != "function") {
-            throw new Error(functionName + " requires the " + parameterName + " parameter is a Function.");
-        }
-    }
 
     /**
      * Sends a request to given URL with given parameters
@@ -959,53 +946,10 @@ function DynamicsWebApi(config) {
      * @param {Function} errorCallback - A callback called when a request failed.
      * @param {Object} [data] - Data to send in the request.
      * @param {Object} [additionalHeaders] - Object with additional headers. IMPORTANT! This object does not contain default headers needed for every request.
-     * @returns {Promise}
      */
-    var _sendRequest = function(method, uri, data, additionalHeaders, successCallback, errorCallback) {
-        if (_impersonateUserId && (!additionalHeaders || (additionalHeaders && !additionalHeaders["MSCRMCallerID"]))) {
-            if (!additionalHeaders) {
-                additionalHeaders = {};
-            }
-            additionalHeaders['MSCRMCallerID'] = _impersonateUserId;
-        }
-
-        var stringifiedData;
-        if (data) {
-            stringifiedData = JSON.stringify(data, _propertyReplacer);
-        }
-
-        var executeRequest;
-        if (typeof XMLHttpRequest !== 'undefined') {
-            executeRequest = __webpack_require__(3);
-        }
-
-        executeRequest(method, _webApiUrl + uri, stringifiedData, additionalHeaders, successCallback, errorCallback);
+    var _sendRequest = function (method, uri, data, additionalHeaders, successCallback, errorCallback) {
+        __webpack_require__(3)(method, uri, _internalConfig, data, additionalHeaders, successCallback, errorCallback);
     }
-    
-    /**
-     * Sets the configuration parameters for DynamicsWebApi helper.
-     *
-     * @param {DWAConfig} config - configuration object
-     */
-    this.setConfig = function (config) {
-        if (config.webApiVersion != null) {
-            _stringParameterCheck(config.webApiVersion, "DynamicsWebApi.setConfig", "config.webApiVersion");
-            _webApiVersion = config.webApiVersion;
-            _webApiUrl = _initUrl();
-        }
-
-        if (config.webApiUrl != null) {
-            _stringParameterCheck(config.webApiUrl, "DynamicsWebApi.setConfig", "config.webApiUrl");
-            _webApiUrl = config.webApiUrl;
-        }
-
-        if (config.impersonate != null) {
-            _impersonateUserId = _guidParameterCheck(config.impersonate, "DynamicsWebApi.setConfig", "config.impersonate");
-        }
-    }
-
-    if (config != null)
-        this.setConfig(config);
 
     /**
      * Sends an asynchronous request to create a new record.
@@ -1018,15 +962,15 @@ function DynamicsWebApi(config) {
      */
     this.create = function (object, collection, successCallback, errorCallback, prefer) {
 
-        _parameterCheck(object, "DynamicsWebApi.create", "object");
-        _stringParameterCheck(collection, "DynamicsWebApi.create", "collection");
-        _callbackParameterCheck(successCallback, "DynamicsWebApi.create", "successCallback");
-        _callbackParameterCheck(errorCallback, "DynamicsWebApi.create", "errorCallback");
+        ErrorHelper.parameterCheck(object, "DynamicsWebApi.create", "object");
+        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.create", "collection");
+        ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.create", "successCallback");
+        ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.create", "errorCallback");
 
         var headers = null;
 
         if (prefer != null) {
-            _stringParameterCheck(prefer, "DynamicsWebApi.create", "prefer");
+            ErrorHelper.stringParameterCheck(prefer, "DynamicsWebApi.create", "prefer");
             headers = { "Prefer": prefer };
         }
 
@@ -1055,10 +999,10 @@ function DynamicsWebApi(config) {
      */
     this.updateRequest = function (request, successCallback, errorCallback) {
 
-        _parameterCheck(request, "DynamicsWebApi.update", "request");
-        _parameterCheck(request.entity, "DynamicsWebApi.update", "request.entity");
-        _callbackParameterCheck(successCallback, "DynamicsWebApi.update", "successCallback");
-        _callbackParameterCheck(errorCallback, "DynamicsWebApi.update", "errorCallback");
+        ErrorHelper.parameterCheck(request, "DynamicsWebApi.update", "request");
+        ErrorHelper.parameterCheck(request.entity, "DynamicsWebApi.update", "request.entity");
+        ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.update", "successCallback");
+        ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.update", "errorCallback");
 
         var result = RequestConverter.convertRequest(request, "update");
 
@@ -1101,24 +1045,24 @@ function DynamicsWebApi(config) {
      */
     this.update = function (id, collection, object, successCallback, errorCallback, prefer, select) {
 
-        _stringParameterCheck(id, "DynamicsWebApi.update", "id");
-        id = _guidParameterCheck(id, "DynamicsWebApi.update", "id")
-        _parameterCheck(object, "DynamicsWebApi.update", "object");
-        _stringParameterCheck(collection, "DynamicsWebApi.update", "collection");
-        _callbackParameterCheck(successCallback, "DynamicsWebApi.update", "successCallback");
-        _callbackParameterCheck(errorCallback, "DynamicsWebApi.update", "errorCallback");
+        ErrorHelper.stringParameterCheck(id, "DynamicsWebApi.update", "id");
+        id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.update", "id")
+        ErrorHelper.parameterCheck(object, "DynamicsWebApi.update", "object");
+        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.update", "collection");
+        ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.update", "successCallback");
+        ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.update", "errorCallback");
 
         var headers = { "If-Match": "*" }; //to prevent upsert
 
         if (prefer != null) {
-            _stringParameterCheck(prefer, "DynamicsWebApi.update", "prefer");
+            ErrorHelper.stringParameterCheck(prefer, "DynamicsWebApi.update", "prefer");
             headers["Prefer"] = prefer;
         }
 
         var systemQueryOptions = "";
 
         if (select != null) {
-            _arrayParameterCheck(select, "DynamicsWebApi.update", "select");
+            ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.update", "select");
 
             if (select != null && select.length > 0) {
                 systemQueryOptions = "?$select=" + select.join(",");
@@ -1146,17 +1090,17 @@ function DynamicsWebApi(config) {
      */
     this.updateSingleProperty = function (id, collection, keyValuePair, successCallback, errorCallback, prefer) {
 
-        _stringParameterCheck(id, "DynamicsWebApi.updateSingleProperty", "id");
-        id = _guidParameterCheck(id, "DynamicsWebApi.updateSingleProperty", "id");
-        _parameterCheck(keyValuePair, "DynamicsWebApi.updateSingleProperty", "keyValuePair");
-        _stringParameterCheck(collection, "DynamicsWebApi.updateSingleProperty", "collection");
-        _callbackParameterCheck(successCallback, "DynamicsWebApi.updateSingleProperty", "successCallback");
-        _callbackParameterCheck(errorCallback, "DynamicsWebApi.updateSingleProperty", "errorCallback");
+        ErrorHelper.stringParameterCheck(id, "DynamicsWebApi.updateSingleProperty", "id");
+        id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.updateSingleProperty", "id");
+        ErrorHelper.parameterCheck(keyValuePair, "DynamicsWebApi.updateSingleProperty", "keyValuePair");
+        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.updateSingleProperty", "collection");
+        ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.updateSingleProperty", "successCallback");
+        ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.updateSingleProperty", "errorCallback");
 
         var headers = null;
 
         if (prefer != null) {
-            _stringParameterCheck(prefer, "DynamicsWebApi.updateSingleProperty", "prefer");
+            ErrorHelper.stringParameterCheck(prefer, "DynamicsWebApi.updateSingleProperty", "prefer");
             headers = { "Prefer": prefer };
         }
 
@@ -1181,9 +1125,9 @@ function DynamicsWebApi(config) {
      */
     this.deleteRequest = function (request, successCallback, errorCallback) {
 
-        _parameterCheck(request, "DynamicsWebApi.delete", "request")
-        _callbackParameterCheck(successCallback, "DynamicsWebApi.delete", "successCallback");
-        _callbackParameterCheck(errorCallback, "DynamicsWebApi.delete", "errorCallback");
+        ErrorHelper.parameterCheck(request, "DynamicsWebApi.delete", "request")
+        ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.delete", "successCallback");
+        ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.delete", "errorCallback");
 
         var result = RequestConverter.convertRequest(request, "delete");
 
@@ -1218,14 +1162,14 @@ function DynamicsWebApi(config) {
      */
     this.deleteRecord = function (id, collection, successCallback, errorCallback, propertyName) {
 
-        _stringParameterCheck(id, "DynamicsWebApi.delete", "id");
-        id = _guidParameterCheck(id, "DynamicsWebApi.delete", "id");
-        _stringParameterCheck(collection, "DynamicsWebApi.delete", "collection");
-        _callbackParameterCheck(successCallback, "DynamicsWebApi.delete", "successCallback");
-        _callbackParameterCheck(errorCallback, "DynamicsWebApi.delete", "errorCallback");
+        ErrorHelper.stringParameterCheck(id, "DynamicsWebApi.delete", "id");
+        id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.delete", "id");
+        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.delete", "collection");
+        ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.delete", "successCallback");
+        ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.delete", "errorCallback");
 
         if (propertyName != null)
-            _stringParameterCheck(propertyName, "DynamicsWebApi.delete", "propertyName");
+            ErrorHelper.stringParameterCheck(propertyName, "DynamicsWebApi.delete", "propertyName");
 
         var url = collection.toLowerCase() + "(" + id + ")";
 
@@ -1249,9 +1193,9 @@ function DynamicsWebApi(config) {
      */
     this.retrieveRequest = function (request, successCallback, errorCallback) {
 
-        _parameterCheck(request, "DynamicsWebApi.retrieve", "request")
-        _callbackParameterCheck(successCallback, "DynamicsWebApi.retrieve", "successCallback");
-        _callbackParameterCheck(errorCallback, "DynamicsWebApi.retrieve", "errorCallback");
+        ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieve", "request")
+        ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.retrieve", "successCallback");
+        ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.retrieve", "errorCallback");
 
         var result = RequestConverter.convertRequest(request, "retrieve");
 
@@ -1281,18 +1225,18 @@ function DynamicsWebApi(config) {
      */
     this.retrieve = function (id, collection, successCallback, errorCallback, select, expand) {
 
-        _stringParameterCheck(id, "DynamicsWebApi.retrieve", "id");
-        id = _guidParameterCheck(id, "DynamicsWebApi.retrieve", "id")
-        _stringParameterCheck(collection, "DynamicsWebApi.retrieve", "collection");
-        _callbackParameterCheck(successCallback, "DynamicsWebApi.retrieve", "successCallback");
-        _callbackParameterCheck(errorCallback, "DynamicsWebApi.retrieve", "errorCallback");
+        ErrorHelper.stringParameterCheck(id, "DynamicsWebApi.retrieve", "id");
+        id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.retrieve", "id")
+        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.retrieve", "collection");
+        ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.retrieve", "successCallback");
+        ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.retrieve", "errorCallback");
 
         var url = collection.toLowerCase() + "(" + id + ")";
 
         var queryOptions = [];
 
         if (select != null && select.length) {
-            _arrayParameterCheck(select, "DynamicsWebApi.retrieve", "select");
+            ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.retrieve", "select");
 
             if (select.length == 1 && select[0].endsWith("/$ref") && select[0].endsWith("/$ref")) {
                 url += "/" + select[0];
@@ -1310,7 +1254,7 @@ function DynamicsWebApi(config) {
         }
 
         if (expand != null) {
-            _stringParameterCheck(expand, "DynamicsWebApi.retrieve", "expand");
+            ErrorHelper.stringParameterCheck(expand, "DynamicsWebApi.retrieve", "expand");
             queryOptions.push("$expand=" + expand);
         }
 
@@ -1338,10 +1282,10 @@ function DynamicsWebApi(config) {
      */
     this.upsertRequest = function (request, successCallback, errorCallback) {
 
-        _parameterCheck(request, "DynamicsWebApi.upsert", "request");
-        _parameterCheck(request.entity, "DynamicsWebApi.upsert", "request.entity");
-        _callbackParameterCheck(successCallback, "DynamicsWebApi.upsert", "successCallback");
-        _callbackParameterCheck(errorCallback, "DynamicsWebApi.upsert", "errorCallback");
+        ErrorHelper.parameterCheck(request, "DynamicsWebApi.upsert", "request");
+        ErrorHelper.parameterCheck(request.entity, "DynamicsWebApi.upsert", "request.entity");
+        ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.upsert", "successCallback");
+        ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.upsert", "errorCallback");
 
         var result = RequestConverter.convertRequest(request, "upsert");
 
@@ -1395,26 +1339,26 @@ function DynamicsWebApi(config) {
      */
     this.upsert = function (id, collection, object, successCallback, errorCallback, prefer, select) {
 
-        _stringParameterCheck(id, "DynamicsWebApi.upsert", "id");
-        id = _guidParameterCheck(id, "DynamicsWebApi.upsert", "id")
+        ErrorHelper.stringParameterCheck(id, "DynamicsWebApi.upsert", "id");
+        id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.upsert", "id")
 
-        _parameterCheck(object, "DynamicsWebApi.upsert", "object");
-        _stringParameterCheck(collection, "DynamicsWebApi.upsert", "collection");
+        ErrorHelper.parameterCheck(object, "DynamicsWebApi.upsert", "object");
+        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.upsert", "collection");
 
-        _callbackParameterCheck(successCallback, "DynamicsWebApi.upsert", "successCallback");
-        _callbackParameterCheck(errorCallback, "DynamicsWebApi.upsert", "errorCallback");
+        ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.upsert", "successCallback");
+        ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.upsert", "errorCallback");
 
         var headers = {};
 
         if (prefer != null) {
-            _stringParameterCheck(prefer, "DynamicsWebApi.upsert", "prefer");
+            ErrorHelper.stringParameterCheck(prefer, "DynamicsWebApi.upsert", "prefer");
             headers["Prefer"] = prefer;
         }
 
         var systemQueryOptions = "";
 
         if (select != null) {
-            _arrayParameterCheck(select, "DynamicsWebApi.upsert", "select");
+            ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.upsert", "select");
 
             if (select != null && select.length > 0) {
                 systemQueryOptions = "?$select=" + select.join(",");
@@ -1451,9 +1395,9 @@ function DynamicsWebApi(config) {
     this.count = function (collection, successCallback, errorCallback, filter) {
 
         if (filter == null || (filter != null && !filter.length)) {
-            _stringParameterCheck(collection, "DynamicsWebApi.count", "collection");
-            _callbackParameterCheck(successCallback, "DynamicsWebApi.count", "successCallback");
-            _callbackParameterCheck(errorCallback, "DynamicsWebApi.count", "errorCallback");
+            ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.count", "collection");
+            ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.count", "successCallback");
+            ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.count", "errorCallback");
 
             //if filter has not been specified then simplify the request
 
@@ -1503,8 +1447,8 @@ function DynamicsWebApi(config) {
      */
     this.retrieveMultipleRequest = function (request, successCallback, errorCallback, nextPageLink) {
 
-        _callbackParameterCheck(successCallback, "DynamicsWebApi.retrieveMultiple", "successCallback");
-        _callbackParameterCheck(errorCallback, "DynamicsWebApi.retrieveMultiple", "errorCallback");
+        ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.retrieveMultiple", "successCallback");
+        ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.retrieveMultiple", "errorCallback");
 
         if (nextPageLink && !request.collection) {
             request.collection = "any";
@@ -1513,8 +1457,8 @@ function DynamicsWebApi(config) {
         var result = RequestConverter.convertRequest(request, "retrieveMultiple");
 
         if (nextPageLink) {
-            _stringParameterCheck(nextPageLink, "DynamicsWebApi.retrieveMultiple", "nextPageLink");
-            result.url = nextPageLink.replace(_webApiUrl, "");
+            ErrorHelper.stringParameterCheck(nextPageLink, "DynamicsWebApi.retrieveMultiple", "nextPageLink");
+            result.url = nextPageLink.replace(_internalConfig.webApiUrl, "");
         }
 
         //copy locally
@@ -1553,20 +1497,20 @@ function DynamicsWebApi(config) {
      */
     this.executeFetchXml = function (collection, fetchXml, successCallback, errorCallback, includeAnnotations, pageNumber, pagingCookie, impersonateUserId) {
 
-        _stringParameterCheck(collection, "DynamicsWebApi.executeFetchXml", "collection");
-        _stringParameterCheck(fetchXml, "DynamicsWebApi.executeFetchXml", "fetchXml");
-        _callbackParameterCheck(successCallback, "DynamicsWebApi.executeFetchXml", "successCallback");
-        _callbackParameterCheck(errorCallback, "DynamicsWebApi.executeFetchXml", "errorCallback");
+        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.executeFetchXml", "collection");
+        ErrorHelper.stringParameterCheck(fetchXml, "DynamicsWebApi.executeFetchXml", "fetchXml");
+        ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.executeFetchXml", "successCallback");
+        ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.executeFetchXml", "errorCallback");
 
         if (pageNumber == null) {
             pageNumber = 1;
         }
 
-        _numberParameterCheck(pageNumber, "DynamicsWebApi.executeFetchXml", "pageNumber");
+        ErrorHelper.numberParameterCheck(pageNumber, "DynamicsWebApi.executeFetchXml", "pageNumber");
         var replacementString = "$1 page='" + pageNumber + "'";
 
         if (pagingCookie != null) {
-            _stringParameterCheck(pagingCookie, "DynamicsWebApi.executeFetchXml", "pagingCookie");
+            ErrorHelper.stringParameterCheck(pagingCookie, "DynamicsWebApi.executeFetchXml", "pagingCookie");
             replacementString += " paging-cookie='" + pagingCookie + "'";
         }
 
@@ -1575,12 +1519,12 @@ function DynamicsWebApi(config) {
 
         var headers = {};
         if (includeAnnotations != null) {
-            _stringParameterCheck(includeAnnotations, "DynamicsWebApi.executeFetchXml", "includeAnnotations");
+            ErrorHelper.stringParameterCheck(includeAnnotations, "DynamicsWebApi.executeFetchXml", "includeAnnotations");
             headers['Prefer'] = 'odata.include-annotations="' + includeAnnotations + '"';
         }
 
         if (impersonateUserId != null) {
-            impersonateUserId = _guidParameterCheck(impersonateUserId, "DynamicsWebApi.executeFetchXml", "impersonateUserId");
+            impersonateUserId = ErrorHelper.guidParameterCheck(impersonateUserId, "DynamicsWebApi.executeFetchXml", "impersonateUserId");
             header["MSCRMCallerID"] = impersonateUserId;
         }
 
@@ -1615,13 +1559,13 @@ function DynamicsWebApi(config) {
      */
     this.associate = function (primarycollection, primaryId, relationshipName, relatedcollection, relatedId, successCallback, errorCallback, impersonateUserId) {
 
-        _stringParameterCheck(primarycollection, "DynamicsWebApi.associate", "primarycollection");
-        _stringParameterCheck(relatedcollection, "DynamicsWebApi.associate", "relatedcollection");
-        _stringParameterCheck(relationshipName, "DynamicsWebApi.associate", "relationshipName");
-        primaryId = _guidParameterCheck(primaryId, "DynamicsWebApi.associate", "primaryId");
-        relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.associate", "relatedId");
-        _callbackParameterCheck(successCallback, "DynamicsWebApi.associate", "successCallback");
-        _callbackParameterCheck(errorCallback, "DynamicsWebApi.associate", "errorCallback");
+        ErrorHelper.stringParameterCheck(primarycollection, "DynamicsWebApi.associate", "primarycollection");
+        ErrorHelper.stringParameterCheck(relatedcollection, "DynamicsWebApi.associate", "relatedcollection");
+        ErrorHelper.stringParameterCheck(relationshipName, "DynamicsWebApi.associate", "relationshipName");
+        primaryId = ErrorHelper.guidParameterCheck(primaryId, "DynamicsWebApi.associate", "primaryId");
+        relatedId = ErrorHelper.guidParameterCheck(relatedId, "DynamicsWebApi.associate", "relatedId");
+        ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.associate", "successCallback");
+        ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.associate", "errorCallback");
 
         var onSuccess = function () {
             successCallback();
@@ -1630,11 +1574,11 @@ function DynamicsWebApi(config) {
         var header = {};
 
         if (impersonateUserId != null) {
-            impersonateUserId = _guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
+            impersonateUserId = ErrorHelper.guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
             header["MSCRMCallerID"] = impersonateUserId;
         }
 
-        var object = { "@odata.id": _webApiUrl + relatedcollection + "(" + relatedId + ")" };
+        var object = { "@odata.id": _internalConfig.webApiUrl + relatedcollection + "(" + relatedId + ")" };
 
         _sendRequest("POST",
             primarycollection + "(" + primaryId + ")/" + relationshipName + "/$ref", object, header,
@@ -1654,12 +1598,12 @@ function DynamicsWebApi(config) {
      */
     this.disassociate = function (primarycollection, primaryId, relationshipName, relatedId, successCallback, errorCallback, impersonateUserId) {
 
-        _stringParameterCheck(primarycollection, "DynamicsWebApi.disassociate", "primarycollection");
-        _stringParameterCheck(relationshipName, "DynamicsWebApi.disassociate", "relationshipName");
-        primaryId = _guidParameterCheck(primaryId, "DynamicsWebApi.disassociate", "primaryId");
-        relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.disassociate", "relatedId");
-        _callbackParameterCheck(successCallback, "DynamicsWebApi.disassociate", "successCallback");
-        _callbackParameterCheck(errorCallback, "DynamicsWebApi.disassociate", "errorCallback");
+        ErrorHelper.stringParameterCheck(primarycollection, "DynamicsWebApi.disassociate", "primarycollection");
+        ErrorHelper.stringParameterCheck(relationshipName, "DynamicsWebApi.disassociate", "relationshipName");
+        primaryId = ErrorHelper.guidParameterCheck(primaryId, "DynamicsWebApi.disassociate", "primaryId");
+        relatedId = ErrorHelper.guidParameterCheck(relatedId, "DynamicsWebApi.disassociate", "relatedId");
+        ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.disassociate", "successCallback");
+        ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.disassociate", "errorCallback");
 
         var onSuccess = function () {
             successCallback();
@@ -1668,7 +1612,7 @@ function DynamicsWebApi(config) {
         var header = {};
 
         if (impersonateUserId != null) {
-            impersonateUserId = _guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
+            impersonateUserId = ErrorHelper.guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
             header["MSCRMCallerID"] = impersonateUserId;
         }
 
@@ -1690,13 +1634,13 @@ function DynamicsWebApi(config) {
      */
     this.associateSingleValued = function (collection, id, singleValuedNavigationPropertyName, relatedcollection, relatedId, successCallback, errorCallback, impersonateUserId) {
 
-        _stringParameterCheck(collection, "DynamicsWebApi.associateSingleValued", "collection");
-        id = _guidParameterCheck(id, "DynamicsWebApi.associateSingleValued", "id");
-        relatedId = _guidParameterCheck(relatedId, "DynamicsWebApi.associateSingleValued", "relatedId");
-        _stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.associateSingleValued", "singleValuedNavigationPropertyName");
-        _stringParameterCheck(relatedcollection, "DynamicsWebApi.associateSingleValued", "relatedcollection");
-        _callbackParameterCheck(successCallback, "DynamicsWebApi.associateSingleValued", "successCallback");
-        _callbackParameterCheck(errorCallback, "DynamicsWebApi.associateSingleValued", "errorCallback");
+        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.associateSingleValued", "collection");
+        id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.associateSingleValued", "id");
+        relatedId = ErrorHelper.guidParameterCheck(relatedId, "DynamicsWebApi.associateSingleValued", "relatedId");
+        ErrorHelper.stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.associateSingleValued", "singleValuedNavigationPropertyName");
+        ErrorHelper.stringParameterCheck(relatedcollection, "DynamicsWebApi.associateSingleValued", "relatedcollection");
+        ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.associateSingleValued", "successCallback");
+        ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.associateSingleValued", "errorCallback");
 
         var onSuccess = function () {
             successCallback();
@@ -1705,11 +1649,11 @@ function DynamicsWebApi(config) {
         var header = {};
 
         if (impersonateUserId != null) {
-            impersonateUserId = _guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
+            impersonateUserId = ErrorHelper.guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
             header["MSCRMCallerID"] = impersonateUserId;
         }
 
-        var object = { "@odata.id": _webApiUrl + relatedcollection + "(" + relatedId + ")" };
+        var object = { "@odata.id": _internalConfig.webApiUrl + relatedcollection + "(" + relatedId + ")" };
 
         _sendRequest("PUT",
             collection + "(" + id + ")/" + singleValuedNavigationPropertyName + "/$ref", object, header,
@@ -1728,16 +1672,16 @@ function DynamicsWebApi(config) {
      */
     this.disassociateSingleValued = function (collection, id, singleValuedNavigationPropertyName, successCallback, errorCallback, impersonateUserId) {
 
-        _stringParameterCheck(collection, "DynamicsWebApi.disassociateSingleValued", "collection");
-        id = _guidParameterCheck(id, "DynamicsWebApi.disassociateSingleValued", "id");
-        _stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.disassociateSingleValued", "singleValuedNavigationPropertyName");
-        _callbackParameterCheck(successCallback, "DynamicsWebApi.disassociateSingleValued", "successCallback");
-        _callbackParameterCheck(errorCallback, "DynamicsWebApi.disassociateSingleValued", "errorCallback");
+        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.disassociateSingleValued", "collection");
+        id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.disassociateSingleValued", "id");
+        ErrorHelper.stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.disassociateSingleValued", "singleValuedNavigationPropertyName");
+        ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.disassociateSingleValued", "successCallback");
+        ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.disassociateSingleValued", "errorCallback");
 
         var header = {};
 
         if (impersonateUserId != null) {
-            impersonateUserId = _guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
+            impersonateUserId = ErrorHelper.guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
             header["MSCRMCallerID"] = impersonateUserId;
         }
 
@@ -1790,14 +1734,14 @@ function DynamicsWebApi(config) {
      */
     var _executeFunction = function (functionName, parameters, collection, id, successCallback, errorCallback, impersonateUserId) {
 
-        _stringParameterCheck(functionName, "DynamicsWebApi.executeFunction", "functionName");
-        _callbackParameterCheck(successCallback, "DynamicsWebApi.executeFunction", "successCallback");
-        _callbackParameterCheck(errorCallback, "DynamicsWebApi.executeFunction", "errorCallback");
+        ErrorHelper.stringParameterCheck(functionName, "DynamicsWebApi.executeFunction", "functionName");
+        ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.executeFunction", "successCallback");
+        ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.executeFunction", "errorCallback");
         var url = functionName + Utility.buildFunctionParameters(parameters);
 
         if (collection != null) {
-            _stringParameterCheck(collection, "DynamicsWebApi.executeFunction", "collection");
-            id = _guidParameterCheck(id, "DynamicsWebApi.executeFunction", "id");
+            ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.executeFunction", "collection");
+            id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.executeFunction", "id");
 
             url = collection + "(" + id + ")/" + url;
         }
@@ -1805,7 +1749,7 @@ function DynamicsWebApi(config) {
         var header = {};
 
         if (impersonateUserId != null) {
-            header["MSCRMCallerID"] = _guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
+            header["MSCRMCallerID"] = ErrorHelper.guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
         }
 
         var onSuccess = function (response) {
@@ -1859,14 +1803,14 @@ function DynamicsWebApi(config) {
      */
     var _executeAction = function (actionName, requestObject, collection, id, successCallback, errorCallback, impersonateUserId) {
 
-        _stringParameterCheck(actionName, "DynamicsWebApi.executeAction", "actionName");
-        _callbackParameterCheck(successCallback, "DynamicsWebApi.executeAction", "successCallback");
-        _callbackParameterCheck(errorCallback, "DynamicsWebApi.executeAction", "errorCallback");
+        ErrorHelper.stringParameterCheck(actionName, "DynamicsWebApi.executeAction", "actionName");
+        ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.executeAction", "successCallback");
+        ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.executeAction", "errorCallback");
         var url = actionName;
 
         if (collection != null) {
-            _stringParameterCheck(collection, "DynamicsWebApi.executeAction", "collection");
-            id = _guidParameterCheck(id, "DynamicsWebApi.executeAction", "id");
+            ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.executeAction", "collection");
+            id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.executeAction", "id");
 
             url = collection + "(" + id + ")/" + url;
         }
@@ -1874,7 +1818,7 @@ function DynamicsWebApi(config) {
         var header = {};
 
         if (impersonateUserId != null) {
-            impersonateUserId = _guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
+            impersonateUserId = ErrorHelper.guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
             header["MSCRMCallerID"] = impersonateUserId;
         }
 
@@ -1896,11 +1840,7 @@ function DynamicsWebApi(config) {
     this.initializeInstance = function (config) {
 
         if (!config) {
-            config = {
-                impersonate: _impersonateUserId,
-                webApiUrl: _webApiUrl,
-                webApiVersion: _webApiVersion
-            };
+            config = _internalConfig;
         }
 
         return new DynamicsWebApi(config);
