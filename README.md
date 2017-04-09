@@ -142,7 +142,10 @@ dynamicsWebApi.setConfig({ webApiVersion: "8.2" });
 Property Name | Type | Description
 ------------ | ------------- | -------------
 impersonate | String | A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+includeAnnotations | String | Defaults Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
+maxPageSize | Number | Defaults the odata.maxpagesize preference. Use to set the number of entities returned in the response.
 onTokenRefresh | Function | A callback function that triggered when DynamicsWebApi requests a new OAuth token. (At this moment it is done before each call to Dynamics 365, as [recommended by Microsoft](https://msdn.microsoft.com/en-ca/library/gg327838.aspx#Anchor_2)).
+returnRepresentation | Boolean | Defaults Prefer header with value "return=representation". Use this property to return just created or updated entity in a single request.
 webApiUrl | String | A complete URL string to Web API. Example of the URL: "https:/myorg.api.crm.dynamics.com/api/data/v8.2/". If it is specified then webApiVersion property will not be used even if it is not empty. 
 webApiVersion | String | Version of the Web API. Default version is "8.0".
 
@@ -607,12 +610,12 @@ dynamicsWebApi.disassociateSingleValued("new_tests", new_testid, "new_ParentLead
 
 ```js
 //build a fetch xml
-var fetchXml = "<fetch mapping='logical'>" +
-                    "<entity name='account'>" +
-                        "<attribute name='accountid'/>" +
-                        "<attribute name='name'/>" +
-                    "</entity>" +
-               "</fetch>";
+var fetchXml = '<fetch mapping="logical">' +
+                    '<entity name="account">' +
+                        '<attribute name="accountid"/>' +
+                        '<attribute name="name"/>' +
+                    '</entity>' +
+               '</fetch>';
 
 dynamicsWebApi.executeFetchXml("accounts", fetchXml).then(function (response) {
     /// <param name="response" type="DWA.Types.FetchXmlResponse">Request response</param>
@@ -628,12 +631,12 @@ dynamicsWebApi.executeFetchXml("accounts", fetchXml).then(function (response) {
 
 ```js
 //build a fetch xml
-var fetchXml = "<fetch mapping='logical' count='5'>" +
-                   "<entity name='account'>" +
-                       "<attribute name='accountid'/>" +
-                       "<attribute name='name'/>" +
-                   "</entity>" +
-               "</fetch>";
+var fetchXml = '<fetch mapping="logical">' +
+                    '<entity name="account">' +
+                        '<attribute name="accountid"/>' +
+                        '<attribute name="name"/>' +
+                    '</entity>' +
+               '</fetch>';
 
 dynamicsWebApi.executeFetchXml("accounts", fetchXml).then(function (response) {
     /// <param name="response" type="DWA.Types.FetchXmlResponse">Request response</param>

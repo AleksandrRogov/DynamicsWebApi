@@ -866,8 +866,8 @@ describe("callbacks -", function () {
             before(function () {
                 var response = mocks.responses.fetchXmlResponsePage1Cookie;
                 scope = nock(mocks.responses.collectionUrl)
-                    .get("?fetchXml=" + escape(mocks.data.fetchXmls.fetchXml1))
-                    .reply(response.status, response.responseText, response.responseHeaders)
+                    .get("?fetchXml=" + encodeURIComponent(mocks.data.fetchXmls.fetchXml1))
+                    .reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -894,7 +894,7 @@ describe("callbacks -", function () {
             before(function () {
                 var response = mocks.responses.fetchXmlResponsePage2Cookie;
                 scope = nock(mocks.responses.collectionUrl)
-                    .get("?fetchXml=" + escape(mocks.data.fetchXmls.fetchXml2cookie))
+                    .get("?fetchXml=" + encodeURIComponent(mocks.data.fetchXmls.fetchXml2cookie))
                     .reply(response.status, response.responseText, response.responseHeaders)
             });
 
@@ -923,7 +923,7 @@ describe("callbacks -", function () {
             before(function () {
                 var response = mocks.responses.fetchXmlResponsePage1;
                 scope = nock(mocks.responses.collectionUrl)
-                    .get("?fetchXml=" + escape(mocks.data.fetchXmls.fetchXml1))
+                    .get("?fetchXml=" + encodeURIComponent(mocks.data.fetchXmls.fetchXml1))
                     .reply(response.status, response.responseText, response.responseHeaders)
             });
 
@@ -955,7 +955,7 @@ describe("callbacks -", function () {
                         Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.FormattedValue + '"'
                     }
                 })
-                    .get("?fetchXml=" + escape(mocks.data.fetchXmls.fetchXml2cookie))
+                    .get("?fetchXml=" + encodeURIComponent(mocks.data.fetchXmls.fetchXml2cookie))
                     .reply(response.status, response.responseText, response.responseHeaders)
             });
 
@@ -2624,7 +2624,7 @@ describe("callbacks -", function () {
             });
         });
 
-        describe("two requests use different authorization tokens", function() {
+        describe("authorization - two requests use different authorization tokens", function() {
             var scope;
             var scope2;
             before(function() {
@@ -2682,7 +2682,7 @@ describe("callbacks -", function () {
             });
         });
 
-        describe("when token set in the request it overrides token returned from a callback", function() {
+        describe("authorization - when token set in the request it overrides token returned from a callback", function() {
             var scope;
             before(function() {
                 var response = mocks.responses.multipleResponse;
@@ -2718,6 +2718,237 @@ describe("callbacks -", function () {
 
             it("and token refresh callback has not been called", function() {
                 expect(getToken.notCalled).to.be.true;
+            });
+        });
+
+        describe("prefer - include annotations added to request if set in the config", function() {
+            var dynamicsWebApi82 = new DynamicsWebApiCallbacks({ webApiVersion: "8.2", includeAnnotations: "some-annotations" });
+            var scope;
+            before(function() {
+                var response = mocks.responses.response200;
+                scope = nock(mocks.responses.testEntityUrl, {
+                    reqheaders: {
+                        Prefer: 'odata.include-annotations="some-annotations"'
+                    }
+                })
+                    .get("")
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function() {
+                nock.cleanAll();
+            });
+
+            it("it makes a correct request and returns a correct response", function(done) {
+                dynamicsWebApi82.retrieve(mocks.data.testEntityId, "tests", function(object) {
+                        expect(object).to.deep.equal(mocks.data.testEntity);
+                        done();
+                    }, function(object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function() {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+
+        describe("prefer - include annotations overriden if set in the request", function() {
+            var dynamicsWebApi82 = new DynamicsWebApiCallbacks({ webApiVersion: "8.2", includeAnnotations: "some-annotations" });
+            var scope;
+            before(function() {
+                var response = mocks.responses.multipleResponse;
+                scope = nock(mocks.responses.collectionUrl, {
+                    reqheaders: {
+                        Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.FormattedValue + '"'
+                    }
+                })
+                    .get("?$select=name")
+                    .reply(response.status, response.responseText, response.responseHeaders)
+            });
+
+            after(function() {
+                nock.cleanAll();
+            });
+
+            it("it makes a correct request and returns a correct response", function(done) {
+                var dwaRequest = {
+                    collection: "tests",
+                    select: ["name"],
+                    includeAnnotations: DWA.Prefer.Annotations.FormattedValue
+                };
+
+                dynamicsWebApi82.retrieveMultipleRequest(dwaRequest, function(object) {
+                        expect(object).to.deep.equal(mocks.responses.multiple());
+                        done();
+                    }, function(object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function() {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+
+        describe("prefer - return representation added to request if set in the config", function() {
+            var dynamicsWebApi82 = new DynamicsWebApiCallbacks({ webApiVersion: "8.2", returnRepresentation: true });
+            var scope;
+            before(function() {
+                var response = mocks.responses.createReturnRepresentation;
+                scope = nock(mocks.responses.collectionUrl, {
+                    reqheaders: {
+                        "Prefer": DWA.Prefer.ReturnRepresentation
+                    }
+                })
+                    .post("", mocks.data.testEntity)
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function() {
+                nock.cleanAll();
+            });
+
+            it("returns the correct response", function(done) {
+                dynamicsWebApi82
+                    .create(mocks.data.testEntity, "tests", function(object) {
+                        expect(object).to.deep.equal(mocks.data.testEntity);
+                        done();
+                    }, function(object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function() {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+
+        describe("prefer - return representation overriden if set in the request", function() {
+            var dynamicsWebApi82 = new DynamicsWebApiCallbacks({ webApiVersion: "8.2", returnRepresentation: true });
+            var scope;
+            var scope2;
+            before(function() {
+                var response = mocks.responses.basicEmptyResponseSuccess;
+                scope = nock(mocks.responses.testEntityUrl, {
+                    reqheaders: {
+                        'If-Match': '*'
+                    }
+                })
+                    .patch("", mocks.data.testEntity)
+                    .reply(response.status, response.responseText, response.responseHeaders);
+
+                scope2 = nock(mocks.responses.collectionUrl, {
+                    reqheaders: {
+                        "Prefer": /.?/
+                    }
+                })
+                    .post("", mocks.data.testEntity)
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function() {
+                nock.cleanAll();
+            });
+
+            it("returns the correct response", function(done) {
+                var dwaRequest = {
+                    id: mocks.data.testEntityId,
+                    collection: "tests",
+                    entity: mocks.data.testEntity,
+                    returnRepresentation: false
+                }
+
+                dynamicsWebApi82.updateRequest(dwaRequest, function(object) {
+                        expect(object).to.be.true;
+                        done();
+                    }, function(object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function() {
+                expect(scope.isDone()).to.be.true;
+            });
+
+            it("prefer header has not been set", function() {
+                expect(scope2.isDone()).to.be.false;
+            });
+        });
+
+        describe("prefer - maxPageSize added to request if set in the config", function() {
+            var dynamicsWebApi82 = new DynamicsWebApiCallbacks({ webApiVersion: "8.2", maxPageSize: 10 });
+            var scope;
+            before(function() {
+                var response = mocks.responses.multipleResponse;
+                scope = nock(mocks.responses.collectionUrl, {
+                    reqheaders: {
+                        Prefer: 'odata.maxpagesize=10'
+                    }
+                })
+                    .get("")
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function() {
+                nock.cleanAll();
+            });
+
+            it("returns the correct response", function(done) {
+                dynamicsWebApi82.retrieveMultiple("tests", function(object) {
+                        expect(object).to.deep.equal(mocks.responses.multiple());
+                        done();
+                    }, function(object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function() {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+
+        describe("prefer - maxPageSize overriden if set in the request", function() {
+            var dynamicsWebApi82 = new DynamicsWebApiCallbacks({ webApiVersion: "8.2", maxPageSize: 10 });
+            var scope;
+            before(function() {
+                var response = mocks.responses.multipleWithLinkResponse;
+                scope = nock(mocks.responses.collectionUrl, {
+                    reqheaders: {
+                        Prefer: 'odata.maxpagesize=100'
+                    }
+                })
+                    .get("?$select=name")
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function() {
+                nock.cleanAll();
+            });
+
+            it("returns the correct response", function(done) {
+                var dwaRequest = {
+                    collection: "tests",
+                    select: ["name"],
+                    maxPageSize: 100
+                };
+
+                dynamicsWebApi82.retrieveMultipleRequest(dwaRequest, function(object) {
+                        expect(object).to.deep.equal(mocks.responses.multipleWithLink());
+                        done();
+                    }, function(object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function() {
+                expect(scope.isDone()).to.be.true;
             });
         });
     });

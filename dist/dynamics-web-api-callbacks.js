@@ -215,6 +215,12 @@ var ErrorHelper = {
         }
     },
 
+    stringOrArrayParameterCheck: function(parameter, functionName, parameterName) {
+        if (parameter.constructor !== Array && typeof parameter != "string") {
+            throwParameterError(functionName, parameterName, "String or Array");
+        }
+    },
+
     numberParameterCheck : function (parameter, functionName, parameterName) {
         ///<summary>
         /// Private function used to check whether required parameters are null or undefined
@@ -313,6 +319,7 @@ String.prototype.startsWith = function (searchString, position) {
 /* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
+var DWA = __webpack_require__(0);
 
 /**
  * Sends a request to given URL with given parameters
@@ -332,6 +339,29 @@ module.exports = function sendRequest(method, uri, config, data, additionalHeade
             additionalHeaders = {};
         }
         additionalHeaders['MSCRMCallerID'] = config.impersonate;
+    }
+
+    if (!additionalHeaders || (additionalHeaders && !additionalHeaders['Prefer'])) {
+        if (!additionalHeaders) {
+            additionalHeaders = {};
+        }
+
+        if (config.maxPageSize && config.maxPageSize > 0) {
+            additionalHeaders['Prefer'] = 'odata.maxpagesize=' + config.maxPageSize;
+        }
+
+        if (config.returnRepresentation && !additionalHeaders.hasOwnProperty('Prefer')) {
+            additionalHeaders['Prefer'] = DWA.Prefer.ReturnRepresentation;
+        }
+
+        //post here is for big fetch xml requests
+        if (config.includeAnnotations) {
+            additionalHeaders['Prefer'] = 'odata.include-annotations="' + config.includeAnnotations + '"';
+        }
+
+        if (additionalHeaders.hasOwnProperty('Prefer') && !additionalHeaders["Prefer"]){
+            delete additionalHeaders['Prefer'];
+        }
     }
 
     var stringifiedData;
@@ -468,9 +498,9 @@ function convertRequestOptions (request, functionName, url, joinSymbol) {
             requestArray.push("$orderby=" + request.orderBy.join(','));
         }
 
-        if (request.returnRepresentation) {
+        if (request.returnRepresentation != null) {
             ErrorHelper.boolParameterCheck(request.returnRepresentation, "DynamicsWebApi." + functionName, "request.returnRepresentation");
-            headers['Prefer'] = DWA.Prefer.ReturnRepresentation;
+            headers['Prefer'] = request.returnRepresentation ? DWA.Prefer.ReturnRepresentation : '';
         }
 
         if (request.includeAnnotations) {
@@ -479,7 +509,7 @@ function convertRequestOptions (request, functionName, url, joinSymbol) {
         }
 
         if (request.ifmatch != null && request.ifnonematch != null) {
-            throw Error("DynamicsWebApi." + functionName + ". Either one of request.ifmatch or request.ifnonematch parameters shoud be used in a call, not both.")
+            throw new Error("DynamicsWebApi." + functionName + ". Either one of request.ifmatch or request.ifnonematch parameters should be used in a call, not both.")
         }
 
         if (request.ifmatch) {
@@ -550,7 +580,7 @@ function convertRequest(request, functionName) {
     var result = convertRequestOptions(request, functionName, url);
 
     if (result.query)
-        result.url += "?" + result.query;
+        result.url += "?" + encodeURI(result.query);
 
     return { url: result.url, headers: result.headers };
 };
@@ -659,7 +689,7 @@ var parseResponseHeaders = __webpack_require__(7);
  */
 var xhrRequest = function (method, uri, data, additionalHeaders, successCallback, errorCallback) {
     var request = new XMLHttpRequest();
-    request.open(method, encodeURI(uri), true);
+    request.open(method, uri, true);
     request.setRequestHeader("OData-MaxVersion", "4.0");
     request.setRequestHeader("OData-Version", "4.0");
     request.setRequestHeader("Accept", "application/json");
@@ -843,6 +873,10 @@ if (!String.prototype.endsWith || !String.prototype.startsWith) {
  * @property {string} webApiUrl - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
  * @property {string} webApiVersion - The version of Web API to use, for example: "8.1"
  * @property {string} impersonate - A String representing a URL to Web API (webApiVersion not required if webApiUrl specified) [not used inside of CRM]
+ * @property {Function} onTokenRefresh - A function that is called when a security token needs to be refreshed.
+ * @property {string} includeAnnotations - Sets Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
+ * @property {string} maxPageSize - Sets the odata.maxpagesize preference value to request the number of entities returned in the response.
+ * @property {string} returnRepresentation - Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
  */
 
 /**
@@ -855,7 +889,11 @@ function DynamicsWebApi(config) {
     var _internalConfig = {
         webApiVersion: "8.0",
         webApiUrl: "",
-        impersonate: null
+        impersonate: null,
+        onTokenRefresh: null,
+        includeAnnotations: null,
+        maxPageSize: null,
+        returnRepresentation: null
     };
 
     if (!config) {
@@ -923,6 +961,21 @@ function DynamicsWebApi(config) {
         if (config.onTokenRefresh) {
             ErrorHelper.callbackParameterCheck(config.onTokenRefresh, "DynamicsWebApi.setConfig", "config.onTokenRefresh");
             _internalConfig.onTokenRefresh = config.onTokenRefresh;
+        }
+
+        if (config.includeAnnotations) {
+            ErrorHelper.stringParameterCheck(config.includeAnnotations, "DynamicsWebApi.setConfig", "config.includeAnnotations");
+            _internalConfig.includeAnnotations = config.includeAnnotations;
+        }
+
+        if (config.maxPageSize) {
+            ErrorHelper.numberParameterCheck(config.maxPageSize, "DynamicsWebApi.setConfig", "config.maxPageSize");
+            _internalConfig.maxPageSize = config.maxPageSize;
+        }
+
+        if (config.returnRepresentation) {
+            ErrorHelper.boolParameterCheck(config.returnRepresentation, "DynamicsWebApi.setConfig", "config.returnRepresentation");
+            _internalConfig.returnRepresentation = config.returnRepresentation;
         }
     };
 
@@ -1507,11 +1560,11 @@ function DynamicsWebApi(config) {
         }
 
         ErrorHelper.numberParameterCheck(pageNumber, "DynamicsWebApi.executeFetchXml", "pageNumber");
-        var replacementString = "$1 page='" + pageNumber + "'";
+        var replacementString = '$1 page="' + pageNumber + '"';
 
         if (pagingCookie != null) {
             ErrorHelper.stringParameterCheck(pagingCookie, "DynamicsWebApi.executeFetchXml", "pagingCookie");
-            replacementString += " paging-cookie='" + pagingCookie + "'";
+            replacementString += ' paging-cookie="' + pagingCookie + '"';
         }
 
         //add page number and paging cookie to fetch xml
@@ -1528,7 +1581,7 @@ function DynamicsWebApi(config) {
             header["MSCRMCallerID"] = impersonateUserId;
         }
 
-        var encodedFetchXml = escape(fetchXml);
+        var encodedFetchXml = encodeURIComponent(fetchXml);
 
         var onSuccess = function (response) {
             if (response.data['@Microsoft.Dynamics.CRM.fetchxmlpagingcookie'] != null) {
