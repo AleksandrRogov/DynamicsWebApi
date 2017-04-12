@@ -1,4 +1,4 @@
-/*! dynamics-web-api v1.2.1 (c) 2017 Aleksandr Rogov */
+/*! dynamics-web-api v1.2.2 (c) 2017 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -74,7 +74,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 12);
+/******/ 	return __webpack_require__(__webpack_require__.s = 13);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -341,29 +341,6 @@ module.exports = function sendRequest(method, uri, config, data, additionalHeade
         additionalHeaders['MSCRMCallerID'] = config.impersonate;
     }
 
-    if (!additionalHeaders || (additionalHeaders && !additionalHeaders['Prefer'])) {
-        if (!additionalHeaders) {
-            additionalHeaders = {};
-        }
-
-        if (config.maxPageSize && config.maxPageSize > 0) {
-            additionalHeaders['Prefer'] = 'odata.maxpagesize=' + config.maxPageSize;
-        }
-
-        if (config.returnRepresentation && !additionalHeaders.hasOwnProperty('Prefer')) {
-            additionalHeaders['Prefer'] = DWA.Prefer.ReturnRepresentation;
-        }
-
-        //post here is for big fetch xml requests
-        if (config.includeAnnotations) {
-            additionalHeaders['Prefer'] = 'odata.include-annotations="' + config.includeAnnotations + '"';
-        }
-
-        if (additionalHeaders.hasOwnProperty('Prefer') && !additionalHeaders["Prefer"]){
-            delete additionalHeaders['Prefer'];
-        }
-    }
-
     var stringifiedData;
     if (data) {
         stringifiedData = JSON.stringify(data, function (key, value) {
@@ -408,6 +385,7 @@ module.exports = function sendRequest(method, uri, config, data, additionalHeade
 
 var DWA = __webpack_require__(0);
 var ErrorHelper = __webpack_require__(1);
+var buildPreferHeader = __webpack_require__(10);
 
 /**
  * @typedef {Object} ConvertedRequestOptions
@@ -429,9 +407,10 @@ var ErrorHelper = __webpack_require__(1);
  * @param {string} functionName - Name of the function that converts a request (for Error Handling)
  * @param {string} url - URL beginning (with required parameters)
  * @param {string} [joinSymbol] - URL beginning (with required parameters)
+ * @param {Object} [config] - DynamicsWebApi config
  * @returns {ConvertedRequestOptions}
  */
-function convertRequestOptions (request, functionName, url, joinSymbol) {
+function convertRequestOptions (request, functionName, url, joinSymbol, config) {
     var headers = {};
     var requestArray = [];
     joinSymbol = joinSymbol != null ? joinSymbol : "&";
@@ -478,11 +457,6 @@ function convertRequestOptions (request, functionName, url, joinSymbol) {
             requestArray.push("userQuery=" + ErrorHelper.guidParameterCheck(request.userQuery, "DynamicsWebApi." + functionName, "request.userQuery"));
         }
 
-        if (request.maxPageSize && request.maxPageSize > 0) {
-            ErrorHelper.numberParameterCheck(request.maxPageSize, "DynamicsWebApi." + functionName, "request.maxPageSize");
-            headers['Prefer'] = 'odata.maxpagesize=' + request.maxPageSize;
-        }
-
         if (request.count) {
             ErrorHelper.boolParameterCheck(request.count, "DynamicsWebApi." + functionName, "request.count");
             requestArray.push("$count=" + request.count);
@@ -498,14 +472,10 @@ function convertRequestOptions (request, functionName, url, joinSymbol) {
             requestArray.push("$orderby=" + request.orderBy.join(','));
         }
 
-        if (request.returnRepresentation != null) {
-            ErrorHelper.boolParameterCheck(request.returnRepresentation, "DynamicsWebApi." + functionName, "request.returnRepresentation");
-            headers['Prefer'] = request.returnRepresentation ? DWA.Prefer.ReturnRepresentation : '';
-        }
+        var prefer = buildPreferHeader(request, functionName, config);
 
-        if (request.includeAnnotations) {
-            ErrorHelper.stringParameterCheck(request.includeAnnotations, "DynamicsWebApi." + functionName, "request.includeAnnotations");
-            headers['Prefer'] = 'odata.include-annotations="' + request.includeAnnotations + '"';
+        if (prefer.length) {
+            headers['Prefer'] = prefer;
         }
 
         if (request.ifmatch != null && request.ifnonematch != null) {
@@ -532,21 +502,26 @@ function convertRequestOptions (request, functionName, url, joinSymbol) {
             headers["Authorization"] = "Bearer: " + request.token;
         }
 
-        if (request.expand != null && request.expand.length) {
-            ErrorHelper.arrayParameterCheck(request.expand, "DynamicsWebApi." + functionName, "request.expand");
-            var expandRequestArray = [];
-            for (var i = 0; i < request.expand.length; i++) {
-                if (request.expand[i].property) {
-                    var expandConverted = convertRequestOptions(request.expand[i], functionName + " $expand", null, ";");
-                    var expandQuery = expandConverted.query;
-                    if (expandQuery && expandQuery.length) {
-                        expandQuery = "(" + expandQuery + ")";
-                    }
-                    expandRequestArray.push(request.expand[i].property + expandQuery);
-                }
+        if (request.expand && request.expand.length) {
+            ErrorHelper.stringOrArrayParameterCheck(request.expand, "DynamicsWebApi." + functionName, "request.expand");
+            if (typeof request.expand === "string") {
+                requestArray.push("$expand=" + encodeURI(request.expand));
             }
-            if (expandRequestArray.length) {
-                requestArray.push("$expand=" + encodeURI(expandRequestArray.join(",")));
+            else {
+                var expandRequestArray = [];
+                for (var i = 0; i < request.expand.length; i++) {
+                    if (request.expand[i].property) {
+                        var expandConverted = convertRequestOptions(request.expand[i], functionName + " $expand", null, ";");
+                        var expandQuery = expandConverted.query;
+                        if (expandQuery && expandQuery.length) {
+                            expandQuery = "(" + expandQuery + ")";
+                        }
+                        expandRequestArray.push(request.expand[i].property + expandQuery);
+                    }
+                }
+                if (expandRequestArray.length) {
+                    requestArray.push("$expand=" + encodeURI(expandRequestArray.join(",")));
+                }
             }
         }
     }
@@ -559,9 +534,10 @@ function convertRequestOptions (request, functionName, url, joinSymbol) {
  *
  * @param {Object} request - Request object
  * @param {string} [functionName] - Name of the function that converts a request (for Error Handling only)
+ * @param {Object} [config] - DynamicsWebApi config
  * @returns {ConvertedRequest}
  */
-function convertRequest(request, functionName) {
+function convertRequest(request, functionName, config) {
 
     if (!request.collection) {
         ErrorHelper.parameterCheck(request.collection, "DynamicsWebApi." + functionName, "request.collection");
@@ -577,7 +553,7 @@ function convertRequest(request, functionName) {
         url += "(" + request.id + ")";
     }
 
-    var result = convertRequestOptions(request, functionName, url);
+    var result = convertRequestOptions(request, functionName, url, '&', config);
 
     if (result.query)
         result.url += "?" + encodeURI(result.query);
@@ -612,7 +588,7 @@ var Utility = {
      * @param {number} currentPageNumber - A current page number. Fix empty paging-cookie for complex fetch xmls.
      * @returns {{cookie: "", number: 0, next: 1}}
      */
-    getFetchXmlPagingCookie: __webpack_require__(11),
+    getFetchXmlPagingCookie: __webpack_require__(12),
 
     /**
      * Converts a response to a reference object
@@ -620,7 +596,7 @@ var Utility = {
      * @param {Object} responseData - Response object
      * @returns {ReferenceObject}
      */
-    convertToReferenceObject: __webpack_require__(10)
+    convertToReferenceObject: __webpack_require__(11)
 }
 
 module.exports = Utility;
@@ -794,6 +770,73 @@ module.exports = function buildFunctionParameters(parameters) {
 
 /***/ }),
 /* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var DWA = __webpack_require__(0);
+var ErrorHelper = __webpack_require__(1);
+
+/**
+ * Builds a Prefer header value
+ * @param {Object} request Request object
+ * @param {string} functionName name of the current function
+ * @param {Object} config DynamicsWebApi config
+ * @returns {string}
+ */
+module.exports = function buildPreferHeader(request, functionName, config) {
+    var returnRepresentation = request.returnRepresentation;
+    var includeAnnotations = request.includeAnnotations;
+    var maxPageSize = request.maxPageSize;
+
+    if (request.prefer && request.prefer.length) {
+        ErrorHelper.stringOrArrayParameterCheck(request.prefer, "DynamicsWebApi." + functionName, "request.prefer");
+        var prefer = request.prefer;
+        if (typeof prefer === "string") {
+            prefer = prefer.split(',');
+        }
+        for (var i in prefer) {
+            var item = prefer[i].trim();
+            if (item === DWA.Prefer.ReturnRepresentation) {
+                returnRepresentation = true;
+            }
+            else if (item.startsWith("odata.include-annotations=")) {
+                includeAnnotations = item.replace('odata.include-annotations=', '').replace(/"/g,'');
+            }
+            else if (item.startsWith("odata.maxpagesize=")) {
+                maxPageSize = item.replace('odata.maxpagesize=', '').replace(/"/g, '');
+            }
+        }
+    }
+
+    if (config) {
+        if (returnRepresentation == null) {
+            returnRepresentation = config.returnRepresentation;
+        }
+        includeAnnotations = includeAnnotations ? includeAnnotations : config.includeAnnotations;
+        maxPageSize = maxPageSize ? maxPageSize : config.maxPageSize;
+    }
+
+    var prefer = [];
+
+    if (returnRepresentation) {
+        ErrorHelper.boolParameterCheck(returnRepresentation, "DynamicsWebApi." + functionName, "request.returnRepresentation");
+        prefer.push(DWA.Prefer.ReturnRepresentation);
+    }
+
+    if (includeAnnotations) {
+        ErrorHelper.stringParameterCheck(includeAnnotations, "DynamicsWebApi." + functionName, "request.includeAnnotations");
+        prefer.push('odata.include-annotations="' + includeAnnotations + '"');
+    }
+
+    if (maxPageSize && maxPageSize > 0) {
+        ErrorHelper.numberParameterCheck(maxPageSize, "DynamicsWebApi." + functionName, "request.maxPageSize");
+        prefer.push('odata.maxpagesize=' + maxPageSize);
+    }
+
+    return prefer.join(',');
+}
+
+/***/ }),
+/* 11 */
 /***/ (function(module, exports) {
 
 /**
@@ -815,7 +858,7 @@ module.exports = function convertToReferenceObject(responseData) {
 }
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports) {
 
 /**
@@ -852,13 +895,14 @@ module.exports = function getFetchXmlPagingCookie(pageCookies, currentPageNumber
 }
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var DWA = __webpack_require__(0);
 var Utility = __webpack_require__(5);
 var RequestConverter = __webpack_require__(4);
 var ErrorHelper = __webpack_require__(1);
+var sendRequest = __webpack_require__(3);
 
 //string es6 polyfill
 if (!String.prototype.endsWith || !String.prototype.startsWith) {
@@ -981,14 +1025,6 @@ function DynamicsWebApi(config) {
 
     this.setConfig(config);
 
-    var _propertyReplacer = function (key, value) {
-        if (typeof key === "string" && key.endsWith("@odata.bind") && typeof value === "string" && !value.startsWith(_internalConfig.webApiUrl)) {
-            value = _internalConfig.webApiUrl + value;
-        }
-
-        return value;
-    };
-
     /**
      * Sends a request to given URL with given parameters
      *
@@ -1000,7 +1036,7 @@ function DynamicsWebApi(config) {
      */
     var _sendRequest = function (method, uri, data, additionalHeaders) {
         return new Promise(function (resolve, reject) {
-            __webpack_require__(3)(method, uri, _internalConfig, data, additionalHeaders, resolve, reject);
+            sendRequest(method, uri, _internalConfig, data, additionalHeaders, resolve, reject);
         });
     };
 
@@ -1009,21 +1045,31 @@ function DynamicsWebApi(config) {
      *
      * @param {Object} object - A JavaScript object valid for create operations.
      * @param {string} collection - The Name of the Entity Collection.
-     * @param {string} [prefer] - (optional) If set to "return=representation" the function will return a newly created object
+     * @param {string|Array} [prefer] - Sets a Prefer header value. For example: ['retrun=representation', 'odata.include-annotations="*"']
+     * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
      * @returns {Promise}
      */
-    this.create = function (object, collection, prefer) {
+    this.create = function (object, collection, prefer, select) {
         ErrorHelper.parameterCheck(object, "DynamicsWebApi.create", "object");
         ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.create", "collection");
 
-        var headers = {};
-
-        if (prefer != null) {
-            ErrorHelper.stringParameterCheck(prefer, "DynamicsWebApi.create", "prefer");
-            headers["Prefer"] = prefer;
+        if (prefer) {
+            ErrorHelper.stringOrArrayParameterCheck(prefer, "DynamicsWebApi.create", "prefer");
         }
 
-        return _sendRequest("POST", collection.toLowerCase(), object, headers)
+        if (select) {
+            ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.create", "select");
+        }
+
+        var request = {
+            collection: collection,
+            select: select,
+            prefer: prefer
+        };
+
+        var result = RequestConverter.convertRequest(request, "create", _internalConfig);
+
+        return _sendRequest("POST", result.url, object, result.headers)
             .then(function (response) {
                 if (response.data) {
                     return response.data;
@@ -1044,10 +1090,9 @@ function DynamicsWebApi(config) {
      * @returns {Promise}
      */
     this.retrieveRequest = function (request) {
-        //return Promise.resolve().then(function () {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieve", "request");
 
-        var result = RequestConverter.convertRequest(request, "retrieve");
+        var result = RequestConverter.convertRequest(request, "retrieve", _internalConfig);
 
         //copy locally
         var select = request.select;
@@ -1058,7 +1103,6 @@ function DynamicsWebApi(config) {
 
             return response.data;
         });
-        //});
     };
 
     /**
@@ -1067,7 +1111,7 @@ function DynamicsWebApi(config) {
      * @param {string} id - A String representing the GUID value for the record to retrieve.
      * @param {string} collection - The Name of the Entity Collection.
      * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
-     * @param {string} [expand] - A String representing the $expand Query Option value to control which related records need to be returned.
+     * @param {string|Array} [expand] - A String or Array of Expand Objects representing the $expand Query Option value to control which related records need to be returned.
      * @returns {Promise}
      */
     this.retrieve = function (id, collection, select, expand) {
@@ -1076,43 +1120,22 @@ function DynamicsWebApi(config) {
         id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.retrieve", "id")
         ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.retrieve", "collection");
 
-        var url = collection.toLowerCase() + "(" + id + ")";
-
-        var queryOptions = [];
-
-        if (select != null && select.length) {
+        if (select && select.length) {
             ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.retrieve", "select");
-
-            if (select.length == 1 && select[0].endsWith("/$ref") && select[0].endsWith("/$ref")) {
-                url += "/" + select[0];
-            }
-            else {
-                if (select[0].startsWith("/")) {
-                    url += select.shift();
-                }
-
-                //check if anything left in the array
-                if (select.length) {
-                    queryOptions.push("$select=" + select.join(','));
-                }
-            }
         }
 
-        if (expand != null) {
-            ErrorHelper.stringParameterCheck(expand, "DynamicsWebApi.retrieve", "expand");
-            queryOptions.push("$expand=" + expand);
+        if (expand && expand.length) {
+            ErrorHelper.stringOrArrayParameterCheck(expand, "DynamicsWebApi.retrieve", "expand");
         }
 
-        if (queryOptions.length)
-            url += "?" + queryOptions.join("&");
+        var request = {
+            collection: collection,
+            id: id,
+            select: select,
+            expand: expand
+        };
 
-        return _sendRequest("GET", url).then(function (response) {
-            if (select != null && select.length == 1 && select[0].endsWith("/$ref") && response.data["@odata.id"] != null) {
-                return Utility.convertToReferenceObject(response.data);
-            }
-
-            return response.data;
-        });
+        return this.retrieveRequest(request);
     };
 
     /**
@@ -1126,11 +1149,11 @@ function DynamicsWebApi(config) {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.update", "request");
         ErrorHelper.parameterCheck(request.entity, "DynamicsWebApi.update", "request.entity");
 
-        var result = RequestConverter.convertRequest(request, "update");
-
         if (request.ifmatch == null) {
-            result.headers['If-Match'] = '*'; //to prevent upsert
+            request.ifmatch = '*'; //to prevent upsert
         }
+
+        var result = RequestConverter.convertRequest(request, "update", _internalConfig);
 
         //copy locally
         var ifmatch = request.ifmatch;
@@ -1169,29 +1192,23 @@ function DynamicsWebApi(config) {
         ErrorHelper.parameterCheck(object, "DynamicsWebApi.update", "object");
         ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.update", "collection");
 
-        var headers = { "If-Match": "*" }; //to prevent upsert
-
-        if (prefer != null) {
-            ErrorHelper.stringParameterCheck(prefer, "DynamicsWebApi.update", "prefer");
-            headers["Prefer"] = prefer;
+        if (prefer) {
+            ErrorHelper.stringOrArrayParameterCheck(prefer, "DynamicsWebApi.update", "prefer");
         }
 
-        var systemQueryOptions = "";
-
-        if (select != null) {
+        if (select) {
             ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.update", "select");
-
-            if (select.length > 0) {
-                systemQueryOptions = "?$select=" + select.join(",");
-            }
         }
 
-        return _sendRequest("PATCH", collection.toLowerCase() + "(" + id + ")" + systemQueryOptions, object, headers)
-            .then(function (response) {
-                if (response.data) {
-                    return response.data;
-                }
-            });
+        var request = {
+            collection: collection,
+            id: id,
+            select: select,
+            prefer: prefer,
+            entity: object
+        };
+
+        return this.updateRequest(request);
     };
 
     /**
@@ -1200,10 +1217,11 @@ function DynamicsWebApi(config) {
      * @param {string} id - A String representing the GUID value for the record to update.
      * @param {string} collection - The Name of the Entity Collection.
      * @param {Object} keyValuePair - keyValuePair object with a logical name of the field as a key and a value to update with. Example: {subject: "Update Record"}
-     * @param {string} [prefer] - If set to "return=representation" the function will return an updated object
+     * @param {string|Array} [prefer] - If set to "return=representation" the function will return an updated object
+     * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
      * @returns {Promise}
      */
-    this.updateSingleProperty = function (id, collection, keyValuePair, prefer) {
+    this.updateSingleProperty = function (id, collection, keyValuePair, prefer, select) {
 
         ErrorHelper.stringParameterCheck(id, "DynamicsWebApi.updateSingleProperty", "id");
         id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.updateSingleProperty", "id")
@@ -1213,14 +1231,25 @@ function DynamicsWebApi(config) {
         var key = Object.keys(keyValuePair)[0];
         var keyValue = keyValuePair[key];
 
-        var header = {};
-
-        if (prefer != null) {
-            ErrorHelper.stringParameterCheck(prefer, "DynamicsWebApi.updateSingleProperty", "prefer");
-            header["Prefer"] = prefer;
+        if (prefer) {
+            ErrorHelper.stringOrArrayParameterCheck(prefer, "DynamicsWebApi.updateSingleProperty", "prefer");
         }
 
-        return _sendRequest("PUT", collection.toLowerCase() + "(" + id + ")/" + key, { value: keyValue }, header)
+        if (select) {
+            ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.updateSingleProperty", "select");
+        }
+
+        var request = {
+            collection: collection,
+            id: id,
+            select: select,
+            prefer: prefer,
+            navigationProperty: key
+        };
+
+        var result = RequestConverter.convertRequest(request, "updateSingleProperty", _internalConfig);
+
+        return _sendRequest("PUT", result.url, { value: keyValue }, result.headers)
             .then(function (response) {
                 if (response.data) {
                     return response.data;
@@ -1238,7 +1267,7 @@ function DynamicsWebApi(config) {
 
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.delete", "request")
 
-        var result = RequestConverter.convertRequest(request, "delete");
+        var result = RequestConverter.convertRequest(request, "deleteRequest", _internalConfig);
 
         //copy locally
         var ifmatch = request.ifmatch;
@@ -1266,12 +1295,12 @@ function DynamicsWebApi(config) {
      */
     this.deleteRecord = function (id, collection, propertyName) {
 
-        ErrorHelper.stringParameterCheck(id, "DynamicsWebApi.deleteRequest", "id");
-        id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.deleteRequest", "id")
-        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.deleteRequest", "collection");
+        ErrorHelper.stringParameterCheck(id, "DynamicsWebApi.deleteRecord", "id");
+        id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.deleteRecord", "id")
+        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.deleteRecord", "collection");
 
         if (propertyName != null)
-            ErrorHelper.stringParameterCheck(propertyName, "DynamicsWebApi.deleteRequest", "propertyName");
+            ErrorHelper.stringParameterCheck(propertyName, "DynamicsWebApi.deleteRecord", "propertyName");
 
         var url = collection.toLowerCase() + "(" + id + ")";
 
@@ -1294,7 +1323,7 @@ function DynamicsWebApi(config) {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.upsert", "request")
         ErrorHelper.parameterCheck(request.entity, "DynamicsWebApi.upsert", "request.entity")
 
-        var result = RequestConverter.convertRequest(request, "upsert");
+        var result = RequestConverter.convertRequest(request, "upsert", _internalConfig);
 
         //copy locally
         var ifnonematch = request.ifnonematch;
@@ -1331,7 +1360,7 @@ function DynamicsWebApi(config) {
      * @param {string} id - A String representing the GUID value for the record to upsert.
      * @param {string} collection - The Name of the Entity Collection.
      * @param {Object} object - A JavaScript object valid for update operations.
-     * @param {string} [prefer] - If set to "return=representation" the function will return an updated object
+     * @param {string|Array} [prefer] - If set to "return=representation" the function will return an updated object
      * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
      * @returns {Promise}
      */
@@ -1343,37 +1372,23 @@ function DynamicsWebApi(config) {
         ErrorHelper.parameterCheck(object, "DynamicsWebApi.upsert", "object");
         ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.upsert", "collection");
 
-        var headers = {};
-
-        if (prefer != null) {
-            ErrorHelper.stringParameterCheck(prefer, "DynamicsWebApi.upsert", "prefer");
-            headers["Prefer"] = prefer;
+        if (prefer) {
+            ErrorHelper.stringOrArrayParameterCheck(prefer, "DynamicsWebApi.upsert", "prefer");
         }
 
-        var systemQueryOptions = "";
-
-        if (select != null) {
+        if (select) {
             ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.upsert", "select");
-
-            if (select.length > 0) {
-                systemQueryOptions = "?$select=" + select.join(",");
-            }
         }
 
-        return _sendRequest("PATCH", collection.toLowerCase() + "(" + id + ")" + systemQueryOptions, object, headers)
-            .then(function (response) {
-                if (response.headers['OData-EntityId'] || response.headers['odata-entityid']) {
-                    var entityUrl = response.headers['OData-EntityId']
-                        ? response.headers['OData-EntityId']
-                        : response.headers['odata-entityid'];
+        var request = {
+            collection: collection,
+            id: id,
+            select: select,
+            prefer: prefer,
+            entity: object
+        };
 
-                    var id = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(entityUrl)[0];
-                    return id;
-                }
-                else if (response.data) {
-                    return response.data;
-                }
-            });
+        return this.upsertRequest(request);
     }
 
     /**
@@ -1383,13 +1398,13 @@ function DynamicsWebApi(config) {
      * @param {string} [nextPageLink] - Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
      * @returns {Promise}
      */
-    var retrieveMultipleRequest = function (request, nextPageLink) {
+    this.retrieveMultipleRequest = function (request, nextPageLink) {
 
         if (nextPageLink && !request.collection) {
             request.collection = "any";
         }
 
-        var result = RequestConverter.convertRequest(request, "retrieveMultiple");
+        var result = RequestConverter.convertRequest(request, "retrieveMultiple", _internalConfig);
 
         if (nextPageLink) {
             ErrorHelper.stringParameterCheck(nextPageLink, "DynamicsWebApi.retrieveMultiple", "nextPageLink");
@@ -1417,8 +1432,6 @@ function DynamicsWebApi(config) {
             });
     };
 
-    this.retrieveMultipleRequest = retrieveMultipleRequest;
-
     /**
      * Sends an asynchronous request to retrieve records.
      *
@@ -1432,7 +1445,7 @@ function DynamicsWebApi(config) {
     //        request.collection = "any";
     //    }
 
-    //    var result = RequestConverter.convertRequest(request, "retrieveMultiple");
+    //    var result = RequestConverter.convertRequest(request, "retrieveMultiple", _internalConfig);
 
     //    if (nextPageLink) {
     //        ErrorHelper.stringParameterCheck(nextPageLink, "DynamicsWebApi.retrieveMultiple", "nextPageLink");
@@ -1539,20 +1552,25 @@ function DynamicsWebApi(config) {
         //add page number and paging cookie to fetch xml
         fetchXml = fetchXml.replace(/^(<fetch[\w\d\s'"=]+)/, replacementString);
 
-        var headers = {};
-        if (includeAnnotations != null) {
+        if (includeAnnotations) {
             ErrorHelper.stringParameterCheck(includeAnnotations, "DynamicsWebApi.executeFetchXml", "includeAnnotations");
-            headers['Prefer'] = 'odata.include-annotations="' + includeAnnotations + '"';
         }
 
-        if (impersonateUserId != null) {
+        if (impersonateUserId) {
             impersonateUserId = ErrorHelper.guidParameterCheck(impersonateUserId, "DynamicsWebApi.executeFetchXml", "impersonateUserId");
-            header["MSCRMCallerID"] = impersonateUserId;
         }
+
+        var request = {
+            collection: collection,
+            includeAnnotations: includeAnnotations,
+            impersonate: impersonateUserId
+        };
+
+        var result = RequestConverter.convertRequest(request, "executeFetchXml", _internalConfig);
 
         var encodedFetchXml = encodeURIComponent(fetchXml);
 
-        return _sendRequest("GET", collection.toLowerCase() + "?fetchXml=" + encodedFetchXml, null, headers)
+        return _sendRequest("GET", result.url + "?fetchXml=" + encodedFetchXml, null, result.headers)
             .then(function (response) {
 
                 if (response.data['@Microsoft.Dynamics.CRM.fetchxmlpagingcookie'] != null) {

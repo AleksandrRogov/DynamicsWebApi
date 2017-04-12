@@ -1,6 +1,6 @@
 {
   "name": "dynamics-web-api",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "DynamicsWebApi is a Microsoft Dynamics CRM Web API helper library",
   "keywords": [
     "crm",
