@@ -579,7 +579,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         };
 
         var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: { Prefer: "" } });
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
     it("returnRepresentation null", function() {
@@ -794,6 +794,210 @@ describe("RequestConverter.convertRequestOptions -", function() {
 
         result = RequestConverter.convertRequestOptions(dwaRequest, "retrieve", stubUrl);
         expect(result).to.deep.equal({ url: stubUrl + "/nav", query: "$select=subject&$count=true&$orderby=order", headers: { Prefer: 'odata.include-annotations="*"' } });
+    });
+
+    it("includeAnnotations & returnRepresentation", function () {
+        var dwaRequest = {
+            returnRepresentation: true,
+            includeAnnotations: DWA.Prefer.Annotations.AssociatedNavigationProperty
+        };
+
+        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
+        expect(result).to.deep.equal({
+            url: stubUrl, query: "", headers: {
+                Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="' + DWA.Prefer.Annotations.AssociatedNavigationProperty + '"'
+            }
+        });
+    });
+
+    it("includeAnnotations & returnRepresentation & maxPageSize", function () {
+        var dwaRequest = {
+            returnRepresentation: true,
+            includeAnnotations: '*',
+            maxPageSize: 20
+        };
+
+        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
+        expect(result).to.deep.equal({
+            url: stubUrl, query: "", headers: {
+                Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="*",odata.maxpagesize=20'
+            }
+        });
+    });
+
+    it("includeAnnotations & maxPageSize", function () {
+        var dwaRequest = {
+            includeAnnotations: '*',
+            maxPageSize: 20
+        };
+
+        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
+        expect(result).to.deep.equal({
+            url: stubUrl, query: "", headers: {
+                Prefer: 'odata.include-annotations="*",odata.maxpagesize=20'
+            }
+        });
+    });
+
+    it("returnRepresentation & maxPageSize", function () {
+        var dwaRequest = {
+            returnRepresentation: true,
+            maxPageSize: 20
+        };
+
+        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
+        expect(result).to.deep.equal({
+            url: stubUrl, query: "", headers: {
+                Prefer: DWA.Prefer.ReturnRepresentation + ',odata.maxpagesize=20'
+            }
+        });
+    });
+
+    it("prefer - return=representation", function () {
+        var dwaRequest = {
+            prefer: "return=representation"
+        };
+
+        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
+        expect(result).to.deep.equal({
+            url: stubUrl, query: "", headers: {
+                Prefer: DWA.Prefer.ReturnRepresentation
+            }
+        });
+    });
+
+    it("prefer - odata.include-annotations", function () {
+        var dwaRequest = {
+            prefer: 'odata.include-annotations=*'
+        };
+
+        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
+        expect(result).to.deep.equal({
+            url: stubUrl, query: "", headers: {
+                Prefer: 'odata.include-annotations="*"'
+            }
+        });
+    });
+
+    it("prefer - maxPageSize", function () {
+        var dwaRequest = {
+            prefer: 'odata.maxpagesize=20'
+        };
+
+        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
+        expect(result).to.deep.equal({
+            url: stubUrl, query: "", headers: {
+                Prefer: 'odata.maxpagesize=20'
+            }
+        });
+    });
+
+    it("prefer - includeAnnotations & returnRepresentation", function () {
+        var dwaRequest = {
+            prefer: 'return=representation,odata.include-annotations="' + DWA.Prefer.Annotations.AssociatedNavigationProperty + '"'
+        };
+
+        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
+        expect(result).to.deep.equal({
+            url: stubUrl, query: "", headers: {
+                Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="' + DWA.Prefer.Annotations.AssociatedNavigationProperty + '"'
+            }
+        });
+    });
+
+    it("prefer - includeAnnotations & returnRepresentation & maxPageSize", function () {
+        var dwaRequest = {
+            prefer: 'return=representation,odata.include-annotations="*",odata.maxpagesize=20'
+        };
+
+        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
+        expect(result).to.deep.equal({
+            url: stubUrl, query: "", headers: {
+                Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="*",odata.maxpagesize=20'
+            }
+        });
+    });
+
+    it("prefer - includeAnnotations & maxPageSize", function () {
+        var dwaRequest = {
+            prefer: 'odata.include-annotations=*,odata.maxpagesize=20'
+        };
+
+        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
+        expect(result).to.deep.equal({
+            url: stubUrl, query: "", headers: {
+                Prefer: 'odata.include-annotations="*",odata.maxpagesize=20'
+            }
+        });
+    });
+
+    it("prefer - returnRepresentation & maxPageSize", function () {
+        var dwaRequest = {
+            prefer: 'return=representation,odata.maxpagesize=20'
+        };
+
+        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
+        expect(result).to.deep.equal({
+            url: stubUrl, query: "", headers: {
+                Prefer: DWA.Prefer.ReturnRepresentation + ',odata.maxpagesize=20'
+            }
+        });
+    });
+
+    it("returnRepresentation: false & config.returnRepresentation: true", function () {
+        var config = {
+            returnRepresentation: true
+        };
+
+        var dwaRequest = {
+            returnRepresentation: false
+        };
+
+        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl, null, config);
+        expect(result).to.deep.equal({
+            url: stubUrl, query: "", headers: {}
+        });
+    });
+
+    it("returnRepresentation: false & config.returnRepresentation: true", function () {
+        var config = {
+            returnRepresentation: false
+        };
+
+        var dwaRequest = {
+            returnRepresentation: true
+        };
+
+        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl, null, config);
+        expect(result).to.deep.equal({
+            url: stubUrl, query: "", headers: { Prefer: DWA.Prefer.ReturnRepresentation }
+        });
+    });
+
+    it("config.returnRepresentation: true", function () {
+        var config = {
+            returnRepresentation: true
+        };
+
+        var dwaRequest = {};
+
+        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl, null, config);
+        expect(result).to.deep.equal({
+            url: stubUrl, query: "", headers: { Prefer: DWA.Prefer.ReturnRepresentation }
+        });
+    });
+
+    it("config.returnRepresentation: false", function () {
+        var config = {
+            returnRepresentation: false
+        };
+
+        var dwaRequest = {};
+
+        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl, null, config);
+        expect(result).to.deep.equal({
+            url: stubUrl, query: "", headers: {}
+        });
     });
 });
 

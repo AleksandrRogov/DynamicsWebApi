@@ -73,6 +73,40 @@ describe("promises -", function () {
                 expect(scope.isDone()).to.be.true;
             });
         });
+
+        describe("select", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.createReturnRepresentation;
+                scope = nock(mocks.responses.collectionUrl, {
+                    reqheaders: {
+                        "Prefer": DWA.Prefer.ReturnRepresentation
+                    }
+                })
+                    .post("?$select=name", mocks.data.testEntity)
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns the correct response", function (done) {
+                dynamicsWebApiTest
+                    .create(mocks.data.testEntity, "tests", DWA.Prefer.ReturnRepresentation, ['name'])
+                    .then(function (object) {
+                        expect(object).to.deep.equal(mocks.data.testEntity);
+                        done();
+                    }).catch(function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
     });
 
     describe("dynamicsWebApi.update -", function () {
@@ -97,7 +131,7 @@ describe("promises -", function () {
             it("returns the correct response", function (done) {
                 dynamicsWebApiTest.update(mocks.data.testEntityId, "tests", mocks.data.testEntity)
                     .then(function (object) {
-                        expect(object).to.be.undefined;
+                        expect(object).to.be.true;
                         done();
                     }).catch(function (object) {
                         expect(object).to.be.undefined;
@@ -249,6 +283,41 @@ describe("promises -", function () {
 
             it("returns the correct response", function (done) {
                 dynamicsWebApiTest.updateSingleProperty(mocks.data.testEntityId, "tests", mocks.data.updatedEntity, DWA.Prefer.ReturnRepresentation)
+                    .then(function (object) {
+                        expect(object).to.deep.equal(mocks.data.updatedEntity);
+                        done();
+                    }).catch(function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+
+        describe("select", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.updateReturnRepresentation;
+                scope = nock(mocks.responses.testEntityUrl, {
+                    reqheaders: {
+                        "Prefer": DWA.Prefer.ReturnRepresentation
+                    }
+                })
+                    .put("/fullname?$select=name", {
+                        value: mocks.data.updatedEntity.fullname
+                    })
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns the correct response", function (done) {
+                dynamicsWebApiTest.updateSingleProperty(mocks.data.testEntityId, "tests", mocks.data.updatedEntity, DWA.Prefer.ReturnRepresentation, ['name'])
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.updatedEntity);
                         done();
@@ -2941,9 +3010,10 @@ describe("promises -", function () {
                     .patch("", mocks.data.testEntity)
                     .reply(response.status, response.responseText, response.responseHeaders);
 
-                scope2 = nock(mocks.responses.collectionUrl, {
+                scope2 = nock(mocks.responses.testEntityUrl, {
                     reqheaders: {
-                        "Prefer": /.?/
+                        "Prefer": /.*/,
+                        'If-Match': '*'
                     }
                 })
                     .post("", mocks.data.testEntity)
@@ -2976,7 +3046,8 @@ describe("promises -", function () {
                 expect(scope.isDone()).to.be.true;
             });
 
-            it("prefer header has not been set", function() {
+            it("prefer header has not been set", function () {
+                console.error('pending mocks: %j', nock.pendingMocks());
                 expect(scope2.isDone()).to.be.false;
             });
         });
