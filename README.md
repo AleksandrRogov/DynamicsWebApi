@@ -183,7 +183,7 @@ id | String | `retrieveRequest`, `updateRequest`, `upsertRequest`, `deleteReques
 ifmatch | String | `retrieveRequest`, `updateRequest`, `upsertRequest`, `deleteRequest` | Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests. [More info](https://msdn.microsoft.com/en-us/library/mt607711.aspx).
 ifnonematch | String | `retrieveRequest`, `upsertRequest` | Sets If-None-Match header value that enables to use conditional retrieval in applicable requests. [More info](https://msdn.microsoft.com/en-us/library/mt607711.aspx).
 impersonate | String | All | A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
-includeAnnotations | String | `retrieveRequest`, `retrieveMultipleRequest` | Sets Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
+includeAnnotations | String | `retrieveRequest`, `retrieveMultipleRequest`, `updateRequest`, `upsertRequest` | Sets Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
 maxPageSize | Number | `retrieveMultipleRequest` | Sets the odata.maxpagesize preference value to request the number of entities returned in the response.
 navigationProperty | String | `retrieveRequest` | A String representing the name of a single-valued navigation property. Useful when needed to retrieve information about a related record in a single request.
 orderBy | Array | `retrieveMultipleRequest` | An Array (of Strings) representing the order in which items are returned using the $orderby system query option. Use the asc or desc suffix to specify ascending or descending order respectively. The default is ascending if the suffix isn't applied.
@@ -227,6 +227,35 @@ dynamicsWebApi.create(lead, "leads").then(function (id) {
 }).catch(function (error) {
     //catch error here
 })
+```
+
+If you need to return just created entity record, add "return=representation" parameter:
+
+```js
+//initialize a CRM entity record object
+var lead = {
+    subject: "Test WebAPI",
+    firstname: "Test",
+    lastname: "WebAPI",
+    jobtitle: "Title"
+};
+//call dynamicsWebApi.create function
+dynamicsWebApi.create(lead, "leads", ["return=representation"]).then(function (record) {
+    //do something with a record here
+	var subject = record.subject;
+}).catch(function (error) {
+    //catch error here
+})
+```
+
+Also you can include attribute annotations:
+
+```js
+dynamicsWebApi.create(lead, "leads", ["return=representation", "odata.include-annotations=*"]) //...
+//or
+dynamicsWebApi.create(lead, "leads", "return=representation,odata.include-annotations=*") //...
+//and select some attributes from the record
+dynamicsWebApi.create(lead, "leads", ["return=representation", "odata.include-annotations=*"], ["subject"]) //...
 ```
 
 ### Update a record

@@ -931,6 +931,19 @@ describe("RequestConverter.convertRequestOptions -", function() {
         });
     });
 
+    it("prefer - SPACE - includeAnnotations & maxPageSize", function () {
+        var dwaRequest = {
+            prefer: 'odata.include-annotations=*, odata.maxpagesize=20'
+        };
+
+        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
+        expect(result).to.deep.equal({
+            url: stubUrl, query: "", headers: {
+                Prefer: 'odata.include-annotations="*",odata.maxpagesize=20'
+            }
+        });
+    });
+
     it("prefer - returnRepresentation & maxPageSize", function () {
         var dwaRequest = {
             prefer: 'return=representation,odata.maxpagesize=20'
