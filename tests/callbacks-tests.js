@@ -2657,7 +2657,7 @@ describe("callbacks -", function () {
                 var response = mocks.responses.multipleResponse;
                 scope = nock(mocks.webApiUrl, {
                     reqheaders: {
-                        Authorization: "Bearer: token001"
+                        Authorization: "Bearer token001"
                     }
                 })
                     .get("/tests")
@@ -2674,7 +2674,7 @@ describe("callbacks -", function () {
                         callback(token);
                     };
 
-                    adalCallback("token001");
+                    adalCallback({ accessToken: "token001" });
                 };
 
                 var dynamicsWebApiAuth = new DynamicsWebApiCallbacks({ onTokenRefresh: getToken, webApiUrl: mocks.webApiUrl });
@@ -2699,7 +2699,7 @@ describe("callbacks -", function () {
                 var response = mocks.responses.multipleResponse;
                 scope = nock(mocks.webApiUrl, {
                     reqheaders: {
-                        Authorization: "Bearer: token001"
+                        Authorization: "Bearer token001"
                     }
                 })
                     .get("/tests")
@@ -2707,7 +2707,7 @@ describe("callbacks -", function () {
 
                 scope2 = nock(mocks.webApiUrl, {
                     reqheaders: {
-                        Authorization: "Bearer: token002"
+                        Authorization: "Bearer token002"
                     }
                 })
                     .get("/tests")
@@ -2724,7 +2724,7 @@ describe("callbacks -", function () {
                     callback(token);
                 };
 
-                adalCallback("token00" + ++i);
+                adalCallback({ accessToken: "token00" + ++i });
             };
 
             it("sends the request to the right end point and returns a response", function(done) {
@@ -2756,7 +2756,7 @@ describe("callbacks -", function () {
                 var response = mocks.responses.multipleResponse;
                 scope = nock(mocks.webApiUrl, {
                     reqheaders: {
-                        Authorization: "Bearer: overriden"
+                        Authorization: "Bearer overriden"
                     }
                 })
                     .get("/tests")
@@ -2767,7 +2767,7 @@ describe("callbacks -", function () {
                 nock.cleanAll();
             });
 
-            var getToken = sinon.spy(function any(callback) { callback("token001") });
+            var getToken = sinon.spy(function any(callback) { callback({ accessToken: "token001" }) });
 
             it("sends the request to the right end point and returns a response", function(done) {
                 var dynamicsWebApiAuth = new DynamicsWebApiCallbacks({ onTokenRefresh: getToken, webApiUrl: mocks.webApiUrl });

@@ -293,7 +293,7 @@ describe("xhr -", function() {
                     expand: [{ property: "prop" }]
                 };
 
-                var getToken = function (callback) { callback("token001") };
+                var getToken = function (callback) { callback({ accessToken: "token001" }) };
 
                 var dynamicsWebApiAuth = new DynamicsWebApi({
                     webApiVersion: "8.2", onTokenRefresh: getToken
@@ -330,7 +330,7 @@ describe("xhr -", function() {
             });
 
             it("sends the correct Authorization header", function() {
-                expect(this.requests[0].requestHeaders['Authorization']).to.equal("Bearer: token001");
+                expect(this.requests[0].requestHeaders['Authorization']).to.equal("Bearer token001");
             });
 
             it("returns the correct response", function() {
