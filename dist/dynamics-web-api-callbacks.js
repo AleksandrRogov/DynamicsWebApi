@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.2.2 (c) 2017 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.2.3 (c) 2017 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -364,7 +364,7 @@ module.exports = function sendRequest(method, uri, config, data, additionalHeade
             if (!additionalHeaders) {
                 additionalHeaders = {};
             }
-            additionalHeaders['Authorization'] = "Bearer: " + token;
+            additionalHeaders['Authorization'] = "Bearer " + token.accessToken;
         }
 
         executeRequest(method, config.webApiUrl + uri, stringifiedData, additionalHeaders, successCallback, errorCallback);
@@ -499,7 +499,7 @@ function convertRequestOptions (request, functionName, url, joinSymbol, config) 
 
         if (request.token) {
             ErrorHelper.stringParameterCheck(request.token, "DynamicsWebApi." + functionName, "request.token");
-            headers["Authorization"] = "Bearer: " + request.token;
+            headers["Authorization"] = "Bearer " + request.token;
         }
 
         if (request.expand && request.expand.length) {
@@ -704,7 +704,12 @@ var xhrRequest = function (method, uri, data, additionalHeaders, successCallback
                     try {
                         error = JSON.parse(request.response).error;
                     } catch (e) {
-                        error = new Error("Unexpected Error");
+                        if (request.response.length > 0) {
+                            error = { message: request.response };
+                        }
+                        else {
+                            error = { message: "Unexpected Error" };
+                        }
                     }
                     error.status = request.status;
                     errorCallback(error);
