@@ -26,7 +26,9 @@ Any suggestions are welcome!
     * [Delete a single property value](#delete-a-single-property-value)
   * [Retrieve a record](#retrieve-a-record)
   * [Retrieve multiple records](#retrieve-multiple-records)
+    *[Retrieve All records](#retrieve-all-records)
   * [Count](#count)
+    * [Count limitation workaround](#count-limitation-workaround)
   * [Associate](#associate)
   * [Associate for a single-valued navigation property](#associate-for-a-single-valued-navigation-property)
   * [Disassociate](#disassociate)
@@ -162,7 +164,7 @@ Basic calls can be made by using functions with most commonly used input paramet
 not provide all possible ways of interaction with CRM Web API (for example, [conditional retrievals](https://msdn.microsoft.com/en-us/library/mt607711.aspx#bkmk_DetectIfChanged)
 are not supported in basic functions).
 
-Basic functions are: `create`, `update`, `upsert`, `deleteRecord`, `retrieve`, `retrieveMultiple`, `count`, `executeFetchXml`, 
+Basic functions are: `create`, `update`, `upsert`, `deleteRecord`, `retrieve`, `retrieveMultiple`, `count`, `countAll`, `executeFetchXml`, 
 `associate`, `disassociate`, `associateSingleValued`, `disassociateSingleValued`, `executeBoundFunction`, `executeUnboundFunction`, 
 `executeBoundAction`, `executeUnboundAction`.
 
@@ -175,23 +177,23 @@ an invalid property you will receive either an error saying that the request is 
 Property Name | Type | Operation(s) Supported | Description
 ------------ | ------------- | ------------- | -------------
 collection | String | All | The name of the Entity Collection, for example, for `account` use `accounts`, `opportunity` - `opportunities` and etc.
-count | Boolean | `retrieveMultipleRequest` | Boolean that sets the $count system query option with a value of true to include a count of entities that match the filter criteria up to 5000 (per page). Do not use $top with $count!
+count | Boolean | `retrieveMultipleRequest`, `retrieveAllRequest` | Boolean that sets the $count system query option with a value of true to include a count of entities that match the filter criteria up to 5000 (per page). Do not use $top with $count!
 entity | Object | `updateRequest`, `upsertRequest` | A JavaScript object with properties corresponding to the logical name of entity attributes (exceptions are lookups and single-valued navigation properties).
 expand | Array | `retrieveRequest`, `updateRequest`, `upsertRequest` | An array of Expand Objects (described below the table) representing the $expand OData System Query Option value to control which related records are also returned.
-filter | String | `retrieveRequest`, `retrieveMultipleRequest` | Use the $filter system query option to set criteria for which entities will be returned.
+filter | String | `retrieveRequest`, `retrieveMultipleRequest`, `retrieveAllRequest` | Use the $filter system query option to set criteria for which entities will be returned.
 id | String | `retrieveRequest`, `updateRequest`, `upsertRequest`, `deleteRequest` | A String representing the GUID value for the record.
 ifmatch | String | `retrieveRequest`, `updateRequest`, `upsertRequest`, `deleteRequest` | Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests. [More info](https://msdn.microsoft.com/en-us/library/mt607711.aspx).
 ifnonematch | String | `retrieveRequest`, `upsertRequest` | Sets If-None-Match header value that enables to use conditional retrieval in applicable requests. [More info](https://msdn.microsoft.com/en-us/library/mt607711.aspx).
 impersonate | String | All | A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
-includeAnnotations | String | `retrieveRequest`, `retrieveMultipleRequest`, `updateRequest`, `upsertRequest` | Sets Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
-maxPageSize | Number | `retrieveMultipleRequest` | Sets the odata.maxpagesize preference value to request the number of entities returned in the response.
+includeAnnotations | String | `retrieveRequest`, `retrieveMultipleRequest`, `retrieveAllRequest`, `updateRequest`, `upsertRequest` | Sets Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
+maxPageSize | Number | `retrieveMultipleRequest`, `retrieveAllRequest` | Sets the odata.maxpagesize preference value to request the number of entities returned in the response.
 navigationProperty | String | `retrieveRequest` | A String representing the name of a single-valued navigation property. Useful when needed to retrieve information about a related record in a single request.
-orderBy | Array | `retrieveMultipleRequest` | An Array (of Strings) representing the order in which items are returned using the $orderby system query option. Use the asc or desc suffix to specify ascending or descending order respectively. The default is ascending if the suffix isn't applied.
+orderBy | Array | `retrieveMultipleRequest`, `retrieveAllRequest` | An Array (of Strings) representing the order in which items are returned using the $orderby system query option. Use the asc or desc suffix to specify ascending or descending order respectively. The default is ascending if the suffix isn't applied.
 returnRepresentation | Boolean | `updateRequest`, `upsertRequest` | Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
 savedQuery | String | `retrieveRequest` | A String representing the GUID value of the saved query.
-select | Array | `retrieveRequest`, `retrieveMultipleRequest`, `updateRequest`, `upsertRequest` | An Array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
+select | Array | `retrieveRequest`, `retrieveMultipleRequest`, `retrieveAllRequest`, `updateRequest`, `upsertRequest` | An Array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
 token | String | All | Authorization Token. If set, onTokenRefresh will not be called.
-top | Number | `retrieveMultipleRequest` | Limit the number of results returned by using the $top system query option. Do not use $top with $count!
+top | Number | `retrieveMultipleRequest`, `retrieveAllRequest` | Limit the number of results returned by using the $top system query option. Do not use $top with $count!
 userQuery | String | `retrieveRequest` | A String representing the GUID value of the user query.
 
 Basic and Advanced functions are also have differences in `expand` parameters. For Basic ones this parameter is a type of String 
@@ -564,6 +566,30 @@ dynamicsWebApi.retrieveMultipleRequest(request).then(function (response) {
 });
 ```
 
+#### Retrieve All records
+
+Current function goes through all pages automatically.
+
+```js
+//set the request parameters
+var request = {
+    collection: "leads",
+    select: ["fullname", "subject"],
+    filter: "statecode eq 0",
+    maxPageSize: 5
+};
+
+//perform a multiple records retrieve operation
+dynamicsWebApi.retrieveAllRequest(request).then(function (response) {
+
+    var records = response.value;
+    //do something else with a records array. Access a record: response.value[0].subject;
+})
+.catch(function (error){
+    //catch an error
+});
+```
+
 ### Count
 
 It is possible to count records separately from RetrieveMultiple call. In order to do that use the following snippet:
@@ -580,6 +606,37 @@ dynamicsWebApi.count("leads", "statecode eq 0").then(function (count) {
     //catch an error
 });
 ```
+
+#### Count limitation workaround
+
+The following function can be used to count all records in a collection. It's a workaround and just counts the number of objects in the array 
+returned in `retrieveAllRequest`.
+
+
+```js
+dynamicsWebApi.countAll("leads", "statecode eq 0").then(function (count) {
+    //do something with count here
+})
+.catch(function (error) {
+    //catch an error
+});
+```
+
+Downside of this workaround is that it not only returns a count number but also all data for records in a collection. In order to make a small
+optimisation I added the third parameter to the function that can be used to reduce the length of the response. The third parameter represents
+a select query option.
+
+```js
+dynamicsWebApi.countAll("leads", "statecode eq 0", ["subject"]).then(function (count) {
+    //do something with count here
+})
+.catch(function (error) {
+    //catch an error
+});
+```
+
+FYI, in the majority of cases it is better to use Fetch XML aggregation, but take into a consideration that it is also limited to 50000 records 
+by default.
 
 ### Associate
 
