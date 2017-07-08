@@ -109,6 +109,13 @@ var dataStubs = {
                 { name: "name2", subject: "subject2" }
             ],
         },
+        fetchXmlResponsePage2NoCookie: {
+            "@odata.context": "context",
+            value: [
+                { name: "name1", subject: "subject1" },
+                { name: "name2", subject: "subject2" }
+            ],
+        },
         fetchXmlResponsePage1: {
             "@odata.context": "context",
             "@Microsoft.Dynamics.CRM.fetchxmlpagingcookie": "%253Ccookie%2520pagenumber%253D%25222%2522%2520pagingcookie%253D%2522%2522%2520istracking%253D%2522False%2522%2520/%253E",
@@ -213,6 +220,10 @@ var responseStubs = {
     fetchXmlResponsePage2Cookie: {
         status: 200,
         responseText: JSON.stringify(dataStubs.fetchXmls.fetchXmlResponsePage2Cookie)
+    },
+    fetchXmlResponsePage2NoCookie: {
+        status: 200,
+        responseText: JSON.stringify(dataStubs.fetchXmls.fetchXmlResponsePage2NoCookie)
     },
     fetchXmlResponsePage1: {
         status: 200,

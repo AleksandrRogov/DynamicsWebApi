@@ -34,6 +34,7 @@ Any suggestions are welcome!
   * [Disassociate](#disassociate)
   * [Disassociate for a single-valued navigation property](#disassociate-for-a-single-valued-navigation-property)
   * [Fetch XML Request](#fetch-xml-request)
+    * [Fetch All records](#fetch-all-records)
   * [Execute Web API functions](#execute-web-api-functions)
   * [Execute Web API actions](#execute-web-api-actions)
 * [JavaScript Promises](#javascript-promises)
@@ -164,9 +165,9 @@ Basic calls can be made by using functions with most commonly used input paramet
 not provide all possible ways of interaction with CRM Web API (for example, [conditional retrievals](https://msdn.microsoft.com/en-us/library/mt607711.aspx#bkmk_DetectIfChanged)
 are not supported in basic functions).
 
-Basic functions are: `create`, `update`, `upsert`, `deleteRecord`, `retrieve`, `retrieveMultiple`, `count`, `countAll`, `executeFetchXml`, 
-`associate`, `disassociate`, `associateSingleValued`, `disassociateSingleValued`, `executeBoundFunction`, `executeUnboundFunction`, 
-`executeBoundAction`, `executeUnboundAction`.
+Basic functions are: `create`, `update`, `upsert`, `deleteRecord`, `retrieve`, `retrieveMultiple`, `retrieveAll`, `count`, `countAll`, 
+`executeFetchXml`, `executeFetchXmlAll`, `associate`, `disassociate`, `associateSingleValued`, `disassociateSingleValued`, `executeBoundFunction`, 
+`executeUnboundFunction`, `executeBoundAction`, `executeUnboundAction`.
 
 Advanced functions have a suffix `Request` added to the end of the applicable operation. 
 Most of the functions have a single input parameter which is a `request` object.
@@ -568,7 +569,21 @@ dynamicsWebApi.retrieveMultipleRequest(request).then(function (response) {
 
 #### Retrieve All records
 
-Current function goes through all pages automatically.
+The following function retrieves records and goes through all pages automatically.
+
+```js
+//perform a multiple records retrieve operation
+dynamicsWebApi.retrieveAll("leads", ["fullname", "subject"], "statecode eq 0").then(function (response) {
+
+    var records = response.value;
+    //do something else with a records array. Access a record: response.value[0].subject;
+})
+.catch(function (error){
+    //catch an error
+});
+```
+
+OR advanced function:
 
 ```js
 //set the request parameters
@@ -576,7 +591,7 @@ var request = {
     collection: "leads",
     select: ["fullname", "subject"],
     filter: "statecode eq 0",
-    maxPageSize: 5
+    maxPageSize: 5				//just for an example
 };
 
 //perform a multiple records retrieve operation
@@ -714,6 +729,9 @@ dynamicsWebApi.executeFetchXml("accounts", fetchXml).then(function (response) {
 });
 ```
 
+Starting from version 1.2.5 DynamicsWebApi has an alias with a shorter name and same parameters: `dynamicsWebApi.fetch(...)`, 
+that works in the same way as `executeFetchXml`.
+
 #### Paging
 
 ```js
@@ -747,6 +765,28 @@ dynamicsWebApi.executeFetchXml("accounts", fetchXml).then(function (response) {
 })
 //catch...
 ```
+
+#### Fetch All records
+
+The following function executes a FetchXml and goes through all pages automatically:
+
+```js
+var fetchXml = '<fetch mapping="logical">' +
+                    '<entity name="account">' +
+                        '<attribute name="accountid"/>' +
+                        '<attribute name="name"/>' +
+                    '</entity>' +
+               '</fetch>';
+
+dynamicsWebApi.executeFetchXmlAll("accounts", fetchXml).then(function (response) {
+    
+    //do something with results here; access records response.value[0].accountid
+})
+//catch...
+```
+
+Starting from version 1.2.5 DynamicsWebApi has an alias with a shorter name and same parameters: `dynamicsWebApi.fetchAll(...)`, 
+that works in the same way as `executeFetchXmlAll`.
 
 ### Execute Web API functions
 
@@ -822,7 +862,7 @@ dynamicsWebApi.executeUnboundAction("WinOpportunity", actionRequest).then(functi
 ### In Progress
 
 - [ ] overloaded functions with rich request options for all Web API operations.
-- [ ] get all pages requests, such as: countAll, retrieveMultipleAll, fetchXmlAll and etc.
+- [X] get all pages requests, such as: countAll, retrieveMultipleAll, fetchXmlAll and etc. Implemented in v.1.2.5.
 - [ ] "formatted" values in responses. For instance: Web API splits information about lookup fields into separate properties, the config option "formatted" will enable developers to retrieve all information about such fields in a single requests and access it through DynamicsWebApi custom response objects.
 - [ ] Intellisense for request objects.
 

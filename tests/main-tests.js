@@ -1119,6 +1119,43 @@ describe("promises -", function () {
         });
     });
 
+    describe("dynamicsWebApi.executeFetchXmlAll -", function () {
+
+        describe("basic", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.fetchXmlResponsePage1Cookie;
+                var response2 = mocks.responses.fetchXmlResponsePage2NoCookie;
+                scope = nock(mocks.responses.collectionUrl)
+                    .get("?fetchXml=" + encodeURIComponent(mocks.data.fetchXmls.fetchXml1))
+                    .reply(response.status, response.responseText, response.responseHeaders)
+                    .get("?fetchXml=" + encodeURIComponent(mocks.data.fetchXmls.fetchXml2cookie))
+                    .reply(response2.status, response2.responseText, response2.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.fetchAll("tests", mocks.data.fetchXmls.fetchXml)
+                    .then(function (object) {
+                        var checkResponse = mocks.data.fetchXmls.fetchXmlResultPage1Cookie.value;
+                        checkResponse = checkResponse.concat(mocks.data.fetchXmls.fetchXmlResultPage2Cookie.value);
+                        expect(object).to.deep.equal({ value: checkResponse });
+                        done();
+                    }).catch(function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+    });
+
     describe("dynamicsWebApi.associate -", function () {
 
         describe("basic", function () {
@@ -2444,6 +2481,47 @@ describe("promises -", function () {
         });
     });
 
+    describe("dynamicsWebApi.retrieveAll -", function () {
+
+        describe("multiple pages", function () {
+            var scope;
+            var scope2;
+            before(function () {
+                var response = mocks.responses.multipleWithLinkResponse;
+                var response2 = mocks.responses.multipleResponse;
+                var link = mocks.responses.multipleWithLink().oDataNextLink.split('?');
+                scope = nock(mocks.responses.collectionUrl)
+                    .get("?$select=name")
+                    .reply(response.status, response.responseText, response.responseHeaders);
+                scope2 = nock(link[0])
+                    .get("?" + link[1])
+                    .reply(response2.status, response2.responseText, response2.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.retrieveAll("tests", ["name"])
+                    .then(function (object) {
+                        var multipleResponse = mocks.responses.multiple();
+                        var checkResponse = { value: multipleResponse.value.concat(multipleResponse.value) };
+                        expect(object).to.deep.equal(checkResponse);
+                        done();
+                    }).catch(function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+                expect(scope2.isDone()).to.be.true;
+            });
+        });
+    });
+
     describe("dynamicsWebApi.retrieveMultipleRequest -", function () {
 
         describe("basic", function () {
@@ -3174,7 +3252,6 @@ describe("promises -", function () {
             });
 
             it("prefer header has not been set", function () {
-                console.error('pending mocks: %j', nock.pendingMocks());
                 expect(scope2.isDone()).to.be.false;
             });
         });
