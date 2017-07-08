@@ -26,7 +26,7 @@ Any suggestions are welcome!
     * [Delete a single property value](#delete-a-single-property-value)
   * [Retrieve a record](#retrieve-a-record)
   * [Retrieve multiple records](#retrieve-multiple-records)
-    *[Retrieve All records](#retrieve-all-records)
+    * [Retrieve All records](#retrieve-all-records)
   * [Count](#count)
     * [Count limitation workaround](#count-limitation-workaround)
   * [Associate](#associate)
