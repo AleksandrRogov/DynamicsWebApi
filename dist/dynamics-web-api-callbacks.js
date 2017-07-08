@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.2.4 (c) 2017 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.2.5 (c) 2017 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -1526,6 +1526,23 @@ function DynamicsWebApi(config) {
     }
 
     /**
+     * Sends an asynchronous request to retrieve all records.
+     *
+     * @param {string} collection - The Name of the Entity Collection.
+     * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
+     * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
+     * @param {Array} [select] - Use the $select system query option to limit the properties returned.
+     * @param {string} [filter] - Use the $filter system query option to set criteria for which entities will be returned.
+     */
+    this.retrieveAll = function (collection, successCallback, errorCallback, select, filter) {
+        return _retrieveAllRequest({
+            collection: collection,
+            select: select,
+            filter: filter
+        }, successCallback, errorCallback);
+    }
+
+    /**
      * Sends an asynchronous request to retrieve records.
      *
      * @param {Object} request - An object that represents all possible options for a current request.
@@ -1614,7 +1631,7 @@ function DynamicsWebApi(config) {
      * @param {string} [pagingCookie] - Paging cookie. For retrieving the first page, pagingCookie should be null.
      * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
-    this.executeFetchXml = function (collection, fetchXml, successCallback, errorCallback, includeAnnotations, pageNumber, pagingCookie, impersonateUserId) {
+    var executeFetchXml = function (collection, fetchXml, successCallback, errorCallback, includeAnnotations, pageNumber, pagingCookie, impersonateUserId) {
 
         ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.executeFetchXml", "collection");
         ErrorHelper.stringParameterCheck(fetchXml, "DynamicsWebApi.executeFetchXml", "fetchXml");
@@ -1667,6 +1684,39 @@ function DynamicsWebApi(config) {
         };
 
         _sendRequest("GET", result.url + "?fetchXml=" + encodedFetchXml, null, result.headers, onSuccess, errorCallback);
+    }
+
+    this.fetch = this.executeFetchXml = executeFetchXml;
+
+    var _executeFetchXmlAll = function (collection, fetchXml, successCallback, errorCallback, includeAnnotations, pageNumber, pagingCookie, impersonateUserId, records) {
+        var records = records || [];
+
+        var internalSuccessCallback = function (response) {
+            records = records.concat(response.value);
+
+            if (response.PagingInfo) {
+                _executeFetchXmlAll(collection, fetchXml, successCallback, errorCallback, includeAnnotations, response.PagingInfo.nextPage, response.PagingInfo.cookie, impersonateUserId, records);
+            }
+            else {
+                successCallback({ value: records });
+            }
+        };
+
+        executeFetchXml(collection, fetchXml, internalSuccessCallback, errorCallback, includeAnnotations, pageNumber, pagingCookie, impersonateUserId);
+    }
+
+    /**
+     * Sends an asynchronous request to execute FetchXml to retrieve all records.
+     *
+     * @param {string} collection - An object that represents all possible options for a current request.
+     * @param {string} fetchXml - FetchXML is a proprietary query language that provides capabilities to perform aggregation.
+     * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
+     * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
+     * @param {string} [includeAnnotations] - Use this parameter to include annotations to a result. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie
+     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+     */
+    this.fetchAll = this.executeFetchXmlAll = function (collection, fetchXml, successCallback, errorCallback, includeAnnotations, impersonateUserId) {
+        return _executeFetchXmlAll(collection, fetchXml, successCallback, errorCallback, includeAnnotations, null, null, impersonateUserId);
     }
 
     /**

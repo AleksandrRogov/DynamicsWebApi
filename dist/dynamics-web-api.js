@@ -1,4 +1,4 @@
-/*! dynamics-web-api v1.2.4 (c) 2017 Aleksandr Rogov */
+/*! dynamics-web-api v1.2.5 (c) 2017 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -1503,7 +1503,7 @@ function DynamicsWebApi(config) {
      * @returns {Promise}
      */
     this.countAll = function (collection, filter, select) {
-        return this.retrieveAllRequest({
+        return _retrieveAllRequest({
             collection: collection,
             filter: filter,
             select: select
@@ -1533,7 +1533,23 @@ function DynamicsWebApi(config) {
     }
 
     /**
-     * Sends an asynchronous request to count records. Returns: DWA.Types.FetchXmlResponse
+     * Sends an asynchronous request to retrieve all records.
+     *
+     * @param {string} collection - The Name of the Entity Collection.
+     * @param {Array} [select] - Use the $select system query option to limit the properties returned.
+     * @param {string} [filter] - Use the $filter system query option to set criteria for which entities will be returned.
+     * @returns {Promise}
+     */
+    this.retrieveAll = function (collection, select, filter) {
+        return _retrieveAllRequest({
+            collection: collection,
+            select: select,
+            filter: filter
+        });
+    }
+
+    /**
+     * Sends an asynchronous request to execute FetchXml to retrieve records. Returns: DWA.Types.FetchXmlResponse
      *
      * @param {string} collection - An object that represents all possible options for a current request.
      * @param {string} fetchXml - FetchXML is a proprietary query language that provides capabilities to perform aggregation.
@@ -1543,14 +1559,12 @@ function DynamicsWebApi(config) {
      * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      * @returns {Promise}
      */
-    this.executeFetchXml = function (collection, fetchXml, includeAnnotations, pageNumber, pagingCookie, impersonateUserId) {
+    var executeFetchXml = function (collection, fetchXml, includeAnnotations, pageNumber, pagingCookie, impersonateUserId) {
 
         ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.executeFetchXml", "type");
         ErrorHelper.stringParameterCheck(fetchXml, "DynamicsWebApi.executeFetchXml", "fetchXml");
 
-        if (pageNumber == null) {
-            pageNumber = 1;
-        }
+        pageNumber = pageNumber || 1;
 
         ErrorHelper.numberParameterCheck(pageNumber, "DynamicsWebApi.executeFetchXml", "pageNumber");
         var replacementString = '$1 page="' + pageNumber + '"';
@@ -1594,6 +1608,46 @@ function DynamicsWebApi(config) {
 
                 return response.data;
             });
+    }
+
+    /**
+     * Sends an asynchronous request to execute FetchXml to retrieve records. Returns: DWA.Types.FetchXmlResponse
+     *
+     * @param {string} collection - An object that represents all possible options for a current request.
+     * @param {string} fetchXml - FetchXML is a proprietary query language that provides capabilities to perform aggregation.
+     * @param {string} [includeAnnotations] - Use this parameter to include annotations to a result. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie
+     * @param {number} [pageNumber] - Page number.
+     * @param {string} [pagingCookie] - Paging cookie. For retrieving the first page, pagingCookie should be null.
+     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+     * @returns {Promise}
+     */
+    this.fetch = this.executeFetchXml = executeFetchXml;
+
+    var _executeFetchXmlAll = function (collection, fetchXml, includeAnnotations, pageNumber, pagingCookie, impersonateUserId, records) {
+        var records = records || [];
+
+        return executeFetchXml(collection, fetchXml, includeAnnotations, pageNumber, pagingCookie, impersonateUserId, records).then(function (response) {
+            records = records.concat(response.value);
+
+            if (response.PagingInfo) {
+                return _executeFetchXmlAll(collection, fetchXml, includeAnnotations, response.PagingInfo.nextPage, response.PagingInfo.cookie, impersonateUserId, records);
+            }
+
+            return { value: records };
+        });
+    }
+
+    /**
+     * Sends an asynchronous request to execute FetchXml to retrieve all records.
+     *
+     * @param {string} collection - An object that represents all possible options for a current request.
+     * @param {string} fetchXml - FetchXML is a proprietary query language that provides capabilities to perform aggregation.
+     * @param {string} [includeAnnotations] - Use this parameter to include annotations to a result. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie
+     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+     * @returns {Promise}
+     */
+    this.fetchAll = this.executeFetchXmlAll = function (collection, fetchXml, includeAnnotations, impersonateUserId) {
+        return _executeFetchXmlAll(collection, fetchXml, includeAnnotations, null, null, impersonateUserId);
     }
 
     /**
