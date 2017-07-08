@@ -962,6 +962,38 @@ describe("promises -", function () {
         });
     });
 
+    describe("dynamicsWebApi.countAll -", function () {
+
+        describe("filter", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.multipleWithCountResponse;
+                scope = nock(mocks.responses.collectionUrl)
+                    .get("?$filter=name%20eq%20%27name%27")
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.countAll("tests", "name eq 'name'")
+                    .then(function (object) {
+                        expect(object).to.deep.equal(mocks.data.multipleWithCount["@odata.count"]);
+                        done();
+                    }).catch(function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+    });
+
     describe("dynamicsWebApi.executeFetchXml -", function () {
 
         describe("basic", function () {
