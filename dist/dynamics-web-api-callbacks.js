@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.2.3 (c) 2017 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.2.4 (c) 2017 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -1486,6 +1486,27 @@ function DynamicsWebApi(config) {
     }
 
     /**
+     * Sends an asynchronous request to count records. Returns: Number
+     *
+     * @param {string} collection - The Name of the Entity Collection.
+     * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
+     * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
+     * @param {string} [filter] - Use the $filter system query option to set criteria for which entities will be returned.
+     * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
+     */
+    this.countAll = function (collection, successCallback, errorCallback, filter, select) {
+        return this.retrieveAllRequest({
+            collection: collection,
+            filter: filter,
+            select: select
+        }, function (response) {
+            successCallback(response
+                ? (response.value ? response.value.length : 0)
+                : 0);
+        }, errorCallback);
+    }
+
+    /**
      * Sends an asynchronous request to retrieve records.
      *
      * @param {string} collection - The Name of the Entity Collection.
@@ -1512,7 +1533,7 @@ function DynamicsWebApi(config) {
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
      * @param {string} [nextPageLink] - Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
      */
-    this.retrieveMultipleRequest = function (request, successCallback, errorCallback, nextPageLink) {
+    var retrieveMultipleRequest = function (request, successCallback, errorCallback, nextPageLink) {
 
         ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.retrieveMultiple", "successCallback");
         ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.retrieveMultiple", "errorCallback");
@@ -1548,6 +1569,37 @@ function DynamicsWebApi(config) {
         };
 
         _sendRequest("GET", result.url, null, result.headers, onSuccess, errorCallback);
+    }
+
+    this.retrieveMultipleRequest = retrieveMultipleRequest;
+
+    var _retrieveAllRequest = function (request, successCallback, errorCallback, nextPageLink, records) {
+
+        var records = records || [];
+
+        var internalSuccessCallback = function (response) {
+            records = records.concat(response.value);
+
+            if (response.oDataNextLink) {
+                _retrieveAllRequest(request, successCallback, errorCallback, response.oDataNextLink, records);
+            }
+            else {
+                successCallback({ value: records });
+            }
+        };
+
+        retrieveMultipleRequest(request, internalSuccessCallback, errorCallback, nextPageLink);
+    };
+
+    /**
+     * Sends an asynchronous request to retrieve all records.
+     *
+     * @param {Object} request - An object that represents all possible options for a current request.
+     * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
+     * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
+     */
+    this.retrieveAllRequest = function (request, successCallback, errorCallback) {
+        _retrieveAllRequest(request, successCallback, errorCallback);
     }
 
     /**

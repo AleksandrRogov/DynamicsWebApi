@@ -1,4 +1,4 @@
-/*! dynamics-web-api v1.2.3 (c) 2017 Aleksandr Rogov */
+/*! dynamics-web-api v1.2.4 (c) 2017 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -981,7 +981,7 @@ function DynamicsWebApi(config) {
     };
 
     var _initUrl = function () {
-        return _getClientUrl() + "/api/data/v" + _internalConfig.webApiVersion  + "/";
+        return _getClientUrl() + "/api/data/v" + _internalConfig.webApiVersion + "/";
     };
 
     /**
@@ -990,7 +990,7 @@ function DynamicsWebApi(config) {
      * @param {DWAConfig} config - configuration object
      */
     this.setConfig = function (config) {
-        
+
         if (config.webApiVersion) {
             ErrorHelper.stringParameterCheck(config.webApiVersion, "DynamicsWebApi.setConfig", "config.webApiVersion");
             _internalConfig.webApiVersion = config.webApiVersion;
@@ -1403,7 +1403,7 @@ function DynamicsWebApi(config) {
      * @param {string} [nextPageLink] - Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
      * @returns {Promise}
      */
-    this.retrieveMultipleRequest = function (request, nextPageLink) {
+    var retrieveMultipleRequest = function (request, nextPageLink) {
 
         if (nextPageLink && !request.collection) {
             request.collection = "any";
@@ -1437,46 +1437,31 @@ function DynamicsWebApi(config) {
             });
     };
 
+    this.retrieveMultipleRequest = retrieveMultipleRequest;
+
+    var _retrieveAllRequest = function (request, nextPageLink, records) {
+        var records = records || [];
+
+        return retrieveMultipleRequest(request, nextPageLink).then(function (response) {
+            records = records.concat(response.value);
+
+            if (response.oDataNextLink) {
+                return _retrieveAllRequest(request, response.oDataNextLink, records);
+            }
+
+            return { value: records };
+        });
+    }
+
     /**
-     * Sends an asynchronous request to retrieve records.
+     * Sends an asynchronous request to retrieve all records.
      *
      * @param {Object} request - An object that represents all possible options for a current request.
-     * @param {string} [nextPageLink] - Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
      * @returns {Promise}
      */
-    //var retrieveMultipleRequestAll = function (request) {
-
-    //    if (nextPageLink && !request.collection) {
-    //        request.collection = "any";
-    //    }
-
-    //    var result = RequestConverter.convertRequest(request, "retrieveMultiple", _internalConfig);
-
-    //    if (nextPageLink) {
-    //        ErrorHelper.stringParameterCheck(nextPageLink, "DynamicsWebApi.retrieveMultiple", "nextPageLink");
-    //        result.url = unescape(nextPageLink).replace(_internalConfig.webApiUrl, "");
-    //    }
-
-    //    //copy locally
-    //    var toCount = request.count;
-
-    //    return _sendRequest("GET", result.url, null, result.headers)
-    //        .then(function (response) {
-    //            if (response.data['@odata.nextLink'] != null) {
-    //                response.data.oDataNextLink = response.data['@odata.nextLink'];
-    //            }
-    //            if (toCount) {
-    //                response.data.oDataCount = response.data['@odata.count'] != null
-    //                    ? parseInt(response.data['@odata.count'])
-    //                    : 0;
-    //            }
-    //            if (response.data['@odata.context'] != null) {
-    //                response.data.oDataContext = response.data['@odata.context'];
-    //            }
-
-    //            return response.data;
-    //        });
-    //};
+    this.retrieveAllRequest = function (request) {
+        return _retrieveAllRequest(request);
+    };
 
     /**
      * Sends an asynchronous request to count records. IMPORTANT! The count value does not represent the total number of entities in the system. It is limited by the maximum number of entities that can be returned. Returns: Number
@@ -1507,6 +1492,27 @@ function DynamicsWebApi(config) {
                     return response.oDataCount ? response.oDataCount : 0;
                 });
         }
+    }
+
+    /**
+     * Sends an asynchronous request to count records. Returns: Number
+     *
+     * @param {string} collection - The Name of the Entity Collection.
+     * @param {string} [filter] - Use the $filter system query option to set criteria for which entities will be returned.
+     * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
+     * @returns {Promise}
+     */
+    this.countAll = function (collection, filter, select) {
+        return this.retrieveAllRequest({
+            collection: collection,
+            filter: filter,
+            select: select
+        })
+            .then(function (response) {
+                return response
+                    ? (response.value ? response.value.length : 0)
+                    : 0;
+            });
     }
 
     /**
