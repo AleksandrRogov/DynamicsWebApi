@@ -33,7 +33,8 @@ var configs = [];
             path: path.resolve(__dirname, 'dist'),
             filename: name,
             library: outputLibrary,
-            libraryTarget: "umd"
+            libraryTarget: "umd",
+            umdNamedDefine: true
         },
         plugins: plugins,
         module: {
