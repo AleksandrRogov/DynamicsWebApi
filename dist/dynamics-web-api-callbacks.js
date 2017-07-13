@@ -1,9 +1,9 @@
-/*! dynamics-web-api-callbacks v1.2.5 (c) 2017 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.2.6 (c) 2017 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
 	else if(typeof define === 'function' && define.amd)
-		define([], factory);
+		define("DynamicsWebApi", [], factory);
 	else if(typeof exports === 'object')
 		exports["DynamicsWebApi"] = factory();
 	else
@@ -1922,8 +1922,8 @@ function DynamicsWebApi(config) {
 
         var header = {};
 
-        if (impersonateUserId != null) {
-            header["MSCRMCallerID"] = ErrorHelper.guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
+        if (impersonateUserId) {
+            header["MSCRMCallerID"] = ErrorHelper.guidParameterCheck(impersonateUserId, "DynamicsWebApi.executionFunction", "impersonateUserId");
         }
 
         var onSuccess = function (response) {
