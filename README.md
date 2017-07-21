@@ -861,8 +861,8 @@ dynamicsWebApi.executeUnboundAction("WinOpportunity", actionRequest).then(functi
 
 ### In Progress
 
-- [ ] overloaded functions with rich request options for all Web API operations.
 - [X] get all pages requests, such as: countAll, retrieveMultipleAll, fetchXmlAll and etc. Implemented in v.1.2.5.
+- [ ] overloaded functions with rich request options for all Web API operations.
 - [ ] "formatted" values in responses. For instance: Web API splits information about lookup fields into separate properties, the config option "formatted" will enable developers to retrieve all information about such fields in a single requests and access it through DynamicsWebApi custom response objects.
 - [ ] Intellisense for request objects.
 
