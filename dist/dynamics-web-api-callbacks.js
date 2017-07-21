@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.2.6 (c) 2017 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.2.7 (c) 2017 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -345,8 +345,17 @@ module.exports = function sendRequest(method, uri, config, data, additionalHeade
     if (data) {
         stringifiedData = JSON.stringify(data, function (key, value) {
             /// <param name="key" type="String">Description</param>
-            if (key.endsWith("@odata.bind") && typeof value === "string" && !value.startsWith(config.webApiUrl)) {
-                value = config.webApiUrl + value;
+            if (key.endsWith("@odata.bind")) {
+                if (typeof value === "string") {
+                    //remove brackets in guid
+                    if (/\(\{[\w\d-]+\}\)/g.test(value)){
+                        value = value.replace(/(.+)\(\{([\w\d-]+)\}\)/g, '$1($2)');
+                    }
+                    //add full web api url if it's not set
+                    if (!value.startsWith(config.webApiUrl)) {
+                        value = config.webApiUrl + value;
+                    }
+                }
             }
 
             return value;
