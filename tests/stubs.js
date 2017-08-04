@@ -61,6 +61,16 @@ var dataStubs = {
             { name: "name2", subject: "subject2" }
         ]
     },
+    batch:
+        '--dwa_batch_XXX\n' +
+        'Content-Type: application/http\n' +
+        'Content-Transfer-Encoding: binary\n\n' +
+        'GET {0} HTTP/1.1\n' +
+        'Accept: application/json\n' +
+        'OData-MaxVersion: 4.0\n' +
+        'OData-Version: 4.0\n' +
+        'Content-Type: application/json; charset=utf-8\n\n' +
+        '--dwa_batch_XXX--',
 
     fetchXmls: {
         cookiePage1: "%253Ccookie%2520pagenumber%253D%25222%2522%2520pagingcookie%253D%2522%253Ccookie%2520page%253D%25221%2522%253E%253Caccountid%2520last%253D%2522%257BEF72AE29-B3DE-E611-8102-5065F38A7BF1%257D%2522%2520first%253D%2522%257B475B158C-541C-E511-80D3-3863BB347BA8%257D%2522%2520/%253E%253C/cookie%253E%2522%2520istracking%253D%2522False%2522%2520/%253E",
@@ -165,7 +175,7 @@ var dataStubs = {
                 page: 1,
                 nextPage: 2
             }
-        }
+        },
     }
 };
 
@@ -212,6 +222,21 @@ var responseStubs = {
     multipleWithLinkResponse: {
         status: 200,
         responseText: JSON.stringify(dataStubs.multipleWithLink)
+    },
+    batch: {
+        status: 200,
+        responseText:
+            '--batchresponse_904020fa-6213-43d4-a26a-5347b70095e8\r\n' +
+            'Content-Type: application/http\r\n' +
+            'Content-Transfer-Encoding: binary\r\n\r\n' +
+
+            'HTTP/ 1.1 200 OK\r\n' +
+            'Access-Control-Expose-Headers: Preference-Applied, OData-EntityId, Location, ETag, OData-Version, Content-Encoding, Transfer-Encoding, Content-Length, Retry-After\r\n' +
+            'Content-Type: application/json; odata.metadata=minimal\r\n' +
+            'OData-Version: 4.0\r\n\r\n' +
+
+            JSON.stringify(dataStubs.multiple) + '\r\n' +
+            '--batchresponse_904020fa-6213-43d4-a26a-5347b70095e8--'
     },
     fetchXmlResponsePage1Cookie: {
         status: 200,

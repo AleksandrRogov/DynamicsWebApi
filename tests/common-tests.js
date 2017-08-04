@@ -1,34 +1,38 @@
 ﻿var chai = require('chai');
 var expect = chai.expect;
 
+var nock = require('nock');
+var sinon = require('sinon');
+
 var DWA = require('../lib/dwa');
 var Utility = require('../lib/utilities/Utility');
 var RequestConverter = require('../lib/utilities/RequestConverter');
 var ErrorHelper = require('../lib/helpers/ErrorHelper');
 var mocks = require("./stubs");
 var dateReviver = require('../lib/requests/helpers/dateReviver');
+var sendRequest = require('../lib/requests/sendRequest');
 
-describe("Utility.buildFunctionParameters - ", function() {
-    it("no parameters", function() {
+describe("Utility.buildFunctionParameters - ", function () {
+    it("no parameters", function () {
         var result = Utility.buildFunctionParameters();
         expect(result).to.equal("()");
     });
-    it("1 parameter", function() {
+    it("1 parameter", function () {
         var result = Utility.buildFunctionParameters({ param1: "value1" });
         expect(result).to.equal("(param1=@p1)?@p1='value1'");
     });
-    it("2 parameters", function() {
+    it("2 parameters", function () {
         var result = Utility.buildFunctionParameters({ param1: "value1", param2: 2 });
         expect(result).to.equal("(param1=@p1,param2=@p2)?@p1='value1'&@p2=2");
     });
-    it("3 parameters", function() {
+    it("3 parameters", function () {
         var result = Utility.buildFunctionParameters({ param1: "value1", param2: 2, param3: "value2" });
         expect(result).to.equal("(param1=@p1,param2=@p2,param3=@p3)?@p1='value1'&@p2=2&@p3='value2'");
     });
 });
 
-describe("Utility.getFetchXmlPagingCookie -", function() {
-    it("paginCookie is empty", function() {
+describe("Utility.getFetchXmlPagingCookie -", function () {
+    it("paginCookie is empty", function () {
         var result = Utility.getFetchXmlPagingCookie("", 2);
         expect(result).to.deep.equal({
             cookie: "",
@@ -37,7 +41,7 @@ describe("Utility.getFetchXmlPagingCookie -", function() {
         });
     });
 
-    it("paginCookie is null or undefined", function() {
+    it("paginCookie is null or undefined", function () {
         var result = Utility.getFetchXmlPagingCookie(null, 2);
         expect(result).to.deep.equal({
             cookie: "",
@@ -53,7 +57,7 @@ describe("Utility.getFetchXmlPagingCookie -", function() {
         });
     });
 
-    it("pagingCookie is normal", function() {
+    it("pagingCookie is normal", function () {
         var result = Utility.getFetchXmlPagingCookie(mocks.data.fetchXmls.cookiePage2, 2);
         expect(result).to.deep.equal(mocks.data.fetchXmls.fetchXmlResultPage2Cookie.PagingInfo);
 
@@ -66,9 +70,9 @@ describe("Utility.getFetchXmlPagingCookie -", function() {
     });
 });
 
-describe("RequestConverter.convertRequestOptions -", function() {
+describe("RequestConverter.convertRequestOptions -", function () {
     var stubUrl = mocks.webApiUrl + "tests";
-    it("request is empty", function() {
+    it("request is empty", function () {
         var dwaRequest;
 
         var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl, "&");
@@ -82,7 +86,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
 
     });
 
-    it("count=true", function() {
+    it("count=true", function () {
         var dwaRequest = {
             count: true
         };
@@ -91,7 +95,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "$count=true", headers: {} });
     });
 
-    it("count=false", function() {
+    it("count=false", function () {
         var dwaRequest = {
             count: false
         };
@@ -100,7 +104,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
-    it("expand is empty", function() {
+    it("expand is empty", function () {
         var dwaRequest = {
             expand: undefined
         };
@@ -123,7 +127,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
-    it("expand - filter without expand.property", function() {
+    it("expand - filter without expand.property", function () {
         var dwaRequest = {
             expand: [{
                 filter: "name eq 'name'"
@@ -144,7 +148,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
-    it("expand - property", function() {
+    it("expand - property", function () {
         var dwaRequest = {
             expand: [{
                 property: "property"
@@ -155,7 +159,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property", headers: {} });
     });
 
-    it("expand - property,filter empty", function() {
+    it("expand - property,filter empty", function () {
         var dwaRequest = {
             expand: [{
                 property: "property",
@@ -177,7 +181,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property", headers: {} });
     });
 
-    it("expand - property,filter", function() {
+    it("expand - property,filter", function () {
         var dwaRequest = {
             expand: [{
                 property: "property",
@@ -189,7 +193,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property($filter=" + encodeURI("name eq 'name'") + ")", headers: {} });
     });
 
-    it("expand - property,orderBy empty", function() {
+    it("expand - property,orderBy empty", function () {
         var dwaRequest = {
             expand: [{
                 property: "property",
@@ -211,7 +215,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property", headers: {} });
     });
 
-    it("expand - property,orderBy", function() {
+    it("expand - property,orderBy", function () {
         var dwaRequest = {
             expand: [{
                 property: "property",
@@ -233,7 +237,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property($orderby=name,subject)", headers: {} });
     });
 
-    it("expand - property,select empty", function() {
+    it("expand - property,select empty", function () {
         var dwaRequest = {
             expand: [{
                 property: "property",
@@ -255,7 +259,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property", headers: {} });
     });
 
-    it("expand - property,select", function() {
+    it("expand - property,select", function () {
         var dwaRequest = {
             expand: [{
                 property: "property",
@@ -277,7 +281,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property($select=name,subject)", headers: {} });
     });
 
-    it("expand - property,top empty or <=0", function() {
+    it("expand - property,top empty or <=0", function () {
         var dwaRequest = {
             expand: [{
                 property: "property",
@@ -309,7 +313,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property", headers: {} });
     });
 
-    it("expand - property,top", function() {
+    it("expand - property,top", function () {
         var dwaRequest = {
             expand: [{
                 property: "property",
@@ -321,7 +325,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property($top=3)", headers: {} });
     });
 
-    it("expand - different properties", function() {
+    it("expand - different properties", function () {
         var dwaRequest = {
             expand: [{
                 property: "property",
@@ -346,7 +350,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property($select=name,subject;$top=3;$orderby=order)", headers: {} });
     });
 
-    it("filter empty", function() {
+    it("filter empty", function () {
         var dwaRequest = {
             filter: ""
         };
@@ -362,7 +366,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
-    it("filter", function() {
+    it("filter", function () {
         var dwaRequest = {
             filter: "name eq 'name'"
         };
@@ -371,7 +375,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "$filter=name eq 'name'", headers: {} });
     });
 
-    it("ifmatch empty", function() {
+    it("ifmatch empty", function () {
         var dwaRequest = {
             ifmatch: ""
         };
@@ -387,7 +391,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
-    it("ifmatch", function() {
+    it("ifmatch", function () {
         var dwaRequest = {
             ifmatch: "*"
         };
@@ -396,7 +400,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "", headers: { "If-Match": "*" } });
     });
 
-    it("ifnonematch empty", function() {
+    it("ifnonematch empty", function () {
         var dwaRequest = {
             ifnonematch: ""
         };
@@ -412,7 +416,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
-    it("ifnonematch", function() {
+    it("ifnonematch", function () {
         var dwaRequest = {
             ifnonematch: "*"
         };
@@ -421,18 +425,18 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "", headers: { "If-None-Match": "*" } });
     });
 
-    it("ifmatch & ifnonematch both specified - throws an error", function() {
+    it("ifmatch & ifnonematch both specified - throws an error", function () {
         var dwaRequest = {
             ifmatch: "*",
             ifnonematch: "*"
         };
 
-        var result = expect(function() {
+        var result = expect(function () {
             RequestConverter.convertRequestOptions(dwaRequest, "fun", stubUrl);
         }).to.throw("DynamicsWebApi.fun. Either one of request.ifmatch or request.ifnonematch parameters should be used in a call, not both.");
     });
 
-    it("impersonate empty", function() {
+    it("impersonate empty", function () {
         var dwaRequest = {
             impersonate: ""
         };
@@ -448,7 +452,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
-    it("impersonate", function() {
+    it("impersonate", function () {
         var dwaRequest = {
             impersonate: mocks.data.testEntityId
         };
@@ -457,7 +461,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "", headers: { "MSCRMCallerID": mocks.data.testEntityId } });
     });
 
-    it("includeAnnotations empty", function() {
+    it("includeAnnotations empty", function () {
         var dwaRequest = {
             includeAnnotations: ""
         };
@@ -473,7 +477,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
-    it("includeAnnotations", function() {
+    it("includeAnnotations", function () {
         var dwaRequest = {
             includeAnnotations: DWA.Prefer.Annotations.AssociatedNavigationProperty
         };
@@ -482,7 +486,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "", headers: { Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.AssociatedNavigationProperty + '"' } });
     });
 
-    it("maxPageSize empty or <=0", function() {
+    it("maxPageSize empty or <=0", function () {
         var dwaRequest = {
             maxPageSize: 0
         };
@@ -505,7 +509,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
-    it("maxPageSize", function() {
+    it("maxPageSize", function () {
         var dwaRequest = {
             maxPageSize: 10
         };
@@ -514,7 +518,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "", headers: { Prefer: 'odata.maxpagesize=10' } });
     });
 
-    it("navigationProperty empty", function() {
+    it("navigationProperty empty", function () {
         var dwaRequest = {
             navigationProperty: ""
         };
@@ -530,7 +534,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
-    it("navigationProperty", function() {
+    it("navigationProperty", function () {
         var dwaRequest = {
             navigationProperty: "nav"
         };
@@ -539,7 +543,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl + "/nav", query: "", headers: {} });
     });
 
-    it("orderBy empty", function() {
+    it("orderBy empty", function () {
         var dwaRequest = {
             orderBy: []
         };
@@ -555,7 +559,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
-    it("orderBy", function() {
+    it("orderBy", function () {
         var dwaRequest = {
             orderBy: ["name"]
         };
@@ -573,7 +577,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         });
     });
 
-    it("returnRepresentation empty", function() {
+    it("returnRepresentation empty", function () {
         var dwaRequest = {
             returnRepresentation: false
         };
@@ -582,7 +586,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
-    it("returnRepresentation null", function() {
+    it("returnRepresentation null", function () {
         var dwaRequest = {
             returnRepresentation: null
         };
@@ -591,7 +595,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
-    it("returnRepresentation", function() {
+    it("returnRepresentation", function () {
         var dwaRequest = {
             returnRepresentation: true
         };
@@ -600,7 +604,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "", headers: { Prefer: DWA.Prefer.ReturnRepresentation } });
     });
 
-    it("select empty", function() {
+    it("select empty", function () {
         var dwaRequest = {
             select: []
         };
@@ -616,7 +620,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
-    it("select", function() {
+    it("select", function () {
         var dwaRequest = {
             select: ["name"]
         };
@@ -632,7 +636,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "$select=name,subject", headers: {} });
     });
 
-    it("select navigation property", function() {
+    it("select navigation property", function () {
         var dwaRequest = {
             select: ["/nav"]
         };
@@ -655,7 +659,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl + "/nav", query: "$select=subject,fullname", headers: {} });
     });
 
-    it("select reference", function() {
+    it("select reference", function () {
         var dwaRequest = {
             select: ["nav/$ref"]
         };
@@ -664,7 +668,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl + "/nav/$ref", query: "", headers: {} });
     });
 
-    it("top empty or <=0", function() {
+    it("top empty or <=0", function () {
         var dwaRequest = {
             top: 0
         };
@@ -687,7 +691,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
-    it("top", function() {
+    it("top", function () {
         var dwaRequest = {
             top: 3
         };
@@ -696,7 +700,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "$top=3", headers: {} });
     });
 
-    it("savedQuery empty", function() {
+    it("savedQuery empty", function () {
         var dwaRequest = {
             savedQuery: ""
         };
@@ -712,7 +716,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
-    it("savedQuery", function() {
+    it("savedQuery", function () {
         var dwaRequest = {
             savedQuery: mocks.data.testEntityId
         };
@@ -721,7 +725,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "savedQuery=" + mocks.data.testEntityId, headers: {} });
     });
 
-    it("userQuery empty", function() {
+    it("userQuery empty", function () {
         var dwaRequest = {
             userQuery: ""
         };
@@ -737,7 +741,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
-    it("userQuery", function() {
+    it("userQuery", function () {
         var dwaRequest = {
             userQuery: mocks.data.testEntityId
         };
@@ -746,7 +750,7 @@ describe("RequestConverter.convertRequestOptions -", function() {
         expect(result).to.deep.equal({ url: stubUrl, query: "userQuery=" + mocks.data.testEntityId, headers: {} });
     });
 
-    it("multiple options", function() {
+    it("multiple options", function () {
         var dwaRequest = {
             select: ["name", "subject"],
             orderBy: ["order"],
@@ -1014,9 +1018,9 @@ describe("RequestConverter.convertRequestOptions -", function() {
     });
 });
 
-describe("RequestConverter.convertRequest -", function() {
+describe("RequestConverter.convertRequest -", function () {
     //{ url: result.url, headers: result.headers }
-    it("collection", function() {
+    it("collection", function () {
         var dwaRequest = {
             collection: "cols"
         };
@@ -1025,12 +1029,12 @@ describe("RequestConverter.convertRequest -", function() {
         expect(result).to.deep.equal({ url: "cols", headers: {} });
     });
 
-    it("collection empty - throw error", function() {
+    it("collection empty - throw error", function () {
         var dwaRequest = {
             collection: ""
         };
 
-        var test = function() {
+        var test = function () {
             RequestConverter.convertRequest(dwaRequest);
         }
 
@@ -1043,7 +1047,7 @@ describe("RequestConverter.convertRequest -", function() {
         expect(test).to.throw(/request\.collection/);
     });
 
-    it("collection, id empty", function() {
+    it("collection, id empty", function () {
         var dwaRequest = {
             collection: "cols",
             id: null
@@ -1058,20 +1062,20 @@ describe("RequestConverter.convertRequest -", function() {
         expect(result).to.deep.equal({ url: "cols", headers: {} });
     });
 
-    it("collection, id - wrong format throw error", function() {
+    it("collection, id - wrong format throw error", function () {
         var dwaRequest = {
             collection: "cols",
             id: "sa"
         };
 
-        var test = function() {
+        var test = function () {
             RequestConverter.convertRequest(dwaRequest);
         }
 
         expect(test).to.throw(/request\.id/);
     });
 
-    it("collection, id", function() {
+    it("collection, id", function () {
         var dwaRequest = {
             collection: "cols",
             id: mocks.data.testEntityId
@@ -1081,7 +1085,7 @@ describe("RequestConverter.convertRequest -", function() {
         expect(result).to.deep.equal({ url: "cols(" + mocks.data.testEntityId + ")", headers: {} });
     });
 
-    it("collection, id in brackets {} converted to id without brackets", function() {
+    it("collection, id in brackets {} converted to id without brackets", function () {
         var dwaRequest = {
             collection: "cols",
             id: '{' + mocks.data.testEntityId + '}'
@@ -1091,7 +1095,7 @@ describe("RequestConverter.convertRequest -", function() {
         expect(result).to.deep.equal({ url: "cols(" + mocks.data.testEntityId + ")", headers: {} });
     });
 
-    it("full", function() {
+    it("full", function () {
         var dwaRequest = {
             collection: "cols",
             id: mocks.data.testEntityId,
@@ -1109,171 +1113,230 @@ describe("RequestConverter.convertRequest -", function() {
     });
 });
 
-describe("ErrorHelper.handleErrorResponse", function() {
-    it("returns a correct error object", function() {
+describe("ErrorHelper.handleErrorResponse", function () {
+    it("returns a correct error object", function () {
         var errorResponse = {
             status: 500,
             message: "Invalid"
         };
 
-        expect(function() {
+        expect(function () {
             ErrorHelper.handleErrorResponse(errorResponse);
         }).to.throw("Error: 500: Invalid");
     });
 });
 
-describe("ErrorHelper.parameterCheck", function() {
-    it("does not return anything", function() {
+describe("ErrorHelper.parameterCheck", function () {
+    it("does not return anything", function () {
         var result = ErrorHelper.parameterCheck(2, "fun", "param", "type");
         expect(result).to.be.undefined;
     });
-    it("when parameter is null it throws an error", function() {
-        expect(function() {
+    it("when parameter is null it throws an error", function () {
+        expect(function () {
             ErrorHelper.parameterCheck(null, "fun", "param", "type");
         }).to.throw("fun requires the param parameter to be of type type");
     });
-    it("throws Error with message without type", function() {
-        expect(function() {
+    it("throws Error with message without type", function () {
+        expect(function () {
             ErrorHelper.parameterCheck(null, "fun", "param");
         }).to.throw("fun requires the param parameter");
     });
 });
 
-describe("ErrorHelper.stringParameterCheck", function() {
-    it("does not return anything", function() {
+describe("ErrorHelper.stringParameterCheck", function () {
+    it("does not return anything", function () {
         var result = ErrorHelper.stringParameterCheck("2", "fun", "param");
         expect(result).to.be.undefined;
     });
-    it("when parameter is wrong it throws an error", function() {
-        expect(function() {
+    it("when parameter is wrong it throws an error", function () {
+        expect(function () {
             ErrorHelper.stringParameterCheck(4, "fun", "param");
         }).to.throw("fun requires the param parameter to be of type String");
     });
 });
 
-describe("ErrorHelper.arrayParameterCheck", function() {
-    it("does not return anything", function() {
+describe("ErrorHelper.arrayParameterCheck", function () {
+    it("does not return anything", function () {
         var result = ErrorHelper.arrayParameterCheck([], "fun", "param");
         expect(result).to.be.undefined;
     });
-    it("when parameter is wrong it throws an error", function() {
-        expect(function() {
+    it("when parameter is wrong it throws an error", function () {
+        expect(function () {
             ErrorHelper.arrayParameterCheck({}, "fun", "param");
         }).to.throw("fun requires the param parameter to be of type Array");
     });
 });
 
-describe("ErrorHelper.stringOrArrayParameterCheck", function() {
-    it("does not return anything", function() {
+describe("ErrorHelper.stringOrArrayParameterCheck", function () {
+    it("does not return anything", function () {
         var result = ErrorHelper.stringOrArrayParameterCheck([], "fun", "param");
         expect(result).to.be.undefined;
 
         result = ErrorHelper.stringOrArrayParameterCheck("ss", "fun", "param");
         expect(result).to.be.undefined;
     });
-    it("when parameter is wrong it throws an error", function() {
-        expect(function() {
+    it("when parameter is wrong it throws an error", function () {
+        expect(function () {
             ErrorHelper.stringOrArrayParameterCheck({}, "fun", "param");
         }).to.throw("fun requires the param parameter to be of type String or Array");
     });
 });
 
-describe("ErrorHelper.numberParameterCheck", function() {
-    it("does not return anything", function() {
+describe("ErrorHelper.numberParameterCheck", function () {
+    it("does not return anything", function () {
         var result = ErrorHelper.numberParameterCheck(54, "fun", "param");
         expect(result).to.be.undefined;
     });
-    it("when parameter is a string-number then the function does not return anything", function() {
+    it("when parameter is a string-number then the function does not return anything", function () {
         var result = ErrorHelper.numberParameterCheck("54", "fun", "param");
         expect(result).to.be.undefined;
     });
-    it("when parameter is wrong it throws an error", function() {
-        expect(function() {
+    it("when parameter is wrong it throws an error", function () {
+        expect(function () {
             ErrorHelper.numberParameterCheck("a word", "fun", "param");
         }).to.throw("fun requires the param parameter to be of type Number");
     });
 });
 
-describe("ErrorHelper.boolParameterCheck", function() {
-    it("does not return anything", function() {
+describe("ErrorHelper.boolParameterCheck", function () {
+    it("does not return anything", function () {
         var result = ErrorHelper.boolParameterCheck(false, "fun", "param");
         expect(result).to.be.undefined;
     });
-    it("when parameter is wrong it throws an error", function() {
-        expect(function() {
+    it("when parameter is wrong it throws an error", function () {
+        expect(function () {
             ErrorHelper.boolParameterCheck("a word", "fun", "param");
         }).to.throw("fun requires the param parameter to be of type Boolean");
     });
 });
 
-describe("ErrorHelper.callbackParameterCheck", function() {
-    it("does not return anything", function() {
-        var result = ErrorHelper.callbackParameterCheck(function() { }, "fun", "param");
+describe("ErrorHelper.callbackParameterCheck", function () {
+    it("does not return anything", function () {
+        var result = ErrorHelper.callbackParameterCheck(function () { }, "fun", "param");
         expect(result).to.be.undefined;
     });
-    it("when parameter is wrong it throws an error", function() {
-        expect(function() {
+    it("when parameter is wrong it throws an error", function () {
+        expect(function () {
             ErrorHelper.callbackParameterCheck("a word", "fun", "param");
         }).to.throw("fun requires the param parameter to be of type Function");
     });
 });
 
-describe("ErrorHelper.guidParameterCheck", function() {
-    it("parses guid in brackets and removes them", function() {
+describe("ErrorHelper.guidParameterCheck", function () {
+    it("parses guid in brackets and removes them", function () {
         var guid = "{00000000-0000-0000-0000-000000000001}";
         var result = ErrorHelper.guidParameterCheck(guid);
         expect(result).to.eq("00000000-0000-0000-0000-000000000001");
     });
 
-    it("throws an error", function() {
-        expect(function() {
+    it("throws an error", function () {
+        expect(function () {
             ErrorHelper.guidParameterCheck("ds", "fun", "param");
         }).to.throw("fun requires the param parameter to be of type GUID String");
     });
 });
 
-describe("dateReviver", function() {
-    it("returns date when a string matches exact 'YYYY-MM-DDTHH:MM:SSZ' teamplate", function() {
+describe("dateReviver", function () {
+    it("returns date when a string matches exact 'YYYY-MM-DDTHH:MM:SSZ' teamplate", function () {
         var result = dateReviver('any', '2016-12-22T23:22:12Z');
         expect(result).to.deep.equal(new Date('2016-12-22T23:22:12Z'));
     });
 
-    it("returns the same value when a string does not match exact 'YYYY-MM-DDTHH:MM:SSZ' teamplate", function() {
+    it("returns the same value when a string does not match exact 'YYYY-MM-DDTHH:MM:SSZ' teamplate", function () {
         var result = dateReviver('any', 'other');
         expect(result).to.equal('other');
     });
 
-    it("returns the same value when its type is not String", function() {
+    it("returns the same value when its type is not String", function () {
         var result = dateReviver('any', 54);
         expect(result).to.equal(54);
     });
 });
 
-describe("DWA.Types", function() {
-    it("ResponseBase", function() {
+describe("DWA.Types", function () {
+    it("ResponseBase", function () {
         expect(new DWA.Types.ResponseBase().oDataContext).to.eq("");
     });
 
-    it("Response", function() {
+    it("Response", function () {
         expect(new DWA.Types.Response().value).to.deep.equal({});
     });
 
-    it("ReferenceResponse", function() {
+    it("ReferenceResponse", function () {
         expect(new DWA.Types.ReferenceResponse()).to.deep
             .equal({ oDataContext: "", id: "", collection: "" });
     });
 
-    it("MultipleResponse", function() {
+    it("MultipleResponse", function () {
         expect(new DWA.Types.MultipleResponse()).to.deep
             .equal({ oDataContext: "", oDataNextLink: "", oDataCount: 0, value: [] });
     });
 
-    it("FetchXmlResponse", function() {
+    it("FetchXmlResponse", function () {
         expect(new DWA.Types.FetchXmlResponse()).to.deep
             .equal({
                 oDataContext: "", value: [], PagingInfo: {
                     cookie: "", page: 0, nextPage: 1
                 }
             });
+    });
+});
+
+describe("sendRequest", function () {
+    describe("when url is long, request is converted to batch", function () {
+        var scope;
+        var url = 'test';
+        while (url.length < 2085) {
+            url += 'test';
+        };
+        var rBody = mocks.data.batch.replace('{0}', mocks.webApiUrl + url);
+        var rBodys = rBody.split('\n');
+        var checkBody = '';
+        for (var i = 0; i < rBodys.length; i++) {
+            checkBody += rBodys[i];
+        }
+
+        console.error(rBody + '!');
+        before(function () {
+            var response = mocks.responses.batch;
+            scope = nock(mocks.webApiUrl + '$batch')
+                .filteringRequestBody(function (body) {
+                    body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
+                    var bodys = body.split('\n');
+
+                    var resultBody = '';
+                    for (var i = 0; i < bodys.length; i++) {
+                        resultBody += bodys[i];
+                    }
+                    return resultBody;
+                })
+                .post("", checkBody)
+                .reply(response.status, response.responseText, response.responseHeaders);
+        });
+
+        after(function () {
+            nock.cleanAll();
+        });
+
+        it("returns a correct response", function (done) {
+            sendRequest('GET', url, { webApiUrl: mocks.webApiUrl }, null, null, function (object) {
+                var multiple = mocks.responses.multiple();
+                delete multiple.oDataContext;
+                var expectedO = {
+                    status: 200,
+                    headers: {},
+                    data: multiple
+                };
+                expect(object).to.deep.equal(expectedO);
+                done();
+            }, function (object) {
+                expect(object).to.be.undefined;
+                done();
+            });
+        });
+
+        it("all requests have been made", function () {
+            expect(scope.isDone()).to.be.true;
+        });
     });
 });

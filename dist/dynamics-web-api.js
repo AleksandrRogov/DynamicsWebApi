@@ -74,7 +74,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 13);
+/******/ 	return __webpack_require__(__webpack_require__.s = 14);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -320,6 +320,29 @@ String.prototype.startsWith = function (searchString, position) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var DWA = __webpack_require__(0);
+//var RequestConverter = require('../utilities/RequestConverter');
+
+//https://stackoverflow.com/a/8809472
+function generateUUID() { // Public Domain/MIT
+    var d = new Date().getTime();
+    if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
+        d += performance.now(); //use high-precision timer if available
+    }
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        var r = (d + Math.random() * 16) % 16 | 0;
+        d = Math.floor(d / 16);
+        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+}
+
+function setStandardHeaders(additionalHeaders) {
+    additionalHeaders["Accept"] = "application/json";
+    additionalHeaders["OData-MaxVersion"] = "4.0";
+    additionalHeaders["OData-Version"] = "4.0";
+    additionalHeaders['Content-Type'] = 'application/json; charset=utf-8';
+
+    return additionalHeaders;
+}
 
 /**
  * Sends a request to given URL with given parameters
@@ -334,12 +357,12 @@ var DWA = __webpack_require__(0);
  * @returns {Promise}
  */
 module.exports = function sendRequest(method, uri, config, data, additionalHeaders, successCallback, errorCallback) {
-    if (config.impersonate && (!additionalHeaders || (additionalHeaders && !additionalHeaders["MSCRMCallerID"]))) {
-        if (!additionalHeaders) {
-            additionalHeaders = {};
-        }
-        additionalHeaders['MSCRMCallerID'] = config.impersonate;
+
+    if (!additionalHeaders) {
+        additionalHeaders = {};
     }
+
+    additionalHeaders = setStandardHeaders(additionalHeaders);
 
     var stringifiedData;
     if (data) {
@@ -348,7 +371,7 @@ module.exports = function sendRequest(method, uri, config, data, additionalHeade
             if (key.endsWith("@odata.bind")) {
                 if (typeof value === "string") {
                     //remove brackets in guid
-                    if (/\(\{[\w\d-]+\}\)/g.test(value)){
+                    if (/\(\{[\w\d-]+\}\)/g.test(value)) {
                         value = value.replace(/(.+)\(\{([\w\d-]+)\}\)/g, '$1($2)');
                     }
                     //add full web api url if it's not set
@@ -362,9 +385,38 @@ module.exports = function sendRequest(method, uri, config, data, additionalHeade
         });
     }
 
+    //if the URL contains more characters than max possible limit, convert the request to a batch request
+    if (uri.length > 2083) {
+        var batchBoundary = 'dwa_batch_' + generateUUID();
+
+        var batchBody = [];
+        batchBody.push('--' + batchBoundary);
+        batchBody.push('Content-Type: application/http');
+        batchBody.push('Content-Transfer-Encoding: binary\n');
+        batchBody.push(method + ' ' + config.webApiUrl + uri + ' HTTP/1.1');
+
+        for (var key in additionalHeaders) {
+            batchBody.push(key + ': ' + additionalHeaders[key]);
+            delete additionalHeaders[key];
+        }
+
+        batchBody.push('\n--' + batchBoundary + '--');
+
+        stringifiedData = batchBody.join('\n');
+
+        additionalHeaders = setStandardHeaders(additionalHeaders);
+        additionalHeaders['Content-Type'] = 'multipart/mixed;boundary=' + batchBoundary;
+        uri = '$batch';
+        method = 'POST';
+    }
+
+    if (config.impersonate && !additionalHeaders['MSCRMCallerID']) {
+        additionalHeaders['MSCRMCallerID'] = config.impersonate;
+    }
+
     var executeRequest;
     if (typeof XMLHttpRequest !== 'undefined') {
-        executeRequest = __webpack_require__(8);
+        executeRequest = __webpack_require__(9);
     }
 
 
@@ -373,14 +425,14 @@ module.exports = function sendRequest(method, uri, config, data, additionalHeade
             if (!additionalHeaders) {
                 additionalHeaders = {};
             }
-            additionalHeaders['Authorization'] = "Bearer " + token.accessToken;
+            additionalHeaders['Authorization'] = 'Bearer ' + token.accessToken;
         }
 
         executeRequest(method, config.webApiUrl + uri, stringifiedData, additionalHeaders, successCallback, errorCallback);
     };
 
     //call a token refresh callback only if it is set and there is no "Authorization" header set yet
-    if (config.onTokenRefresh && (!additionalHeaders || (additionalHeaders && !additionalHeaders["Authorization"]))) {
+    if (config.onTokenRefresh && (!additionalHeaders || (additionalHeaders && !additionalHeaders['Authorization']))) {
         config.onTokenRefresh(sendInternalRequest);
     }
     else {
@@ -394,7 +446,7 @@ module.exports = function sendRequest(method, uri, config, data, additionalHeade
 
 var DWA = __webpack_require__(0);
 var ErrorHelper = __webpack_require__(1);
-var buildPreferHeader = __webpack_require__(10);
+var buildPreferHeader = __webpack_require__(11);
 
 /**
  * @typedef {Object} ConvertedRequestOptions
@@ -588,7 +640,7 @@ var Utility = {
      * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
      * @returns {string}
      */
-    buildFunctionParameters: __webpack_require__(9),
+    buildFunctionParameters: __webpack_require__(10),
 
     /**
      * Parses a paging cookie returned in response
@@ -597,7 +649,7 @@ var Utility = {
      * @param {number} currentPageNumber - A current page number. Fix empty paging-cookie for complex fetch xmls.
      * @returns {{cookie: "", number: 0, next: 1}}
      */
-    getFetchXmlPagingCookie: __webpack_require__(12),
+    getFetchXmlPagingCookie: __webpack_require__(13),
 
     /**
      * Converts a response to a reference object
@@ -605,7 +657,7 @@ var Utility = {
      * @param {Object} responseData - Response object
      * @returns {ReferenceObject}
      */
-    convertToReferenceObject: __webpack_require__(11)
+    convertToReferenceObject: __webpack_require__(12)
 }
 
 module.exports = Utility;
@@ -636,6 +688,46 @@ module.exports = function dateReviver(key, value) {
 
 /***/ }),
 /* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var dateReviver = __webpack_require__(6);
+
+function parseBatchResponse(response) {
+    // Not the same delimiter in the response as we specify ourselves in the request,
+    // so we have to extract it.
+    var delimiter = response.substr(0, response.indexOf('\r\n'));
+    var parts = response.split(delimiter);
+    // The first part will always be an empty string. Just remove it.
+    parts.shift();
+    // The last part will be the "--". Just remove it.
+    parts.pop();
+
+    var result = [];
+    for (var i = 0; i < parts.length; i++) {
+        var part = parts[i];
+        var p = part.substring(part.indexOf("{"), part.lastIndexOf("}") + 1);
+        result.push(JSON.parse(p, dateReviver));
+    }
+    return result;
+}
+
+/**
+ *
+ * @param {string} response
+ */
+module.exports = function parseResponse(response) {
+    var responseData = null;
+    if (response.length) {
+        responseData = response.indexOf('--batchresponse_') > -1 
+            ? responseData = parseBatchResponse(response)[0]
+            : responseData = JSON.parse(response, dateReviver);
+    }
+
+    return responseData
+}
+
+/***/ }),
+/* 8 */
 /***/ (function(module, exports) {
 
 module.exports = function parseResponseHeaders(headerStr) {
@@ -655,12 +747,11 @@ module.exports = function parseResponseHeaders(headerStr) {
 };
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
-
-var dateReviver = __webpack_require__(6);
-var parseResponseHeaders = __webpack_require__(7);
+var parseResponse = __webpack_require__(7);
+var parseResponseHeaders = __webpack_require__(8);
 
 /**
  * Sends a request to given URL with given parameters
@@ -675,16 +766,14 @@ var parseResponseHeaders = __webpack_require__(7);
 var xhrRequest = function (method, uri, data, additionalHeaders, successCallback, errorCallback) {
     var request = new XMLHttpRequest();
     request.open(method, uri, true);
-    request.setRequestHeader("OData-MaxVersion", "4.0");
-    request.setRequestHeader("OData-Version", "4.0");
-    request.setRequestHeader("Accept", "application/json");
-    request.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+    //request.setRequestHeader("OData-MaxVersion", "4.0");
+    //request.setRequestHeader("OData-Version", "4.0");
+    //request.setRequestHeader("Accept", "application/json");
+    //request.setRequestHeader("Content-Type", "application/json; charset=utf-8");
 
     //set additional headers
-    if (additionalHeaders != null) {
-        for (var key in additionalHeaders) {
-            request.setRequestHeader(key, additionalHeaders[key]);
-        }
+    for (var key in additionalHeaders) {
+        request.setRequestHeader(key, additionalHeaders[key]);
     }
 
     request.onreadystatechange = function () {
@@ -694,10 +783,7 @@ var xhrRequest = function (method, uri, data, additionalHeaders, successCallback
                 case 201: // Success with content returned in response body.
                 case 204: // Success with no content returned in response body.
                 case 304: {// Success with Not Modified
-                    var responseData = null;
-                    if (request.responseText) {
-                        responseData = JSON.parse(request.responseText, dateReviver);
-                    }
+                    var responseData = parseResponse(request.responseText);
 
                     var response = {
                         data: responseData,
@@ -747,7 +833,7 @@ var xhrRequest = function (method, uri, data, additionalHeaders, successCallback
 module.exports = xhrRequest;
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports) {
 
 /**
@@ -783,7 +869,7 @@ module.exports = function buildFunctionParameters(parameters) {
 };
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var DWA = __webpack_require__(0);
@@ -850,7 +936,7 @@ module.exports = function buildPreferHeader(request, functionName, config) {
 }
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports) {
 
 /**
@@ -872,7 +958,7 @@ module.exports = function convertToReferenceObject(responseData) {
 }
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports) {
 
 /**
@@ -909,7 +995,7 @@ module.exports = function getFetchXmlPagingCookie(pageCookies, currentPageNumber
 }
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var DWA = __webpack_require__(0);

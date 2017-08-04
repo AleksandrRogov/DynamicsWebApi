@@ -86,7 +86,7 @@ var AuthenticationContext = require('adal-node').AuthenticationContext;
 //and stored in app settings file or in global variables
 
 //OAuth Token Endpoint
-var authorityUrl = 'https://login.windows.net/00000000-0000-0000-0000-000000000011/oauth2/token';
+var authorityUrl = 'https://login.microsoftonline.com/00000000-0000-0000-0000-000000000011/oauth2/token';
 //CRM Organization URL
 var resource = 'https://myorg.crm.dynamics.com';
 //Dynamics 365 Client Id when registered in Azure
