@@ -1,4 +1,4 @@
-/*! dynamics-web-api v1.2.7 (c) 2017 Aleksandr Rogov */
+/*! dynamics-web-api v1.2.8 (c) 2017 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -723,7 +723,7 @@ module.exports = function parseResponse(response) {
             : responseData = JSON.parse(response, dateReviver);
     }
 
-    return responseData
+    return responseData;
 }
 
 /***/ }),
