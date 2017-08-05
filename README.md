@@ -45,7 +45,7 @@ Any suggestions are welcome!
 ### DynamicsWebApi as a Dynamics 365 web resource
 In order to use DynamicsWebApi inside Dynamics 365 you need to download a browser version of the library, it can be found in [dist](/dist/) folder.
 
-Upload a script as a JavaScript Web Resource, place on the entity or refer to it in your HTML Web Resource and then initialize the main object:
+Upload a script as a JavaScript Web Resource, place on the entity form or refer to it in your HTML Web Resource and then initialize the main object:
 
 ```js
 //DynamicsWebApi makes calls to Web API v8.0 if a configuration not set
@@ -153,15 +153,15 @@ returnRepresentation | Boolean | Defaults Prefer header with value "return=repre
 webApiUrl | String | A complete URL string to Web API. Example of the URL: "https:/myorg.api.crm.dynamics.com/api/data/v8.2/". If it is specified then webApiVersion property will not be used even if it is not empty. 
 webApiVersion | String | Version of the Web API. Default version is "8.0".
 
-Configuration property `webApiVersion` is required only when DynamicsWebApi used inside of CRM. 
+Configuration property `webApiVersion` is required only when DynamicsWebApi used inside CRM. 
 Property `webApiUrl` is required when DynamicsWebApi used externally. 
-If both configuration properties set `webApiUrl` will have the highest priority than `webApiVersion`, so the last one will be skipped.
+If both configuration properties set then `webApiUrl` will have a higher priority than `webApiVersion`, so the last one will be skipped.
 
 ## Request Examples
 
-DynamicsWebApi supports __Basic__ and __Advanced__ calls to Web API. 
+DynamicsWebApi supports __Basic__ and __Advanced__ calls to Web API.
 
-Basic calls can be made by using functions with most commonly used input parameters. They are most convenient for simple operations as they do 
+Basic calls can be made by using functions with the most common input parameters. They are convenient for simple operations as they do 
 not provide all possible ways of interaction with CRM Web API (for example, [conditional retrievals](https://msdn.microsoft.com/en-us/library/mt607711.aspx#bkmk_DetectIfChanged)
 are not supported in basic functions).
 
@@ -213,6 +213,9 @@ $expand does not work for retrieveMultiple requests which is claimed as a bug of
 As well as multi-level expands are not implemented yet. This situation may be changed with the future updates in the platform. Please look for the news!
 
 For complex requests to Web API with multi-level expands use `executeFetchXml` function.
+
+Starting from version 1.2.8, all requests to Web API that have long URLs (more than 2000 characters) are automatically converted to a Batch Request.
+This feature is very convenient if you are trying to make a call using big Fetch XMLs. No special parameters needed to do a convertation.
 
 ### Create a record
 
@@ -861,10 +864,17 @@ dynamicsWebApi.executeUnboundAction("WinOpportunity", actionRequest).then(functi
 
 ### In Progress
 
-- [X] get all pages requests, such as: countAll, retrieveMultipleAll, fetchXmlAll and etc. Implemented in v.1.2.5.
-- [ ] overloaded functions with rich request options for all Web API operations.
-- [ ] "formatted" values in responses. For instance: Web API splits information about lookup fields into separate properties, the config option "formatted" will enable developers to retrieve all information about such fields in a single requests and access it through DynamicsWebApi custom response objects.
+- [X] Overloaded functions with rich request options for all Web API operations.
+- [X] Get all pages requests, such as: countAll, retrieveMultipleAll, fetchXmlAll and etc. Implemented in v.1.2.5.
+- [X] Web API requests that have long URL (more than 2000 characters) should be automatically converted to batch requests. 
+Feature is very convenient for big Fetch XMLs. Implemented in v.1.2.8.
+- [ ] Web API Authentication for On-Premise instances.
 - [ ] Intellisense for request objects.
+- [ ] "Formatted" values in responses. For instance: Web API splits information about lookup fields into separate properties, 
+the config option "formatted" will enable developers to retrieve all information about such fields in a single requests and access it through DynamicsWebApi custom response objects.
+- [ ] Batch requests.
+- [ ] Use entity names instead of collection names. I have not done an investigation about it but if you, by any chance, know how to do that, 
+I will be very grateful for an advice! Quick guess, does it work like in English language?
 
 Many more features to come!
 

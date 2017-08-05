@@ -1286,7 +1286,7 @@ describe("sendRequest", function () {
     describe("when url is long, request is converted to batch", function () {
         var scope;
         var url = 'test';
-        while (url.length < 2085) {
+        while (url.length < 2001) {
             url += 'test';
         };
         var rBody = mocks.data.batch.replace('{0}', mocks.webApiUrl + url);
