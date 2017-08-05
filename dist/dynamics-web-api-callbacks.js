@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.2.8 (c) 2017 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.2.9 (c) 2017 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -386,7 +386,7 @@ module.exports = function sendRequest(method, uri, config, data, additionalHeade
     }
 
     //if the URL contains more characters than max possible limit, convert the request to a batch request
-    if (uri.length > 2083) {
+    if (uri.length > 2000) {
         var batchBoundary = 'dwa_batch_' + generateUUID();
 
         var batchBody = [];
@@ -692,6 +692,7 @@ module.exports = function dateReviver(key, value) {
 
 var dateReviver = __webpack_require__(6);
 
+//https://github.com/emiltholin/google-api-batch-utils
 function parseBatchResponse(response) {
     // Not the same delimiter in the response as we specify ourselves in the request,
     // so we have to extract it.
