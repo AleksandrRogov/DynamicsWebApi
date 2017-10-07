@@ -11,6 +11,7 @@ var ErrorHelper = require('../lib/helpers/ErrorHelper');
 var mocks = require("./stubs");
 var dateReviver = require('../lib/requests/helpers/dateReviver');
 var sendRequest = require('../lib/requests/sendRequest');
+var parseResponse = require('../lib/requests/helpers/parseResponse');
 
 describe("Utility.buildFunctionParameters - ", function () {
     it("no parameters", function () {
@@ -1296,7 +1297,6 @@ describe("sendRequest", function () {
             checkBody += rBodys[i];
         }
 
-        console.error(rBody + '!');
         before(function () {
             var response = mocks.responses.batch;
             scope = nock(mocks.webApiUrl + '$batch')
@@ -1321,7 +1321,7 @@ describe("sendRequest", function () {
         it("returns a correct response", function (done) {
             sendRequest('GET', url, { webApiUrl: mocks.webApiUrl }, null, null, function (object) {
                 var multiple = mocks.responses.multiple();
-                delete multiple.oDataContext;
+                //delete multiple.oDataContext;
                 var expectedO = {
                     status: 200,
                     headers: {},
@@ -1338,5 +1338,17 @@ describe("sendRequest", function () {
         it("all requests have been made", function () {
             expect(scope.isDone()).to.be.true;
         });
+    });
+});
+
+describe("parseResponse", function () {
+    it("parses formatted values", function () {
+        var response = parseResponse(mocks.responses.responseFormatted200.responseText);
+        expect(response).to.be.deep.equal(mocks.responses.responseFormattedEntity());
+    });
+
+    it("parses formatted values - array", function () {
+        var response = parseResponse(mocks.responses.multipleFormattedResponse.responseText);
+        expect(response).to.be.deep.equal(mocks.responses.multipleFormatted());
     });
 });

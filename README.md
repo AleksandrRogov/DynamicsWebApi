@@ -37,6 +37,7 @@ Any suggestions are welcome!
     * [Fetch All records](#fetch-all-records)
   * [Execute Web API functions](#execute-web-api-functions)
   * [Execute Web API actions](#execute-web-api-actions)
+* [Formatted Values and Lookup Properties](#formatted-values-and-lookup-properties)
 * [JavaScript Promises](#javascript-promises)
 * [JavaScript Callbacks](#javascript-callbacks)
 
@@ -862,17 +863,54 @@ dynamicsWebApi.executeUnboundAction("WinOpportunity", actionRequest).then(functi
 });
 ```
 
+## Formatted Values and Lookup Properties
+
+Starting from version 1.3.0 it became easier to access formatted values for properties and lookup data in response objects. 
+DynamicsWebApi automatically creates aliases for each property that contains a formatted value or lookup data.
+For example:
+
+```js
+//before v.1.3.0 a formatted value for account.donotpostalmail field could be accessed as following:
+var doNotPostEmailFormatted = response['donotpostalmail@OData.Community.Display.V1.FormattedValue'];
+
+//starting with v.1.3.0 it can be simplified
+doNotPostEmailFormatted = response.donotpostalmail_Formatted;
+
+//same for lookup data
+//before v.1.3.0
+var customerName = response['_customerid_value@OData.Community.Display.V1.FormattedValue'];
+var customerEntityLogicalName = response['_customerid_value@Microsoft.Dynamics.CRM.lookuplogicalname'];
+var customerNavigationProperty = response['_customerid_value@Microsoft.Dynamics.CRM.associatednavigationproperty'];
+
+//starting with v.1.3.0
+customerName = response._customerid_value_Formatted;
+customerEntityLogicalName = response._customerid_value_LogicalName;
+customerNavigationProperty = response._customerid_value_NavigationProperty;
+```
+
+If you still want to use old properties you can do so, they are not removed from the response, so it does not break your existing functionality.
+
+As you have already noticed formatted and lookup data values are accesed by adding a particular suffix to a property name, 
+the following table summarizes it.
+
+OData Annotation | Property Suffix
+------------ | -------------
+`@OData.Community.Display.V1.FormattedValue` | `_Formatted`
+`@Microsoft.Dynamics.CRM.lookuplogicalname` | `_LogicalName`
+`@Microsoft.Dynamics.CRM.associatednavigationproperty` | `_NavigationProperty`
+
 ### In Progress
 
 - [X] Overloaded functions with rich request options for all Web API operations.
-- [X] Get all pages requests, such as: countAll, retrieveMultipleAll, fetchXmlAll and etc. Implemented in v.1.2.5.
+- [X] Get all pages requests, such as: countAll, retrieveMultipleAll, fetchXmlAll and etc. `Implemented in v.1.2.5`
 - [X] Web API requests that have long URL (more than 2000 characters) should be automatically converted to batch requests. 
-Feature is very convenient for big Fetch XMLs. Implemented in v.1.2.8.
+Feature is very convenient for big Fetch XMLs. `Implemented in v.1.2.8`
+- [X] "Formatted" values in responses. For instance: Web API splits information about lookup fields into separate properties, 
+the config option "formatted" will enable developers to retrieve all information about such fields in a single requests and access it through DynamicsWebApi custom response objects.
+- [X] Simplified names for "Formatted" properties. `Implemeted in v.1.3.0`
+- [ ] Batch requests.
 - [ ] Web API Authentication for On-Premise instances.
 - [ ] Intellisense for request objects.
-- [ ] "Formatted" values in responses. For instance: Web API splits information about lookup fields into separate properties, 
-the config option "formatted" will enable developers to retrieve all information about such fields in a single requests and access it through DynamicsWebApi custom response objects.
-- [ ] Batch requests.
 - [ ] Use entity names instead of collection names. I have not done an investigation about it but if you, by any chance, know how to do that, 
 I will be very grateful for an advice! Quick guess, does it work like in English language?
 

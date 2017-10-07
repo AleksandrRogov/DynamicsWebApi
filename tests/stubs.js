@@ -23,6 +23,13 @@ var dataStubs = {
         name: "record",
         subject: "test"
     },
+    testEntityFormatted: {
+        name: "record",
+        subject: "test",
+        option: "value",
+        "@odata.context": "context",
+        "option@OData.Community.Display.V1.FormattedValue": "formatted"
+    },
     updatedEntity: {
         fullname: "test record"
     },
@@ -42,6 +49,13 @@ var dataStubs = {
         "@odata.context": "context",
         value: [
             { name: "name1", subject: "subject1" },
+            { name: "name2", subject: "subject2" }
+        ]
+    },
+    multipleFormatted: {
+        "@odata.context": "context",
+        value: [
+            { name: "name1", subject: "subject1", option: "value", "option@OData.Community.Display.V1.FormattedValue": "formatted" },
             { name: "name2", subject: "subject2" }
         ]
     },
@@ -199,6 +213,10 @@ var responseStubs = {
         status: 200,
         responseText: JSON.stringify(dataStubs.testEntity)
     },
+    responseFormatted200: {
+        status: 200,
+        responseText: JSON.stringify(dataStubs.testEntityFormatted)
+    },
     retrieveReferenceResponse: {
         status: 200,
         responseText: JSON.stringify(dataStubs.referenceResponse)
@@ -214,6 +232,10 @@ var responseStubs = {
     multipleResponse: {
         status: 200,
         responseText: JSON.stringify(dataStubs.multiple)
+    },
+    multipleFormattedResponse: {
+        status: 200,
+        responseText: JSON.stringify(dataStubs.multipleFormatted)
     },
     multipleWithCountResponse: {
         status: 200,
@@ -280,6 +302,12 @@ var responseStubs = {
             error: { message: "message" }
         })
     },
+    responseFormattedEntity: function () {
+        var stub = dataStubs.testEntityFormatted;
+        stub.oDataContext = stub["@odata.context"];
+        stub.option_Formatted = stub["option@OData.Community.Display.V1.FormattedValue"];
+        return stub;
+    },
     multipleWithLink: function () {
         var stub = dataStubs.multipleWithLink;
         stub.oDataContext = stub["@odata.context"];
@@ -291,6 +319,12 @@ var responseStubs = {
         stub.oDataContext = stub["@odata.context"];
         return stub;
 
+    },
+    multipleFormatted: function () {
+        var stub = dataStubs.multipleFormatted;
+        stub.oDataContext = stub["@odata.context"];
+        stub.value[0].option_Formatted = stub.value[0]["option@OData.Community.Display.V1.FormattedValue"];
+        return stub;
     },
     multipleWithCount: function () {
         var stub = dataStubs.multipleWithCount;
