@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.3.0 (c) 2017 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.3.1 (c) 2017 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -1849,7 +1849,7 @@ function populateFormattedValues(object) {
     var keys = Object.keys(object);
 
     for (var i = 0; i < keys.length; i++) {
-        if (object[keys[i]].constructor === Array) {
+        if (object[keys[i]] != null && object[keys[i]].constructor === Array) {
             for (var j = 0; j < object[keys[i]].length; j++) {
                 object[keys[i]][j] = populateFormattedValues(object[keys[i]][j]);
             }
