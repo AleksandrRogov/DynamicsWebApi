@@ -354,9 +354,10 @@ function setStandardHeaders(additionalHeaders) {
  * @param {Object} config - DynamicsWebApi config.
  * @param {Object} [data] - Data to send in the request.
  * @param {Object} [additionalHeaders] - Object with additional headers. IMPORTANT! This object does not contain default headers needed for every request.
+ * @param {boolean} [isAsync] - Indicates whether the request should be made synchronously or asynchronously.
  * @returns {Promise}
  */
-module.exports = function sendRequest(method, uri, config, data, additionalHeaders, successCallback, errorCallback) {
+module.exports = function sendRequest(method, uri, config, data, additionalHeaders, successCallback, errorCallback, isAsync) {
 
     if (!additionalHeaders) {
         additionalHeaders = {};
@@ -432,7 +433,7 @@ module.exports = function sendRequest(method, uri, config, data, additionalHeade
             additionalHeaders['Authorization'] = 'Bearer ' + token.accessToken;
         }
 
-        executeRequest(method, config.webApiUrl + uri, stringifiedData, additionalHeaders, successCallback, errorCallback);
+        executeRequest(method, config.webApiUrl + uri, stringifiedData, additionalHeaders, successCallback, errorCallback, isAsync);
     };
 
     //call a token refresh callback only if it is set and there is no "Authorization" header set yet
@@ -475,7 +476,7 @@ var buildPreferHeader = __webpack_require__(12);
  * @param {Object} [config] - DynamicsWebApi config
  * @returns {ConvertedRequestOptions}
  */
-function convertRequestOptions (request, functionName, url, joinSymbol, config) {
+function convertRequestOptions(request, functionName, url, joinSymbol, config) {
     var headers = {};
     var requestArray = [];
     joinSymbol = joinSymbol != null ? joinSymbol : "&";
@@ -620,10 +621,19 @@ function convertRequest(request, functionName, config) {
 
     var result = convertRequestOptions(request, functionName, url, '&', config);
 
-    if (result.query)
+    if (result.query) {
         result.url += "?" + encodeURI(result.query);
+    }
 
-    return { url: result.url, headers: result.headers };
+    if (request.hasOwnProperty('async') && request.async != null) {
+        ErrorHelper.boolParameterCheck(request.async, "DynamicsWebApi." + functionName, "request.async");
+        result.async = request.async;
+    }
+    else {
+        result.async = true;
+    }
+
+    return { url: result.url, headers: result.headers, async: result.async };
 };
 
 var RequestConverter = {
@@ -804,11 +814,12 @@ function DynamicsWebApi(config) {
      * @param {string} uri - Request URI.
      * @param {Object} [data] - Data to send in the request.
      * @param {Object} [additionalHeaders] - Object with additional headers. IMPORTANT! This object does not contain default headers needed for every request.
+     * @param {boolean} [isAsync] - Indicates whether the request should be made synchronously or asynchronously.
      * @returns {Promise}
      */
-    var _sendRequest = function (method, uri, data, additionalHeaders) {
+    var _sendRequest = function (method, uri, data, additionalHeaders, isAsync) {
         return new Promise(function (resolve, reject) {
-            sendRequest(method, uri, _internalConfig, data, additionalHeaders, resolve, reject);
+            sendRequest(method, uri, _internalConfig, data, additionalHeaders, resolve, reject, isAsync);
         });
     };
 
@@ -841,7 +852,7 @@ function DynamicsWebApi(config) {
 
         var result = RequestConverter.convertRequest(request, "create", _internalConfig);
 
-        return _sendRequest("POST", result.url, object, result.headers)
+        return _sendRequest("POST", result.url, object, result.headers, result.async)
             .then(function (response) {
                 if (response.data) {
                     return response.data;
@@ -868,7 +879,7 @@ function DynamicsWebApi(config) {
 
         //copy locally
         var select = request.select;
-        return _sendRequest("GET", result.url, null, result.headers).then(function (response) {
+        return _sendRequest("GET", result.url, null, result.headers, result.async).then(function (response) {
             if (select != null && select.length == 1 && select[0].endsWith("/$ref") && response.data["@odata.id"] != null) {
                 return Utility.convertToReferenceObject(response.data);
             }
@@ -929,7 +940,7 @@ function DynamicsWebApi(config) {
 
         //copy locally
         var ifmatch = request.ifmatch;
-        return _sendRequest("PATCH", result.url, request.entity, result.headers)
+        return _sendRequest("PATCH", result.url, request.entity, result.headers, result.async)
             .then(function (response) {
                 if (response.data) {
                     return response.data;
@@ -1021,7 +1032,7 @@ function DynamicsWebApi(config) {
 
         var result = RequestConverter.convertRequest(request, "updateSingleProperty", _internalConfig);
 
-        return _sendRequest("PUT", result.url, { value: keyValue }, result.headers)
+        return _sendRequest("PUT", result.url, { value: keyValue }, result.headers, result.async)
             .then(function (response) {
                 if (response.data) {
                     return response.data;
@@ -1043,7 +1054,7 @@ function DynamicsWebApi(config) {
 
         //copy locally
         var ifmatch = request.ifmatch;
-        return _sendRequest("DELETE", result.url, null, result.headers).then(function () {
+        return _sendRequest("DELETE", result.url, null, result.headers, result.async).then(function () {
             return true; //deleted
         }).catch(function (error) {
             if (ifmatch && error.status == 412) {
@@ -1079,7 +1090,7 @@ function DynamicsWebApi(config) {
         if (propertyName != null)
             url += "/" + propertyName;
 
-        return _sendRequest("DELETE", url).then(function () {
+        return _sendRequest("DELETE", url, null, null, true).then(function () {
             return;
         })
     };
@@ -1100,7 +1111,7 @@ function DynamicsWebApi(config) {
         //copy locally
         var ifnonematch = request.ifnonematch;
         var ifmatch = request.ifmatch;
-        return _sendRequest("PATCH", result.url, request.entity, result.headers)
+        return _sendRequest("PATCH", result.url, request.entity, result.headers, result.async)
             .then(function (response) {
                 if (response.headers['OData-EntityId'] || response.headers['odata-entityid']) {
                     var entityUrl = response.headers['OData-EntityId']
@@ -1186,7 +1197,7 @@ function DynamicsWebApi(config) {
         //copy locally
         var toCount = request.count;
 
-        return _sendRequest("GET", result.url, null, result.headers)
+        return _sendRequest("GET", result.url, null, result.headers, result.async)
             .then(function (response) {
 
                 if (toCount) {
@@ -1355,7 +1366,7 @@ function DynamicsWebApi(config) {
 
         var encodedFetchXml = encodeURIComponent(fetchXml);
 
-        return _sendRequest("GET", result.url + "?fetchXml=" + encodedFetchXml, null, result.headers)
+        return _sendRequest("GET", result.url + "?fetchXml=" + encodedFetchXml, null, result.headers, result.async)
             .then(function (response) {
 
                 if (response.data['@' + DWA.Prefer.Annotations.FetchXmlPagingCookie] != null) {
@@ -1817,9 +1828,9 @@ var parseResponseHeaders = __webpack_require__(9);
  * @param {string} [data] - Data to send in the request.
  * @param {Object} [additionalHeaders] - Object with headers. IMPORTANT! This object does not contain default headers needed for every request.
  */
-var xhrRequest = function (method, uri, data, additionalHeaders, successCallback, errorCallback) {
+var xhrRequest = function (method, uri, data, additionalHeaders, successCallback, errorCallback, async) {
     var request = new XMLHttpRequest();
-    request.open(method, uri, true);
+    request.open(method, uri, async);
     //request.setRequestHeader("OData-MaxVersion", "4.0");
     //request.setRequestHeader("OData-Version", "4.0");
     //request.setRequestHeader("Accept", "application/json");

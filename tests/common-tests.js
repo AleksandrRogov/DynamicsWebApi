@@ -766,9 +766,9 @@ describe("RequestConverter.convertRequestOptions -", function () {
             select: ["name"],
             orderBy: ["order"]
         }, {
-            property: "property2",
-            select: ["name3"]
-        }];
+                property: "property2",
+                select: ["name3"]
+            }];
 
         result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
         expect(result).to.deep.equal({ url: stubUrl, query: "$select=name,subject&$top=5&$orderby=order&$expand=property($select=name;$orderby=order),property2($select=name3)", headers: {} });
@@ -1027,7 +1027,7 @@ describe("RequestConverter.convertRequest -", function () {
         };
 
         var result = RequestConverter.convertRequest(dwaRequest);
-        expect(result).to.deep.equal({ url: "cols", headers: {} });
+        expect(result).to.deep.equal({ url: "cols", headers: {}, async: true });
     });
 
     it("collection empty - throw error", function () {
@@ -1055,12 +1055,12 @@ describe("RequestConverter.convertRequest -", function () {
         };
 
         var result = RequestConverter.convertRequest(dwaRequest);
-        expect(result).to.deep.equal({ url: "cols", headers: {} });
+        expect(result).to.deep.equal({ url: "cols", headers: {}, async: true });
 
         dwaRequest.id = "";
 
         result = RequestConverter.convertRequest(dwaRequest);
-        expect(result).to.deep.equal({ url: "cols", headers: {} });
+        expect(result).to.deep.equal({ url: "cols", headers: {}, async: true });
     });
 
     it("collection, id - wrong format throw error", function () {
@@ -1083,7 +1083,7 @@ describe("RequestConverter.convertRequest -", function () {
         };
 
         var result = RequestConverter.convertRequest(dwaRequest);
-        expect(result).to.deep.equal({ url: "cols(" + mocks.data.testEntityId + ")", headers: {} });
+        expect(result).to.deep.equal({ url: "cols(" + mocks.data.testEntityId + ")", headers: {}, async: true });
     });
 
     it("collection, id in brackets {} converted to id without brackets", function () {
@@ -1093,7 +1093,7 @@ describe("RequestConverter.convertRequest -", function () {
         };
 
         var result = RequestConverter.convertRequest(dwaRequest);
-        expect(result).to.deep.equal({ url: "cols(" + mocks.data.testEntityId + ")", headers: {} });
+        expect(result).to.deep.equal({ url: "cols(" + mocks.data.testEntityId + ")", headers: {}, async: true });
     });
 
     it("full", function () {
@@ -1105,12 +1105,45 @@ describe("RequestConverter.convertRequest -", function () {
         };
 
         var result = RequestConverter.convertRequest(dwaRequest);
-        expect(result).to.deep.equal({ url: "cols(" + mocks.data.testEntityId + ")?$select=name", headers: { Prefer: DWA.Prefer.ReturnRepresentation } });
+        expect(result).to.deep.equal({ url: "cols(" + mocks.data.testEntityId + ")?$select=name", headers: { Prefer: DWA.Prefer.ReturnRepresentation }, async: true });
 
         dwaRequest.navigationProperty = "nav";
 
         result = RequestConverter.convertRequest(dwaRequest);
-        expect(result).to.deep.equal({ url: "cols(" + mocks.data.testEntityId + ")/nav?$select=name", headers: { Prefer: DWA.Prefer.ReturnRepresentation } });
+        expect(result).to.deep.equal({ url: "cols(" + mocks.data.testEntityId + ")/nav?$select=name", headers: { Prefer: DWA.Prefer.ReturnRepresentation }, async: true });
+    });
+
+    it("async", function () {
+        var dwaRequest = {
+            collection: "cols",
+            async: false
+        };
+
+        var result = RequestConverter.convertRequest(dwaRequest);
+        expect(result).to.deep.equal({ url: "cols", headers: {}, async: false });
+
+        dwaRequest.async = true;
+
+        result = RequestConverter.convertRequest(dwaRequest);
+        expect(result).to.deep.equal({ url: "cols", headers: {}, async: true });
+
+        delete dwaRequest.async;
+
+        result = RequestConverter.convertRequest(dwaRequest);
+        expect(result).to.deep.equal({ url: "cols", headers: {}, async: true });
+    });
+
+    it("async - throw error", function () {
+        var dwaRequest = {
+            collection: "some",
+            async: "something"
+        };
+
+        var test = function () {
+            RequestConverter.convertRequest(dwaRequest);
+        }
+
+        expect(test).to.throw(/request\.async/);
     });
 });
 

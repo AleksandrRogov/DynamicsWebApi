@@ -354,9 +354,10 @@ function setStandardHeaders(additionalHeaders) {
  * @param {Object} config - DynamicsWebApi config.
  * @param {Object} [data] - Data to send in the request.
  * @param {Object} [additionalHeaders] - Object with additional headers. IMPORTANT! This object does not contain default headers needed for every request.
+ * @param {boolean} [isAsync] - Indicates whether the request should be made synchronously or asynchronously.
  * @returns {Promise}
  */
-module.exports = function sendRequest(method, uri, config, data, additionalHeaders, successCallback, errorCallback) {
+module.exports = function sendRequest(method, uri, config, data, additionalHeaders, successCallback, errorCallback, isAsync) {
 
     if (!additionalHeaders) {
         additionalHeaders = {};
@@ -432,7 +433,7 @@ module.exports = function sendRequest(method, uri, config, data, additionalHeade
             additionalHeaders['Authorization'] = 'Bearer ' + token.accessToken;
         }
 
-        executeRequest(method, config.webApiUrl + uri, stringifiedData, additionalHeaders, successCallback, errorCallback);
+        executeRequest(method, config.webApiUrl + uri, stringifiedData, additionalHeaders, successCallback, errorCallback, isAsync);
     };
 
     //call a token refresh callback only if it is set and there is no "Authorization" header set yet
@@ -475,7 +476,7 @@ var buildPreferHeader = __webpack_require__(12);
  * @param {Object} [config] - DynamicsWebApi config
  * @returns {ConvertedRequestOptions}
  */
-function convertRequestOptions (request, functionName, url, joinSymbol, config) {
+function convertRequestOptions(request, functionName, url, joinSymbol, config) {
     var headers = {};
     var requestArray = [];
     joinSymbol = joinSymbol != null ? joinSymbol : "&";
@@ -620,10 +621,19 @@ function convertRequest(request, functionName, config) {
 
     var result = convertRequestOptions(request, functionName, url, '&', config);
 
-    if (result.query)
+    if (result.query) {
         result.url += "?" + encodeURI(result.query);
+    }
 
-    return { url: result.url, headers: result.headers };
+    if (request.hasOwnProperty('async') && request.async != null) {
+        ErrorHelper.boolParameterCheck(request.async, "DynamicsWebApi." + functionName, "request.async");
+        result.async = request.async;
+    }
+    else {
+        result.async = true;
+    }
+
+    return { url: result.url, headers: result.headers, async: result.async };
 };
 
 var RequestConverter = {
@@ -806,9 +816,10 @@ function DynamicsWebApi(config) {
      * @param {Function} errorCallback - A callback called when a request failed.
      * @param {Object} [data] - Data to send in the request.
      * @param {Object} [additionalHeaders] - Object with additional headers. IMPORTANT! This object does not contain default headers needed for every request.
+     * @param {boolean} [isAsync] - Indicates whether the request should be made synchronously or asynchronously.
      */
-    var _sendRequest = function (method, uri, data, additionalHeaders, successCallback, errorCallback) {
-        sendRequest(method, uri, _internalConfig, data, additionalHeaders, successCallback, errorCallback);
+    var _sendRequest = function (method, uri, data, additionalHeaders, successCallback, errorCallback, isAsync) {
+        sendRequest(method, uri, _internalConfig, data, additionalHeaders, successCallback, errorCallback, isAsync);
     }
 
     /**
@@ -857,7 +868,7 @@ function DynamicsWebApi(config) {
             }
         }
 
-        _sendRequest("POST", result.url, object, result.headers, onSuccess, errorCallback);
+        _sendRequest("POST", result.url, object, result.headers, onSuccess, errorCallback, result.async);
     };
 
     /**
@@ -899,7 +910,7 @@ function DynamicsWebApi(config) {
             }
         };
 
-        _sendRequest("PATCH", result.url, request.entity, result.headers, onSuccess, onError);
+        _sendRequest("PATCH", result.url, request.entity, result.headers, onSuccess, onError, result.async);
     }
 
     /**
@@ -988,7 +999,7 @@ function DynamicsWebApi(config) {
                 : successCallback();
         };
 
-        _sendRequest("PUT", result.url, { value: keyValue }, result.headers, onSuccess, errorCallback);
+        _sendRequest("PUT", result.url, { value: keyValue }, result.headers, onSuccess, errorCallback, result.async);
     };
 
     /**
@@ -1023,7 +1034,7 @@ function DynamicsWebApi(config) {
             }
         };
 
-        _sendRequest("DELETE", result.url, null, result.headers, onSuccess, onError);
+        _sendRequest("DELETE", result.url, null, result.headers, onSuccess, onError, result.async);
     }
 
     /**
@@ -1056,7 +1067,7 @@ function DynamicsWebApi(config) {
             successCallback();
         };
 
-        _sendRequest("DELETE", url, null, null, onSuccess, errorCallback);
+        _sendRequest("DELETE", url, null, null, onSuccess, errorCallback, true);
     };
 
     /**
@@ -1085,7 +1096,7 @@ function DynamicsWebApi(config) {
             }
         };
 
-        _sendRequest("GET", result.url, null, result.headers, onSuccess, errorCallback);
+        _sendRequest("GET", result.url, null, result.headers, onSuccess, errorCallback, result.async);
     }
 
     /**
@@ -1174,7 +1185,7 @@ function DynamicsWebApi(config) {
             }
         };
 
-        _sendRequest("PATCH", result.url, request.entity, result.headers, onSuccess, onError);
+        _sendRequest("PATCH", result.url, request.entity, result.headers, onSuccess, onError, result.async);
     }
 
     /**
@@ -1344,7 +1355,7 @@ function DynamicsWebApi(config) {
             successCallback(response.data);
         };
 
-        _sendRequest("GET", result.url, null, result.headers, onSuccess, errorCallback);
+        _sendRequest("GET", result.url, null, result.headers, onSuccess, errorCallback, result.async);
     }
 
     this.retrieveMultipleRequest = retrieveMultipleRequest;
@@ -1438,7 +1449,7 @@ function DynamicsWebApi(config) {
             successCallback(response.data);
         };
 
-        _sendRequest("GET", result.url + "?fetchXml=" + encodedFetchXml, null, result.headers, onSuccess, errorCallback);
+        _sendRequest("GET", result.url + "?fetchXml=" + encodedFetchXml, null, result.headers, onSuccess, errorCallback, result.async);
     }
 
     this.fetch = this.executeFetchXml = executeFetchXml;
@@ -1935,9 +1946,9 @@ var parseResponseHeaders = __webpack_require__(9);
  * @param {string} [data] - Data to send in the request.
  * @param {Object} [additionalHeaders] - Object with headers. IMPORTANT! This object does not contain default headers needed for every request.
  */
-var xhrRequest = function (method, uri, data, additionalHeaders, successCallback, errorCallback) {
+var xhrRequest = function (method, uri, data, additionalHeaders, successCallback, errorCallback, async) {
     var request = new XMLHttpRequest();
-    request.open(method, uri, true);
+    request.open(method, uri, async);
     //request.setRequestHeader("OData-MaxVersion", "4.0");
     //request.setRequestHeader("OData-Version", "4.0");
     //request.setRequestHeader("Accept", "application/json");

@@ -907,7 +907,7 @@ OData Annotation | Property Suffix
 Feature is very convenient for big Fetch XMLs. `Implemented in v.1.2.8`
 - [X] "Formatted" values in responses. For instance: Web API splits information about lookup fields into separate properties, 
 the config option "formatted" will enable developers to retrieve all information about such fields in a single requests and access it through DynamicsWebApi custom response objects.
-- [X] Simplified names for "Formatted" properties. `Implemeted in v.1.3.0`
+- [X] Simplified names for "Formatted" properties. `Implemented in v.1.3.0`
 - [ ] Batch requests.
 - [ ] Web API Authentication for On-Premise instances.
 - [ ] Intellisense for request objects.
