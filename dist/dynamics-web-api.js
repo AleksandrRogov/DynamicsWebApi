@@ -344,27 +344,7 @@ function setStandardHeaders(additionalHeaders) {
     return additionalHeaders;
 }
 
-/**
- * Sends a request to given URL with given parameters
- *
- * @param {string} method - Method of the request.
- * @param {string} uri - Request URI.
- * @param {Function} successCallback - A callback called on success of the request.
- * @param {Function} errorCallback - A callback called when a request failed.
- * @param {Object} config - DynamicsWebApi config.
- * @param {Object} [data] - Data to send in the request.
- * @param {Object} [additionalHeaders] - Object with additional headers. IMPORTANT! This object does not contain default headers needed for every request.
- * @param {boolean} [isAsync] - Indicates whether the request should be made synchronously or asynchronously.
- * @returns {Promise}
- */
-module.exports = function sendRequest(method, uri, config, data, additionalHeaders, successCallback, errorCallback, isAsync) {
-
-    if (!additionalHeaders) {
-        additionalHeaders = {};
-    }
-
-    additionalHeaders = setStandardHeaders(additionalHeaders);
-
+function stringifyData(data, config) {
     var stringifiedData;
     if (data) {
         stringifiedData = JSON.stringify(data, function (key, value) {
@@ -390,15 +370,42 @@ module.exports = function sendRequest(method, uri, config, data, additionalHeade
         });
     }
 
+    return stringifiedData;
+}
+
+/**
+ * Sends a request to given URL with given parameters
+ *
+ * @param {string} method - Method of the request.
+ * @param {string} path - Request path.
+ * @param {Function} successCallback - A callback called on success of the request.
+ * @param {Function} errorCallback - A callback called when a request failed.
+ * @param {Object} config - DynamicsWebApi config.
+ * @param {Object} [data] - Data to send in the request.
+ * @param {Object} [additionalHeaders] - Object with additional headers. IMPORTANT! This object does not contain default headers needed for every request.
+ * @param {boolean} [isAsync] - Indicates whether the request should be made synchronously or asynchronously.
+ * @returns {Promise}
+ */
+module.exports = function sendRequest(method, path, config, data, additionalHeaders, successCallback, errorCallback, isAsync) {
+
+    if (!additionalHeaders) {
+        additionalHeaders = {};
+    }
+
+    additionalHeaders = setStandardHeaders(additionalHeaders);
+
+    //stringify passed data
+    var stringifiedData = stringifyData(data, config);
+
     //if the URL contains more characters than max possible limit, convert the request to a batch request
-    if (uri.length > 2000) {
+    if (path.length > 2000) {
         var batchBoundary = 'dwa_batch_' + generateUUID();
 
         var batchBody = [];
         batchBody.push('--' + batchBoundary);
         batchBody.push('Content-Type: application/http');
         batchBody.push('Content-Transfer-Encoding: binary\n');
-        batchBody.push(method + ' ' + config.webApiUrl + uri + ' HTTP/1.1');
+        batchBody.push(method + ' ' + config.webApiUrl + path + ' HTTP/1.1');
 
         for (var key in additionalHeaders) {
             batchBody.push(key + ': ' + additionalHeaders[key]);
@@ -411,7 +418,7 @@ module.exports = function sendRequest(method, uri, config, data, additionalHeade
 
         additionalHeaders = setStandardHeaders(additionalHeaders);
         additionalHeaders['Content-Type'] = 'multipart/mixed;boundary=' + batchBoundary;
-        uri = '$batch';
+        path = '$batch';
         method = 'POST';
     }
 
@@ -433,7 +440,7 @@ module.exports = function sendRequest(method, uri, config, data, additionalHeade
             additionalHeaders['Authorization'] = 'Bearer ' + token.accessToken;
         }
 
-        executeRequest(method, config.webApiUrl + uri, stringifiedData, additionalHeaders, successCallback, errorCallback, isAsync);
+        executeRequest(method, config.webApiUrl + path, stringifiedData, additionalHeaders, successCallback, errorCallback, isAsync);
     };
 
     //call a token refresh callback only if it is set and there is no "Authorization" header set yet
@@ -596,6 +603,17 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
 }
 
 /**
+ * @param {string} collectionName - name of the collection to check
+ */
+function getCollectionName(collectionName) {
+    var exceptions = ['EntityDefinitions'];
+
+    return exceptions.indexOf(collectionName) > -1
+        ? collectionName
+        : collectionName.toLowerCase();
+}
+
+/**
  * Converts a request object to URL link
  *
  * @param {Object} request - Request object
@@ -612,7 +630,7 @@ function convertRequest(request, functionName, config) {
         ErrorHelper.stringParameterCheck(request.collection, "DynamicsWebApi." + functionName, "request.collection");
     }
 
-    var url = request.collection.toLowerCase();
+    var url = getCollectionName(request.collection);
 
     if (request.id) {
         request.id = ErrorHelper.guidParameterCheck(request.id, "DynamicsWebApi." + functionName, "request.id");

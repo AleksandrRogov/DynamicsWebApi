@@ -33,7 +33,7 @@ describe("Utility.buildFunctionParameters - ", function () {
 });
 
 describe("Utility.getFetchXmlPagingCookie -", function () {
-    it("paginCookie is empty", function () {
+    it("pagingCookie is empty", function () {
         var result = Utility.getFetchXmlPagingCookie("", 2);
         expect(result).to.deep.equal({
             cookie: "",
@@ -42,7 +42,7 @@ describe("Utility.getFetchXmlPagingCookie -", function () {
         });
     });
 
-    it("paginCookie is null or undefined", function () {
+    it("pagingCookie is null or undefined", function () {
         var result = Utility.getFetchXmlPagingCookie(null, 2);
         expect(result).to.deep.equal({
             cookie: "",
@@ -1028,6 +1028,24 @@ describe("RequestConverter.convertRequest -", function () {
 
         var result = RequestConverter.convertRequest(dwaRequest);
         expect(result).to.deep.equal({ url: "cols", headers: {}, async: true });
+    });
+
+    it("collection - to lower case", function () {
+        var dwaRequest = {
+            collection: "Cols"
+        };
+
+        var result = RequestConverter.convertRequest(dwaRequest);
+        expect(result).to.deep.equal({ url: "cols", headers: {}, async: true });
+    });
+
+    it("collection - to lower case exception", function () {
+        var dwaRequest = {
+            collection: "EntityDefinitions"
+        };
+
+        var result = RequestConverter.convertRequest(dwaRequest);
+        expect(result).to.deep.equal({ url: "EntityDefinitions", headers: {}, async: true });
     });
 
     it("collection empty - throw error", function () {
