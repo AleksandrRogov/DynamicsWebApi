@@ -191,7 +191,7 @@ describe("RequestConverter.convertRequestOptions -", function () {
         };
 
         var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property($filter=" + encodeURI("name eq 'name'") + ")", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property($filter=" + ("name eq 'name'") + ")", headers: {} });
     });
 
     it("expand - property,orderBy empty", function () {

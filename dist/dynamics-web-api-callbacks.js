@@ -357,7 +357,7 @@ function stringifyData(data, config) {
                     }
                     //add full web api url if it's not set
                     if (!value.startsWith(config.webApiUrl)) {
-                        value = config.webApiUrl + value;
+                        value = config.webApiUrl + value.replace(/^\\/, '');
                     }
                 }
             }
@@ -593,7 +593,7 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
                     }
                 }
                 if (expandRequestArray.length) {
-                    requestArray.push("$expand=" + encodeURI(expandRequestArray.join(",")));
+                    requestArray.push("$expand=" + (expandRequestArray.join(",")));
                 }
             }
         }

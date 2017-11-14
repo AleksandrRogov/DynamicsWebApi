@@ -357,7 +357,7 @@ function stringifyData(data, config) {
                     }
                     //add full web api url if it's not set
                     if (!value.startsWith(config.webApiUrl)) {
-                        value = config.webApiUrl + value;
+                        value = config.webApiUrl + value.replace(/^\\/, '');
                     }
                 }
             }
@@ -593,7 +593,7 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
                     }
                 }
                 if (expandRequestArray.length) {
-                    requestArray.push("$expand=" + encodeURI(expandRequestArray.join(",")));
+                    requestArray.push("$expand=" + (expandRequestArray.join(",")));
                 }
             }
         }
@@ -721,6 +721,29 @@ if (!String.prototype.endsWith || !String.prototype.startsWith) {
  * @property {string} includeAnnotations - Sets Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
  * @property {string} maxPageSize - Sets the odata.maxpagesize preference value to request the number of entities returned in the response.
  * @property {string} returnRepresentation - Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
+ */
+
+/**
+ * Dynamics Web Api Request
+ * @typedef {Object} DWARequest
+ * @property {string} collection
+ * @property {string} id
+ * @property {Array} select
+ * @property {Array} expand
+ * @property {string} filter
+ * @property {number} maxPageSize
+ * @property {boolean} count
+ * @property {number} top
+ * @property {Array} orderBy
+ * @property {string} includeAnnotations
+ * @property {string} ifmatch
+ * @property {string} ifnonematch
+ * @property {boolean} returnRepresentation
+ * @property {Object} entity
+ * @property {string} impersonate: "",
+ * @property {string} navigationProperty: "",
+ * @property {string} savedQuery: "",
+ * @property {string} userQuery: ""
  */
 
 /**

@@ -2263,6 +2263,50 @@ describe("promises -", function () {
             });
         });
 
+        describe("basic - expand filter", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.response200;
+                scope = nock(mocks.responses.testEntityUrl, {
+                    reqheaders: {
+                        'If-Match': 'match',
+                        'MSCRMCallerID': mocks.data.testEntityId2
+                    }
+                })
+                    .get("?$expand=prop($filter=" + encodeURI("field eq ") + '%27value%27)')
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                var dwaRequest = {
+                    id: mocks.data.testEntityId,
+                    collection: "tests",
+                    expand: [{ property: "prop", filter: "field eq 'value'" }],
+                    impersonate: mocks.data.testEntityId2,
+                    ifmatch: "match"
+                };
+
+                console.error(encodeURI(dwaRequest.expand[0].filter));
+
+                dynamicsWebApiTest.retrieveRequest(dwaRequest)
+                    .then(function (object) {
+                        expect(object).to.deep.equal(mocks.data.testEntity);
+                        done();
+                    }).catch(function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+
         describe("retrieve reference", function () {
             var scope;
             before(function () {
