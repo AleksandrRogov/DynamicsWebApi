@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.3.2 (c) 2017 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.3.3 (c) 2017 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -578,7 +578,7 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
         if (request.expand && request.expand.length) {
             ErrorHelper.stringOrArrayParameterCheck(request.expand, "DynamicsWebApi." + functionName, "request.expand");
             if (typeof request.expand === "string") {
-                requestArray.push("$expand=" + encodeURI(request.expand));
+                requestArray.push("$expand=" + request.expand);
             }
             else {
                 var expandRequestArray = [];
@@ -593,7 +593,7 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
                     }
                 }
                 if (expandRequestArray.length) {
-                    requestArray.push("$expand=" + (expandRequestArray.join(",")));
+                    requestArray.push("$expand=" + expandRequestArray.join(","));
                 }
             }
         }
