@@ -605,6 +605,34 @@ describe("RequestConverter.convertRequestOptions -", function () {
         expect(result).to.deep.equal({ url: stubUrl, query: "", headers: { Prefer: DWA.Prefer.ReturnRepresentation } });
     });
 
+    it("duplicateDetection empty", function () {
+        var dwaRequest = {
+            duplicateDetection: false
+        };
+
+        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
+    });
+
+    it("duplicateDetection null", function () {
+        var dwaRequest = {
+            duplicateDetection: null
+        };
+
+        result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
+    });
+
+    it("duplicateDetection", function () {
+        var dwaRequest = {
+            duplicateDetection: true
+        };
+
+        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
+        expect(result).to.deep
+            .equal({ url: stubUrl, query: "", headers: { 'MSCRM.SuppressDuplicateDetection': 'false' } });
+    });
+
     it("select empty", function () {
         var dwaRequest = {
             select: []
@@ -1285,6 +1313,51 @@ describe("ErrorHelper.guidParameterCheck", function () {
         expect(function () {
             ErrorHelper.guidParameterCheck("ds", "fun", "param");
         }).to.throw("fun requires the param parameter to be of type GUID String");
+    });
+});
+
+describe("ErrorHelper.keyParameterCheck", function () {
+    it("parses guid in brackets and removes them", function () {
+        var guid = "{00000000-0000-0000-0000-000000000001}";
+        var result = ErrorHelper.keyParameterCheck(guid);
+        expect(result).to.eq("00000000-0000-0000-0000-000000000001");
+    });
+
+    it("checks a correct alternate key", function () {
+        var alternateKey = "altKey='value'";
+        var result = ErrorHelper.keyParameterCheck(alternateKey);
+        expect(result).to.eq("altKey='value'");
+    });
+
+    it("checks correct alternate keys", function () {
+        var alternateKey = "altKey='value',anotherKey='value2'";
+        var result = ErrorHelper.keyParameterCheck(alternateKey);
+        expect(result).to.eq("altKey='value',anotherKey='value2'");
+    });
+
+    it("checks correct alternate keys (removes a space between them)", function () {
+        var alternateKey = "altKey='value', anotherKey='value2'";
+        var result = ErrorHelper.keyParameterCheck(alternateKey);
+        expect(result).to.eq("altKey='value',anotherKey='value2'");
+    });
+
+    it("throws an error when alternate key is incorrect", function () {
+        expect(function () {
+            var alternateKey = "altKey='value, anotherKey='value2'";
+            ErrorHelper.keyParameterCheck(alternateKey, "fun", "param");
+        }).to.throw("fun requires the param parameter to be of type String representing GUID or Alternate Key");
+    });
+
+    it("throws an error", function () {
+        expect(function () {
+            ErrorHelper.keyParameterCheck("ds", "fun", "param");
+        }).to.throw("fun requires the param parameter to be of type String representing GUID or Alternate Key");
+    });
+
+    it("throws an error when the parameter is not a string", function () {
+        expect(function () {
+            ErrorHelper.keyParameterCheck([], "fun", "param");
+        }).to.throw("fun requires the param parameter to be of type String representing GUID or Alternate Key");
     });
 });
 

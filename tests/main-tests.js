@@ -648,6 +648,35 @@ describe("promises -", function () {
             });
         });
 
+        describe("basic - alternate key", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.response200;
+                scope = nock(mocks.responses.collectionUrl + "(alternateKey='keyValue')")
+                    .get("")
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.retrieve("alternateKey='keyValue'", "tests")
+                    .then(function (object) {
+                        expect(object).to.deep.equal(mocks.data.testEntity);
+                        done();
+                    }).catch(function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+
         describe("select", function () {
             var scope;
             before(function () {
