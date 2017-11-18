@@ -925,7 +925,7 @@ dynamicsWebApi.retrieve(alternateKey, "leads", ["fullname", "subject"]).then(fun
 
 Please use `key` instead of `id` for all requests that you make using DynamicsWebApi starting from `v.1.3.4`.
 
-Please note, that `id` field is not removed from the libarary, so all your existing scripts will work without any issue.
+Please note, that `id` field is not removed from the library, so all your existing scripts will work without any issue.
 
 ```js
 var request = {
