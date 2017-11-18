@@ -1,4 +1,4 @@
-/*! dynamics-web-api v1.3.3 (c) 2017 Aleksandr Rogov */
+/*! dynamics-web-api v1.3.4 (c) 2017 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -278,6 +278,38 @@ var ErrorHelper = {
         }
     },
 
+    /**
+     * @param parameter {string} - parameter
+     *
+     */
+    keyParameterCheck: function (parameter, functionName, parameterName) {
+
+        try {
+            ErrorHelper.stringParameterCheck(parameter, functionName, parameterName);
+
+            //check if the param is a guid
+            var match = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(parameter);
+            if (match) {
+                return match[0];
+            }
+
+            //check the alternate key
+            var alternateKeys = parameter.split(',');
+
+            if (alternateKeys.length) {
+                for (var i = 0; i < alternateKeys.length; i++){
+                    alternateKeys[i] = alternateKeys[i].trim();
+                    /^[\w\d\_]+\='[^\'\r\n]+'$/i.exec(alternateKeys[i])[0];
+                }
+            }
+
+            return alternateKeys.join(',');
+        }
+        catch (error) {
+            throwParameterError(functionName, parameterName, "String representing GUID or Alternate Key");
+        }
+    },
+
     callbackParameterCheck: function (callbackParameter, functionName, parameterName) {
         ///<summary>
         /// Private function used to check whether required callback parameters are functions
@@ -490,12 +522,12 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
 
     if (request) {
         if (request.navigationProperty) {
-            ErrorHelper.stringParameterCheck(request.navigationProperty, "DynamicsWebApi." + functionName, "request.navigationProperty");
+            ErrorHelper.stringParameterCheck(request.navigationProperty, 'DynamicsWebApi.' + functionName, "request.navigationProperty");
             url += "/" + request.navigationProperty;
         }
 
         if (request.select != null && request.select.length) {
-            ErrorHelper.arrayParameterCheck(request.select, "DynamicsWebApi." + functionName, "request.select");
+            ErrorHelper.arrayParameterCheck(request.select, 'DynamicsWebApi.' + functionName, "request.select");
 
             if (functionName == "retrieve" && request.select.length == 1 && request.select[0].endsWith("/$ref")) {
                 url += "/" + request.select[0];
@@ -518,30 +550,30 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
         }
 
         if (request.filter) {
-            ErrorHelper.stringParameterCheck(request.filter, "DynamicsWebApi." + functionName, "request.filter");
+            ErrorHelper.stringParameterCheck(request.filter, 'DynamicsWebApi.' + functionName, "request.filter");
             requestArray.push("$filter=" + request.filter);
         }
 
         if (request.savedQuery) {
-            requestArray.push("savedQuery=" + ErrorHelper.guidParameterCheck(request.savedQuery, "DynamicsWebApi." + functionName, "request.savedQuery"));
+            requestArray.push("savedQuery=" + ErrorHelper.guidParameterCheck(request.savedQuery, 'DynamicsWebApi.' + functionName, "request.savedQuery"));
         }
 
         if (request.userQuery) {
-            requestArray.push("userQuery=" + ErrorHelper.guidParameterCheck(request.userQuery, "DynamicsWebApi." + functionName, "request.userQuery"));
+            requestArray.push("userQuery=" + ErrorHelper.guidParameterCheck(request.userQuery, 'DynamicsWebApi.' + functionName, "request.userQuery"));
         }
 
         if (request.count) {
-            ErrorHelper.boolParameterCheck(request.count, "DynamicsWebApi." + functionName, "request.count");
+            ErrorHelper.boolParameterCheck(request.count, 'DynamicsWebApi.' + functionName, "request.count");
             requestArray.push("$count=" + request.count);
         }
 
         if (request.top && request.top > 0) {
-            ErrorHelper.numberParameterCheck(request.top, "DynamicsWebApi." + functionName, "request.top");
+            ErrorHelper.numberParameterCheck(request.top, 'DynamicsWebApi.' + functionName, "request.top");
             requestArray.push("$top=" + request.top);
         }
 
         if (request.orderBy != null && request.orderBy.length) {
-            ErrorHelper.arrayParameterCheck(request.orderBy, "DynamicsWebApi." + functionName, "request.orderBy");
+            ErrorHelper.arrayParameterCheck(request.orderBy, 'DynamicsWebApi.' + functionName, "request.orderBy");
             requestArray.push("$orderby=" + request.orderBy.join(','));
         }
 
@@ -552,33 +584,38 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
         }
 
         if (request.ifmatch != null && request.ifnonematch != null) {
-            throw new Error("DynamicsWebApi." + functionName + ". Either one of request.ifmatch or request.ifnonematch parameters should be used in a call, not both.")
+            throw new Error('DynamicsWebApi.' + functionName + ". Either one of request.ifmatch or request.ifnonematch parameters should be used in a call, not both.")
         }
 
         if (request.ifmatch) {
-            ErrorHelper.stringParameterCheck(request.ifmatch, "DynamicsWebApi." + functionName, "request.ifmatch");
+            ErrorHelper.stringParameterCheck(request.ifmatch, 'DynamicsWebApi.' + functionName, "request.ifmatch");
             headers['If-Match'] = request.ifmatch;
         }
 
         if (request.ifnonematch) {
-            ErrorHelper.stringParameterCheck(request.ifnonematch, "DynamicsWebApi." + functionName, "request.ifnonematch");
+            ErrorHelper.stringParameterCheck(request.ifnonematch, 'DynamicsWebApi.' + functionName, "request.ifnonematch");
             headers['If-None-Match'] = request.ifnonematch;
         }
 
         if (request.impersonate) {
-            ErrorHelper.stringParameterCheck(request.impersonate, "DynamicsWebApi." + functionName, "request.impersonate");
-            headers['MSCRMCallerID'] = ErrorHelper.guidParameterCheck(request.impersonate, "DynamicsWebApi." + functionName, "request.impersonate");
+            ErrorHelper.stringParameterCheck(request.impersonate, 'DynamicsWebApi.' + functionName, "request.impersonate");
+            headers['MSCRMCallerID'] = ErrorHelper.guidParameterCheck(request.impersonate, 'DynamicsWebApi.' + functionName, "request.impersonate");
         }
 
         if (request.token) {
-            ErrorHelper.stringParameterCheck(request.token, "DynamicsWebApi." + functionName, "request.token");
-            headers["Authorization"] = "Bearer " + request.token;
+            ErrorHelper.stringParameterCheck(request.token, 'DynamicsWebApi.' + functionName, "request.token");
+            headers['Authorization'] = 'Bearer ' + request.token;
+        }
+
+        if (request.duplicateDetection) {
+            ErrorHelper.boolParameterCheck(request.duplicateDetection, 'DynamicsWebApi.' + functionName, 'request.duplicateDetection');
+            headers['MSCRM.SuppressDuplicateDetection'] = 'false';
         }
 
         if (request.expand && request.expand.length) {
-            ErrorHelper.stringOrArrayParameterCheck(request.expand, "DynamicsWebApi." + functionName, "request.expand");
-            if (typeof request.expand === "string") {
-                requestArray.push("$expand=" + request.expand);
+            ErrorHelper.stringOrArrayParameterCheck(request.expand, 'DynamicsWebApi.' + functionName, "request.expand");
+            if (typeof request.expand === 'string') {
+                requestArray.push('$expand=' + request.expand);
             }
             else {
                 var expandRequestArray = [];
@@ -624,17 +661,24 @@ function getCollectionName(collectionName) {
 function convertRequest(request, functionName, config) {
 
     if (!request.collection) {
-        ErrorHelper.parameterCheck(request.collection, "DynamicsWebApi." + functionName, "request.collection");
+        ErrorHelper.parameterCheck(request.collection, 'DynamicsWebApi.' + functionName, "request.collection");
     }
     else {
-        ErrorHelper.stringParameterCheck(request.collection, "DynamicsWebApi." + functionName, "request.collection");
+        ErrorHelper.stringParameterCheck(request.collection, 'DynamicsWebApi.' + functionName, "request.collection");
     }
 
     var url = getCollectionName(request.collection);
 
-    if (request.id) {
-        request.id = ErrorHelper.guidParameterCheck(request.id, "DynamicsWebApi." + functionName, "request.id");
-        url += "(" + request.id + ")";
+    //add alternate key feature
+    if (request.key) {
+        request.key = ErrorHelper.keyParameterCheck(request.key, 'DynamicsWebApi.' + functionName, "request.key");
+    }
+    else if (request.id) {
+        request.key = ErrorHelper.guidParameterCheck(request.id, 'DynamicsWebApi.' + functionName, "request.id");
+    }
+
+    if (request.key) {
+        url += "(" + request.key + ")";
     }
 
     var result = convertRequestOptions(request, functionName, url, '&', config);
@@ -644,7 +688,7 @@ function convertRequest(request, functionName, config) {
     }
 
     if (request.hasOwnProperty('async') && request.async != null) {
-        ErrorHelper.boolParameterCheck(request.async, "DynamicsWebApi." + functionName, "request.async");
+        ErrorHelper.boolParameterCheck(request.async, 'DynamicsWebApi.' + functionName, "request.async");
         result.async = request.async;
     }
     else {
@@ -932,16 +976,16 @@ function DynamicsWebApi(config) {
     /**
      * Sends an asynchronous request to retrieve a record.
      *
-     * @param {string} id - A String representing the GUID value for the record to retrieve.
+     * @param {string} key - A String representing the GUID value or Aternate Key for the record to retrieve.
      * @param {string} collection - The Name of the Entity Collection.
      * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
      * @param {string|Array} [expand] - A String or Array of Expand Objects representing the $expand Query Option value to control which related records need to be returned.
      * @returns {Promise}
      */
-    this.retrieve = function (id, collection, select, expand) {
+    this.retrieve = function (key, collection, select, expand) {
 
-        ErrorHelper.stringParameterCheck(id, "DynamicsWebApi.retrieve", "id");
-        id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.retrieve", "id")
+        ErrorHelper.stringParameterCheck(key, "DynamicsWebApi.retrieve", "key");
+        key = ErrorHelper.keyParameterCheck(key, "DynamicsWebApi.retrieve", "key")
         ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.retrieve", "collection");
 
         if (select && select.length) {
@@ -954,7 +998,7 @@ function DynamicsWebApi(config) {
 
         var request = {
             collection: collection,
-            id: id,
+            key: key,
             select: select,
             expand: expand
         };
@@ -1002,17 +1046,17 @@ function DynamicsWebApi(config) {
     /**
      * Sends an asynchronous request to update a record.
      *
-     * @param {string} id - A String representing the GUID value for the record to update.
+     * @param {string} key - A String representing the GUID value or Alternate Key for the record to update.
      * @param {string} collection - The Name of the Entity Collection.
      * @param {Object} object - A JavaScript object valid for update operations.
      * @param {string} [prefer] - If set to "return=representation" the function will return an updated object
      * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
      * @returns {Promise}
      */
-    this.update = function (id, collection, object, prefer, select) {
+    this.update = function (key, collection, object, prefer, select) {
 
-        ErrorHelper.stringParameterCheck(id, "DynamicsWebApi.update", "id");
-        id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.update", "id")
+        ErrorHelper.stringParameterCheck(key, "DynamicsWebApi.update", "key");
+        key = ErrorHelper.keyParameterCheck(key, "DynamicsWebApi.update", "key")
         ErrorHelper.parameterCheck(object, "DynamicsWebApi.update", "object");
         ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.update", "collection");
 
@@ -1026,7 +1070,7 @@ function DynamicsWebApi(config) {
 
         var request = {
             collection: collection,
-            id: id,
+            key: key,
             select: select,
             prefer: prefer,
             entity: object
@@ -1038,22 +1082,22 @@ function DynamicsWebApi(config) {
     /**
      * Sends an asynchronous request to update a single value in the record.
      *
-     * @param {string} id - A String representing the GUID value for the record to update.
+     * @param {string} key - A String representing the GUID value or Alternate Key for the record to update.
      * @param {string} collection - The Name of the Entity Collection.
      * @param {Object} keyValuePair - keyValuePair object with a logical name of the field as a key and a value to update with. Example: {subject: "Update Record"}
      * @param {string|Array} [prefer] - If set to "return=representation" the function will return an updated object
      * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
      * @returns {Promise}
      */
-    this.updateSingleProperty = function (id, collection, keyValuePair, prefer, select) {
+    this.updateSingleProperty = function (key, collection, keyValuePair, prefer, select) {
 
-        ErrorHelper.stringParameterCheck(id, "DynamicsWebApi.updateSingleProperty", "id");
-        id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.updateSingleProperty", "id")
+        ErrorHelper.stringParameterCheck(key, "DynamicsWebApi.updateSingleProperty", "key");
+        key = ErrorHelper.keyParameterCheck(key, "DynamicsWebApi.updateSingleProperty", "key")
         ErrorHelper.parameterCheck(keyValuePair, "DynamicsWebApi.updateSingleProperty", "keyValuePair");
         ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.updateSingleProperty", "collection");
 
-        var key = Object.keys(keyValuePair)[0];
-        var keyValue = keyValuePair[key];
+        var field = Object.keys(keyValuePair)[0];
+        var fieldValue = keyValuePair[field];
 
         if (prefer) {
             ErrorHelper.stringOrArrayParameterCheck(prefer, "DynamicsWebApi.updateSingleProperty", "prefer");
@@ -1065,15 +1109,15 @@ function DynamicsWebApi(config) {
 
         var request = {
             collection: collection,
-            id: id,
+            key: key,
             select: select,
             prefer: prefer,
-            navigationProperty: key
+            navigationProperty: field
         };
 
         var result = RequestConverter.convertRequest(request, "updateSingleProperty", _internalConfig);
 
-        return _sendRequest("PUT", result.url, { value: keyValue }, result.headers, result.async)
+        return _sendRequest("PUT", result.url, { value: fieldValue }, result.headers, result.async)
             .then(function (response) {
                 if (response.data) {
                     return response.data;
@@ -1112,21 +1156,21 @@ function DynamicsWebApi(config) {
     /**
      * Sends an asynchronous request to delete a record.
      *
-     * @param {string} id - A String representing the GUID value for the record to delete.
+     * @param {string} key - A String representing the GUID value or Alternate Key for the record to delete.
      * @param {string} collection - The Name of the Entity Collection.
      * @param {string} [propertyName] - The name of the property which needs to be emptied. Instead of removing a whole record only the specified property will be cleared.
      * @returns {Promise}
      */
-    this.deleteRecord = function (id, collection, propertyName) {
+    this.deleteRecord = function (key, collection, propertyName) {
 
-        ErrorHelper.stringParameterCheck(id, "DynamicsWebApi.deleteRecord", "id");
-        id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.deleteRecord", "id")
+        ErrorHelper.stringParameterCheck(key, "DynamicsWebApi.deleteRecord", "key");
+        key = ErrorHelper.keyParameterCheck(key, "DynamicsWebApi.deleteRecord", "key")
         ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.deleteRecord", "collection");
 
         if (propertyName != null)
             ErrorHelper.stringParameterCheck(propertyName, "DynamicsWebApi.deleteRecord", "propertyName");
 
-        var url = collection.toLowerCase() + "(" + id + ")";
+        var url = collection.toLowerCase() + "(" + key + ")";
 
         if (propertyName != null)
             url += "/" + propertyName;
@@ -1181,17 +1225,17 @@ function DynamicsWebApi(config) {
     /**
      * Sends an asynchronous request to upsert a record.
      *
-     * @param {string} id - A String representing the GUID value for the record to upsert.
+     * @param {string} key - A String representing the GUID value or Alternate Key for the record to upsert.
      * @param {string} collection - The Name of the Entity Collection.
      * @param {Object} object - A JavaScript object valid for update operations.
      * @param {string|Array} [prefer] - If set to "return=representation" the function will return an updated object
      * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
      * @returns {Promise}
      */
-    this.upsert = function (id, collection, object, prefer, select) {
+    this.upsert = function (key, collection, object, prefer, select) {
 
-        ErrorHelper.stringParameterCheck(id, "DynamicsWebApi.upsert", "id");
-        id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.upsert", "id")
+        ErrorHelper.stringParameterCheck(key, "DynamicsWebApi.upsert", "key");
+        key = ErrorHelper.keyParameterCheck(key, "DynamicsWebApi.upsert", "key")
 
         ErrorHelper.parameterCheck(object, "DynamicsWebApi.upsert", "object");
         ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.upsert", "collection");
@@ -1206,7 +1250,7 @@ function DynamicsWebApi(config) {
 
         var request = {
             collection: collection,
-            id: id,
+            key: key,
             select: select,
             prefer: prefer,
             entity: object
