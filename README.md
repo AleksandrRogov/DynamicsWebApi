@@ -904,13 +904,13 @@ OData Annotation | Property Suffix
 `@Microsoft.Dynamics.CRM.associatednavigationproperty` | `_NavigationProperty`
 
 ## Alternate Key
-Starting from version 1.3.4, you can use alternate keys to Update, Upsert, Retrieve and Delete records. [More Info] (https://msdn.microsoft.com/en-us/library/mt607871.aspx#Retrieve%20using%20an%20alternate%20key)
+Starting from version 1.3.4, you can use alternate keys to Update, Upsert, Retrieve and Delete records. [More Info](https://msdn.microsoft.com/en-us/library/mt607871.aspx#Retrieve%20using%20an%20alternate%20key)
 
 ### Basic usage
 
 ```js
-var alternateKey = "alternateKey='keyValue'"; 
-//or "alternateKey='keyValue',anotherKey='keyValue2'""
+var alternateKey = "key='keyValue'"; 
+//or var alternateKey = "key='keyValue',anotherKey='keyValue2'";
 
 //perform a retrieve operaion
 dynamicsWebApi.retrieve(alternateKey, "leads", ["fullname", "subject"]).then(function (record) {
