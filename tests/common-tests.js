@@ -10,7 +10,7 @@ var RequestConverter = require('../lib/utilities/RequestConverter');
 var ErrorHelper = require('../lib/helpers/ErrorHelper');
 var mocks = require("./stubs");
 var dateReviver = require('../lib/requests/helpers/dateReviver');
-var sendRequest = require('../lib/requests/sendRequest');
+var Request = require('../lib/requests/sendRequest');
 var parseResponse = require('../lib/requests/helpers/parseResponse');
 
 describe("Utility.buildFunctionParameters - ", function () {
@@ -1064,7 +1064,7 @@ describe("RequestConverter.convertRequest -", function () {
         };
 
         var result = RequestConverter.convertRequest(dwaRequest);
-        expect(result).to.deep.equal({ url: "cols", headers: {}, async: true });
+        expect(result).to.deep.equal({ url: "Cols", headers: {}, async: true });
     });
 
     it("collection - to lower case exception", function () {
@@ -1407,7 +1407,7 @@ describe("DWA.Types", function () {
     });
 });
 
-describe("sendRequest", function () {
+describe("Request.sendRequest", function () {
     describe("when url is long, request is converted to batch", function () {
         var scope;
         var url = 'test';
@@ -1443,7 +1443,7 @@ describe("sendRequest", function () {
         });
 
         it("returns a correct response", function (done) {
-            sendRequest('GET', url, { webApiUrl: mocks.webApiUrl }, null, null, function (object) {
+            Request.sendRequest('GET', url, { webApiUrl: mocks.webApiUrl }, null, null, function (object) {
                 var multiple = mocks.responses.multiple();
                 //delete multiple.oDataContext;
                 var expectedO = {

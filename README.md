@@ -38,7 +38,7 @@ Any suggestions are welcome!
   * [Execute Web API functions](#execute-web-api-functions)
   * [Execute Web API actions](#execute-web-api-actions)
 * [Formatted Values and Lookup Properties](#formatted-values-and-lookup-properties)
-* [Alternate Key](#alternate-key)
+* [Using Alternate Keys](#using-alternate-keys)
 * [JavaScript Promises](#javascript-promises)
 * [JavaScript Callbacks](#javascript-callbacks)
 
@@ -117,7 +117,7 @@ function acquireToken(dynamicsWebApiCallback){
 
 //create DynamicsWebApi object
 var dynamicsWebApi = new DynamicsWebApi({ 
-    webApiUrl: 'https:/myorg.api.crm.dynamics.com/api/data/v8.2/',
+    webApiUrl: 'https:/myorg.api.crm.dynamics.com/api/data/v9.0/',
     onTokenRefresh: acquireToken
 });
 
@@ -134,14 +134,14 @@ To initialize a new instance of DynamicsWebApi with a configuration object, plea
 
 ```js
 //config can be passed directly to the constructor
-var dynamicsWebApi = new DynamicsWebApi({ webApiVersion: "8.2" });
+var dynamicsWebApi = new DynamicsWebApi({ webApiVersion: '9.0' });
 ```
 
 You can set a configuration dynamically if needed:
 
 ```js
 //or can be set dynamically
-dynamicsWebApi.setConfig({ webApiVersion: "8.2" });
+dynamicsWebApi.setConfig({ webApiVersion: '9.0' });
 ```
 
 #### Configuration Parameters
@@ -152,12 +152,17 @@ includeAnnotations | String | Defaults Prefer header with value "odata.include-a
 maxPageSize | Number | Defaults the odata.maxpagesize preference. Use to set the number of entities returned in the response.
 onTokenRefresh | Function | A callback function that triggered when DynamicsWebApi requests a new OAuth token. (At this moment it is done before each call to Dynamics 365, as [recommended by Microsoft](https://msdn.microsoft.com/en-ca/library/gg327838.aspx#Anchor_2)).
 returnRepresentation | Boolean | Defaults Prefer header with value "return=representation". Use this property to return just created or updated entity in a single request.
+useEntityNames | Boolean | `v.1.4.0+` Indicates whether to use entity logical names instead of collection logical names during requests.
 webApiUrl | String | A complete URL string to Web API. Example of the URL: "https:/myorg.api.crm.dynamics.com/api/data/v8.2/". If it is specified then webApiVersion property will not be used even if it is not empty. 
 webApiVersion | String | Version of the Web API. Default version is "8.0".
 
 Configuration property `webApiVersion` is required only when DynamicsWebApi used inside CRM. 
 Property `webApiUrl` is required when DynamicsWebApi used externally. 
-If both configuration properties set then `webApiUrl` will have a higher priority than `webApiVersion`, so the last one will be skipped.
+**Important!** If both configuration properties set then `webApiUrl` will have a higher priority than `webApiVersion`, so the last one will be skipped.
+
+**Important!** Please note, if you are using `DynamicsWebApi` **outside Microsoft Dynamics 365** and set `useEntityNames` to `true` **the first request** to Web Api 
+will fetch `LogicalCollectionName` and `LogicalName` from entity metadata for all entities. It does not happen when `DynamicsWebApi`
+is used in Microsoft Dynamics 365 Web Resources (there is no additional request).
 
 ## Request Examples
 
@@ -296,7 +301,7 @@ dynamicsWebApi.update(leadId, "leads", lead).then(function () {
 
 ```js
 var request = {
-    id: '7d577253-3ef0-4a0a-bb7f-8335c2596e70',
+    key: '7d577253-3ef0-4a0a-bb7f-8335c2596e70',
     collection: "leads",
     entity: {
         subject: "Test update",
@@ -361,7 +366,7 @@ dynamicsWebApi.upsert(leadId, "leads", lead).then(function (id) {
 var leadId = '7d577253-3ef0-4a0a-bb7f-8335c2596e70';
 
 var request = {
-    id: leadId,
+    key: leadId,
     collection: "leads",
     returnRepresentation: true,
     select: ["fullname"],
@@ -406,7 +411,7 @@ dynamicsWebApi.deleteRecord(leadId, "leads").then(function () {
 ```js
 //delete with optimistic concurrency
 var request = {
-    id: recordId,
+    key: recordId,
     collection: "leads",
     ifmatch: 'W/"470867"'
 }
@@ -459,7 +464,7 @@ dynamicsWebApi.retrieve(leadid, "leads", ["fullname", "subject"]).then(function 
 
 ```js
 var request = {
-    id: '7d577253-3ef0-4a0a-bb7f-8335c2596e70',
+    key: '7d577253-3ef0-4a0a-bb7f-8335c2596e70',
     collection: "leads",
     select: ["fullname", "subject"],
 
@@ -516,7 +521,7 @@ In advanced request you have a choice to specify a `request.navigationProperty` 
 
 ```js
 var request = {
-    id: recordId,
+    key: recordId,
     collection: "new_tests",
     navigationProperty: "new_ParentLead", //use request.navigationProperty
     select: ["fullname", "subject"]
@@ -525,7 +530,7 @@ var request = {
 //or
 
 request = {
-    id: recordId,
+    key: recordId,
     collection: "new_tests",
     select: ["/new_ParentLead", "fullname", "subject"]    //inline with prefix "/"
 }
@@ -903,7 +908,7 @@ OData Annotation | Property Suffix
 `@Microsoft.Dynamics.CRM.lookuplogicalname` | `_LogicalName`
 `@Microsoft.Dynamics.CRM.associatednavigationproperty` | `_NavigationProperty`
 
-## Alternate Key
+## Using Alternate Keys
 Starting from version 1.3.4, you can use alternate keys to Update, Upsert, Retrieve and Delete records. [More Info](https://msdn.microsoft.com/en-us/library/mt607871.aspx#Retrieve%20using%20an%20alternate%20key)
 
 ### Basic usage
@@ -930,8 +935,6 @@ Please note, that `id` field is not removed from the library, so all your existi
 ```js
 var request = {
     key: "alternateKey='keyValue'",
-	//key can be used as a primary key (id)
-	//key: '00000000-0000-0000-0000-000000000001',
     collection: 'leads',
     select: ['fullname', 'subject']
 };
@@ -972,11 +975,10 @@ the config option "formatted" will enable developers to retrieve all information
 - [X] Simplified names for "Formatted" properties. `Implemented in v.1.3.0`
 - [X] RUD operations using Alternate Keys. `Implemented in v.1.3.4`
 - [X] Duplicate Detection for Web API v.9. `Implemented in v.1.3.4`
+- [ ] Ability to use entity names instead of collection names.
 - [ ] Batch requests.
 - [ ] Web API Authentication for On-Premise instances.
 - [ ] Intellisense for request objects.
-- [ ] Use entity names instead of collection names. I have not done an investigation about it but if you, by any chance, know how to do that, 
-I will be very grateful for an advice! Quick guess, does it work like in English language?
 
 Many more features to come!
 

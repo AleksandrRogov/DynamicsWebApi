@@ -352,143 +352,6 @@ String.prototype.startsWith = function (searchString, position) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var DWA = __webpack_require__(0);
-//var RequestConverter = require('../utilities/RequestConverter');
-
-//https://stackoverflow.com/a/8809472
-function generateUUID() { // Public Domain/MIT
-    var d = new Date().getTime();
-    if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
-        d += performance.now(); //use high-precision timer if available
-    }
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        var r = (d + Math.random() * 16) % 16 | 0;
-        d = Math.floor(d / 16);
-        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-    });
-}
-
-function setStandardHeaders(additionalHeaders) {
-    additionalHeaders["Accept"] = "application/json";
-    additionalHeaders["OData-MaxVersion"] = "4.0";
-    additionalHeaders["OData-Version"] = "4.0";
-    additionalHeaders['Content-Type'] = 'application/json; charset=utf-8';
-
-    return additionalHeaders;
-}
-
-function stringifyData(data, config) {
-    var stringifiedData;
-    if (data) {
-        stringifiedData = JSON.stringify(data, function (key, value) {
-            /// <param name="key" type="String">Description</param>
-            if (key.endsWith("@odata.bind")) {
-                if (typeof value === "string") {
-                    //remove brackets in guid
-                    if (/\(\{[\w\d-]+\}\)/g.test(value)) {
-                        value = value.replace(/(.+)\(\{([\w\d-]+)\}\)/g, '$1($2)');
-                    }
-                    //add full web api url if it's not set
-                    if (!value.startsWith(config.webApiUrl)) {
-                        value = config.webApiUrl + value.replace(/^\\/, '');
-                    }
-                }
-            }
-
-            return value;
-        });
-
-        stringifiedData = stringifiedData.replace(/[\u007F-\uFFFF]/g, function (chr) {
-            return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substr(-4)
-        });
-    }
-
-    return stringifiedData;
-}
-
-/**
- * Sends a request to given URL with given parameters
- *
- * @param {string} method - Method of the request.
- * @param {string} path - Request path.
- * @param {Function} successCallback - A callback called on success of the request.
- * @param {Function} errorCallback - A callback called when a request failed.
- * @param {Object} config - DynamicsWebApi config.
- * @param {Object} [data] - Data to send in the request.
- * @param {Object} [additionalHeaders] - Object with additional headers. IMPORTANT! This object does not contain default headers needed for every request.
- * @param {boolean} [isAsync] - Indicates whether the request should be made synchronously or asynchronously.
- * @returns {Promise}
- */
-module.exports = function sendRequest(method, path, config, data, additionalHeaders, successCallback, errorCallback, isAsync) {
-
-    if (!additionalHeaders) {
-        additionalHeaders = {};
-    }
-
-    additionalHeaders = setStandardHeaders(additionalHeaders);
-
-    //stringify passed data
-    var stringifiedData = stringifyData(data, config);
-
-    //if the URL contains more characters than max possible limit, convert the request to a batch request
-    if (path.length > 2000) {
-        var batchBoundary = 'dwa_batch_' + generateUUID();
-
-        var batchBody = [];
-        batchBody.push('--' + batchBoundary);
-        batchBody.push('Content-Type: application/http');
-        batchBody.push('Content-Transfer-Encoding: binary\n');
-        batchBody.push(method + ' ' + config.webApiUrl + path + ' HTTP/1.1');
-
-        for (var key in additionalHeaders) {
-            batchBody.push(key + ': ' + additionalHeaders[key]);
-            delete additionalHeaders[key];
-        }
-
-        batchBody.push('\n--' + batchBoundary + '--');
-
-        stringifiedData = batchBody.join('\n');
-
-        additionalHeaders = setStandardHeaders(additionalHeaders);
-        additionalHeaders['Content-Type'] = 'multipart/mixed;boundary=' + batchBoundary;
-        path = '$batch';
-        method = 'POST';
-    }
-
-    if (config.impersonate && !additionalHeaders['MSCRMCallerID']) {
-        additionalHeaders['MSCRMCallerID'] = config.impersonate;
-    }
-
-    var executeRequest;
-    if (typeof XMLHttpRequest !== 'undefined') {
-        executeRequest = __webpack_require__(10);
-    }
-
-
-    var sendInternalRequest = function (token) {
-        if (token) {
-            if (!additionalHeaders) {
-                additionalHeaders = {};
-            }
-            additionalHeaders['Authorization'] = 'Bearer ' + token.accessToken;
-        }
-
-        executeRequest(method, config.webApiUrl + path, stringifiedData, additionalHeaders, successCallback, errorCallback, isAsync);
-    };
-
-    //call a token refresh callback only if it is set and there is no "Authorization" header set yet
-    if (config.onTokenRefresh && (!additionalHeaders || (additionalHeaders && !additionalHeaders['Authorization']))) {
-        config.onTokenRefresh(sendInternalRequest);
-    }
-    else {
-        sendInternalRequest();
-    }
-};
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var DWA = __webpack_require__(0);
 var ErrorHelper = __webpack_require__(1);
 var buildPreferHeader = __webpack_require__(12);
 
@@ -503,6 +366,7 @@ var buildPreferHeader = __webpack_require__(12);
  * @typedef {Object} ConvertedRequest
  * @property {string} url URL (including Query String)
  * @property {Object} headers Heades object (always an Object; can be empty: {})
+ * @property {boolean} async
  */
 
 /**
@@ -612,6 +476,14 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
             headers['MSCRM.SuppressDuplicateDetection'] = 'false';
         }
 
+        if (request.entity) {
+            ErrorHelper.parameterCheck(request.entity, 'DynamicsWebApi.' + functionName, 'request.entity')
+        }
+
+        if (request.data) {
+            ErrorHelper.parameterCheck(request.data, 'DynamicsWebApi.' + functionName, 'request.data')
+        }
+
         if (request.expand && request.expand.length) {
             ErrorHelper.stringOrArrayParameterCheck(request.expand, 'DynamicsWebApi.' + functionName, "request.expand");
             if (typeof request.expand === 'string') {
@@ -640,17 +512,6 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
 }
 
 /**
- * @param {string} collectionName - name of the collection to check
- */
-function getCollectionName(collectionName) {
-    var exceptions = ['EntityDefinitions'];
-
-    return exceptions.indexOf(collectionName) > -1
-        ? collectionName
-        : collectionName.toLowerCase();
-}
-
-/**
  * Converts a request object to URL link
  *
  * @param {Object} request - Request object
@@ -659,32 +520,50 @@ function getCollectionName(collectionName) {
  * @returns {ConvertedRequest}
  */
 function convertRequest(request, functionName, config) {
+    var url = '';
+    var result;
+    if (!request.url) {
+        if (!request._unboundRequest && !request.collection) {
+            ErrorHelper.parameterCheck(request.collection, 'DynamicsWebApi.' + functionName, "request.collection");
+        }
+        if (request.collection) {
+            ErrorHelper.stringParameterCheck(request.collection, 'DynamicsWebApi.' + functionName, "request.collection");
+            url = request.collection;
 
-    if (!request.collection) {
-        ErrorHelper.parameterCheck(request.collection, 'DynamicsWebApi.' + functionName, "request.collection");
+            //add alternate key feature
+            if (request.key) {
+                request.key = ErrorHelper.keyParameterCheck(request.key, 'DynamicsWebApi.' + functionName, "request.key");
+            }
+            else if (request.id) {
+                request.key = ErrorHelper.guidParameterCheck(request.id, 'DynamicsWebApi.' + functionName, "request.id");
+            }
+
+            if (request.key) {
+                url += "(" + request.key + ")";
+            }
+        }
+
+        if (request._additionalUrl) {
+            if (url) {
+                url += '/';
+            }
+            url += request._additionalUrl;
+        }
+
+        result = convertRequestOptions(request, functionName, url, '&', config);
+        if (request.fetchXml) {
+            ErrorHelper.stringParameterCheck(request.fetchXml, 'DynamicsWebApi.' + functionName, "request.fetchXml");
+            result.url += "?fetchXml=" + encodeURIComponent(request.fetchXml);
+        }
+        else
+            if (result.query) {
+                result.url += "?" + encodeURI(result.query);
+            }
     }
     else {
-        ErrorHelper.stringParameterCheck(request.collection, 'DynamicsWebApi.' + functionName, "request.collection");
-    }
-
-    var url = getCollectionName(request.collection);
-
-    //add alternate key feature
-    if (request.key) {
-        request.key = ErrorHelper.keyParameterCheck(request.key, 'DynamicsWebApi.' + functionName, "request.key");
-    }
-    else if (request.id) {
-        request.key = ErrorHelper.guidParameterCheck(request.id, 'DynamicsWebApi.' + functionName, "request.id");
-    }
-
-    if (request.key) {
-        url += "(" + request.key + ")";
-    }
-
-    var result = convertRequestOptions(request, functionName, url, '&', config);
-
-    if (result.query) {
-        result.url += "?" + encodeURI(result.query);
+        ErrorHelper.stringParameterCheck(request.url, 'DynamicsWebApi.' + functionName, "request.url");
+        url = request.url.replace(config.webApiUrl, '');
+        result = convertRequestOptions(request, functionName, url, '&', config);
     }
 
     if (request.hasOwnProperty('async') && request.async != null) {
@@ -706,8 +585,72 @@ var RequestConverter = {
 module.exports = RequestConverter;
 
 /***/ }),
-/* 5 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
+
+function isNull (value) {
+    return typeof value === "undefined" || typeof value === "unknown" || value == null;
+};
+
+//https://stackoverflow.com/a/8809472
+function generateUUID() { // Public Domain/MIT
+    var d = new Date().getTime();
+    if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
+        d += performance.now(); //use high-precision timer if available
+    }
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        var r = (d + Math.random() * 16) % 16 | 0;
+        d = Math.floor(d / 16);
+        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+};
+
+function getXrmContext() {
+    if (typeof GetGlobalContext != 'undefined') {
+        return GetGlobalContext();
+    }
+    else {
+        if (typeof Xrm != 'undefined') {
+            //d365 v.9.0
+            if ((!isNull(Xrm.Utility) && !isNull(Xrm.Utility.getGlobalContext))) {
+                return Xrm.Utility.getGlobalContext();
+            }
+            else if (!isNull(Xrm.Page) && !isNull(Xrm.Page.context)) {
+                return Xrm.Page.context;
+            }
+        }
+    }
+
+    throw new Error('Xrm Context is not available. In most cases, it can be resolved by adding a reference to a ClientGlobalContext.js.aspx. Please refer to MSDN documentation for more details.');
+};
+
+function getClientUrl() {
+    var context = getXrmContext();
+
+    if (context) {
+        var clientUrl = context.getClientUrl();
+
+        if (clientUrl.match(/\/$/)) {
+            clientUrl = clientUrl.substring(0, clientUrl.length - 1);
+        }
+        return clientUrl;
+    }
+
+    return '';
+};
+
+function initWebApiUrl(version) {
+    return getClientUrl() + '/api/data/v' + version + '/';
+};
+
+function getXrmInternal() {
+    //todo: Xrm.Internal namespace is not supported
+    if (typeof Xrm !== 'undefined') {
+        return Xrm.Internal;
+    }
+
+    return null;
+};
 
 var Utility = {
     /**
@@ -733,20 +676,239 @@ var Utility = {
      * @param {Object} responseData - Response object
      * @returns {ReferenceObject}
      */
-    convertToReferenceObject: __webpack_require__(13)
+    convertToReferenceObject: __webpack_require__(13),
+
+    /**
+     * Checks whether the value is JS Null.
+     * @param {Object} value
+     * @returns {boolean}
+     */
+    isNull: isNull,
+
+    generateUUID: generateUUID,
+
+    getXrmContext: getXrmContext,
+
+    getXrmInternal: getXrmInternal,
+
+    getClientUrl: getClientUrl,
+
+    initWebApiUrl: initWebApiUrl
 }
 
 module.exports = Utility;
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var DWA = __webpack_require__(0);
+var Utility = __webpack_require__(4);
+var RequestConverter = __webpack_require__(3);
+
+function setStandardHeaders(additionalHeaders) {
+    additionalHeaders["Accept"] = "application/json";
+    additionalHeaders["OData-MaxVersion"] = "4.0";
+    additionalHeaders["OData-Version"] = "4.0";
+    additionalHeaders['Content-Type'] = 'application/json; charset=utf-8';
+
+    return additionalHeaders;
+}
+
+function stringifyData(data, config) {
+    var stringifiedData;
+    if (data) {
+        stringifiedData = JSON.stringify(data, function (key, value) {
+            /// <param name="key" type="String">Description</param>
+            if (key.endsWith("@odata.bind")) {
+                if (typeof value === "string") {
+                    //remove brackets in guid
+                    if (/\(\{[\w\d-]+\}\)/g.test(value)) {
+                        value = value.replace(/(.+)\(\{([\w\d-]+)\}\)/g, '$1($2)');
+                    }
+                    //add full web api url if it's not set
+                    if (!value.startsWith(config.webApiUrl)) {
+                        value = config.webApiUrl + value.replace(/^\\/, '');
+                    }
+                }
+            }
+
+            return value;
+        });
+
+        stringifiedData = stringifiedData.replace(/[\u007F-\uFFFF]/g, function (chr) {
+            return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substr(-4)
+        });
+    }
+
+    return stringifiedData;
+}
+
+/**
+ * Sends a request to given URL with given parameters
+ *
+ * @param {string} method - Method of the request.
+ * @param {string} path - Request path.
+ * @param {Function} successCallback - A callback called on success of the request.
+ * @param {Function} errorCallback - A callback called when a request failed.
+ * @param {Object} config - DynamicsWebApi config.
+ * @param {Object} [data] - Data to send in the request.
+ * @param {Object} [additionalHeaders] - Object with additional headers. IMPORTANT! This object does not contain default headers needed for every request.
+ * @param {boolean} [isAsync] - Indicates whether the request should be made synchronously or asynchronously.
+ * @returns {Promise}
+ */
+function sendRequest(method, path, config, data, additionalHeaders, successCallback, errorCallback, isAsync) {
+
+    if (!additionalHeaders) {
+        additionalHeaders = {};
+    }
+
+    additionalHeaders = setStandardHeaders(additionalHeaders);
+
+    //stringify passed data
+    var stringifiedData = stringifyData(data, config);
+
+    //if the URL contains more characters than max possible limit, convert the request to a batch request
+    if (path.length > 2000) {
+        var batchBoundary = 'dwa_batch_' + Utility.generateUUID();
+
+        var batchBody = [];
+        batchBody.push('--' + batchBoundary);
+        batchBody.push('Content-Type: application/http');
+        batchBody.push('Content-Transfer-Encoding: binary\n');
+        batchBody.push(method + ' ' + config.webApiUrl + path + ' HTTP/1.1');
+
+        for (var key in additionalHeaders) {
+            batchBody.push(key + ': ' + additionalHeaders[key]);
+            delete additionalHeaders[key];
+        }
+
+        batchBody.push('\n--' + batchBoundary + '--');
+
+        stringifiedData = batchBody.join('\n');
+
+        additionalHeaders = setStandardHeaders(additionalHeaders);
+        additionalHeaders['Content-Type'] = 'multipart/mixed;boundary=' + batchBoundary;
+        path = '$batch';
+        method = 'POST';
+    }
+
+    if (config.impersonate && !additionalHeaders['MSCRMCallerID']) {
+        additionalHeaders['MSCRMCallerID'] = config.impersonate;
+    }
+
+    var executeRequest;
+
+        executeRequest = __webpack_require__(10);
+
+
+    var sendInternalRequest = function (token) {
+        if (token) {
+            if (!additionalHeaders) {
+                additionalHeaders = {};
+            }
+            additionalHeaders['Authorization'] = 'Bearer ' + token.accessToken;
+        }
+
+        executeRequest(method, config.webApiUrl + path, stringifiedData, additionalHeaders, successCallback, errorCallback, isAsync);
+    };
+
+    //call a token refresh callback only if it is set and there is no "Authorization" header set yet
+    if (config.onTokenRefresh && (!additionalHeaders || (additionalHeaders && !additionalHeaders['Authorization']))) {
+        config.onTokenRefresh(sendInternalRequest);
+    }
+    else {
+        sendInternalRequest();
+    }
+};
+
+var _entityNames;
+
+function _getEntityNames(entityName, config, successCallback, errorCallback) {
+
+    var resolve = function (result) {
+        _entityNames = {};
+        for (var i = 0; i < result.length; i++) {
+            _entityNames[result[i].LogicalName] = result[i].LogicalCollectionName;
+        }
+
+        successCallback(_entityNames[entityName]);
+    };
+
+    var reject = function (error) {
+        errorCallback({ message: 'Cannot fetch EntityDefinitions. Error: ' + error.message });
+    };
+
+    var request = RequestConverter.convertRequest({
+        collection: 'EntityDefinitions',
+        select: ['LogicalCollectionName', 'LogicalName']
+    }, 'retrieveMultiple', config);
+
+    sendRequest('GET', request.url, config, null, request.headers, resolve, reject, request.async);
+}
+
+function _isEntityNameException(entityName) {
+    var exceptions = ['EntityDefinitions', '$metadata'];
+
+    return exceptions.indexOf(entityName) > -1;
+}
+
+function _getCollectionName(entityName, config, successCallback, errorCallback) {
+
+    if (_isEntityNameException(entityName) || Utility.isNull(entityName)) {
+        successCallback(entityName);
+        return;
+    }
+
+    entityName = entityName.toLowerCase();
+
+    if (!config.useEntityNames) {
+        successCallback(entityName);
+        return;
+    }
+
+    try {
+        var xrmInternal = Utility.getXrmInternal();
+        if (!Utility.isNull(xrmInternal)) {
+            successCallback(xrmInternal.getEntitySetName(entityName));
+        }
+        else {
+            if (Utility.isNull(_entityNames)) {
+                _getEntityNames(entityName, config, successCallback, errorCallback);
+            }
+            else {
+                successCallback(_entityNames[entityName]);
+            }
+        }
+    }
+    catch (error) {
+        errorCallback({ message: 'Unable to fetch Collection Names. Error: ' + error.message });
+    }
+};
+
+function makeRequest(method, request, functionName, config, resolve, reject) {
+    var successCallback = function (collectionName) {
+        request.collection = collectionName;
+        var result = RequestConverter.convertRequest(request, functionName, config);
+        sendRequest(method, result.url, config, request.data || request.entity, result.headers, resolve, reject, result.async);
+    }
+    _getCollectionName(request.collection, config, successCallback, reject);
+};
+
+module.exports = {
+    sendRequest: sendRequest,
+    makeRequest: makeRequest
+}
 
 /***/ }),
 /* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var DWA = __webpack_require__(0);
-var Utility = __webpack_require__(5);
-var RequestConverter = __webpack_require__(4);
+var Utility = __webpack_require__(4);
+var RequestConverter = __webpack_require__(3);
 var ErrorHelper = __webpack_require__(1);
-var sendRequest = __webpack_require__(3);
+var Request = __webpack_require__(5);
 
 //string es6 polyfill
 if (!String.prototype.endsWith || !String.prototype.startsWith) {
@@ -764,8 +926,9 @@ if (!String.prototype.endsWith || !String.prototype.startsWith) {
  * @property {Function} onTokenRefresh - A function that is called when a security token needs to be refreshed.
  * @property {string} includeAnnotations - Sets Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
  * @property {string} maxPageSize - Sets the odata.maxpagesize preference value to request the number of entities returned in the response.
- * @property {string} returnRepresentation - Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
- */
+ * @property {boolean} returnRepresentation - Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
+ * @property {boolean} useEntityNames - Indicates whether to use Entity Logical Names instead of Collection Logical Names
+*/
 
 /**
  * DynamicsWebApi - a Microsoft Dynamics CRM Web API helper library. Current version uses Promises instead of Callbacks.
@@ -788,41 +951,6 @@ function DynamicsWebApi(config) {
         config = _internalConfig;
     }
 
-    var _context = function () {
-
-        if (typeof GetGlobalContext != "undefined") {
-            return GetGlobalContext();
-        }
-        else {
-            if (typeof Xrm != "undefined") {
-                return Xrm.Page.context;
-            }
-            else {
-                throw new Error("Xrm Context is not available.");
-            }
-        }
-    };
-
-    var _getClientUrl = function () {
-
-        var context = _context();
-
-        if (context) {
-            var clientUrl = context.getClientUrl();
-
-            if (clientUrl.match(/\/$/)) {
-                clientUrl = clientUrl.substring(0, clientUrl.length - 1);
-            }
-            return clientUrl;
-        }
-
-        return "";
-    };
-
-    var _initUrl = function () {
-        return _getClientUrl() + "/api/data/v" + _internalConfig.webApiVersion + "/";
-    };
-
     /**
      * Sets the configuration parameters for DynamicsWebApi helper.
      *
@@ -839,7 +967,7 @@ function DynamicsWebApi(config) {
             ErrorHelper.stringParameterCheck(config.webApiUrl, "DynamicsWebApi.setConfig", "config.webApiUrl");
             _internalConfig.webApiUrl = config.webApiUrl;
         } else {
-            _internalConfig.webApiUrl = _initUrl();
+            _internalConfig.webApiUrl = Utility.initWebApiUrl(_internalConfig.webApiVersion);
         }
 
         if (config.impersonate) {
@@ -865,24 +993,27 @@ function DynamicsWebApi(config) {
             ErrorHelper.boolParameterCheck(config.returnRepresentation, "DynamicsWebApi.setConfig", "config.returnRepresentation");
             _internalConfig.returnRepresentation = config.returnRepresentation;
         }
+
+        if (config.useEntityNames) {
+            ErrorHelper.boolParameterCheck(config.useEntityNames, 'DynamicsWebApi.setConfig', 'config.useEntityNames');
+            _internalConfig.useEntityNames = config.useEntityNames;
+        }
     };
 
     this.setConfig(config);
 
     /**
-     * Sends a request to given URL with given parameters
+     * Makes a request to web api
      *
      * @param {string} method - Method of the request.
-     * @param {string} uri - Request URI.
-     * @param {Function} successCallback - A callback called on success of the request.
-     * @param {Function} errorCallback - A callback called when a request failed.
-     * @param {Object} [data] - Data to send in the request.
-     * @param {Object} [additionalHeaders] - Object with additional headers. IMPORTANT! This object does not contain default headers needed for every request.
-     * @param {boolean} [isAsync] - Indicates whether the request should be made synchronously or asynchronously.
+     * @param {Object} request - Request to Web Api
+     * @param {string} [functionName] - Indictes the name of the function that called make request.
+     * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
+     * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
      */
-    var _sendRequest = function (method, uri, data, additionalHeaders, successCallback, errorCallback, isAsync) {
-        sendRequest(method, uri, _internalConfig, data, additionalHeaders, successCallback, errorCallback, isAsync);
-    }
+    var _makeRequest = function (method, request, functionName, successCallback, errorCallback) {
+        Request.makeRequest(method, request, functionName, _internalConfig, successCallback, errorCallback);
+    };
 
     /**
      * Sends an asynchronous request to create a new record.
@@ -912,7 +1043,8 @@ function DynamicsWebApi(config) {
         var request = {
             collection: collection,
             select: select,
-            prefer: prefer
+            prefer: prefer,
+            entity: object
         };
 
         var result = RequestConverter.convertRequest(request, "create", _internalConfig);
@@ -930,7 +1062,7 @@ function DynamicsWebApi(config) {
             }
         }
 
-        _sendRequest("POST", result.url, object, result.headers, onSuccess, errorCallback, result.async);
+        _makeRequest("POST", request, 'create', onSuccess, errorCallback);
     };
 
     /**
@@ -942,15 +1074,12 @@ function DynamicsWebApi(config) {
      */
     this.updateRequest = function (request, successCallback, errorCallback) {
 
-        ErrorHelper.parameterCheck(request, "DynamicsWebApi.update", "request");
-        ErrorHelper.parameterCheck(request.entity, "DynamicsWebApi.update", "request.entity");
-        ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.update", "successCallback");
-        ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.update", "errorCallback");
-
-        var result = RequestConverter.convertRequest(request, "update", _internalConfig);
+        ErrorHelper.parameterCheck(request, 'DynamicsWebApi.update', 'request');
+        ErrorHelper.callbackParameterCheck(successCallback, 'DynamicsWebApi.update', 'successCallback');
+        ErrorHelper.callbackParameterCheck(errorCallback, 'DynamicsWebApi.update', 'errorCallback');
 
         if (request.ifmatch == null) {
-            result.headers['If-Match'] = '*'; //to prevent upsert
+            request.ifmatch = '*'; //to prevent upsert
         }
 
         var onSuccess = function (response) {
@@ -972,7 +1101,7 @@ function DynamicsWebApi(config) {
             }
         };
 
-        _sendRequest("PATCH", result.url, request.entity, result.headers, onSuccess, onError, result.async);
+        _makeRequest("PATCH", request, 'update', onSuccess, onError);
     }
 
     /**
@@ -989,7 +1118,7 @@ function DynamicsWebApi(config) {
     this.update = function (key, collection, object, successCallback, errorCallback, prefer, select) {
 
         ErrorHelper.stringParameterCheck(key, "DynamicsWebApi.update", "key");
-        key = ErrorHelper.keyParameterCheck(key, "DynamicsWebApi.update", "key")
+        key = ErrorHelper.keyParameterCheck(key, "DynamicsWebApi.update", "key");
         ErrorHelper.parameterCheck(object, "DynamicsWebApi.update", "object");
         ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.update", "collection");
         ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.update", "successCallback");
@@ -1050,10 +1179,9 @@ function DynamicsWebApi(config) {
             key: key,
             select: select,
             prefer: prefer,
-            navigationProperty: field
+            navigationProperty: field,
+            data: { value: fieldValue }
         };
-
-        var result = RequestConverter.convertRequest(request, "updateSingleProperty", _internalConfig);
 
         var onSuccess = function (response) {
             response.data
@@ -1061,7 +1189,7 @@ function DynamicsWebApi(config) {
                 : successCallback();
         };
 
-        _sendRequest("PUT", result.url, { value: fieldValue }, result.headers, onSuccess, errorCallback, result.async);
+        _makeRequest('PUT', request, 'updateSingleProperty', onSuccess, errorCallback);
     };
 
     /**
@@ -1076,8 +1204,6 @@ function DynamicsWebApi(config) {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.delete", "request")
         ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.delete", "successCallback");
         ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.delete", "errorCallback");
-
-        var result = RequestConverter.convertRequest(request, "delete", _internalConfig);
 
         var onSuccess = function () {
             successCallback(true);
@@ -1096,7 +1222,7 @@ function DynamicsWebApi(config) {
             }
         };
 
-        _sendRequest("DELETE", result.url, null, result.headers, onSuccess, onError, result.async);
+        _makeRequest('DELETE', request, 'delete', onSuccess, onError);
     }
 
     /**
@@ -1119,17 +1245,18 @@ function DynamicsWebApi(config) {
         if (propertyName != null)
             ErrorHelper.stringParameterCheck(propertyName, "DynamicsWebApi.delete", "propertyName");
 
-        var url = collection.toLowerCase() + "(" + key + ")";
-
-        if (propertyName != null)
-            url += "/" + propertyName;
-
         var onSuccess = function (xhr) {
             // Nothing is returned to the success function.
             successCallback();
         };
 
-        _sendRequest("DELETE", url, null, null, onSuccess, errorCallback, true);
+        var request = {
+            key: key,
+            collection: collection,
+            navigationProperty: propertyName
+        };
+
+        _makeRequest('DELETE', request, 'delete', onSuccess, errorCallback);
     };
 
     /**
@@ -1145,8 +1272,6 @@ function DynamicsWebApi(config) {
         ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.retrieve", "successCallback");
         ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.retrieve", "errorCallback");
 
-        var result = RequestConverter.convertRequest(request, "retrieve", _internalConfig);
-
         //copy locally
         var select = request.select;
         var onSuccess = function (response) {
@@ -1158,7 +1283,7 @@ function DynamicsWebApi(config) {
             }
         };
 
-        _sendRequest("GET", result.url, null, result.headers, onSuccess, errorCallback, result.async);
+        _makeRequest('GET', request, 'retrieve', onSuccess, errorCallback);
     }
 
     /**
@@ -1211,8 +1336,6 @@ function DynamicsWebApi(config) {
         ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.upsert", "successCallback");
         ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.upsert", "errorCallback");
 
-        var result = RequestConverter.convertRequest(request, "upsert", _internalConfig);
-
         //copy locally
         var ifnonematch = request.ifnonematch;
         var ifmatch = request.ifmatch;
@@ -1247,7 +1370,7 @@ function DynamicsWebApi(config) {
             }
         };
 
-        _sendRequest("PATCH", result.url, request.entity, result.headers, onSuccess, onError, result.async);
+        _makeRequest('PATCH', request, 'upsert', onSuccess, onError);
     }
 
     /**
@@ -1312,7 +1435,12 @@ function DynamicsWebApi(config) {
                 successCallback(response.data ? parseInt(response.data) : 0);
             };
 
-            _sendRequest("GET", collection.toLowerCase() + "/$count", null, null, onSuccess, errorCallback)
+            var request = {
+                collection: collection,
+                navigationProperty: '$count'
+            };
+
+            _makeRequest('GET', request, 'count', onSuccess, errorCallback)
         }
         else {
             return this.retrieveMultipleRequest({
@@ -1395,15 +1523,9 @@ function DynamicsWebApi(config) {
         ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.retrieveMultiple", "successCallback");
         ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.retrieveMultiple", "errorCallback");
 
-        if (nextPageLink && !request.collection) {
-            request.collection = "any";
-        }
-
-        var result = RequestConverter.convertRequest(request, "retrieveMultiple", _internalConfig);
-
         if (nextPageLink) {
-            ErrorHelper.stringParameterCheck(nextPageLink, "DynamicsWebApi.retrieveMultiple", "nextPageLink");
-            result.url = nextPageLink.replace(_internalConfig.webApiUrl, "");
+            ErrorHelper.stringParameterCheck(nextPageLink, 'DynamicsWebApi.retrieveMultiple', 'nextPageLink');
+            request.url = nextPageLink;
         }
 
         //copy locally
@@ -1417,7 +1539,7 @@ function DynamicsWebApi(config) {
             successCallback(response.data);
         };
 
-        _sendRequest("GET", result.url, null, result.headers, onSuccess, errorCallback, result.async);
+        _makeRequest('GET', request, 'retrieveMultiple', onSuccess, errorCallback);
     }
 
     this.retrieveMultipleRequest = retrieveMultipleRequest;
@@ -1470,9 +1592,7 @@ function DynamicsWebApi(config) {
         ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.executeFetchXml", "successCallback");
         ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.executeFetchXml", "errorCallback");
 
-        if (pageNumber == null) {
-            pageNumber = 1;
-        }
+        pageNumber = pageNumber || 1;
 
         ErrorHelper.numberParameterCheck(pageNumber, "DynamicsWebApi.executeFetchXml", "pageNumber");
         var replacementString = '$1 page="' + pageNumber + '"';
@@ -1485,23 +1605,14 @@ function DynamicsWebApi(config) {
         //add page number and paging cookie to fetch xml
         fetchXml = fetchXml.replace(/^(<fetch[\w\d\s'"=]+)/, replacementString);
 
-        if (includeAnnotations) {
-            ErrorHelper.stringParameterCheck(includeAnnotations, "DynamicsWebApi.executeFetchXml", "includeAnnotations");
-        }
-
-        if (impersonateUserId) {
-            impersonateUserId = ErrorHelper.guidParameterCheck(impersonateUserId, "DynamicsWebApi.executeFetchXml", "impersonateUserId");
-        }
-
         var request = {
             collection: collection,
             includeAnnotations: includeAnnotations,
-            impersonate: impersonateUserId
+            impersonate: impersonateUserId,
+            fetchXml: fetchXml,
+            impersonate: impersonateUserId,
+            includeAnnotations: includeAnnotations
         };
-
-        var result = RequestConverter.convertRequest(request, "executeFetchXml", _internalConfig);
-
-        var encodedFetchXml = encodeURIComponent(fetchXml);
 
         var onSuccess = function (response) {
             if (response.data['@' + DWA.Prefer.Annotations.FetchXmlPagingCookie] != null) {
@@ -1511,7 +1622,7 @@ function DynamicsWebApi(config) {
             successCallback(response.data);
         };
 
-        _sendRequest("GET", result.url + "?fetchXml=" + encodedFetchXml, null, result.headers, onSuccess, errorCallback, result.async);
+        _makeRequest('GET', request, 'executeFetchXml', onSuccess, errorCallback);
     }
 
     this.fetch = this.executeFetchXml = executeFetchXml;
@@ -1550,22 +1661,22 @@ function DynamicsWebApi(config) {
     /**
      * Associate for a collection-valued navigation property. (1:N or N:N)
      *
-     * @param {string} primaryCollection - Primary entity collection name.
-     * @param {string} primaryId - Primary entity record id.
+     * @param {string} collection - Primary entity collection name.
+     * @param {string} primaryKey - Primary entity record id.
      * @param {string} relationshipName - Relationship name.
      * @param {string} relatedCollection - Related colletion name.
-     * @param {string} relatedId - Related entity record id.
+     * @param {string} relatedKey - Related entity record id.
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
      * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
-    this.associate = function (primarycollection, primaryId, relationshipName, relatedcollection, relatedId, successCallback, errorCallback, impersonateUserId) {
+    this.associate = function (collection, primaryKey, relationshipName, relatedCollection, relatedKey, successCallback, errorCallback, impersonateUserId) {
 
-        ErrorHelper.stringParameterCheck(primarycollection, "DynamicsWebApi.associate", "primarycollection");
-        ErrorHelper.stringParameterCheck(relatedcollection, "DynamicsWebApi.associate", "relatedcollection");
+        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.associate", "collection");
+        ErrorHelper.stringParameterCheck(relatedCollection, "DynamicsWebApi.associate", "relatedCollection");
         ErrorHelper.stringParameterCheck(relationshipName, "DynamicsWebApi.associate", "relationshipName");
-        primaryId = ErrorHelper.guidParameterCheck(primaryId, "DynamicsWebApi.associate", "primaryId");
-        relatedId = ErrorHelper.guidParameterCheck(relatedId, "DynamicsWebApi.associate", "relatedId");
+        primaryKey = ErrorHelper.keyParameterCheck(primaryKey, "DynamicsWebApi.associate", "primaryKey");
+        relatedKey = ErrorHelper.keyParameterCheck(relatedKey, "DynamicsWebApi.associate", "relatedKey");
         ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.associate", "successCallback");
         ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.associate", "errorCallback");
 
@@ -1573,37 +1684,34 @@ function DynamicsWebApi(config) {
             successCallback();
         };
 
-        var header = {};
+        var request = {
+            _additionalUrl: relationshipName + '/$ref',
+            collection: collection,
+            key: primaryKey,
+            impersonate: impersonateUserId,
+            data: { "@odata.id": _internalConfig.webApiUrl + relatedCollection + "(" + relatedKey + ")" }
+        };
 
-        if (impersonateUserId != null) {
-            impersonateUserId = ErrorHelper.guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
-            header["MSCRMCallerID"] = impersonateUserId;
-        }
-
-        var object = { "@odata.id": _internalConfig.webApiUrl + relatedcollection + "(" + relatedId + ")" };
-
-        _sendRequest("POST",
-            primarycollection + "(" + primaryId + ")/" + relationshipName + "/$ref", object, header,
-            onSuccess, errorCallback);
+        _makeRequest('POST', request, 'associate', onSuccess, errorCallback);
     }
 
     /**
      * Disassociate for a collection-valued navigation property.
      *
-     * @param {string} primaryCollection - Primary entity collection name.
-     * @param {string} primaryId - Primary entity record id.
+     * @param {string} collection - Primary entity collection name.
+     * @param {string} primaryKey - Primary entity record id.
      * @param {string} relationshipName - Relationship name.
-     * @param {string} relatedId - Related entity record id.
+     * @param {string} relatedKey - Related entity record id.
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
      * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
-    this.disassociate = function (primarycollection, primaryId, relationshipName, relatedId, successCallback, errorCallback, impersonateUserId) {
+    this.disassociate = function (collection, primaryKey, relationshipName, relatedKey, successCallback, errorCallback, impersonateUserId) {
 
-        ErrorHelper.stringParameterCheck(primarycollection, "DynamicsWebApi.disassociate", "primarycollection");
+        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.disassociate", "collection");
         ErrorHelper.stringParameterCheck(relationshipName, "DynamicsWebApi.disassociate", "relationshipName");
-        primaryId = ErrorHelper.guidParameterCheck(primaryId, "DynamicsWebApi.disassociate", "primaryId");
-        relatedId = ErrorHelper.guidParameterCheck(relatedId, "DynamicsWebApi.disassociate", "relatedId");
+        primaryKey = ErrorHelper.keyParameterCheck(primaryKey, "DynamicsWebApi.disassociate", "primaryKey");
+        relatedKey = ErrorHelper.keyParameterCheck(relatedKey, "DynamicsWebApi.disassociate", "relatedKey");
         ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.disassociate", "successCallback");
         ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.disassociate", "errorCallback");
 
@@ -1611,36 +1719,35 @@ function DynamicsWebApi(config) {
             successCallback();
         };
 
-        var header = {};
+        var request = {
+            _additionalUrl: relationshipName + '(' + relatedKey + ')/$ref',
+            collection: collection,
+            key: primaryKey,
+            impersonate: impersonateUserId,
+        };
 
-        if (impersonateUserId != null) {
-            impersonateUserId = ErrorHelper.guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
-            header["MSCRMCallerID"] = impersonateUserId;
-        }
-
-        _sendRequest("DELETE", primarycollection + "(" + primaryId + ")/" + relationshipName + "(" + relatedId + ")/$ref", null, header,
-            onSuccess, errorCallback);
+        _makeRequest('DELETE', request, 'disassociate', onSuccess, errorCallback);
     }
 
     /**
      * Associate for a single-valued navigation property. (1:N)
      *
      * @param {string} collection - Entity collection name that contains an attribute.
-     * @param {string} id - Entity record Id that contains an attribute.
+     * @param {string} key - Entity record Id that contains an attribute.
      * @param {string} singleValuedNavigationPropertyName - Single-valued navigation property name (usually it's a Schema Name of the lookup attribute).
      * @param {string} relatedCollection - Related collection name that the lookup (attribute) points to.
-     * @param {string} relatedId - Related entity record id that needs to be associated.
+     * @param {string} relatedKey - Related entity record id that needs to be associated.
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
      * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
-    this.associateSingleValued = function (collection, id, singleValuedNavigationPropertyName, relatedcollection, relatedId, successCallback, errorCallback, impersonateUserId) {
+    this.associateSingleValued = function (collection, key, singleValuedNavigationPropertyName, relatedCollection, relatedKey, successCallback, errorCallback, impersonateUserId) {
 
         ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.associateSingleValued", "collection");
-        id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.associateSingleValued", "id");
-        relatedId = ErrorHelper.guidParameterCheck(relatedId, "DynamicsWebApi.associateSingleValued", "relatedId");
+        key = ErrorHelper.keyParameterCheck(key, "DynamicsWebApi.associateSingleValued", "key");
+        relatedKey = ErrorHelper.keyParameterCheck(relatedKey, "DynamicsWebApi.associateSingleValued", "relatedKey");
         ErrorHelper.stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.associateSingleValued", "singleValuedNavigationPropertyName");
-        ErrorHelper.stringParameterCheck(relatedcollection, "DynamicsWebApi.associateSingleValued", "relatedcollection");
+        ErrorHelper.stringParameterCheck(relatedCollection, "DynamicsWebApi.associateSingleValued", "relatedCollection");
         ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.associateSingleValued", "successCallback");
         ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.associateSingleValued", "errorCallback");
 
@@ -1648,51 +1755,47 @@ function DynamicsWebApi(config) {
             successCallback();
         };
 
-        var header = {};
+        var request = {
+            _additionalUrl: singleValuedNavigationPropertyName + '/$ref',
+            collection: collection,
+            key: key,
+            impersonate: impersonateUserId,
+            data: { "@odata.id": _internalConfig.webApiUrl + relatedCollection + "(" + relatedKey + ")" }
+        };
 
-        if (impersonateUserId != null) {
-            impersonateUserId = ErrorHelper.guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
-            header["MSCRMCallerID"] = impersonateUserId;
-        }
-
-        var object = { "@odata.id": _internalConfig.webApiUrl + relatedcollection + "(" + relatedId + ")" };
-
-        _sendRequest("PUT",
-            collection + "(" + id + ")/" + singleValuedNavigationPropertyName + "/$ref", object, header,
-            onSuccess, errorCallback);
+        _makeRequest('PUT', request, 'associateSingleValued', onSuccess, errorCallback);
     }
 
     /**
      * Removes a reference to an entity for a single-valued navigation property. (1:N)
      *
      * @param {string} collection - Entity collection name that contains an attribute.
-     * @param {string} id - Entity record Id that contains an attribute.
+     * @param {string} key - Entity record Id that contains an attribute.
      * @param {string} singleValuedNavigationPropertyName - Single-valued navigation property name (usually it's a Schema Name of the lookup attribute).
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
      * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
-    this.disassociateSingleValued = function (collection, id, singleValuedNavigationPropertyName, successCallback, errorCallback, impersonateUserId) {
+    this.disassociateSingleValued = function (collection, key, singleValuedNavigationPropertyName, successCallback, errorCallback, impersonateUserId) {
 
         ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.disassociateSingleValued", "collection");
-        id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.disassociateSingleValued", "id");
+        key = ErrorHelper.keyParameterCheck(key, "DynamicsWebApi.disassociateSingleValued", "key");
         ErrorHelper.stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.disassociateSingleValued", "singleValuedNavigationPropertyName");
         ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.disassociateSingleValued", "successCallback");
         ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.disassociateSingleValued", "errorCallback");
 
-        var header = {};
-
-        if (impersonateUserId != null) {
-            impersonateUserId = ErrorHelper.guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
-            header["MSCRMCallerID"] = impersonateUserId;
-        }
+        var request = {
+            _additionalUrl: singleValuedNavigationPropertyName + "/$ref",
+            key: key,
+            collection: collection,
+            impersonate: impersonateUserId,
+        };
 
         var onSuccess = function () {
             successCallback();
         };
 
-        _sendRequest("DELETE", collection + "(" + id + ")/" + singleValuedNavigationPropertyName + "/$ref", null, header,
-            onSuccess, errorCallback);
+        _makeRequest('DELETE', request, 'disassociateSingleValued', onSuccess, errorCallback);
     }
 
     /**
@@ -1705,7 +1808,7 @@ function DynamicsWebApi(config) {
      * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
     this.executeUnboundFunction = function (functionName, successCallback, errorCallback, parameters, impersonateUserId) {
-        return _executeFunction(functionName, parameters, null, null, successCallback, errorCallback, impersonateUserId);
+        return _executeFunction(functionName, parameters, null, null, successCallback, errorCallback, impersonateUserId, true);
     }
 
     /**
@@ -1734,25 +1837,19 @@ function DynamicsWebApi(config) {
      * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
      * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
-    var _executeFunction = function (functionName, parameters, collection, id, successCallback, errorCallback, impersonateUserId) {
+    var _executeFunction = function (functionName, parameters, collection, id, successCallback, errorCallback, impersonateUserId, isUnbound) {
 
         ErrorHelper.stringParameterCheck(functionName, "DynamicsWebApi.executeFunction", "functionName");
         ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.executeFunction", "successCallback");
         ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.executeFunction", "errorCallback");
-        var url = functionName + Utility.buildFunctionParameters(parameters);
 
-        if (collection != null) {
-            ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.executeFunction", "collection");
-            id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.executeFunction", "id");
-
-            url = collection + "(" + id + ")/" + url;
-        }
-
-        var header = {};
-
-        if (impersonateUserId) {
-            header["MSCRMCallerID"] = ErrorHelper.guidParameterCheck(impersonateUserId, "DynamicsWebApi.executionFunction", "impersonateUserId");
-        }
+        var request = {
+            _additionalUrl: functionName + Utility.buildFunctionParameters(parameters),
+            _unboundRequest: isUnbound,
+            key: id,
+            collection: collection,
+            impersonate: impersonateUserId,
+        };
 
         var onSuccess = function (response) {
             response.data
@@ -1760,7 +1857,7 @@ function DynamicsWebApi(config) {
                 : successCallback();
         };
 
-        _sendRequest("GET", url, null, header, onSuccess, errorCallback);
+        _makeRequest('GET', request, 'executeFunction', onSuccess, errorCallback);
     }
 
     /**
@@ -1774,7 +1871,7 @@ function DynamicsWebApi(config) {
      */
     this.executeUnboundAction = function (actionName, requestObject, successCallback, errorCallback, impersonateUserId) {
 
-        return _executeAction(actionName, requestObject, null, null, successCallback, errorCallback, impersonateUserId);
+        return _executeAction(actionName, requestObject, null, null, successCallback, errorCallback, impersonateUserId, true);
     }
 
     /**
@@ -1803,26 +1900,20 @@ function DynamicsWebApi(config) {
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
      * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
-    var _executeAction = function (actionName, requestObject, collection, id, successCallback, errorCallback, impersonateUserId) {
+    var _executeAction = function (actionName, requestObject, collection, id, successCallback, errorCallback, impersonateUserId, isUnbound) {
 
         ErrorHelper.stringParameterCheck(actionName, "DynamicsWebApi.executeAction", "actionName");
         ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.executeAction", "successCallback");
         ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.executeAction", "errorCallback");
-        var url = actionName;
 
-        if (collection != null) {
-            ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.executeAction", "collection");
-            id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.executeAction", "id");
-
-            url = collection + "(" + id + ")/" + url;
-        }
-
-        var header = {};
-
-        if (impersonateUserId != null) {
-            impersonateUserId = ErrorHelper.guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
-            header["MSCRMCallerID"] = impersonateUserId;
-        }
+        var request = {
+            _additionalUrl: actionName,
+            _unboundRequest: isUnbound,
+            collection: collection,
+            key: id,
+            impersonate: impersonateUserId,
+            data: requestObject
+        };
 
         var onSuccess = function (response) {
             response.data
@@ -1830,7 +1921,7 @@ function DynamicsWebApi(config) {
                 : successCallback();
         };
 
-        _sendRequest("POST", url, requestObject, header, onSuccess, errorCallback);
+        _makeRequest('POST', request, 'executeAction', onSuccess, errorCallback);
     }
 
     /**
@@ -1867,9 +1958,9 @@ module.exports = function dateReviver(key, value) {
     ///</param>
     var a;
     if (typeof value === 'string') {
-        a = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.exec(value);
+        a = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:Z|[-+]\d{2}:\d{2})$/.exec(value);
         if (a) {
-            return new Date(value);
+            return new Date(Date.UTC(+a[1], +a[2] - 1, +a[3], +a[4], +a[5], +a[6]));
         }
     }
     return value;

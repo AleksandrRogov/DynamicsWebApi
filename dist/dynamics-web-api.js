@@ -74,7 +74,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 6);
+/******/ 	return __webpack_require__(__webpack_require__.s = 5);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -351,8 +351,9 @@ String.prototype.startsWith = function (searchString, position) {
 /* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var DWA = __webpack_require__(0);
-//var RequestConverter = require('../utilities/RequestConverter');
+function isNull (value) {
+    return typeof value === "undefined" || typeof value === "unknown" || value == null;
+};
 
 //https://stackoverflow.com/a/8809472
 function generateUUID() { // Public Domain/MIT
@@ -365,7 +366,108 @@ function generateUUID() { // Public Domain/MIT
         d = Math.floor(d / 16);
         return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
     });
+};
+
+function getXrmContext() {
+    if (typeof GetGlobalContext != 'undefined') {
+        return GetGlobalContext();
+    }
+    else {
+        if (typeof Xrm != 'undefined') {
+            //d365 v.9.0
+            if ((!isNull(Xrm.Utility) && !isNull(Xrm.Utility.getGlobalContext))) {
+                return Xrm.Utility.getGlobalContext();
+            }
+            else if (!isNull(Xrm.Page) && !isNull(Xrm.Page.context)) {
+                return Xrm.Page.context;
+            }
+        }
+    }
+
+    throw new Error('Xrm Context is not available. In most cases, it can be resolved by adding a reference to a ClientGlobalContext.js.aspx. Please refer to MSDN documentation for more details.');
+};
+
+function getClientUrl() {
+    var context = getXrmContext();
+
+    if (context) {
+        var clientUrl = context.getClientUrl();
+
+        if (clientUrl.match(/\/$/)) {
+            clientUrl = clientUrl.substring(0, clientUrl.length - 1);
+        }
+        return clientUrl;
+    }
+
+    return '';
+};
+
+function initWebApiUrl(version) {
+    return getClientUrl() + '/api/data/v' + version + '/';
+};
+
+function getXrmInternal() {
+    //todo: Xrm.Internal namespace is not supported
+    if (typeof Xrm !== 'undefined') {
+        return Xrm.Internal;
+    }
+
+    return null;
+};
+
+var Utility = {
+    /**
+     * Builds parametes for a funciton. Returns '()' (if no parameters) or '([params])?[query]'
+     *
+     * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
+     * @returns {string}
+     */
+    buildFunctionParameters: __webpack_require__(11),
+
+    /**
+     * Parses a paging cookie returned in response
+     *
+     * @param {string} pageCookies - Page cookies returned in @Microsoft.Dynamics.CRM.fetchxmlpagingcookie.
+     * @param {number} currentPageNumber - A current page number. Fix empty paging-cookie for complex fetch xmls.
+     * @returns {{cookie: "", number: 0, next: 1}}
+     */
+    getFetchXmlPagingCookie: __webpack_require__(14),
+
+    /**
+     * Converts a response to a reference object
+     *
+     * @param {Object} responseData - Response object
+     * @returns {ReferenceObject}
+     */
+    convertToReferenceObject: __webpack_require__(13),
+
+    /**
+     * Checks whether the value is JS Null.
+     * @param {Object} value
+     * @returns {boolean}
+     */
+    isNull: isNull,
+
+    generateUUID: generateUUID,
+
+    getXrmContext: getXrmContext,
+
+    getXrmInternal: getXrmInternal,
+
+    getClientUrl: getClientUrl,
+
+    initWebApiUrl: initWebApiUrl
 }
+
+module.exports = Utility;
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var DWA = __webpack_require__(0);
+var Utility = __webpack_require__(3);
+var RequestConverter = __webpack_require__(10);
 
 function setStandardHeaders(additionalHeaders) {
     additionalHeaders["Accept"] = "application/json";
@@ -418,7 +520,7 @@ function stringifyData(data, config) {
  * @param {boolean} [isAsync] - Indicates whether the request should be made synchronously or asynchronously.
  * @returns {Promise}
  */
-module.exports = function sendRequest(method, path, config, data, additionalHeaders, successCallback, errorCallback, isAsync) {
+function sendRequest(method, path, config, data, additionalHeaders, successCallback, errorCallback, isAsync) {
 
     if (!additionalHeaders) {
         additionalHeaders = {};
@@ -431,7 +533,7 @@ module.exports = function sendRequest(method, path, config, data, additionalHead
 
     //if the URL contains more characters than max possible limit, convert the request to a batch request
     if (path.length > 2000) {
-        var batchBoundary = 'dwa_batch_' + generateUUID();
+        var batchBoundary = 'dwa_batch_' + Utility.generateUUID();
 
         var batchBody = [];
         batchBody.push('--' + batchBoundary);
@@ -459,9 +561,8 @@ module.exports = function sendRequest(method, path, config, data, additionalHead
     }
 
     var executeRequest;
-    if (typeof XMLHttpRequest !== 'undefined') {
-        executeRequest = __webpack_require__(10);
-    }
+
+        executeRequest = __webpack_require__(9);
 
 
     var sendInternalRequest = function (token) {
@@ -484,8 +585,1249 @@ module.exports = function sendRequest(method, path, config, data, additionalHead
     }
 };
 
+var _entityNames;
+
+function _getEntityNames(entityName, config, successCallback, errorCallback) {
+
+    var resolve = function (result) {
+        _entityNames = {};
+        for (var i = 0; i < result.length; i++) {
+            _entityNames[result[i].LogicalName] = result[i].LogicalCollectionName;
+        }
+
+        successCallback(_entityNames[entityName]);
+    };
+
+    var reject = function (error) {
+        errorCallback({ message: 'Cannot fetch EntityDefinitions. Error: ' + error.message });
+    };
+
+    var request = RequestConverter.convertRequest({
+        collection: 'EntityDefinitions',
+        select: ['LogicalCollectionName', 'LogicalName']
+    }, 'retrieveMultiple', config);
+
+    sendRequest('GET', request.url, config, null, request.headers, resolve, reject, request.async);
+}
+
+function _isEntityNameException(entityName) {
+    var exceptions = ['EntityDefinitions', '$metadata'];
+
+    return exceptions.indexOf(entityName) > -1;
+}
+
+function _getCollectionName(entityName, config, successCallback, errorCallback) {
+
+    if (_isEntityNameException(entityName) || Utility.isNull(entityName)) {
+        successCallback(entityName);
+        return;
+    }
+
+    entityName = entityName.toLowerCase();
+
+    if (!config.useEntityNames) {
+        successCallback(entityName);
+        return;
+    }
+
+    try {
+        var xrmInternal = Utility.getXrmInternal();
+        if (!Utility.isNull(xrmInternal)) {
+            successCallback(xrmInternal.getEntitySetName(entityName));
+        }
+        else {
+            if (Utility.isNull(_entityNames)) {
+                _getEntityNames(entityName, config, successCallback, errorCallback);
+            }
+            else {
+                successCallback(_entityNames[entityName]);
+            }
+        }
+    }
+    catch (error) {
+        errorCallback({ message: 'Unable to fetch Collection Names. Error: ' + error.message });
+    }
+};
+
+function makeRequest(method, request, functionName, config, resolve, reject) {
+    var successCallback = function (collectionName) {
+        request.collection = collectionName;
+        var result = RequestConverter.convertRequest(request, functionName, config);
+        sendRequest(method, result.url, config, request.data || request.entity, result.headers, resolve, reject, result.async);
+    }
+    _getCollectionName(request.collection, config, successCallback, reject);
+};
+
+module.exports = {
+    sendRequest: sendRequest,
+    makeRequest: makeRequest
+}
+
 /***/ }),
-/* 4 */
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var DWA = __webpack_require__(0);
+var Utility = __webpack_require__(3);
+var ErrorHelper = __webpack_require__(1);
+var Request = __webpack_require__(4);
+
+//string es6 polyfill
+if (!String.prototype.endsWith || !String.prototype.startsWith) {
+    __webpack_require__(2);
+}
+
+
+
+/**
+ * Configuration object for DynamicsWebApi
+ * @typedef {object} DWAConfig
+ * @property {string} webApiUrl - A String representing a URL to Web API (webApiVersion not required if webApiUrl specified) [not used inside of CRM]
+ * @property {string} webApiVersion - The version of Web API to use, for example: "8.1"
+ * @property {string} impersonate - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+ * @property {Function} onTokenRefresh - A function that is called when a security token needs to be refreshed.
+ * @property {string} includeAnnotations - Sets Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
+ * @property {string} maxPageSize - Sets the odata.maxpagesize preference value to request the number of entities returned in the response.
+ * @property {string} returnRepresentation - Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
+ */
+
+/**
+ * Dynamics Web Api Request
+ * @typedef {Object} DWARequest
+ * @property {string} collection
+ * @property {string} id
+ * @property {Array} select
+ * @property {Array} expand
+ * @property {string} filter
+ * @property {number} maxPageSize
+ * @property {boolean} count
+ * @property {number} top
+ * @property {Array} orderBy
+ * @property {string} includeAnnotations
+ * @property {string} ifmatch
+ * @property {string} ifnonematch
+ * @property {boolean} returnRepresentation
+ * @property {Object} entity
+ * @property {string} impersonate: "",
+ * @property {string} navigationProperty: "",
+ * @property {string} savedQuery: "",
+ * @property {string} userQuery: ""
+ */
+
+/**
+ * DynamicsWebApi - a Microsoft Dynamics CRM Web API helper library. Current version uses Promises instead of Callbacks.
+ * 
+ * @param {DWAConfig} [config] - configuration object
+ */
+function DynamicsWebApi(config) {
+
+    var _internalConfig = {
+        webApiVersion: "8.0",
+        webApiUrl: null,
+        impersonate: null,
+        onTokenRefresh: null,
+        includeAnnotations: null,
+        maxPageSize: null,
+        returnRepresentation: null
+    };
+
+    if (!config) {
+        config = _internalConfig;
+    }
+
+    /**
+     * Sets the configuration parameters for DynamicsWebApi helper.
+     *
+     * @param {DWAConfig} config - configuration object
+     */
+    this.setConfig = function (config) {
+
+        if (config.webApiVersion) {
+            ErrorHelper.stringParameterCheck(config.webApiVersion, "DynamicsWebApi.setConfig", "config.webApiVersion");
+            _internalConfig.webApiVersion = config.webApiVersion;
+        }
+
+        if (config.webApiUrl) {
+            ErrorHelper.stringParameterCheck(config.webApiUrl, "DynamicsWebApi.setConfig", "config.webApiUrl");
+            _internalConfig.webApiUrl = config.webApiUrl;
+        } else {
+            _internalConfig.webApiUrl = Utility.initWebApiUrl(_internalConfig.webApiVersion);
+        }
+
+        if (config.impersonate) {
+            _internalConfig.impersonate = ErrorHelper.guidParameterCheck(config.impersonate, "DynamicsWebApi.setConfig", "config.impersonate");
+        }
+
+        if (config.onTokenRefresh) {
+            ErrorHelper.callbackParameterCheck(config.onTokenRefresh, "DynamicsWebApi.setConfig", "config.onTokenRefresh");
+            _internalConfig.onTokenRefresh = config.onTokenRefresh;
+        }
+
+        if (config.includeAnnotations) {
+            ErrorHelper.stringParameterCheck(config.includeAnnotations, "DynamicsWebApi.setConfig", "config.includeAnnotations");
+            _internalConfig.includeAnnotations = config.includeAnnotations;
+        }
+
+        if (config.maxPageSize) {
+            ErrorHelper.numberParameterCheck(config.maxPageSize, "DynamicsWebApi.setConfig", "config.maxPageSize");
+            _internalConfig.maxPageSize = config.maxPageSize;
+        }
+
+        if (config.returnRepresentation) {
+            ErrorHelper.boolParameterCheck(config.returnRepresentation, "DynamicsWebApi.setConfig", "config.returnRepresentation");
+            _internalConfig.returnRepresentation = config.returnRepresentation;
+        }
+
+        if (config.useEntityNames) {
+            ErrorHelper.boolParameterCheck(config.useEntityNames, 'DynamicsWebApi.setConfig', 'config.useEntityNames');
+            _internalConfig.useEntityNames = config.useEntityNames;
+        }
+    };
+
+    this.setConfig(config);
+
+    /**
+     * Makes a request to web api
+     *
+     * @param {string} method - Method of the request.
+     * @param {Object} request - Request to Web Api
+     * @param {string} [functionName] - Indictes the name of the function that called make request.
+     * @returns {Promise}
+     */
+    var _makeRequest = function (method, request, functionName) {
+        return new Promise(function (resolve, reject) {
+            Request.makeRequest(method, request, functionName, _internalConfig, resolve, reject);
+        });
+    };
+
+    /**
+     * Sends an asynchronous request to create a new record.
+     *
+     * @param {Object} object - A JavaScript object valid for create operations.
+     * @param {string} collection - The Name of the Entity Collection.
+     * @param {string|Array} [prefer] - Sets a Prefer header value. For example: ['retrun=representation', 'odata.include-annotations="*"']
+     * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
+     * @returns {Promise}
+     */
+    this.create = function (object, collection, prefer, select) {
+        ErrorHelper.parameterCheck(object, "DynamicsWebApi.create", "object");
+        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.create", "collection");
+
+        if (prefer) {
+            ErrorHelper.stringOrArrayParameterCheck(prefer, "DynamicsWebApi.create", "prefer");
+        }
+
+        if (select) {
+            ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.create", "select");
+        }
+
+        var request = {
+            collection: collection,
+            select: select,
+            prefer: prefer,
+            entity: object
+        };
+
+        return _makeRequest('POST', request, 'create')
+            .then(function (response) {
+                if (response.data) {
+                    return response.data;
+                }
+
+                var entityUrl = response.headers['OData-EntityId']
+                    ? response.headers['OData-EntityId']
+                    : response.headers['odata-entityid'];
+                var id = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(entityUrl)[0];
+                return id;
+            });
+    };
+
+    /**
+     * Sends an asynchronous request to retrieve a record.
+     *
+     * @param {Object} request - An object that represents all possible options for a current request.
+     * @returns {Promise}
+     */
+    this.retrieveRequest = function (request) {
+        ErrorHelper.parameterCheck(request, 'DynamicsWebApi.retrieve', 'request');
+
+        //copy locally
+        var select = request.select;
+        return _makeRequest('GET', request, 'retrieve').then(function (response) {
+            if (select != null && select.length == 1 && select[0].endsWith("/$ref") && response.data["@odata.id"] != null) {
+                return Utility.convertToReferenceObject(response.data);
+            }
+
+            return response.data;
+        });
+    };
+
+    /**
+     * Sends an asynchronous request to retrieve a record.
+     *
+     * @param {string} key - A String representing the GUID value or Aternate Key for the record to retrieve.
+     * @param {string} collection - The Name of the Entity Collection.
+     * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
+     * @param {string|Array} [expand] - A String or Array of Expand Objects representing the $expand Query Option value to control which related records need to be returned.
+     * @returns {Promise}
+     */
+    this.retrieve = function (key, collection, select, expand) {
+
+        ErrorHelper.stringParameterCheck(key, "DynamicsWebApi.retrieve", "key");
+        key = ErrorHelper.keyParameterCheck(key, "DynamicsWebApi.retrieve", "key")
+        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.retrieve", "collection");
+
+        if (select && select.length) {
+            ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.retrieve", "select");
+        }
+
+        if (expand && expand.length) {
+            ErrorHelper.stringOrArrayParameterCheck(expand, "DynamicsWebApi.retrieve", "expand");
+        }
+
+        var request = {
+            collection: collection,
+            key: key,
+            select: select,
+            expand: expand
+        };
+
+        return this.retrieveRequest(request);
+    };
+
+    /**
+     * Sends an asynchronous request to update a record.
+     *
+     * @param {Object} request - An object that represents all possible options for a current request.
+     * @returns {Promise}
+     */
+    this.updateRequest = function (request) {
+
+        ErrorHelper.parameterCheck(request, "DynamicsWebApi.update", "request");
+
+        if (request.ifmatch == null) {
+            request.ifmatch = '*'; //to prevent upsert
+        }
+
+        //copy locally
+        var ifmatch = request.ifmatch;
+        return _makeRequest('PATCH', request, 'update')
+            .then(function (response) {
+                if (response.data) {
+                    return response.data;
+                }
+
+                return true; //updated
+
+            }).catch(function (error) {
+                if (ifmatch && error.status == 412) {
+                    //precondition failed - not updated
+                    return false;
+                }
+                //rethrow error otherwise
+                throw error;
+            });
+    };
+
+    /**
+     * Sends an asynchronous request to update a record.
+     *
+     * @param {string} key - A String representing the GUID value or Alternate Key for the record to update.
+     * @param {string} collection - The Name of the Entity Collection.
+     * @param {Object} object - A JavaScript object valid for update operations.
+     * @param {string} [prefer] - If set to "return=representation" the function will return an updated object
+     * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
+     * @returns {Promise}
+     */
+    this.update = function (key, collection, object, prefer, select) {
+
+        ErrorHelper.stringParameterCheck(key, "DynamicsWebApi.update", "key");
+        key = ErrorHelper.keyParameterCheck(key, "DynamicsWebApi.update", "key")
+        ErrorHelper.parameterCheck(object, "DynamicsWebApi.update", "object");
+        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.update", "collection");
+
+        if (prefer) {
+            ErrorHelper.stringOrArrayParameterCheck(prefer, "DynamicsWebApi.update", "prefer");
+        }
+
+        if (select) {
+            ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.update", "select");
+        }
+
+        var request = {
+            collection: collection,
+            key: key,
+            select: select,
+            prefer: prefer,
+            entity: object
+        };
+
+        return this.updateRequest(request);
+    };
+
+    /**
+     * Sends an asynchronous request to update a single value in the record.
+     *
+     * @param {string} key - A String representing the GUID value or Alternate Key for the record to update.
+     * @param {string} collection - The Name of the Entity Collection.
+     * @param {Object} keyValuePair - keyValuePair object with a logical name of the field as a key and a value to update with. Example: {subject: "Update Record"}
+     * @param {string|Array} [prefer] - If set to "return=representation" the function will return an updated object
+     * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
+     * @returns {Promise}
+     */
+    this.updateSingleProperty = function (key, collection, keyValuePair, prefer, select) {
+
+        ErrorHelper.stringParameterCheck(key, "DynamicsWebApi.updateSingleProperty", "key");
+        key = ErrorHelper.keyParameterCheck(key, "DynamicsWebApi.updateSingleProperty", "key")
+        ErrorHelper.parameterCheck(keyValuePair, "DynamicsWebApi.updateSingleProperty", "keyValuePair");
+        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.updateSingleProperty", "collection");
+
+        var field = Object.keys(keyValuePair)[0];
+        var fieldValue = keyValuePair[field];
+
+        if (prefer) {
+            ErrorHelper.stringOrArrayParameterCheck(prefer, "DynamicsWebApi.updateSingleProperty", "prefer");
+        }
+
+        if (select) {
+            ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.updateSingleProperty", "select");
+        }
+
+        var request = {
+            collection: collection,
+            key: key,
+            select: select,
+            prefer: prefer,
+            navigationProperty: field,
+            data: { value: fieldValue }
+        };
+
+        return _makeRequest('PUT', request, 'updateSingleProperty')
+            .then(function (response) {
+                if (response.data) {
+                    return response.data;
+                }
+            });
+    };
+
+    /**
+     * Sends an asynchronous request to delete a record.
+     *
+     * @param {Object} request - An object that represents all possible options for a current request.
+     * @returns {Promise}
+     */
+    this.deleteRequest = function (request) {
+
+        ErrorHelper.parameterCheck(request, 'DynamicsWebApi.delete', 'request')
+
+        //copy locally
+        var ifmatch = request.ifmatch;
+        return _makeRequest('DELETE', request, 'delete').then(function () {
+            return true; //deleted
+        }).catch(function (error) {
+            if (ifmatch && error.status == 412) {
+                //precondition failed - not deleted
+                return false;
+            }
+            else {
+                //rethrow error otherwise
+                throw error;
+            }
+        });
+    }
+
+    /**
+     * Sends an asynchronous request to delete a record.
+     *
+     * @param {string} key - A String representing the GUID value or Alternate Key for the record to delete.
+     * @param {string} collection - The Name of the Entity Collection.
+     * @param {string} [propertyName] - The name of the property which needs to be emptied. Instead of removing a whole record only the specified property will be cleared.
+     * @returns {Promise}
+     */
+    this.deleteRecord = function (key, collection, propertyName) {
+        ErrorHelper.stringParameterCheck(collection, 'DynamicsWebApi.deleteRecord', 'collection');
+
+        if (propertyName != null)
+            ErrorHelper.stringParameterCheck(propertyName, 'DynamicsWebApi.deleteRecord', 'propertyName');
+
+        var request = {
+            navigationProperty: propertyName,
+            collection: collection,
+            key: key
+        };
+
+        return _makeRequest('DELETE', request, 'deleteRecord').then(function () {
+            return;
+        })
+    };
+
+    /**
+     * Sends an asynchronous request to upsert a record.
+     *
+     * @param {Object} request - An object that represents all possible options for a current request.
+     * @returns {Promise}
+     */
+    this.upsertRequest = function (request) {
+        ErrorHelper.parameterCheck(request, "DynamicsWebApi.upsert", "request")
+
+        //copy locally
+        var ifnonematch = request.ifnonematch;
+        var ifmatch = request.ifmatch;
+        return _makeRequest("PATCH", request, 'upsert')
+            .then(function (response) {
+                if (response.headers['OData-EntityId'] || response.headers['odata-entityid']) {
+                    var entityUrl = response.headers['OData-EntityId']
+                        ? response.headers['OData-EntityId']
+                        : response.headers['odata-entityid'];
+                    var id = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(entityUrl)[0];
+                    return id;
+                }
+                else if (response.data) {
+                    return response.data;
+                }
+            }).catch(function (error) {
+                if (ifnonematch && error.status == 412) {
+                    //if prevent update
+                    return;
+                }
+                else if (ifmatch && error.status == 404) {
+                    //if prevent create
+                    return;
+                }
+                //rethrow error otherwise
+                throw error;
+            });
+    };
+
+    /**
+     * Sends an asynchronous request to upsert a record.
+     *
+     * @param {string} key - A String representing the GUID value or Alternate Key for the record to upsert.
+     * @param {string} collection - The Name of the Entity Collection.
+     * @param {Object} object - A JavaScript object valid for update operations.
+     * @param {string|Array} [prefer] - If set to "return=representation" the function will return an updated object
+     * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
+     * @returns {Promise}
+     */
+    this.upsert = function (key, collection, object, prefer, select) {
+
+        ErrorHelper.stringParameterCheck(key, "DynamicsWebApi.upsert", "key");
+        key = ErrorHelper.keyParameterCheck(key, "DynamicsWebApi.upsert", "key")
+
+        ErrorHelper.parameterCheck(object, "DynamicsWebApi.upsert", "object");
+        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.upsert", "collection");
+
+        if (prefer) {
+            ErrorHelper.stringOrArrayParameterCheck(prefer, "DynamicsWebApi.upsert", "prefer");
+        }
+
+        if (select) {
+            ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.upsert", "select");
+        }
+
+        var request = {
+            collection: collection,
+            key: key,
+            select: select,
+            prefer: prefer,
+            entity: object
+        };
+
+        return this.upsertRequest(request);
+    }
+
+    /**
+     * Sends an asynchronous request to retrieve records.
+     *
+     * @param {Object} request - An object that represents all possible options for a current request.
+     * @param {string} [nextPageLink] - Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
+     * @returns {Promise}
+     */
+    var retrieveMultipleRequest = function (request, nextPageLink) {
+
+        if (nextPageLink) {
+            ErrorHelper.stringParameterCheck(nextPageLink, 'DynamicsWebApi.retrieveMultiple', 'nextPageLink');
+            request.url = nextPageLink;
+        }
+
+        //copy locally
+        var toCount = request.count;
+
+        return _makeRequest("GET", request, 'retrieveMultiple')
+            .then(function (response) {
+
+                if (toCount) {
+                    response.data.oDataCount = response.data.oDataCount || 0;
+                }
+
+                return response.data;
+            });
+    };
+
+    this.retrieveMultipleRequest = retrieveMultipleRequest;
+
+    var _retrieveAllRequest = function (request, nextPageLink, records) {
+        var records = records || [];
+
+        return retrieveMultipleRequest(request, nextPageLink).then(function (response) {
+            records = records.concat(response.value);
+
+            if (response.oDataNextLink) {
+                return _retrieveAllRequest(request, response.oDataNextLink, records);
+            }
+
+            return { value: records };
+        });
+    }
+
+    /**
+     * Sends an asynchronous request to retrieve all records.
+     *
+     * @param {Object} request - An object that represents all possible options for a current request.
+     * @returns {Promise}
+     */
+    this.retrieveAllRequest = function (request) {
+        return _retrieveAllRequest(request);
+    };
+
+    /**
+     * Sends an asynchronous request to count records. IMPORTANT! The count value does not represent the total number of entities in the system. It is limited by the maximum number of entities that can be returned. Returns: Number
+     *
+     * @param {string} collection - The Name of the Entity Collection.
+     * @param {string} [filter] - Use the $filter system query option to set criteria for which entities will be returned.
+     * @returns {Promise}
+     */
+    this.count = function (collection, filter) {
+        if (filter == null || (filter != null && !filter.length)) {
+            var request = {
+                collection: collection,
+                navigationProperty: '$count'
+            };
+            //if filter has not been specified then simplify the request
+            return _makeRequest('GET', request, 'count')
+                .then(function (response) {
+                    return response.data ? parseInt(response.data) : 0;
+                });
+        }
+        else {
+            return this.retrieveMultipleRequest({
+                collection: collection,
+                filter: filter,
+                count: true
+            }, null)
+                .then(function (response) {
+                    /// <param name="response" type="DWA.Types.MultipleResponse">Request response</param>
+
+                    return response.oDataCount ? response.oDataCount : 0;
+                });
+        }
+    }
+
+    /**
+     * Sends an asynchronous request to count records. Returns: Number
+     *
+     * @param {string} collection - The Name of the Entity Collection.
+     * @param {string} [filter] - Use the $filter system query option to set criteria for which entities will be returned.
+     * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
+     * @returns {Promise}
+     */
+    this.countAll = function (collection, filter, select) {
+        return _retrieveAllRequest({
+            collection: collection,
+            filter: filter,
+            select: select
+        })
+            .then(function (response) {
+                return response
+                    ? (response.value ? response.value.length : 0)
+                    : 0;
+            });
+    }
+
+    /**
+     * Sends an asynchronous request to retrieve records.
+     *
+     * @param {string} collection - The Name of the Entity Collection.
+     * @param {Array} [select] - Use the $select system query option to limit the properties returned.
+     * @param {string} [filter] - Use the $filter system query option to set criteria for which entities will be returned.
+     * @param {string} [nextPageLink] - Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
+     * @returns {Promise}
+     */
+    this.retrieveMultiple = function (collection, select, filter, nextPageLink) {
+        return this.retrieveMultipleRequest({
+            collection: collection,
+            select: select,
+            filter: filter
+        }, nextPageLink);
+    }
+
+    /**
+     * Sends an asynchronous request to retrieve all records.
+     *
+     * @param {string} collection - The Name of the Entity Collection.
+     * @param {Array} [select] - Use the $select system query option to limit the properties returned.
+     * @param {string} [filter] - Use the $filter system query option to set criteria for which entities will be returned.
+     * @returns {Promise}
+     */
+    this.retrieveAll = function (collection, select, filter) {
+        return _retrieveAllRequest({
+            collection: collection,
+            select: select,
+            filter: filter
+        });
+    }
+
+    /**
+     * Sends an asynchronous request to execute FetchXml to retrieve records. Returns: DWA.Types.FetchXmlResponse
+     *
+     * @param {string} collection - An object that represents all possible options for a current request.
+     * @param {string} fetchXml - FetchXML is a proprietary query language that provides capabilities to perform aggregation.
+     * @param {string} [includeAnnotations] - Use this parameter to include annotations to a result. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie
+     * @param {number} [pageNumber] - Page number.
+     * @param {string} [pagingCookie] - Paging cookie. For retrieving the first page, pagingCookie should be null.
+     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+     * @returns {Promise}
+     */
+    var executeFetchXml = function (collection, fetchXml, includeAnnotations, pageNumber, pagingCookie, impersonateUserId) {
+
+        ErrorHelper.stringParameterCheck(fetchXml, "DynamicsWebApi.executeFetchXml", "fetchXml");
+
+        pageNumber = pageNumber || 1;
+
+        ErrorHelper.numberParameterCheck(pageNumber, "DynamicsWebApi.executeFetchXml", "pageNumber");
+        var replacementString = '$1 page="' + pageNumber + '"';
+
+        if (pagingCookie != null) {
+            ErrorHelper.stringParameterCheck(pagingCookie, "DynamicsWebApi.executeFetchXml", "pagingCookie");
+            replacementString += ' paging-cookie="' + pagingCookie + '"';
+        }
+
+        //add page number and paging cookie to fetch xml
+        fetchXml = fetchXml.replace(/^(<fetch[\w\d\s'"=]+)/, replacementString);
+
+        var request = {
+            collection: collection,
+            includeAnnotations: includeAnnotations,
+            impersonate: impersonateUserId,
+            fetchXml: fetchXml,
+            impersonate: impersonateUserId,
+            includeAnnotations: includeAnnotations
+        };
+
+        return _makeRequest("GET", request, 'executeFetchXml')
+            .then(function (response) {
+
+                if (response.data['@' + DWA.Prefer.Annotations.FetchXmlPagingCookie] != null) {
+                    response.data.PagingInfo = Utility.getFetchXmlPagingCookie(response.data['@' + DWA.Prefer.Annotations.FetchXmlPagingCookie], pageNumber);
+                }
+
+                return response.data;
+            });
+    }
+
+    /**
+     * Sends an asynchronous request to execute FetchXml to retrieve records. Returns: DWA.Types.FetchXmlResponse
+     *
+     * @param {string} collection - An object that represents all possible options for a current request.
+     * @param {string} fetchXml - FetchXML is a proprietary query language that provides capabilities to perform aggregation.
+     * @param {string} [includeAnnotations] - Use this parameter to include annotations to a result. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie
+     * @param {number} [pageNumber] - Page number.
+     * @param {string} [pagingCookie] - Paging cookie. For retrieving the first page, pagingCookie should be null.
+     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+     * @returns {Promise}
+     */
+    this.fetch = this.executeFetchXml = executeFetchXml;
+
+    var _executeFetchXmlAll = function (collection, fetchXml, includeAnnotations, pageNumber, pagingCookie, impersonateUserId, records) {
+        var records = records || [];
+
+        return executeFetchXml(collection, fetchXml, includeAnnotations, pageNumber, pagingCookie, impersonateUserId, records).then(function (response) {
+            records = records.concat(response.value);
+
+            if (response.PagingInfo) {
+                return _executeFetchXmlAll(collection, fetchXml, includeAnnotations, response.PagingInfo.nextPage, response.PagingInfo.cookie, impersonateUserId, records);
+            }
+
+            return { value: records };
+        });
+    }
+
+    /**
+     * Sends an asynchronous request to execute FetchXml to retrieve all records.
+     *
+     * @param {string} collection - An object that represents all possible options for a current request.
+     * @param {string} fetchXml - FetchXML is a proprietary query language that provides capabilities to perform aggregation.
+     * @param {string} [includeAnnotations] - Use this parameter to include annotations to a result. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie
+     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+     * @returns {Promise}
+     */
+    this.fetchAll = this.executeFetchXmlAll = function (collection, fetchXml, includeAnnotations, impersonateUserId) {
+        return _executeFetchXmlAll(collection, fetchXml, includeAnnotations, null, null, impersonateUserId);
+    }
+
+    /**
+     * Associate for a collection-valued navigation property. (1:N or N:N)
+     *
+     * @param {string} collection - Primary entity collection name.
+     * @param {string} primaryKey - Primary entity record id.
+     * @param {string} relationshipName - Relationship name.
+     * @param {string} relatedCollection - Related colletion name.
+     * @param {string} relatedKey - Related entity record id.
+     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+     * @returns {Promise}
+     */
+    this.associate = function (collection, primaryKey, relationshipName, relatedCollection, relatedKey, impersonateUserId) {
+        ErrorHelper.stringParameterCheck(relatedCollection, "DynamicsWebApi.associate", "relatedcollection");
+        ErrorHelper.stringParameterCheck(relationshipName, "DynamicsWebApi.associate", "relationshipName");
+        primaryKey = ErrorHelper.keyParameterCheck(primaryKey, "DynamicsWebApi.associate", "primaryKey");
+        relatedKey = ErrorHelper.keyParameterCheck(relatedKey, "DynamicsWebApi.associate", "relatedKey");
+
+        var request = {
+            _additionalUrl: relationshipName + '/$ref',
+            collection: collection,
+            key: primaryKey,
+            impersonate: impersonateUserId,
+            data: { "@odata.id": _internalConfig.webApiUrl + relatedCollection + "(" + relatedKey + ")" }
+        };
+
+        return _makeRequest("POST", request, 'associate')
+            .then(function () { });
+    }
+
+    /**
+     * Disassociate for a collection-valued navigation property.
+     *
+     * @param {string} collection - Primary entity collection name.
+     * @param {string} primaryKey - Primary entity record id.
+     * @param {string} relationshipName - Relationship name.
+     * @param {string} relatedKey - Related entity record id.
+     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+     * @returns {Promise}
+     */
+    this.disassociate = function (collection, primaryKey, relationshipName, relatedKey, impersonateUserId) {
+        ErrorHelper.stringParameterCheck(relationshipName, "DynamicsWebApi.disassociate", "relationshipName");
+        relatedKey = ErrorHelper.keyParameterCheck(relatedKey, "DynamicsWebApi.disassociate", "relatedId");
+
+        var request = {
+            _additionalUrl: relationshipName + '(' + relatedKey + ')/$ref',
+            collection: collection,
+            key: primaryKey,
+            impersonate: impersonateUserId,
+        };
+
+        return _makeRequest("DELETE", request, 'disassociate')
+            .then(function () { });
+    }
+
+    /**
+     * Associate for a single-valued navigation property. (1:N)
+     *
+     * @param {string} collection - Entity collection name that contains an attribute.
+     * @param {string} key - Entity record Id that contains an attribute.
+     * @param {string} singleValuedNavigationPropertyName - Single-valued navigation property name (usually it's a Schema Name of the lookup attribute).
+     * @param {string} relatedCollection - Related collection name that the lookup (attribute) points to.
+     * @param {string} relatedId - Related entity record id that needs to be associated.
+     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+     * @returns {Promise}
+     */
+    this.associateSingleValued = function (collection, key, singleValuedNavigationPropertyName, relatedCollection, relatedKey, impersonateUserId) {
+
+        relatedKey = ErrorHelper.keyParameterCheck(relatedKey, "DynamicsWebApi.associateSingleValued", "relatedKey");
+        ErrorHelper.stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.associateSingleValued", "singleValuedNavigationPropertyName");
+        ErrorHelper.stringParameterCheck(relatedCollection, "DynamicsWebApi.associateSingleValued", "relatedcollection");
+
+        var request = {
+            _additionalUrl: singleValuedNavigationPropertyName + '/$ref',
+            collection: collection,
+            key: key,
+            impersonate: impersonateUserId,
+            data: { "@odata.id": _internalConfig.webApiUrl + relatedCollection + "(" + relatedKey + ")" }
+        };
+
+        return _makeRequest("PUT", request, 'associateSingleValued')
+            .then(function () { });
+    }
+
+    /**
+     * Removes a reference to an entity for a single-valued navigation property. (1:N)
+     *
+     * @param {string} collection - Entity collection name that contains an attribute.
+     * @param {string} key - Entity record Id that contains an attribute.
+     * @param {string} singleValuedNavigationPropertyName - Single-valued navigation property name (usually it's a Schema Name of the lookup attribute).
+     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+     * @returns {Promise}
+     */
+    this.disassociateSingleValued = function (collection, key, singleValuedNavigationPropertyName, impersonateUserId) {
+
+        ErrorHelper.stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.disassociateSingleValued", "singleValuedNavigationPropertyName");
+
+        var request = {
+            _additionalUrl: singleValuedNavigationPropertyName + "/$ref",
+            key: key,
+            collection: collection,
+            impersonate: impersonateUserId,
+        };
+
+        return _makeRequest("DELETE", request, 'disassociateSingleValued')
+            .then(function () { });
+    }
+
+    /**
+     * Executes an unbound function (not bound to a particular entity record)
+     *
+     * @param {string} functionName - The name of the function.
+     * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
+     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+     * @returns {Promise}
+     */
+    this.executeUnboundFunction = function (functionName, parameters, impersonateUserId) {
+        return _executeFunction(functionName, parameters, null, null, impersonateUserId, true);
+    }
+
+    /**
+     * Executes a bound function
+     *
+     * @param {string} id - A String representing the GUID value for the record.
+     * @param {string} collection - The name of the Entity Collection, for example, for account use accounts, opportunity - opportunities and etc.
+     * @param {string} functionName - The name of the function.
+     * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
+     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+     * @returns {Promise}
+     */
+    this.executeBoundFunction = function (id, collection, functionName, parameters, impersonateUserId) {
+        return _executeFunction(functionName, parameters, collection, id, impersonateUserId);
+    }
+
+    /**
+     * Executes a function
+     *
+     * @param {string} id - A String representing the GUID value for the record.
+     * @param {string} collection - The name of the Entity Collection, for example, for account use accounts, opportunity - opportunities and etc.
+     * @param {string} functionName - The name of the function.
+     * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
+     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+     * @returns {Promise}
+     */
+    var _executeFunction = function (functionName, parameters, collection, id, impersonateUserId, isUnbound) {
+
+        ErrorHelper.stringParameterCheck(functionName, "DynamicsWebApi.executeFunction", "functionName");
+
+        var request = {
+            _additionalUrl: functionName + Utility.buildFunctionParameters(parameters),
+            _unboundRequest: isUnbound,
+            key: id,
+            collection: collection,
+            impersonate: impersonateUserId,
+        };
+
+        return _makeRequest("GET", request, 'executeFunction').then(function (response) {
+            if (response.data) {
+                return response.data;
+            }
+        });
+    }
+
+    /**
+     * Executes an unbound Web API action (not bound to a particular entity record)
+     *
+     * @param {string} actionName - The name of the Web API action.
+     * @param {Object} requestObject - Action request body object.
+     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+     * @returns {Promise}
+     */
+    this.executeUnboundAction = function (actionName, requestObject, impersonateUserId) {
+        return _executeAction(actionName, requestObject, null, null, impersonateUserId, true);
+    }
+
+    /**
+     * Executes a bound Web API action (bound to a particular entity record)
+     *
+     * @param {string} id - A String representing the GUID value for the record.
+     * @param {string} collection - The name of the Entity Collection, for example, for account use accounts, opportunity - opportunities and etc.
+     * @param {string} actionName - The name of the Web API action.
+     * @param {Object} requestObject - Action request body object.
+     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+     * @returns {Promise}
+     */
+    this.executeBoundAction = function (id, collection, actionName, requestObject, impersonateUserId) {
+        return _executeAction(actionName, requestObject, collection, id, impersonateUserId);
+    }
+
+    /**
+     * Executes a Web API action
+     *
+     * @param {string} [id] - A String representing the GUID value for the record.
+     * @param {string} [collection] - The name of the Entity Collection, for example, for account use accounts, opportunity - opportunities and etc.
+     * @param {string} actionName - The name of the Web API action.
+     * @param {Object} requestObject - Action request body object.
+     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+     * @returns {Promise}
+     */
+    var _executeAction = function (actionName, requestObject, collection, id, impersonateUserId, isUnbound) {
+
+        ErrorHelper.stringParameterCheck(actionName, "DynamicsWebApi.executeAction", "actionName");
+
+        var request = {
+            _additionalUrl: actionName,
+            _unboundRequest: isUnbound,
+            collection: collection,
+            key: id,
+            impersonate: impersonateUserId,
+            data: requestObject
+        };
+
+        return _makeRequest("POST", request, 'executeAction').then(function (response) {
+            if (response.data) {
+                return response.data;
+            }
+        });
+    }
+
+    /**
+     * Creates a new instance of DynamicsWebApi
+     *
+     * @param {DWAConfig} [config] - configuration object.
+     * @returns {DynamicsWebApi}
+     */
+    this.initializeInstance = function (config) {
+        if (!config) {
+            config = _internalConfig;
+        }
+
+        return new DynamicsWebApi(config);
+    }
+};
+
+module.exports = DynamicsWebApi;
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports) {
+
+module.exports = function dateReviver(key, value) {
+    ///<summary>
+    /// Private function to convert matching string values to Date objects.
+    ///</summary>
+    ///<param name="key" type="String">
+    /// The key used to identify the object property
+    ///</param>
+    ///<param name="value" type="String">
+    /// The string value representing a date
+    ///</param>
+    var a;
+    if (typeof value === 'string') {
+        a = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:Z|[-+]\d{2}:\d{2})$/.exec(value);
+        if (a) {
+            return new Date(Date.UTC(+a[1], +a[2] - 1, +a[3], +a[4], +a[5], +a[6]));
+        }
+    }
+    return value;
+};
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var DWA = __webpack_require__(0);
+var dateReviver = __webpack_require__(6);
+
+//string es6 polyfill
+if (!String.prototype.endsWith || !String.prototype.startsWith) {
+    __webpack_require__(2);
+}
+
+//https://github.com/emiltholin/google-api-batch-utils
+function parseBatchResponse(response) {
+    // Not the same delimiter in the response as we specify ourselves in the request,
+    // so we have to extract it.
+    var delimiter = response.substr(0, response.indexOf('\r\n'));
+    var parts = response.split(delimiter);
+    // The first part will always be an empty string. Just remove it.
+    parts.shift();
+    // The last part will be the "--". Just remove it.
+    parts.pop();
+
+    var result = [];
+    for (var i = 0; i < parts.length; i++) {
+        var part = parts[i];
+        var p = part.substring(part.indexOf("{"), part.lastIndexOf("}") + 1);
+        result.push(JSON.parse(p, dateReviver));
+    }
+    return result;
+}
+
+function populateFormattedValues(object) {
+    var keys = Object.keys(object);
+
+    for (var i = 0; i < keys.length; i++) {
+        if (object[keys[i]] != null && object[keys[i]].constructor === Array) {
+            for (var j = 0; j < object[keys[i]].length; j++) {
+                object[keys[i]][j] = populateFormattedValues(object[keys[i]][j]);
+            }
+        }
+
+        if (keys[i].indexOf('@') == -1)
+            continue;
+
+        var format = keys[i].split('@');
+        var newKey = null;
+        switch (format[1]) {
+            case 'odata.context':
+                newKey = 'oDataContext';
+                break;
+            case 'odata.count':
+                newKey = 'oDataCount';
+                object[keys[i]] = object[keys[i]] != null
+                    ? parseInt(object[keys[i]])
+                    : 0;
+                break;
+            case 'odata.nextLink':
+                newKey = 'oDataNextLink';
+                break;
+            case DWA.Prefer.Annotations.FormattedValue:
+                newKey = format[0] + '_Formatted';
+                break;
+            case DWA.Prefer.Annotations.AssociatedNavigationProperty:
+                newKey = format[0] + '_NavigationProperty';
+                break;
+            case DWA.Prefer.Annotations.LookupLogicalName:
+                newKey = format[0] + '_LogicalName';
+                break;
+        }
+
+        if (newKey) {
+            object[newKey] = object[keys[i]];
+        }
+    }
+
+    return object;
+}
+
+/**
+ *
+ * @param {string} response
+ */
+module.exports = function parseResponse(response) {
+    var responseData = null;
+    if (response.length) {
+        responseData = response.indexOf('--batchresponse_') > -1
+            ? responseData = parseBatchResponse(response)[0]
+            : responseData = JSON.parse(response, dateReviver);
+
+        responseData = populateFormattedValues(responseData);
+    }
+
+    return responseData;
+}
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports) {
+
+module.exports = function parseResponseHeaders(headerStr) {
+    var headers = {};
+    if (!headerStr) {
+        return headers;
+    }
+    var headerPairs = headerStr.split('\u000d\u000a');
+    for (var i = 0, ilen = headerPairs.length; i < ilen; i++) {
+        var headerPair = headerPairs[i];
+        var index = headerPair.indexOf('\u003a\u0020');
+        if (index > 0) {
+            headers[headerPair.substring(0, index)] = headerPair.substring(index + 2);
+        }
+    }
+    return headers;
+};
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var parseResponse = __webpack_require__(7);
+var parseResponseHeaders = __webpack_require__(8);
+
+/**
+ * Sends a request to given URL with given parameters
+ *
+ * @param {string} method - Method of the request.
+ * @param {string} uri - Request URI.
+ * @param {Function} successCallback - A callback called on success of the request.
+ * @param {Function} errorCallback - A callback called when a request failed.
+ * @param {string} [data] - Data to send in the request.
+ * @param {Object} [additionalHeaders] - Object with headers. IMPORTANT! This object does not contain default headers needed for every request.
+ */
+var xhrRequest = function (method, uri, data, additionalHeaders, successCallback, errorCallback, async) {
+    var request = new XMLHttpRequest();
+    request.open(method, uri, async);
+    //request.setRequestHeader("OData-MaxVersion", "4.0");
+    //request.setRequestHeader("OData-Version", "4.0");
+    //request.setRequestHeader("Accept", "application/json");
+    //request.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+
+    //set additional headers
+    for (var key in additionalHeaders) {
+        request.setRequestHeader(key, additionalHeaders[key]);
+    }
+
+    request.onreadystatechange = function () {
+        if (request.readyState === 4) {
+            switch (request.status) {
+                case 200: // Success with content returned in response body.
+                case 201: // Success with content returned in response body.
+                case 204: // Success with no content returned in response body.
+                case 304: {// Success with Not Modified
+                    var responseData = parseResponse(request.responseText);
+
+                    var response = {
+                        data: responseData,
+                        headers: parseResponseHeaders(request.getAllResponseHeaders()),
+                        status: request.status
+                    };
+
+                    successCallback(response);
+                    break;
+                }
+                default: // All other statuses are error cases.
+                    var error;
+                    try {
+                        error = JSON.parse(request.response).error;
+                    } catch (e) {
+                        if (request.response.length > 0) {
+                            error = { message: request.response };
+                        }
+                        else {
+                            error = { message: "Unexpected Error" };
+                        }
+                    }
+                    error.status = request.status;
+                    errorCallback(error);
+                    break;
+            }
+
+            request = null;
+        }
+    };
+
+    request.onerror = function () {
+        errorCallback({ message: "Network Error" });
+        request = null;
+    };
+
+    request.ontimeout = function (error) {
+        errorCallback({ message: "Request Timed Out" });
+        request = null;
+    };
+
+    data
+        ? request.send(data)
+        : request.send();
+};
+
+module.exports = xhrRequest;
+
+/***/ }),
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var DWA = __webpack_require__(0);
@@ -503,6 +1845,7 @@ var buildPreferHeader = __webpack_require__(12);
  * @typedef {Object} ConvertedRequest
  * @property {string} url URL (including Query String)
  * @property {Object} headers Heades object (always an Object; can be empty: {})
+ * @property {boolean} async
  */
 
 /**
@@ -612,6 +1955,14 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
             headers['MSCRM.SuppressDuplicateDetection'] = 'false';
         }
 
+        if (request.entity) {
+            ErrorHelper.parameterCheck(request.entity, 'DynamicsWebApi.' + functionName, 'request.entity')
+        }
+
+        if (request.data) {
+            ErrorHelper.parameterCheck(request.data, 'DynamicsWebApi.' + functionName, 'request.data')
+        }
+
         if (request.expand && request.expand.length) {
             ErrorHelper.stringOrArrayParameterCheck(request.expand, 'DynamicsWebApi.' + functionName, "request.expand");
             if (typeof request.expand === 'string') {
@@ -640,17 +1991,6 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
 }
 
 /**
- * @param {string} collectionName - name of the collection to check
- */
-function getCollectionName(collectionName) {
-    var exceptions = ['EntityDefinitions'];
-
-    return exceptions.indexOf(collectionName) > -1
-        ? collectionName
-        : collectionName.toLowerCase();
-}
-
-/**
  * Converts a request object to URL link
  *
  * @param {Object} request - Request object
@@ -659,32 +1999,50 @@ function getCollectionName(collectionName) {
  * @returns {ConvertedRequest}
  */
 function convertRequest(request, functionName, config) {
+    var url = '';
+    var result;
+    if (!request.url) {
+        if (!request._unboundRequest && !request.collection) {
+            ErrorHelper.parameterCheck(request.collection, 'DynamicsWebApi.' + functionName, "request.collection");
+        }
+        if (request.collection) {
+            ErrorHelper.stringParameterCheck(request.collection, 'DynamicsWebApi.' + functionName, "request.collection");
+            url = request.collection;
 
-    if (!request.collection) {
-        ErrorHelper.parameterCheck(request.collection, 'DynamicsWebApi.' + functionName, "request.collection");
+            //add alternate key feature
+            if (request.key) {
+                request.key = ErrorHelper.keyParameterCheck(request.key, 'DynamicsWebApi.' + functionName, "request.key");
+            }
+            else if (request.id) {
+                request.key = ErrorHelper.guidParameterCheck(request.id, 'DynamicsWebApi.' + functionName, "request.id");
+            }
+
+            if (request.key) {
+                url += "(" + request.key + ")";
+            }
+        }
+
+        if (request._additionalUrl) {
+            if (url) {
+                url += '/';
+            }
+            url += request._additionalUrl;
+        }
+
+        result = convertRequestOptions(request, functionName, url, '&', config);
+        if (request.fetchXml) {
+            ErrorHelper.stringParameterCheck(request.fetchXml, 'DynamicsWebApi.' + functionName, "request.fetchXml");
+            result.url += "?fetchXml=" + encodeURIComponent(request.fetchXml);
+        }
+        else
+            if (result.query) {
+                result.url += "?" + encodeURI(result.query);
+            }
     }
     else {
-        ErrorHelper.stringParameterCheck(request.collection, 'DynamicsWebApi.' + functionName, "request.collection");
-    }
-
-    var url = getCollectionName(request.collection);
-
-    //add alternate key feature
-    if (request.key) {
-        request.key = ErrorHelper.keyParameterCheck(request.key, 'DynamicsWebApi.' + functionName, "request.key");
-    }
-    else if (request.id) {
-        request.key = ErrorHelper.guidParameterCheck(request.id, 'DynamicsWebApi.' + functionName, "request.id");
-    }
-
-    if (request.key) {
-        url += "(" + request.key + ")";
-    }
-
-    var result = convertRequestOptions(request, functionName, url, '&', config);
-
-    if (result.query) {
-        result.url += "?" + encodeURI(result.query);
+        ErrorHelper.stringParameterCheck(request.url, 'DynamicsWebApi.' + functionName, "request.url");
+        url = request.url.replace(config.webApiUrl, '');
+        result = convertRequestOptions(request, functionName, url, '&', config);
     }
 
     if (request.hasOwnProperty('async') && request.async != null) {
@@ -704,1283 +2062,6 @@ var RequestConverter = {
 };
 
 module.exports = RequestConverter;
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var Utility = {
-    /**
-     * Builds parametes for a funciton. Returns '()' (if no parameters) or '([params])?[query]'
-     *
-     * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
-     * @returns {string}
-     */
-    buildFunctionParameters: __webpack_require__(11),
-
-    /**
-     * Parses a paging cookie returned in response
-     *
-     * @param {string} pageCookies - Page cookies returned in @Microsoft.Dynamics.CRM.fetchxmlpagingcookie.
-     * @param {number} currentPageNumber - A current page number. Fix empty paging-cookie for complex fetch xmls.
-     * @returns {{cookie: "", number: 0, next: 1}}
-     */
-    getFetchXmlPagingCookie: __webpack_require__(14),
-
-    /**
-     * Converts a response to a reference object
-     *
-     * @param {Object} responseData - Response object
-     * @returns {ReferenceObject}
-     */
-    convertToReferenceObject: __webpack_require__(13)
-}
-
-module.exports = Utility;
-
-/***/ }),
-/* 6 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var DWA = __webpack_require__(0);
-var Utility = __webpack_require__(5);
-var RequestConverter = __webpack_require__(4);
-var ErrorHelper = __webpack_require__(1);
-var sendRequest = __webpack_require__(3);
-
-//string es6 polyfill
-if (!String.prototype.endsWith || !String.prototype.startsWith) {
-    __webpack_require__(2);
-}
-
-
-
-/**
- * Configuration object for DynamicsWebApi
- * @typedef {object} DWAConfig
- * @property {string} webApiUrl - A String representing a URL to Web API (webApiVersion not required if webApiUrl specified) [not used inside of CRM]
- * @property {string} webApiVersion - The version of Web API to use, for example: "8.1"
- * @property {string} impersonate - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
- * @property {Function} onTokenRefresh - A function that is called when a security token needs to be refreshed.
- * @property {string} includeAnnotations - Sets Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
- * @property {string} maxPageSize - Sets the odata.maxpagesize preference value to request the number of entities returned in the response.
- * @property {string} returnRepresentation - Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
- */
-
-/**
- * Dynamics Web Api Request
- * @typedef {Object} DWARequest
- * @property {string} collection
- * @property {string} id
- * @property {Array} select
- * @property {Array} expand
- * @property {string} filter
- * @property {number} maxPageSize
- * @property {boolean} count
- * @property {number} top
- * @property {Array} orderBy
- * @property {string} includeAnnotations
- * @property {string} ifmatch
- * @property {string} ifnonematch
- * @property {boolean} returnRepresentation
- * @property {Object} entity
- * @property {string} impersonate: "",
- * @property {string} navigationProperty: "",
- * @property {string} savedQuery: "",
- * @property {string} userQuery: ""
- */
-
-/**
- * DynamicsWebApi - a Microsoft Dynamics CRM Web API helper library. Current version uses Promises instead of Callbacks.
- * 
- * @param {DWAConfig} [config] - configuration object
- */
-function DynamicsWebApi(config) {
-
-    var _internalConfig = {
-        webApiVersion: "8.0",
-        webApiUrl: null,
-        impersonate: null,
-        onTokenRefresh: null,
-        includeAnnotations: null,
-        maxPageSize: null,
-        returnRepresentation: null
-    };
-
-    if (!config) {
-        config = _internalConfig;
-    }
-
-    var _context = function () {
-
-        if (typeof GetGlobalContext != "undefined") {
-            return GetGlobalContext();
-        }
-        else {
-            if (typeof Xrm != "undefined") {
-                return Xrm.Page.context;
-            }
-            else {
-                throw new Error("Xrm Context is not available.");
-            }
-        }
-    };
-
-    var _getClientUrl = function () {
-
-        var context = _context();
-
-        if (context) {
-            var clientUrl = context.getClientUrl();
-
-            if (clientUrl.match(/\/$/)) {
-                clientUrl = clientUrl.substring(0, clientUrl.length - 1);
-            }
-            return clientUrl;
-        }
-
-        return "";
-    };
-
-    var _initUrl = function () {
-        return _getClientUrl() + "/api/data/v" + _internalConfig.webApiVersion + "/";
-    };
-
-    /**
-     * Sets the configuration parameters for DynamicsWebApi helper.
-     *
-     * @param {DWAConfig} config - configuration object
-     */
-    this.setConfig = function (config) {
-
-        if (config.webApiVersion) {
-            ErrorHelper.stringParameterCheck(config.webApiVersion, "DynamicsWebApi.setConfig", "config.webApiVersion");
-            _internalConfig.webApiVersion = config.webApiVersion;
-        }
-
-        if (config.webApiUrl) {
-            ErrorHelper.stringParameterCheck(config.webApiUrl, "DynamicsWebApi.setConfig", "config.webApiUrl");
-            _internalConfig.webApiUrl = config.webApiUrl;
-        } else {
-            _internalConfig.webApiUrl = _initUrl();
-        }
-
-        if (config.impersonate) {
-            _internalConfig.impersonate = ErrorHelper.guidParameterCheck(config.impersonate, "DynamicsWebApi.setConfig", "config.impersonate");
-        }
-
-        if (config.onTokenRefresh) {
-            ErrorHelper.callbackParameterCheck(config.onTokenRefresh, "DynamicsWebApi.setConfig", "config.onTokenRefresh");
-            _internalConfig.onTokenRefresh = config.onTokenRefresh;
-        }
-
-        if (config.includeAnnotations) {
-            ErrorHelper.stringParameterCheck(config.includeAnnotations, "DynamicsWebApi.setConfig", "config.includeAnnotations");
-            _internalConfig.includeAnnotations = config.includeAnnotations;
-        }
-
-        if (config.maxPageSize) {
-            ErrorHelper.numberParameterCheck(config.maxPageSize, "DynamicsWebApi.setConfig", "config.maxPageSize");
-            _internalConfig.maxPageSize = config.maxPageSize;
-        }
-
-        if (config.returnRepresentation) {
-            ErrorHelper.boolParameterCheck(config.returnRepresentation, "DynamicsWebApi.setConfig", "config.returnRepresentation");
-            _internalConfig.returnRepresentation = config.returnRepresentation;
-        }
-    };
-
-    this.setConfig(config);
-
-    /**
-     * Sends a request to given URL with given parameters
-     *
-     * @param {string} method - Method of the request.
-     * @param {string} uri - Request URI.
-     * @param {Object} [data] - Data to send in the request.
-     * @param {Object} [additionalHeaders] - Object with additional headers. IMPORTANT! This object does not contain default headers needed for every request.
-     * @param {boolean} [isAsync] - Indicates whether the request should be made synchronously or asynchronously.
-     * @returns {Promise}
-     */
-    var _sendRequest = function (method, uri, data, additionalHeaders, isAsync) {
-        return new Promise(function (resolve, reject) {
-            sendRequest(method, uri, _internalConfig, data, additionalHeaders, resolve, reject, isAsync);
-        });
-    };
-
-    /**
-     * Sends an asynchronous request to create a new record.
-     *
-     * @param {Object} object - A JavaScript object valid for create operations.
-     * @param {string} collection - The Name of the Entity Collection.
-     * @param {string|Array} [prefer] - Sets a Prefer header value. For example: ['retrun=representation', 'odata.include-annotations="*"']
-     * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
-     * @returns {Promise}
-     */
-    this.create = function (object, collection, prefer, select) {
-        ErrorHelper.parameterCheck(object, "DynamicsWebApi.create", "object");
-        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.create", "collection");
-
-        if (prefer) {
-            ErrorHelper.stringOrArrayParameterCheck(prefer, "DynamicsWebApi.create", "prefer");
-        }
-
-        if (select) {
-            ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.create", "select");
-        }
-
-        var request = {
-            collection: collection,
-            select: select,
-            prefer: prefer
-        };
-
-        var result = RequestConverter.convertRequest(request, "create", _internalConfig);
-
-        return _sendRequest("POST", result.url, object, result.headers, result.async)
-            .then(function (response) {
-                if (response.data) {
-                    return response.data;
-                }
-
-                var entityUrl = response.headers['OData-EntityId']
-                    ? response.headers['OData-EntityId']
-                    : response.headers['odata-entityid'];
-                var id = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(entityUrl)[0];
-                return id;
-            });
-    };
-
-    /**
-     * Sends an asynchronous request to retrieve a record.
-     *
-     * @param {Object} request - An object that represents all possible options for a current request.
-     * @returns {Promise}
-     */
-    this.retrieveRequest = function (request) {
-        ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieve", "request");
-
-        var result = RequestConverter.convertRequest(request, "retrieve", _internalConfig);
-
-        //copy locally
-        var select = request.select;
-        return _sendRequest("GET", result.url, null, result.headers, result.async).then(function (response) {
-            if (select != null && select.length == 1 && select[0].endsWith("/$ref") && response.data["@odata.id"] != null) {
-                return Utility.convertToReferenceObject(response.data);
-            }
-
-            return response.data;
-        });
-    };
-
-    /**
-     * Sends an asynchronous request to retrieve a record.
-     *
-     * @param {string} key - A String representing the GUID value or Aternate Key for the record to retrieve.
-     * @param {string} collection - The Name of the Entity Collection.
-     * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
-     * @param {string|Array} [expand] - A String or Array of Expand Objects representing the $expand Query Option value to control which related records need to be returned.
-     * @returns {Promise}
-     */
-    this.retrieve = function (key, collection, select, expand) {
-
-        ErrorHelper.stringParameterCheck(key, "DynamicsWebApi.retrieve", "key");
-        key = ErrorHelper.keyParameterCheck(key, "DynamicsWebApi.retrieve", "key")
-        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.retrieve", "collection");
-
-        if (select && select.length) {
-            ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.retrieve", "select");
-        }
-
-        if (expand && expand.length) {
-            ErrorHelper.stringOrArrayParameterCheck(expand, "DynamicsWebApi.retrieve", "expand");
-        }
-
-        var request = {
-            collection: collection,
-            key: key,
-            select: select,
-            expand: expand
-        };
-
-        return this.retrieveRequest(request);
-    };
-
-    /**
-     * Sends an asynchronous request to update a record.
-     *
-     * @param {Object} request - An object that represents all possible options for a current request.
-     * @returns {Promise}
-     */
-    this.updateRequest = function (request) {
-
-        ErrorHelper.parameterCheck(request, "DynamicsWebApi.update", "request");
-        ErrorHelper.parameterCheck(request.entity, "DynamicsWebApi.update", "request.entity");
-
-        if (request.ifmatch == null) {
-            request.ifmatch = '*'; //to prevent upsert
-        }
-
-        var result = RequestConverter.convertRequest(request, "update", _internalConfig);
-
-        //copy locally
-        var ifmatch = request.ifmatch;
-        return _sendRequest("PATCH", result.url, request.entity, result.headers, result.async)
-            .then(function (response) {
-                if (response.data) {
-                    return response.data;
-                }
-
-                return true; //updated
-
-            }).catch(function (error) {
-                if (ifmatch && error.status == 412) {
-                    //precondition failed - not updated
-                    return false;
-                }
-                //rethrow error otherwise
-                throw error;
-            });
-    };
-
-    /**
-     * Sends an asynchronous request to update a record.
-     *
-     * @param {string} key - A String representing the GUID value or Alternate Key for the record to update.
-     * @param {string} collection - The Name of the Entity Collection.
-     * @param {Object} object - A JavaScript object valid for update operations.
-     * @param {string} [prefer] - If set to "return=representation" the function will return an updated object
-     * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
-     * @returns {Promise}
-     */
-    this.update = function (key, collection, object, prefer, select) {
-
-        ErrorHelper.stringParameterCheck(key, "DynamicsWebApi.update", "key");
-        key = ErrorHelper.keyParameterCheck(key, "DynamicsWebApi.update", "key")
-        ErrorHelper.parameterCheck(object, "DynamicsWebApi.update", "object");
-        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.update", "collection");
-
-        if (prefer) {
-            ErrorHelper.stringOrArrayParameterCheck(prefer, "DynamicsWebApi.update", "prefer");
-        }
-
-        if (select) {
-            ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.update", "select");
-        }
-
-        var request = {
-            collection: collection,
-            key: key,
-            select: select,
-            prefer: prefer,
-            entity: object
-        };
-
-        return this.updateRequest(request);
-    };
-
-    /**
-     * Sends an asynchronous request to update a single value in the record.
-     *
-     * @param {string} key - A String representing the GUID value or Alternate Key for the record to update.
-     * @param {string} collection - The Name of the Entity Collection.
-     * @param {Object} keyValuePair - keyValuePair object with a logical name of the field as a key and a value to update with. Example: {subject: "Update Record"}
-     * @param {string|Array} [prefer] - If set to "return=representation" the function will return an updated object
-     * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
-     * @returns {Promise}
-     */
-    this.updateSingleProperty = function (key, collection, keyValuePair, prefer, select) {
-
-        ErrorHelper.stringParameterCheck(key, "DynamicsWebApi.updateSingleProperty", "key");
-        key = ErrorHelper.keyParameterCheck(key, "DynamicsWebApi.updateSingleProperty", "key")
-        ErrorHelper.parameterCheck(keyValuePair, "DynamicsWebApi.updateSingleProperty", "keyValuePair");
-        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.updateSingleProperty", "collection");
-
-        var field = Object.keys(keyValuePair)[0];
-        var fieldValue = keyValuePair[field];
-
-        if (prefer) {
-            ErrorHelper.stringOrArrayParameterCheck(prefer, "DynamicsWebApi.updateSingleProperty", "prefer");
-        }
-
-        if (select) {
-            ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.updateSingleProperty", "select");
-        }
-
-        var request = {
-            collection: collection,
-            key: key,
-            select: select,
-            prefer: prefer,
-            navigationProperty: field
-        };
-
-        var result = RequestConverter.convertRequest(request, "updateSingleProperty", _internalConfig);
-
-        return _sendRequest("PUT", result.url, { value: fieldValue }, result.headers, result.async)
-            .then(function (response) {
-                if (response.data) {
-                    return response.data;
-                }
-            });
-    };
-
-    /**
-     * Sends an asynchronous request to delete a record.
-     *
-     * @param {Object} request - An object that represents all possible options for a current request.
-     * @returns {Promise}
-     */
-    this.deleteRequest = function (request) {
-
-        ErrorHelper.parameterCheck(request, "DynamicsWebApi.delete", "request")
-
-        var result = RequestConverter.convertRequest(request, "deleteRequest", _internalConfig);
-
-        //copy locally
-        var ifmatch = request.ifmatch;
-        return _sendRequest("DELETE", result.url, null, result.headers, result.async).then(function () {
-            return true; //deleted
-        }).catch(function (error) {
-            if (ifmatch && error.status == 412) {
-                //precondition failed - not deleted
-                return false;
-            }
-            else {
-                //rethrow error otherwise
-                throw error;
-            }
-        });
-    }
-
-    /**
-     * Sends an asynchronous request to delete a record.
-     *
-     * @param {string} key - A String representing the GUID value or Alternate Key for the record to delete.
-     * @param {string} collection - The Name of the Entity Collection.
-     * @param {string} [propertyName] - The name of the property which needs to be emptied. Instead of removing a whole record only the specified property will be cleared.
-     * @returns {Promise}
-     */
-    this.deleteRecord = function (key, collection, propertyName) {
-
-        ErrorHelper.stringParameterCheck(key, "DynamicsWebApi.deleteRecord", "key");
-        key = ErrorHelper.keyParameterCheck(key, "DynamicsWebApi.deleteRecord", "key")
-        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.deleteRecord", "collection");
-
-        if (propertyName != null)
-            ErrorHelper.stringParameterCheck(propertyName, "DynamicsWebApi.deleteRecord", "propertyName");
-
-        var url = collection.toLowerCase() + "(" + key + ")";
-
-        if (propertyName != null)
-            url += "/" + propertyName;
-
-        return _sendRequest("DELETE", url, null, null, true).then(function () {
-            return;
-        })
-    };
-
-    /**
-     * Sends an asynchronous request to upsert a record.
-     *
-     * @param {Object} request - An object that represents all possible options for a current request.
-     * @returns {Promise}
-     */
-    this.upsertRequest = function (request) {
-
-        ErrorHelper.parameterCheck(request, "DynamicsWebApi.upsert", "request")
-        ErrorHelper.parameterCheck(request.entity, "DynamicsWebApi.upsert", "request.entity")
-
-        var result = RequestConverter.convertRequest(request, "upsert", _internalConfig);
-
-        //copy locally
-        var ifnonematch = request.ifnonematch;
-        var ifmatch = request.ifmatch;
-        return _sendRequest("PATCH", result.url, request.entity, result.headers, result.async)
-            .then(function (response) {
-                if (response.headers['OData-EntityId'] || response.headers['odata-entityid']) {
-                    var entityUrl = response.headers['OData-EntityId']
-                        ? response.headers['OData-EntityId']
-                        : response.headers['odata-entityid'];
-                    var id = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(entityUrl)[0];
-                    return id;
-                }
-                else if (response.data) {
-                    return response.data;
-                }
-            }).catch(function (error) {
-                if (ifnonematch && error.status == 412) {
-                    //if prevent update
-                    return;
-                }
-                else if (ifmatch && error.status == 404) {
-                    //if prevent create
-                    return;
-                }
-                //rethrow error otherwise
-                throw error;
-            });
-    };
-
-    /**
-     * Sends an asynchronous request to upsert a record.
-     *
-     * @param {string} key - A String representing the GUID value or Alternate Key for the record to upsert.
-     * @param {string} collection - The Name of the Entity Collection.
-     * @param {Object} object - A JavaScript object valid for update operations.
-     * @param {string|Array} [prefer] - If set to "return=representation" the function will return an updated object
-     * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
-     * @returns {Promise}
-     */
-    this.upsert = function (key, collection, object, prefer, select) {
-
-        ErrorHelper.stringParameterCheck(key, "DynamicsWebApi.upsert", "key");
-        key = ErrorHelper.keyParameterCheck(key, "DynamicsWebApi.upsert", "key")
-
-        ErrorHelper.parameterCheck(object, "DynamicsWebApi.upsert", "object");
-        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.upsert", "collection");
-
-        if (prefer) {
-            ErrorHelper.stringOrArrayParameterCheck(prefer, "DynamicsWebApi.upsert", "prefer");
-        }
-
-        if (select) {
-            ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.upsert", "select");
-        }
-
-        var request = {
-            collection: collection,
-            key: key,
-            select: select,
-            prefer: prefer,
-            entity: object
-        };
-
-        return this.upsertRequest(request);
-    }
-
-    /**
-     * Sends an asynchronous request to retrieve records.
-     *
-     * @param {Object} request - An object that represents all possible options for a current request.
-     * @param {string} [nextPageLink] - Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
-     * @returns {Promise}
-     */
-    var retrieveMultipleRequest = function (request, nextPageLink) {
-
-        if (nextPageLink && !request.collection) {
-            request.collection = "any";
-        }
-
-        var result = RequestConverter.convertRequest(request, "retrieveMultiple", _internalConfig);
-
-        if (nextPageLink) {
-            ErrorHelper.stringParameterCheck(nextPageLink, "DynamicsWebApi.retrieveMultiple", "nextPageLink");
-            result.url = nextPageLink.replace(_internalConfig.webApiUrl, "");
-        }
-
-        //copy locally
-        var toCount = request.count;
-
-        return _sendRequest("GET", result.url, null, result.headers, result.async)
-            .then(function (response) {
-
-                if (toCount) {
-                    response.data.oDataCount = response.data.oDataCount || 0;
-                }
-
-                return response.data;
-            });
-    };
-
-    this.retrieveMultipleRequest = retrieveMultipleRequest;
-
-    var _retrieveAllRequest = function (request, nextPageLink, records) {
-        var records = records || [];
-
-        return retrieveMultipleRequest(request, nextPageLink).then(function (response) {
-            records = records.concat(response.value);
-
-            if (response.oDataNextLink) {
-                return _retrieveAllRequest(request, response.oDataNextLink, records);
-            }
-
-            return { value: records };
-        });
-    }
-
-    /**
-     * Sends an asynchronous request to retrieve all records.
-     *
-     * @param {Object} request - An object that represents all possible options for a current request.
-     * @returns {Promise}
-     */
-    this.retrieveAllRequest = function (request) {
-        return _retrieveAllRequest(request);
-    };
-
-    /**
-     * Sends an asynchronous request to count records. IMPORTANT! The count value does not represent the total number of entities in the system. It is limited by the maximum number of entities that can be returned. Returns: Number
-     *
-     * @param {string} collection - The Name of the Entity Collection.
-     * @param {string} [filter] - Use the $filter system query option to set criteria for which entities will be returned.
-     * @returns {Promise}
-     */
-    this.count = function (collection, filter) {
-        if (filter == null || (filter != null && !filter.length)) {
-            ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.count", "collection");
-
-            //if filter has not been specified then simplify the request
-            return _sendRequest("GET", collection.toLowerCase() + "/$count")
-                .then(function (response) {
-                    return response.data ? parseInt(response.data) : 0;
-                });
-        }
-        else {
-            return this.retrieveMultipleRequest({
-                collection: collection,
-                filter: filter,
-                count: true
-            }, null)
-                .then(function (response) {
-                    /// <param name="response" type="DWA.Types.MultipleResponse">Request response</param>
-
-                    return response.oDataCount ? response.oDataCount : 0;
-                });
-        }
-    }
-
-    /**
-     * Sends an asynchronous request to count records. Returns: Number
-     *
-     * @param {string} collection - The Name of the Entity Collection.
-     * @param {string} [filter] - Use the $filter system query option to set criteria for which entities will be returned.
-     * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
-     * @returns {Promise}
-     */
-    this.countAll = function (collection, filter, select) {
-        return _retrieveAllRequest({
-            collection: collection,
-            filter: filter,
-            select: select
-        })
-            .then(function (response) {
-                return response
-                    ? (response.value ? response.value.length : 0)
-                    : 0;
-            });
-    }
-
-    /**
-     * Sends an asynchronous request to retrieve records.
-     *
-     * @param {string} collection - The Name of the Entity Collection.
-     * @param {Array} [select] - Use the $select system query option to limit the properties returned.
-     * @param {string} [filter] - Use the $filter system query option to set criteria for which entities will be returned.
-     * @param {string} [nextPageLink] - Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
-     * @returns {Promise}
-     */
-    this.retrieveMultiple = function (collection, select, filter, nextPageLink) {
-        return this.retrieveMultipleRequest({
-            collection: collection,
-            select: select,
-            filter: filter
-        }, nextPageLink);
-    }
-
-    /**
-     * Sends an asynchronous request to retrieve all records.
-     *
-     * @param {string} collection - The Name of the Entity Collection.
-     * @param {Array} [select] - Use the $select system query option to limit the properties returned.
-     * @param {string} [filter] - Use the $filter system query option to set criteria for which entities will be returned.
-     * @returns {Promise}
-     */
-    this.retrieveAll = function (collection, select, filter) {
-        return _retrieveAllRequest({
-            collection: collection,
-            select: select,
-            filter: filter
-        });
-    }
-
-    /**
-     * Sends an asynchronous request to execute FetchXml to retrieve records. Returns: DWA.Types.FetchXmlResponse
-     *
-     * @param {string} collection - An object that represents all possible options for a current request.
-     * @param {string} fetchXml - FetchXML is a proprietary query language that provides capabilities to perform aggregation.
-     * @param {string} [includeAnnotations] - Use this parameter to include annotations to a result. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie
-     * @param {number} [pageNumber] - Page number.
-     * @param {string} [pagingCookie] - Paging cookie. For retrieving the first page, pagingCookie should be null.
-     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
-     * @returns {Promise}
-     */
-    var executeFetchXml = function (collection, fetchXml, includeAnnotations, pageNumber, pagingCookie, impersonateUserId) {
-
-        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.executeFetchXml", "type");
-        ErrorHelper.stringParameterCheck(fetchXml, "DynamicsWebApi.executeFetchXml", "fetchXml");
-
-        pageNumber = pageNumber || 1;
-
-        ErrorHelper.numberParameterCheck(pageNumber, "DynamicsWebApi.executeFetchXml", "pageNumber");
-        var replacementString = '$1 page="' + pageNumber + '"';
-
-        if (pagingCookie != null) {
-            ErrorHelper.stringParameterCheck(pagingCookie, "DynamicsWebApi.executeFetchXml", "pagingCookie");
-            replacementString += ' paging-cookie="' + pagingCookie + '"';
-        }
-
-        //add page number and paging cookie to fetch xml
-        fetchXml = fetchXml.replace(/^(<fetch[\w\d\s'"=]+)/, replacementString);
-
-        if (includeAnnotations) {
-            ErrorHelper.stringParameterCheck(includeAnnotations, "DynamicsWebApi.executeFetchXml", "includeAnnotations");
-        }
-
-        if (impersonateUserId) {
-            impersonateUserId = ErrorHelper.guidParameterCheck(impersonateUserId, "DynamicsWebApi.executeFetchXml", "impersonateUserId");
-        }
-
-        var request = {
-            collection: collection,
-            includeAnnotations: includeAnnotations,
-            impersonate: impersonateUserId
-        };
-
-        var result = RequestConverter.convertRequest(request, "executeFetchXml", _internalConfig);
-
-        var encodedFetchXml = encodeURIComponent(fetchXml);
-
-        return _sendRequest("GET", result.url + "?fetchXml=" + encodedFetchXml, null, result.headers, result.async)
-            .then(function (response) {
-
-                if (response.data['@' + DWA.Prefer.Annotations.FetchXmlPagingCookie] != null) {
-                    response.data.PagingInfo = Utility.getFetchXmlPagingCookie(response.data['@' + DWA.Prefer.Annotations.FetchXmlPagingCookie], pageNumber);
-                }
-
-                return response.data;
-            });
-    }
-
-    /**
-     * Sends an asynchronous request to execute FetchXml to retrieve records. Returns: DWA.Types.FetchXmlResponse
-     *
-     * @param {string} collection - An object that represents all possible options for a current request.
-     * @param {string} fetchXml - FetchXML is a proprietary query language that provides capabilities to perform aggregation.
-     * @param {string} [includeAnnotations] - Use this parameter to include annotations to a result. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie
-     * @param {number} [pageNumber] - Page number.
-     * @param {string} [pagingCookie] - Paging cookie. For retrieving the first page, pagingCookie should be null.
-     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
-     * @returns {Promise}
-     */
-    this.fetch = this.executeFetchXml = executeFetchXml;
-
-    var _executeFetchXmlAll = function (collection, fetchXml, includeAnnotations, pageNumber, pagingCookie, impersonateUserId, records) {
-        var records = records || [];
-
-        return executeFetchXml(collection, fetchXml, includeAnnotations, pageNumber, pagingCookie, impersonateUserId, records).then(function (response) {
-            records = records.concat(response.value);
-
-            if (response.PagingInfo) {
-                return _executeFetchXmlAll(collection, fetchXml, includeAnnotations, response.PagingInfo.nextPage, response.PagingInfo.cookie, impersonateUserId, records);
-            }
-
-            return { value: records };
-        });
-    }
-
-    /**
-     * Sends an asynchronous request to execute FetchXml to retrieve all records.
-     *
-     * @param {string} collection - An object that represents all possible options for a current request.
-     * @param {string} fetchXml - FetchXML is a proprietary query language that provides capabilities to perform aggregation.
-     * @param {string} [includeAnnotations] - Use this parameter to include annotations to a result. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie
-     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
-     * @returns {Promise}
-     */
-    this.fetchAll = this.executeFetchXmlAll = function (collection, fetchXml, includeAnnotations, impersonateUserId) {
-        return _executeFetchXmlAll(collection, fetchXml, includeAnnotations, null, null, impersonateUserId);
-    }
-
-    /**
-     * Associate for a collection-valued navigation property. (1:N or N:N)
-     *
-     * @param {string} primaryCollection - Primary entity collection name.
-     * @param {string} primaryId - Primary entity record id.
-     * @param {string} relationshipName - Relationship name.
-     * @param {string} relatedCollection - Related colletion name.
-     * @param {string} relatedId - Related entity record id.
-     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
-     * @returns {Promise}
-     */
-    this.associate = function (primaryCollection, primaryId, relationshipName, relatedCollection, relatedId, impersonateUserId) {
-        ErrorHelper.stringParameterCheck(primaryCollection, "DynamicsWebApi.associate", "primarycollection");
-        ErrorHelper.stringParameterCheck(relatedCollection, "DynamicsWebApi.associate", "relatedcollection");
-        ErrorHelper.stringParameterCheck(relationshipName, "DynamicsWebApi.associate", "relationshipName");
-        primaryId = ErrorHelper.guidParameterCheck(primaryId, "DynamicsWebApi.associate", "primaryId");
-        relatedId = ErrorHelper.guidParameterCheck(relatedId, "DynamicsWebApi.associate", "relatedId");
-
-        var header = {};
-
-        if (impersonateUserId != null) {
-            impersonateUserId = ErrorHelper.guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
-            header["MSCRMCallerID"] = impersonateUserId;
-        }
-
-        return _sendRequest("POST", primaryCollection + "(" + primaryId + ")/" + relationshipName + "/$ref",
-            { "@odata.id": _internalConfig.webApiUrl + relatedCollection + "(" + relatedId + ")" }, header)
-            .then(function () { });
-    }
-
-    /**
-     * Disassociate for a collection-valued navigation property.
-     *
-     * @param {string} primaryCollection - Primary entity collection name.
-     * @param {string} primaryId - Primary entity record id.
-     * @param {string} relationshipName - Relationship name.
-     * @param {string} relatedId - Related entity record id.
-     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
-     * @returns {Promise}
-     */
-    this.disassociate = function (primaryCollection, primaryId, relationshipName, relatedId, impersonateUserId) {
-        ErrorHelper.stringParameterCheck(primaryCollection, "DynamicsWebApi.disassociate", "primarycollection");
-        ErrorHelper.stringParameterCheck(relationshipName, "DynamicsWebApi.disassociate", "relationshipName");
-        primaryId = ErrorHelper.guidParameterCheck(primaryId, "DynamicsWebApi.disassociate", "primaryId");
-        relatedId = ErrorHelper.guidParameterCheck(relatedId, "DynamicsWebApi.disassociate", "relatedId");
-
-        var header = {};
-
-        if (impersonateUserId != null) {
-            impersonateUserId = ErrorHelper.guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
-            header["MSCRMCallerID"] = impersonateUserId;
-        }
-
-        return _sendRequest("DELETE", primaryCollection + "(" + primaryId + ")/" + relationshipName + "(" + relatedId + ")/$ref", null, header)
-            .then(function () { });
-    }
-
-    /**
-     * Associate for a single-valued navigation property. (1:N)
-     *
-     * @param {string} collection - Entity collection name that contains an attribute.
-     * @param {string} id - Entity record Id that contains an attribute.
-     * @param {string} singleValuedNavigationPropertyName - Single-valued navigation property name (usually it's a Schema Name of the lookup attribute).
-     * @param {string} relatedCollection - Related collection name that the lookup (attribute) points to.
-     * @param {string} relatedId - Related entity record id that needs to be associated.
-     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
-     * @returns {Promise}
-     */
-    this.associateSingleValued = function (collection, id, singleValuedNavigationPropertyName, relatedCollection, relatedId, impersonateUserId) {
-
-        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.associateSingleValued", "collection");
-        id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.associateSingleValued", "id");
-        relatedId = ErrorHelper.guidParameterCheck(relatedId, "DynamicsWebApi.associateSingleValued", "relatedId");
-        ErrorHelper.stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.associateSingleValued", "singleValuedNavigationPropertyName");
-        ErrorHelper.stringParameterCheck(relatedCollection, "DynamicsWebApi.associateSingleValued", "relatedcollection");
-
-        var header = {};
-
-        if (impersonateUserId != null) {
-            impersonateUserId = ErrorHelper.guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
-            header["MSCRMCallerID"] = impersonateUserId;
-        }
-
-        return _sendRequest("PUT", collection + "(" + id + ")/" + singleValuedNavigationPropertyName + "/$ref",
-            { "@odata.id": _internalConfig.webApiUrl + relatedCollection + "(" + relatedId + ")" }, header)
-            .then(function () { });
-    }
-
-    /**
-     * Removes a reference to an entity for a single-valued navigation property. (1:N)
-     *
-     * @param {string} collection - Entity collection name that contains an attribute.
-     * @param {string} id - Entity record Id that contains an attribute.
-     * @param {string} singleValuedNavigationPropertyName - Single-valued navigation property name (usually it's a Schema Name of the lookup attribute).
-     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
-     * @returns {Promise}
-     */
-    this.disassociateSingleValued = function (collection, id, singleValuedNavigationPropertyName, impersonateUserId) {
-
-        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.disassociateSingleValued", "collection");
-        id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.disassociateSingleValued", "id");
-        ErrorHelper.stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.disassociateSingleValued", "singleValuedNavigationPropertyName");
-
-        var header = {};
-
-        if (impersonateUserId != null) {
-            impersonateUserId = ErrorHelper.guidParameterCheck(impersonateUserId, "DynamicsWebApi.associate", "impersonateUserId");
-            header["MSCRMCallerID"] = impersonateUserId;
-        }
-
-        return _sendRequest("DELETE", collection + "(" + id + ")/" + singleValuedNavigationPropertyName + "/$ref", null, header)
-            .then(function () { });
-    }
-
-    /**
-     * Executes an unbound function (not bound to a particular entity record)
-     *
-     * @param {string} functionName - The name of the function.
-     * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
-     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
-     * @returns {Promise}
-     */
-    this.executeUnboundFunction = function (functionName, parameters, impersonateUserId) {
-        return _executeFunction(functionName, parameters, null, null, impersonateUserId);
-    }
-
-    /**
-     * Executes a bound function
-     *
-     * @param {string} id - A String representing the GUID value for the record.
-     * @param {string} collection - The name of the Entity Collection, for example, for account use accounts, opportunity - opportunities and etc.
-     * @param {string} functionName - The name of the function.
-     * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
-     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
-     * @returns {Promise}
-     */
-    this.executeBoundFunction = function (id, collection, functionName, parameters, impersonateUserId) {
-        return _executeFunction(functionName, parameters, collection, id, impersonateUserId);
-    }
-
-    /**
-     * Executes a function
-     *
-     * @param {string} id - A String representing the GUID value for the record.
-     * @param {string} collection - The name of the Entity Collection, for example, for account use accounts, opportunity - opportunities and etc.
-     * @param {string} functionName - The name of the function.
-     * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
-     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
-     * @returns {Promise}
-     */
-    var _executeFunction = function (functionName, parameters, collection, id, impersonateUserId) {
-
-        ErrorHelper.stringParameterCheck(functionName, "DynamicsWebApi.executeFunction", "functionName");
-        var url = functionName + Utility.buildFunctionParameters(parameters);
-
-        if (collection != null) {
-            ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.executeFunction", "collection");
-            id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.executeFunction", "id");
-
-            url = collection + "(" + id + ")/" + url;
-        }
-
-        var header = {};
-
-        if (impersonateUserId) {
-            header["MSCRMCallerID"] = ErrorHelper.guidParameterCheck(impersonateUserId, "DynamicsWebApi.executeFunction", "impersonateUserId");
-        }
-
-        return _sendRequest("GET", url, null, header).then(function (response) {
-            if (response.data) {
-                return response.data;
-            }
-        });
-    }
-
-    /**
-     * Executes an unbound Web API action (not bound to a particular entity record)
-     *
-     * @param {string} actionName - The name of the Web API action.
-     * @param {Object} requestObject - Action request body object.
-     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
-     * @returns {Promise}
-     */
-    this.executeUnboundAction = function (actionName, requestObject, impersonateUserId) {
-        return _executeAction(actionName, requestObject, null, null, impersonateUserId);
-    }
-
-    /**
-     * Executes a bound Web API action (bound to a particular entity record)
-     *
-     * @param {string} id - A String representing the GUID value for the record.
-     * @param {string} collection - The name of the Entity Collection, for example, for account use accounts, opportunity - opportunities and etc.
-     * @param {string} actionName - The name of the Web API action.
-     * @param {Object} requestObject - Action request body object.
-     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
-     * @returns {Promise}
-     */
-    this.executeBoundAction = function (id, collection, actionName, requestObject, impersonateUserId) {
-        return _executeAction(actionName, requestObject, collection, id, impersonateUserId);
-    }
-
-    /**
-     * Executes a Web API action
-     *
-     * @param {string} [id] - A String representing the GUID value for the record.
-     * @param {string} [collection] - The name of the Entity Collection, for example, for account use accounts, opportunity - opportunities and etc.
-     * @param {string} actionName - The name of the Web API action.
-     * @param {Object} requestObject - Action request body object.
-     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
-     * @returns {Promise}
-     */
-    var _executeAction = function (actionName, requestObject, collection, id, impersonateUserId) {
-
-        ErrorHelper.stringParameterCheck(actionName, "DynamicsWebApi.executeAction", "actionName");
-        var url = actionName;
-
-        if (collection != null) {
-            ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.executeAction", "collection");
-            id = ErrorHelper.guidParameterCheck(id, "DynamicsWebApi.executeAction", "id");
-
-            url = collection + "(" + id + ")/" + url;
-        }
-
-        var header = {};
-
-        if (impersonateUserId != null) {
-            impersonateUserId = ErrorHelper.guidParameterCheck(impersonateUserId, "DynamicsWebApi.executeAction", "impersonateUserId");
-            header["MSCRMCallerID"] = impersonateUserId;
-        }
-
-        return _sendRequest("POST", url, requestObject, header).then(function (response) {
-            if (response.data) {
-                return response.data;
-            }
-        });
-    }
-
-    /**
-     * Creates a new instance of DynamicsWebApi
-     *
-     * @param {DWAConfig} [config] - configuration object.
-     * @returns {DynamicsWebApi}
-     */
-    this.initializeInstance = function (config) {
-        if (!config) {
-            config = _internalConfig;
-        }
-
-        return new DynamicsWebApi(config);
-    }
-};
-
-module.exports = DynamicsWebApi;
-
-/***/ }),
-/* 7 */
-/***/ (function(module, exports) {
-
-module.exports = function dateReviver(key, value) {
-    ///<summary>
-    /// Private function to convert matching string values to Date objects.
-    ///</summary>
-    ///<param name="key" type="String">
-    /// The key used to identify the object property
-    ///</param>
-    ///<param name="value" type="String">
-    /// The string value representing a date
-    ///</param>
-    var a;
-    if (typeof value === 'string') {
-        a = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.exec(value);
-        if (a) {
-            return new Date(value);
-        }
-    }
-    return value;
-};
-
-/***/ }),
-/* 8 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var DWA = __webpack_require__(0);
-var dateReviver = __webpack_require__(7);
-
-//string es6 polyfill
-if (!String.prototype.endsWith || !String.prototype.startsWith) {
-    __webpack_require__(2);
-}
-
-//https://github.com/emiltholin/google-api-batch-utils
-function parseBatchResponse(response) {
-    // Not the same delimiter in the response as we specify ourselves in the request,
-    // so we have to extract it.
-    var delimiter = response.substr(0, response.indexOf('\r\n'));
-    var parts = response.split(delimiter);
-    // The first part will always be an empty string. Just remove it.
-    parts.shift();
-    // The last part will be the "--". Just remove it.
-    parts.pop();
-
-    var result = [];
-    for (var i = 0; i < parts.length; i++) {
-        var part = parts[i];
-        var p = part.substring(part.indexOf("{"), part.lastIndexOf("}") + 1);
-        result.push(JSON.parse(p, dateReviver));
-    }
-    return result;
-}
-
-function populateFormattedValues(object) {
-    var keys = Object.keys(object);
-
-    for (var i = 0; i < keys.length; i++) {
-        if (object[keys[i]] != null && object[keys[i]].constructor === Array) {
-            for (var j = 0; j < object[keys[i]].length; j++) {
-                object[keys[i]][j] = populateFormattedValues(object[keys[i]][j]);
-            }
-        }
-
-        if (keys[i].indexOf('@') == -1)
-            continue;
-
-        var format = keys[i].split('@');
-        var newKey = null;
-        switch (format[1]) {
-            case 'odata.context':
-                newKey = 'oDataContext';
-                break;
-            case 'odata.count':
-                newKey = 'oDataCount';
-                object[keys[i]] = object[keys[i]] != null
-                    ? parseInt(object[keys[i]])
-                    : 0;
-                break;
-            case 'odata.nextLink':
-                newKey = 'oDataNextLink';
-                break;
-            case DWA.Prefer.Annotations.FormattedValue:
-                newKey = format[0] + '_Formatted';
-                break;
-            case DWA.Prefer.Annotations.AssociatedNavigationProperty:
-                newKey = format[0] + '_NavigationProperty';
-                break;
-            case DWA.Prefer.Annotations.LookupLogicalName:
-                newKey = format[0] + '_LogicalName';
-                break;
-        }
-
-        if (newKey) {
-            object[newKey] = object[keys[i]];
-        }
-    }
-
-    return object;
-}
-
-/**
- *
- * @param {string} response
- */
-module.exports = function parseResponse(response) {
-    var responseData = null;
-    if (response.length) {
-        responseData = response.indexOf('--batchresponse_') > -1
-            ? responseData = parseBatchResponse(response)[0]
-            : responseData = JSON.parse(response, dateReviver);
-
-        responseData = populateFormattedValues(responseData);
-    }
-
-    return responseData;
-}
-
-/***/ }),
-/* 9 */
-/***/ (function(module, exports) {
-
-module.exports = function parseResponseHeaders(headerStr) {
-    var headers = {};
-    if (!headerStr) {
-        return headers;
-    }
-    var headerPairs = headerStr.split('\u000d\u000a');
-    for (var i = 0, ilen = headerPairs.length; i < ilen; i++) {
-        var headerPair = headerPairs[i];
-        var index = headerPair.indexOf('\u003a\u0020');
-        if (index > 0) {
-            headers[headerPair.substring(0, index)] = headerPair.substring(index + 2);
-        }
-    }
-    return headers;
-};
-
-/***/ }),
-/* 10 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var parseResponse = __webpack_require__(8);
-var parseResponseHeaders = __webpack_require__(9);
-
-/**
- * Sends a request to given URL with given parameters
- *
- * @param {string} method - Method of the request.
- * @param {string} uri - Request URI.
- * @param {Function} successCallback - A callback called on success of the request.
- * @param {Function} errorCallback - A callback called when a request failed.
- * @param {string} [data] - Data to send in the request.
- * @param {Object} [additionalHeaders] - Object with headers. IMPORTANT! This object does not contain default headers needed for every request.
- */
-var xhrRequest = function (method, uri, data, additionalHeaders, successCallback, errorCallback, async) {
-    var request = new XMLHttpRequest();
-    request.open(method, uri, async);
-    //request.setRequestHeader("OData-MaxVersion", "4.0");
-    //request.setRequestHeader("OData-Version", "4.0");
-    //request.setRequestHeader("Accept", "application/json");
-    //request.setRequestHeader("Content-Type", "application/json; charset=utf-8");
-
-    //set additional headers
-    for (var key in additionalHeaders) {
-        request.setRequestHeader(key, additionalHeaders[key]);
-    }
-
-    request.onreadystatechange = function () {
-        if (request.readyState === 4) {
-            switch (request.status) {
-                case 200: // Success with content returned in response body.
-                case 201: // Success with content returned in response body.
-                case 204: // Success with no content returned in response body.
-                case 304: {// Success with Not Modified
-                    var responseData = parseResponse(request.responseText);
-
-                    var response = {
-                        data: responseData,
-                        headers: parseResponseHeaders(request.getAllResponseHeaders()),
-                        status: request.status
-                    };
-
-                    successCallback(response);
-                    break;
-                }
-                default: // All other statuses are error cases.
-                    var error;
-                    try {
-                        error = JSON.parse(request.response).error;
-                    } catch (e) {
-                        if (request.response.length > 0) {
-                            error = { message: request.response };
-                        }
-                        else {
-                            error = { message: "Unexpected Error" };
-                        }
-                    }
-                    error.status = request.status;
-                    errorCallback(error);
-                    break;
-            }
-
-            request = null;
-        }
-    };
-
-    request.onerror = function () {
-        errorCallback({ message: "Network Error" });
-        request = null;
-    };
-
-    request.ontimeout = function (error) {
-        errorCallback({ message: "Request Timed Out" });
-        request = null;
-    };
-
-    data
-        ? request.send(data)
-        : request.send();
-};
-
-module.exports = xhrRequest;
 
 /***/ }),
 /* 11 */

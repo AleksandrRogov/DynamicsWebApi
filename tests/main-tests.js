@@ -30,6 +30,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntityId);
                         done();
                     }).catch(function (object) {
+                        console.error(object.message);
                         expect(object).to.be.undefined;
                         done();
                     });
