@@ -39,6 +39,7 @@ Any suggestions are welcome!
   * [Execute Web API actions](#execute-web-api-actions)
 * [Formatted Values and Lookup Properties](#formatted-values-and-lookup-properties)
 * [Using Alternate Keys](#using-alternate-keys)
+* [Making requests using Entity Logical Names](#making-requests-using-entity-logical-names)
 * [JavaScript Promises](#javascript-promises)
 * [JavaScript Callbacks](#javascript-callbacks)
 
