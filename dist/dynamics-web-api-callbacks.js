@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.3.4 (c) 2017 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.4.0 (c) 2017 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -484,6 +484,11 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
             ErrorHelper.parameterCheck(request.data, 'DynamicsWebApi.' + functionName, 'request.data')
         }
 
+        if (request.noCache) {
+            ErrorHelper.boolParameterCheck(request.noCache, 'DynamicsWebApi.' + functionName, 'request.noCache');
+            headers['Cache-Control'] = 'no-cache';
+        }
+
         if (request.expand && request.expand.length) {
             ErrorHelper.stringOrArrayParameterCheck(request.expand, 'DynamicsWebApi.' + functionName, "request.expand");
             if (typeof request.expand === 'string') {
@@ -706,6 +711,38 @@ var DWA = __webpack_require__(0);
 var Utility = __webpack_require__(4);
 var RequestConverter = __webpack_require__(3);
 
+var _entityNames;
+
+/**
+ * Searches for a collection name by provided entity name in a cached entity metadata.
+ * The returned collection name can be null.
+ *
+ * @param {string} entityName - entity name
+ * @returns {string} - a collection name
+ */
+function findCollectionName(entityName) {
+    var xrmInternal = Utility.getXrmInternal();
+    if (!Utility.isNull(xrmInternal)) {
+        var collectionName = xrmInternal.getEntitySetName(entityName);
+        return collectionName || entityName;
+    }
+
+    var collectionName = null;
+
+    if (!Utility.isNull(_entityNames)) {
+        collectionName = _entityNames[entityName];
+        if (Utility.isNull(collectionName)) {
+            for (var key in _entityNames) {
+                if (_entityNames[key] == entityName) {
+                    return entityName;
+                }
+            }
+        }
+    }
+
+    return collectionName;
+}
+
 function setStandardHeaders(additionalHeaders) {
     additionalHeaders["Accept"] = "application/json";
     additionalHeaders["OData-MaxVersion"] = "4.0";
@@ -720,12 +757,26 @@ function stringifyData(data, config) {
     if (data) {
         stringifiedData = JSON.stringify(data, function (key, value) {
             /// <param name="key" type="String">Description</param>
-            if (key.endsWith("@odata.bind")) {
-                if (typeof value === "string") {
+            if (key.endsWith('@odata.bind') || key.endsWith('@odata.id')) {
+                if (typeof value === 'string') {
                     //remove brackets in guid
                     if (/\(\{[\w\d-]+\}\)/g.test(value)) {
                         value = value.replace(/(.+)\(\{([\w\d-]+)\}\)/g, '$1($2)');
                     }
+
+                    if (config.useEntityNames) {
+                        //replace entity name with collection name
+                        var regularExpression = /([\w_]+)(\([\d\w-]+\))$/;
+                        var valueParts = regularExpression.exec(value);
+                        if (valueParts.length > 2) {
+                            var collectionName = findCollectionName(valueParts[1]);
+
+                            if (!Utility.isNull(collectionName)) {
+                                value = value.replace(regularExpression, collectionName + '$2');
+                            }
+                        }
+                    }
+
                     //add full web api url if it's not set
                     if (!value.startsWith(config.webApiUrl)) {
                         value = config.webApiUrl + value.replace(/^\\/, '');
@@ -822,26 +873,25 @@ function sendRequest(method, path, config, data, additionalHeaders, successCallb
     }
 };
 
-var _entityNames;
-
 function _getEntityNames(entityName, config, successCallback, errorCallback) {
 
     var resolve = function (result) {
         _entityNames = {};
-        for (var i = 0; i < result.length; i++) {
-            _entityNames[result[i].LogicalName] = result[i].LogicalCollectionName;
+        for (var i = 0; i < result.data.value.length; i++) {
+            _entityNames[result.data.value[i].LogicalName] = result.data.value[i].LogicalCollectionName;
         }
 
-        successCallback(_entityNames[entityName]);
+        successCallback(findCollectionName(entityName));
     };
 
     var reject = function (error) {
-        errorCallback({ message: 'Cannot fetch EntityDefinitions. Error: ' + error.message });
+        errorCallback({ message: 'Unable to fetch EntityDefinitions. Error: ' + error.message });
     };
 
     var request = RequestConverter.convertRequest({
         collection: 'EntityDefinitions',
-        select: ['LogicalCollectionName', 'LogicalName']
+        select: ['LogicalCollectionName', 'LogicalName'],
+        noCache: true
     }, 'retrieveMultiple', config);
 
     sendRequest('GET', request.url, config, null, request.headers, resolve, reject, request.async);
@@ -868,17 +918,13 @@ function _getCollectionName(entityName, config, successCallback, errorCallback) 
     }
 
     try {
-        var xrmInternal = Utility.getXrmInternal();
-        if (!Utility.isNull(xrmInternal)) {
-            successCallback(xrmInternal.getEntitySetName(entityName));
+        var collectionName = findCollectionName(entityName);
+
+        if (Utility.isNull(collectionName)) {
+            _getEntityNames(entityName, config, successCallback, errorCallback);
         }
         else {
-            if (Utility.isNull(_entityNames)) {
-                _getEntityNames(entityName, config, successCallback, errorCallback);
-            }
-            else {
-                successCallback(_entityNames[entityName]);
-            }
+            successCallback(collectionName);
         }
     }
     catch (error) {
@@ -897,7 +943,9 @@ function makeRequest(method, request, functionName, config, resolve, reject) {
 
 module.exports = {
     sendRequest: sendRequest,
-    makeRequest: makeRequest
+    makeRequest: makeRequest,
+    getCollectionName: findCollectionName,
+
 }
 
 /***/ }),
@@ -927,8 +975,34 @@ if (!String.prototype.endsWith || !String.prototype.startsWith) {
  * @property {string} includeAnnotations - Sets Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
  * @property {string} maxPageSize - Sets the odata.maxpagesize preference value to request the number of entities returned in the response.
  * @property {boolean} returnRepresentation - Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
- * @property {boolean} useEntityNames - Indicates whether to use Entity Logical Names instead of Collection Logical Names
+ * @property {boolean} useEntityNames - Indicates whether to use Entity Logical Names instead of Collection Logical Names.
 */
+
+/**
+ * Dynamics Web Api Request
+ * @typedef {Object} DWARequest
+ * @property {boolean} async - XHR requests only! Indicates whether the requests should be made synchronously or asynchronously. Default value is true (asynchronously).
+ * @property {string} collection - The name of the Entity Collection or Entity Logical name.
+ * @property {string} id - A String representing the Primary Key (GUID) of the record.
+ * @property {Array} select - An Array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
+ * @property {Array} expand - An array of Expand Objects (described below the table) representing the $expand OData System Query Option value to control which related records are also returned.
+ * @property {string} key - A String representing collection record's Primary Key (GUID) or Alternate Key(s).
+ * @property {string} filter - Use the $filter system query option to set criteria for which entities will be returned.
+ * @property {number} maxPageSize - Sets the odata.maxpagesize preference value to request the number of entities returned in the response.
+ * @property {boolean} count - Boolean that sets the $count system query option with a value of true to include a count of entities that match the filter criteria up to 5000 (per page). Do not use $top with $count!
+ * @property {number} top - Limit the number of results returned by using the $top system query option. Do not use $top with $count!
+ * @property {Array} orderBy - An Array (of Strings) representing the order in which items are returned using the $orderby system query option. Use the asc or desc suffix to specify ascending or descending order respectively. The default is ascending if the suffix isn't applied.
+ * @property {string} includeAnnotations - Sets Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
+ * @property {string} ifmatch - Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests.
+ * @property {string} ifnonematch - Sets If-None-Match header value that enables to use conditional retrieval in applicable requests.
+ * @property {boolean} returnRepresentation - Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
+ * @property {Object} entity - A JavaScript object with properties corresponding to the logical name of entity attributes (exceptions are lookups and single-valued navigation properties).
+ * @property {string} impersonate - Impersonates the user. A String representing the GUID value for the Dynamics 365 system user id.
+ * @property {string} navigationProperty - A String representing the name of a single-valued navigation property. Useful when needed to retrieve information about a related record in a single request.
+ * @property {boolean} noCache - If set to 'true', DynamicsWebApi adds a request header 'Cache-Control: no-cache'. Default value is 'false'.
+ * @property {string} savedQuery - A String representing the GUID value of the saved query.
+ * @property {string} userQuery - A String representing the GUID value of the user query.
+ */
 
 /**
  * DynamicsWebApi - a Microsoft Dynamics CRM Web API helper library. Current version uses Promises instead of Callbacks.
@@ -1006,7 +1080,7 @@ function DynamicsWebApi(config) {
      * Makes a request to web api
      *
      * @param {string} method - Method of the request.
-     * @param {Object} request - Request to Web Api
+     * @param {DWARequest} request - Request to Web Api
      * @param {string} [functionName] - Indictes the name of the function that called make request.
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
@@ -1019,7 +1093,7 @@ function DynamicsWebApi(config) {
      * Sends an asynchronous request to create a new record.
      *
      * @param {Object} object - A JavaScript object valid for create operations.
-     * @param {string} collection - The Name of the Entity Collection.
+     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
      * @param {string|Array} [prefer] - Sets a Prefer header value. For example: ['retrun=representation', 'odata.include-annotations="*"'].
@@ -1068,7 +1142,7 @@ function DynamicsWebApi(config) {
     /**
      * Sends an asynchronous request to update a record.
      *
-     * @param {Object} request - An object that represents all possible options for a current request.
+     * @param {DWARequest} request - An object that represents all possible options for a current request.
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
      */
@@ -1108,7 +1182,7 @@ function DynamicsWebApi(config) {
      * Sends an asynchronous request to update a record.
      *
      * @param {string} key - A String representing the GUID value or Alternate Key(s) for the record to update.
-     * @param {string} collection - The Name of the Entity Collection.
+     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
      * @param {Object} object - A JavaScript object valid for update operations.
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
@@ -1147,7 +1221,7 @@ function DynamicsWebApi(config) {
      * Sends an asynchronous request to update a single value in the record.
      *
      * @param {string} key - A String representing the GUID value or Alternate Key(s) for the record to update.
-     * @param {string} collection - The Name of the Entity Collection.
+     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
      * @param {Object} keyValuePair - keyValuePair object with a logical name of the field as a key and a value to update with. Example: {subject: "Update Record"}
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
@@ -1195,7 +1269,7 @@ function DynamicsWebApi(config) {
     /**
      * Sends an asynchronous request to delete a record.
      *
-     * @param {Object} request - An object that represents all possible options for a current request.
+     * @param {DWARequest} request - An object that represents all possible options for a current request.
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
      */
@@ -1229,7 +1303,7 @@ function DynamicsWebApi(config) {
      * Sends an asynchronous request to delete a record.
      *
      * @param {string} key - A String representing the GUID value or Alternate Key(s) for the record to delete.
-     * @param {string} collection - The Name of the Entity Collection.
+     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
      * @param {string} [propertyName] - The name of the property which needs to be emptied. Instead of removing a whole record only the specified property will be cleared.
@@ -1262,7 +1336,7 @@ function DynamicsWebApi(config) {
     /**
      * Sends an asynchronous request to retrieve a record.
      *
-     * @param {Object} request - An object that represents all possible options for a current request.
+     * @param {DWARequest} request - An object that represents all possible options for a current request.
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
      */
@@ -1290,7 +1364,7 @@ function DynamicsWebApi(config) {
      * Sends an asynchronous request to retrieve a record.
      *
      * @param {string} key - A String representing the GUID value or Alternate Key(s) for the record to retrieve.
-     * @param {string} collection - The Name of the Entity Collection.
+     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
      * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
@@ -1325,7 +1399,7 @@ function DynamicsWebApi(config) {
     /**
      * Sends an asynchronous request to upsert a record.
      *
-     * @param {Object} request - An object that represents all possible options for a current request.
+     * @param {DWARequest} request - An object that represents all possible options for a current request.
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
      */
@@ -1377,7 +1451,7 @@ function DynamicsWebApi(config) {
      * Sends an asynchronous request to upsert a record.
      *
      * @param {string} key - A String representing the GUID value or Alternate Key(s) for the record to upsert.
-     * @param {string} collection - The Name of the Entity Collection.
+     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
      * @param {Object} object - A JavaScript object valid for update operations.
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
@@ -1417,7 +1491,7 @@ function DynamicsWebApi(config) {
     /**
      * Sends an asynchronous request to count records. IMPORTANT! The count value does not represent the total number of entities in the system. It is limited by the maximum number of entities that can be returned. Returns: Number
      *
-     * @param {string} collection - The Name of the Entity Collection.
+     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
      * @param {string} [filter] - Use the $filter system query option to set criteria for which entities will be returned.
@@ -1456,7 +1530,7 @@ function DynamicsWebApi(config) {
     /**
      * Sends an asynchronous request to count records. Returns: Number
      *
-     * @param {string} collection - The Name of the Entity Collection.
+     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
      * @param {string} [filter] - Use the $filter system query option to set criteria for which entities will be returned.
@@ -1477,7 +1551,7 @@ function DynamicsWebApi(config) {
     /**
      * Sends an asynchronous request to retrieve records.
      *
-     * @param {string} collection - The Name of the Entity Collection.
+     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
      * @param {Array} [select] - Use the $select system query option to limit the properties returned.
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
@@ -1496,7 +1570,7 @@ function DynamicsWebApi(config) {
     /**
      * Sends an asynchronous request to retrieve all records.
      *
-     * @param {string} collection - The Name of the Entity Collection.
+     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
      * @param {Array} [select] - Use the $select system query option to limit the properties returned.
@@ -1513,7 +1587,7 @@ function DynamicsWebApi(config) {
     /**
      * Sends an asynchronous request to retrieve records.
      *
-     * @param {Object} request - An object that represents all possible options for a current request.
+     * @param {DWARequest} request - An object that represents all possible options for a current request.
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
      * @param {string} [nextPageLink] - Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
@@ -1565,7 +1639,7 @@ function DynamicsWebApi(config) {
     /**
      * Sends an asynchronous request to retrieve all records.
      *
-     * @param {Object} request - An object that represents all possible options for a current request.
+     * @param {DWARequest} request - An object that represents all possible options for a current request.
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
      */
@@ -1576,7 +1650,7 @@ function DynamicsWebApi(config) {
     /**
      * Sends an asynchronous request to count records. Returns: DWA.Types.FetchXmlResponse
      *
-     * @param {string} collection - An object that represents all possible options for a current request.
+     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
      * @param {string} fetchXml - FetchXML is a proprietary query language that provides capabilities to perform aggregation.
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
@@ -1647,7 +1721,7 @@ function DynamicsWebApi(config) {
     /**
      * Sends an asynchronous request to execute FetchXml to retrieve all records.
      *
-     * @param {string} collection - An object that represents all possible options for a current request.
+     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
      * @param {string} fetchXml - FetchXML is a proprietary query language that provides capabilities to perform aggregation.
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
@@ -1661,10 +1735,10 @@ function DynamicsWebApi(config) {
     /**
      * Associate for a collection-valued navigation property. (1:N or N:N)
      *
-     * @param {string} collection - Primary entity collection name.
+     * @param {string} collection - Primary Entity Collection name or Entity Name.
      * @param {string} primaryKey - Primary entity record id.
      * @param {string} relationshipName - Relationship name.
-     * @param {string} relatedCollection - Related colletion name.
+     * @param {string} relatedCollection - Related Entity Collection name or Entity Name.
      * @param {string} relatedKey - Related entity record id.
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
@@ -1689,7 +1763,7 @@ function DynamicsWebApi(config) {
             collection: collection,
             key: primaryKey,
             impersonate: impersonateUserId,
-            data: { "@odata.id": _internalConfig.webApiUrl + relatedCollection + "(" + relatedKey + ")" }
+            data: { "@odata.id": relatedCollection + "(" + relatedKey + ")" }
         };
 
         _makeRequest('POST', request, 'associate', onSuccess, errorCallback);
@@ -1698,7 +1772,7 @@ function DynamicsWebApi(config) {
     /**
      * Disassociate for a collection-valued navigation property.
      *
-     * @param {string} collection - Primary entity collection name.
+     * @param {string} collection - Primary Entity Collection name or Entity Name.
      * @param {string} primaryKey - Primary entity record id.
      * @param {string} relationshipName - Relationship name.
      * @param {string} relatedKey - Related entity record id.
@@ -1732,7 +1806,7 @@ function DynamicsWebApi(config) {
     /**
      * Associate for a single-valued navigation property. (1:N)
      *
-     * @param {string} collection - Entity collection name that contains an attribute.
+     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
      * @param {string} key - Entity record Id that contains an attribute.
      * @param {string} singleValuedNavigationPropertyName - Single-valued navigation property name (usually it's a Schema Name of the lookup attribute).
      * @param {string} relatedCollection - Related collection name that the lookup (attribute) points to.
@@ -1760,7 +1834,7 @@ function DynamicsWebApi(config) {
             collection: collection,
             key: key,
             impersonate: impersonateUserId,
-            data: { "@odata.id": _internalConfig.webApiUrl + relatedCollection + "(" + relatedKey + ")" }
+            data: { "@odata.id": relatedCollection + "(" + relatedKey + ")" }
         };
 
         _makeRequest('PUT', request, 'associateSingleValued', onSuccess, errorCallback);
@@ -1769,7 +1843,7 @@ function DynamicsWebApi(config) {
     /**
      * Removes a reference to an entity for a single-valued navigation property. (1:N)
      *
-     * @param {string} collection - Entity collection name that contains an attribute.
+     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
      * @param {string} key - Entity record Id that contains an attribute.
      * @param {string} singleValuedNavigationPropertyName - Single-valued navigation property name (usually it's a Schema Name of the lookup attribute).
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
@@ -1815,7 +1889,7 @@ function DynamicsWebApi(config) {
      * Executes a bound function
      *
      * @param {string} id - A String representing the GUID value for the record.
-     * @param {string} collection - The name of the Entity Collection, for example, for account use accounts, opportunity - opportunities and etc.
+     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
      * @param {string} functionName - The name of the function.
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
@@ -1830,7 +1904,7 @@ function DynamicsWebApi(config) {
      * Executes a function
      *
      * @param {string} id - A String representing the GUID value for the record.
-     * @param {string} collection - The name of the Entity Collection, for example, for account use accounts, opportunity - opportunities and etc.
+     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
      * @param {string} functionName - The name of the function.
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
@@ -1878,7 +1952,7 @@ function DynamicsWebApi(config) {
      * Executes a bound Web API action (bound to a particular entity record)
      *
      * @param {string} id - A String representing the GUID value for the record.
-     * @param {string} collection - The name of the Entity Collection, for example, for account use accounts, opportunity - opportunities and etc.
+     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
      * @param {string} actionName - The name of the Web API action.
      * @param {Object} requestObject - Action request body object.
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
@@ -1893,7 +1967,7 @@ function DynamicsWebApi(config) {
      * Executes a Web API action
      *
      * @param {string} [id] - A String representing the GUID value for the record.
-     * @param {string} [collection] - The name of the Entity Collection, for example, for account use accounts, opportunity - opportunities and etc.
+     * @param {string} [collection] - The name of the Entity Collection or Entity Logical name.
      * @param {string} actionName - The name of the Web API action.
      * @param {Object} requestObject - Action request body object.
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
@@ -1938,6 +2012,10 @@ function DynamicsWebApi(config) {
 
         return new DynamicsWebApi(config);
     }
+};
+
+DynamicsWebApi.prototype.utility = {
+    getCollectionName: Request.getCollectionName
 };
 
 module.exports = DynamicsWebApi;
