@@ -987,13 +987,13 @@ dynamicsWebApi.retrieve(leadId, 'lead', ['fullname', 'subject']).then(function (
 //this will also work in request functions, even though the name of the property is a collection
 
 var request = {
-	collection: 'lead',
-	key: leadId,
-	select:  ['fullname', 'subject']
+    collection: 'lead',
+    key: leadId,
+    select:  ['fullname', 'subject']
 };
 
 dynamicsWebApi.retrieveRequest(request).then(function (record) {
-	//do something with a record here
+    //do something with a record here
 })
 .catch(function (error) {
     //catch an error
@@ -1004,8 +1004,8 @@ This feature also applies when you set a navigation property and provide an enti
 
 ```js
 var account = {
-	name: 'account name'
-	'primarycontactid@odata.bind': 'contact(00000000-0000-0000-0000-000000000001)'
+    name: 'account name'
+   'primarycontactid@odata.bind': 'contact(00000000-0000-0000-0000-000000000001)'
 }
 
 dynamicsWebApi.create(account, 'account').then(function(accountId)){
