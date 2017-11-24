@@ -1004,12 +1004,12 @@ This feature also applies when you set a navigation property and provide an enti
 
 ```js
 var account = {
-    name: 'account name'
+    name: 'account name',
    'primarycontactid@odata.bind': 'contact(00000000-0000-0000-0000-000000000001)'
 }
 
 dynamicsWebApi.create(account, 'account').then(function(accountId)){
-	//newly created accountId
+    //newly created accountId
 }).catch(function (error) {
     //catch error here
 });
