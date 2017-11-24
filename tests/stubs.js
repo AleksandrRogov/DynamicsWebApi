@@ -30,6 +30,18 @@ var dataStubs = {
         "@odata.context": "context",
         "option@OData.Community.Display.V1.FormattedValue": "formatted"
     },
+    entityDefinitionList: {
+        '@odata.contxt': 'context',
+        value: [{
+            "LogicalCollectionName": "tests",
+            "LogicalName": "test",
+            "MetadataId": "9dceed2b-9513-4a14-b09e-c176a6f1d9c3"
+        }, {
+            "LogicalCollectionName": "records",
+            "LogicalName": "record",
+            "MetadataId": "18eb9672-3070-478c-be5b-e0324acb1188"
+        }]
+    },
     updatedEntity: {
         fullname: "test record"
     },
@@ -76,47 +88,47 @@ var dataStubs = {
         ]
     },
     batch:
-        '--dwa_batch_XXX\n' +
-        'Content-Type: application/http\n' +
-        'Content-Transfer-Encoding: binary\n\n' +
-        'GET {0} HTTP/1.1\n' +
-        'Accept: application/json\n' +
-        'OData-MaxVersion: 4.0\n' +
-        'OData-Version: 4.0\n' +
-        'Content-Type: application/json; charset=utf-8\n\n' +
-        '--dwa_batch_XXX--',
+    '--dwa_batch_XXX\n' +
+    'Content-Type: application/http\n' +
+    'Content-Transfer-Encoding: binary\n\n' +
+    'GET {0} HTTP/1.1\n' +
+    'Accept: application/json\n' +
+    'OData-MaxVersion: 4.0\n' +
+    'OData-Version: 4.0\n' +
+    'Content-Type: application/json; charset=utf-8\n\n' +
+    '--dwa_batch_XXX--',
 
     fetchXmls: {
         cookiePage1: "%253Ccookie%2520pagenumber%253D%25222%2522%2520pagingcookie%253D%2522%253Ccookie%2520page%253D%25221%2522%253E%253Caccountid%2520last%253D%2522%257BEF72AE29-B3DE-E611-8102-5065F38A7BF1%257D%2522%2520first%253D%2522%257B475B158C-541C-E511-80D3-3863BB347BA8%257D%2522%2520/%253E%253C/cookie%253E%2522%2520istracking%253D%2522False%2522%2520/%253E",
         cookiePage2: "%253Ccookie%2520pagenumber%253D%25222%2522%2520pagingcookie%253D%2522%253Ccookie%2520page%253D%25222%2522%253E%253Caccountid%2520last%253D%2522%257BF972AE29-B3DE-E611-8102-5065F38A7BF1%257D%2522%2520first%253D%2522%257BF172AE29-B3DE-E611-8102-5065F38A7BF1%257D%2522%2520/%253E%253C/cookie%253E%2522%2520istracking%253D%2522False%2522%2520/%253E",
         fetchXml:
-            '<fetch mapping="logical" count="5">' +
-                '<entity name="account">' +
-                    '<attribute name="accountid"/>' +
-                    '<attribute name="name"/>' +
-                '</entity>' +
-            '</fetch>',
+        '<fetch mapping="logical" count="5">' +
+        '<entity name="account">' +
+        '<attribute name="accountid"/>' +
+        '<attribute name="name"/>' +
+        '</entity>' +
+        '</fetch>',
         fetchXml1:
-            '<fetch mapping="logical" count="5" page="1">' +
-                '<entity name="account">' +
-                    '<attribute name="accountid"/>' +
-                    '<attribute name="name"/>' +
-                '</entity>' +
-            '</fetch>',
+        '<fetch mapping="logical" count="5" page="1">' +
+        '<entity name="account">' +
+        '<attribute name="accountid"/>' +
+        '<attribute name="name"/>' +
+        '</entity>' +
+        '</fetch>',
         fetchXml2cookie:
-            '<fetch mapping="logical" count="5" page="2" paging-cookie="&lt;cookie page=&quot;1&quot;&gt;&lt;accountid last=&quot;{EF72AE29-B3DE-E611-8102-5065F38A7BF1}&quot; first=&quot;{475B158C-541C-E511-80D3-3863BB347BA8}&quot; /&gt;&lt;/cookie&gt;">' +
-                '<entity name="account">' +
-                    '<attribute name="accountid"/>' +
-                    '<attribute name="name"/>' +
-                '</entity>' +
-            '</fetch>',
+        '<fetch mapping="logical" count="5" page="2" paging-cookie="&lt;cookie page=&quot;1&quot;&gt;&lt;accountid last=&quot;{EF72AE29-B3DE-E611-8102-5065F38A7BF1}&quot; first=&quot;{475B158C-541C-E511-80D3-3863BB347BA8}&quot; /&gt;&lt;/cookie&gt;">' +
+        '<entity name="account">' +
+        '<attribute name="accountid"/>' +
+        '<attribute name="name"/>' +
+        '</entity>' +
+        '</fetch>',
         fetchXml2:
-            '<fetch mapping="logical" count="5" page="2">' +
-                '<entity name="account">' +
-                    '<attribute name="accountid"/>' +
-                    '<attribute name="name"/>' +
-                '</entity>' +
-            '</fetch>',
+        '<fetch mapping="logical" count="5" page="2">' +
+        '<entity name="account">' +
+        '<attribute name="accountid"/>' +
+        '<attribute name="name"/>' +
+        '</entity>' +
+        '</fetch>',
         fetchXmlResponsePage1Cookie: {
             "@odata.context": "context",
             "@Microsoft.Dynamics.CRM.fetchxmlpagingcookie": "%253Ccookie%2520pagenumber%253D%25222%2522%2520pagingcookie%253D%2522%253Ccookie%2520page%253D%25221%2522%253E%253Caccountid%2520last%253D%2522%257BEF72AE29-B3DE-E611-8102-5065F38A7BF1%257D%2522%2520first%253D%2522%257B475B158C-541C-E511-80D3-3863BB347BA8%257D%2522%2520/%253E%253C/cookie%253E%2522%2520istracking%253D%2522False%2522%2520/%253E",
@@ -206,6 +218,7 @@ var responseStubs = {
         responseText: JSON.stringify(dataStubs.testEntity)
     },
     testEntityUrl: webApiUrl + "tests(" + dataStubs.testEntityId + ")",
+    entityDefinitionsUrl: webApiUrl + 'EntityDefinitions',
     basicEmptyResponseSuccess: {
         status: 204
     },
@@ -216,6 +229,10 @@ var responseStubs = {
     responseFormatted200: {
         status: 200,
         responseText: JSON.stringify(dataStubs.testEntityFormatted)
+    },
+    responseEntityDefinitions: {
+        status: 200,
+        responseText: JSON.stringify(dataStubs.entityDefinitionList)
     },
     retrieveReferenceResponse: {
         status: 200,
@@ -248,17 +265,17 @@ var responseStubs = {
     batch: {
         status: 200,
         responseText:
-            '--batchresponse_904020fa-6213-43d4-a26a-5347b70095e8\r\n' +
-            'Content-Type: application/http\r\n' +
-            'Content-Transfer-Encoding: binary\r\n\r\n' +
+        '--batchresponse_904020fa-6213-43d4-a26a-5347b70095e8\r\n' +
+        'Content-Type: application/http\r\n' +
+        'Content-Transfer-Encoding: binary\r\n\r\n' +
 
-            'HTTP/ 1.1 200 OK\r\n' +
-            'Access-Control-Expose-Headers: Preference-Applied, OData-EntityId, Location, ETag, OData-Version, Content-Encoding, Transfer-Encoding, Content-Length, Retry-After\r\n' +
-            'Content-Type: application/json; odata.metadata=minimal\r\n' +
-            'OData-Version: 4.0\r\n\r\n' +
+        'HTTP/ 1.1 200 OK\r\n' +
+        'Access-Control-Expose-Headers: Preference-Applied, OData-EntityId, Location, ETag, OData-Version, Content-Encoding, Transfer-Encoding, Content-Length, Retry-After\r\n' +
+        'Content-Type: application/json; odata.metadata=minimal\r\n' +
+        'OData-Version: 4.0\r\n\r\n' +
 
-            JSON.stringify(dataStubs.multiple) + '\r\n' +
-            '--batchresponse_904020fa-6213-43d4-a26a-5347b70095e8--'
+        JSON.stringify(dataStubs.multiple) + '\r\n' +
+        '--batchresponse_904020fa-6213-43d4-a26a-5347b70095e8--'
     },
     fetchXmlResponsePage1Cookie: {
         status: 200,

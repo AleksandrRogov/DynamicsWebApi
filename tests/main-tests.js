@@ -1220,6 +1220,44 @@ describe("promises -", function () {
             });
         });
 
+        describe("basic - use entity names: true", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.basicEmptyResponseSuccess;
+                var response2 = mocks.responses.responseEntityDefinitions;
+                scope = nock(mocks.webApiUrl)
+                    .get('/EntityDefinitions?$select=LogicalCollectionName,LogicalName')
+                    .once()
+                    .reply(response2.status, response2.responseText, response2.responseHeaders)
+                    .post("/tests(" + mocks.data.testEntityId + ")/tests_records/$ref", {
+                        "@odata.id": mocks.webApiUrl + "records(" + mocks.data.testEntityId2 + ")"
+                    })
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                var dynamicsWebApiE = dynamicsWebApiTest.initializeInstance({ webApiVersion: "8.2", useEntityNames: true });
+                dynamicsWebApiE.associate("test", mocks.data.testEntityId, "tests_records", "record", mocks.data.testEntityId2)
+                    .then(function (object) {
+                        expect(object).to.be.undefined;
+                        var colName = dynamicsWebApiE.utility.getCollectionName('test');
+                        expect(colName).to.be.eq('tests');
+                        done();
+                    }).catch(function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+
         describe("impersonation", function () {
             var scope;
             before(function () {
@@ -2319,8 +2357,6 @@ describe("promises -", function () {
                     impersonate: mocks.data.testEntityId2,
                     ifmatch: "match"
                 };
-
-                console.error(encodeURI(dwaRequest.expand[0].filter));
 
                 dynamicsWebApiTest.retrieveRequest(dwaRequest)
                     .then(function (object) {

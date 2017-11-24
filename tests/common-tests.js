@@ -794,9 +794,9 @@ describe("RequestConverter.convertRequestOptions -", function () {
             select: ["name"],
             orderBy: ["order"]
         }, {
-                property: "property2",
-                select: ["name3"]
-            }];
+            property: "property2",
+            select: ["name3"]
+        }];
 
         result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
         expect(result).to.deep.equal({ url: stubUrl, query: "$select=name,subject&$top=5&$orderby=order&$expand=property($select=name;$orderby=order),property2($select=name3)", headers: {} });
@@ -1404,6 +1404,215 @@ describe("DWA.Types", function () {
                     cookie: "", page: 0, nextPage: 1
                 }
             });
+    });
+});
+
+describe('Request.makeRequest', function () {
+    describe('useEntityNames', function () {
+        var scope;
+        before(function () {
+            var response = mocks.responses.response200;
+            var response2 = mocks.responses.responseEntityDefinitions;
+            scope = nock(mocks.webApiUrl)
+                .get('/EntityDefinitions?$select=LogicalCollectionName,LogicalName')
+                .once()
+                .reply(response2.status, response2.responseText, response2.responseHeaders)
+                .get('/tests(' + mocks.data.testEntityId + ')')
+                .reply(response.status, response.responseText, response.responseHeaders);
+        });
+
+        after(function () {
+            nock.cleanAll();
+            Request._clearEntityNames();
+        });
+
+        it("returns a correct response", function (done) {
+            //{ webApiUrl: mocks.webApiUrl }
+            var request = {
+                collection: 'test',
+                key: mocks.data.testEntityId
+            };
+            var config = {
+                webApiUrl: mocks.webApiUrl,
+                useEntityNames: true
+            };
+            Request.makeRequest('GET', request, 'any', config, function (object) {
+                var expectedO = {
+                    status: 200,
+                    headers: {},
+                    data: mocks.data.testEntity
+                };
+                expect(object).to.deep.equal(expectedO);
+                done();
+            }, function (object) {
+                expect(object).to.be.undefined;
+                done();
+            });
+        });
+
+        it("all requests have been made", function () {
+            expect(scope.isDone()).to.be.true;
+        });
+    });
+
+    describe('useEntityNames - entity metadata requested only once', function () {
+        var scope;
+        before(function () {
+            var response = mocks.responses.response200;
+            var response2 = mocks.responses.responseEntityDefinitions;
+            scope = nock(mocks.webApiUrl)
+                .get('/EntityDefinitions?$select=LogicalCollectionName,LogicalName')
+                .once()
+                .reply(response2.status, response2.responseText, response2.responseHeaders)
+                .get('/tests(' + mocks.data.testEntityId + ')')
+                .twice()
+                .reply(response.status, response.responseText, response.responseHeaders);
+        });
+
+        after(function () {
+            nock.cleanAll();
+            Request._clearEntityNames();
+        });
+
+        it("returns a correct response", function (done) {
+            var request = {
+                collection: 'test',
+                key: mocks.data.testEntityId
+            };
+            var config = {
+                webApiUrl: mocks.webApiUrl,
+                useEntityNames: true
+            };
+
+            var error = function (object) {
+                expect(object).to.be.undefined;
+                done();
+            };
+
+            Request.makeRequest('GET', request, 'any', config, function (object) {
+                var expectedO = {
+                    status: 200,
+                    headers: {},
+                    data: mocks.data.testEntity
+                };
+                expect(object).to.deep.equal(expectedO);
+
+                var request2 = {
+                    collection: 'test',
+                    key: mocks.data.testEntityId
+                };
+
+                Request.makeRequest('GET', request2, 'any', config, function (object1) {
+                    var expectedO1 = {
+                        status: 200,
+                        headers: {},
+                        data: mocks.data.testEntity
+                    };
+                    expect(object1).to.deep.equal(expectedO1);
+                    done();
+                }, error);
+            }, error);
+        });
+
+        it("all requests have been made", function () {
+            expect(scope.isDone()).to.be.true;
+        });
+    });
+
+    describe('useEntityNames - request with collection name does not fail', function () {
+        var scope;
+        before(function () {
+            var response = mocks.responses.response200;
+            var response2 = mocks.responses.responseEntityDefinitions;
+            scope = nock(mocks.webApiUrl)
+                .get('/EntityDefinitions?$select=LogicalCollectionName,LogicalName')
+                .once()
+                .reply(response2.status, response2.responseText, response2.responseHeaders)
+                .get('/tests(' + mocks.data.testEntityId + ')')
+                .reply(response.status, response.responseText, response.responseHeaders);
+        });
+
+        after(function () {
+            nock.cleanAll();
+            Request._clearEntityNames();
+        });
+
+        it("returns a correct response", function (done) {
+            var request = {
+                collection: 'tests',
+                key: mocks.data.testEntityId
+            };
+            var config = {
+                webApiUrl: mocks.webApiUrl,
+                useEntityNames: true
+            };
+            Request.makeRequest('GET', request, 'any', config, function (object) {
+                var expectedO = {
+                    status: 200,
+                    headers: {},
+                    data: mocks.data.testEntity
+                };
+                expect(object).to.deep.equal(expectedO);
+                done();
+            }, function (object) {
+                expect(object).to.be.undefined;
+                done();
+            });
+        });
+
+        it("all requests have been made", function () {
+            expect(scope.isDone()).to.be.true;
+        });
+    });
+
+    describe('useEntityNames - Xrm.Internal', function () {
+        var scope;
+        before(function () {
+            var response = mocks.responses.response200;
+            var response2 = mocks.responses.responseEntityDefinitions;
+            scope = nock(mocks.webApiUrl)
+                .get('/tests(' + mocks.data.testEntityId + ')')
+                .reply(response.status, response.responseText, response.responseHeaders);
+        });
+
+        after(function () {
+            nock.cleanAll();
+            Request._clearEntityNames();
+            global.Xrm.Internal = null;
+        });
+
+        it("returns a correct response", function (done) {
+            global.Xrm.Internal = {
+                getEntitySetName: function (entityName) {
+                    return entityName + 's';
+                }
+            };
+
+            var request = {
+                collection: 'test',
+                key: mocks.data.testEntityId
+            };
+            var config = {
+                webApiUrl: mocks.webApiUrl,
+                useEntityNames: true
+            };
+            Request.makeRequest('GET', request, 'any', config, function (object) {
+                var expectedO = {
+                    status: 200,
+                    headers: {},
+                    data: mocks.data.testEntity
+                };
+                expect(object).to.deep.equal(expectedO);
+                done();
+            }, function (object) {
+                expect(object).to.be.undefined;
+                done();
+            });
+        });
+
+        it("all requests have been made", function () {
+            expect(scope.isDone()).to.be.true;
+        });
     });
 });
 

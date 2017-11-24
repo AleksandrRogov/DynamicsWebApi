@@ -58,6 +58,150 @@ describe("xhr -", function() {
                 expect(responseObject).to.deep.equal(mocks.data.testEntityId);
             });
         });
+
+        describe("crm error", function () {
+            var responseObject;
+            before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
+                dynamicsWebApiTest.create(mocks.data.testEntity, "tests").then(function (object) {
+                    responseObject = object;
+                    done();
+                }).catch(function (object) {
+                    responseObject = object;
+                    done();
+                });
+
+                var response = mocks.responses.upsertPreventCreateResponse;
+                this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
+                global.XMLHttpRequest = null;
+            });
+
+            it("sends the request to the right end point", function () {
+                expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl);
+            });
+
+            it("uses the correct method", function () {
+                expect(this.requests[0].method).to.equal('POST');
+            });
+
+            it("sends the right data", function () {
+                expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
+            });
+
+            it("does not have Prefer header", function () {
+                expect(this.requests[0].requestHeaders['Prefer']).to.be.undefined;
+            });
+
+            it("returns the correct response", function () {
+                expect(responseObject).to.deep.equal({ message: "message", status: 404 });
+            });
+        });
+
+        describe("unexpected error", function () {
+            var responseObject;
+            before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
+                dynamicsWebApiTest.create(mocks.data.testEntity, "tests").then(function (object) {
+                    responseObject = object;
+                    done();
+                }).catch(function (object) {
+                    responseObject = object;
+                    done();
+                });
+
+                var response = mocks.responses.upsertPreventCreateResponse;
+                this.requests[0].respond(response.status, response.responseHeaders);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
+                global.XMLHttpRequest = null;
+            });
+
+            it("sends the request to the right end point", function () {
+                expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl);
+            });
+
+            it("uses the correct method", function () {
+                expect(this.requests[0].method).to.equal('POST');
+            });
+
+            it("sends the right data", function () {
+                expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
+            });
+
+            it("does not have Prefer header", function () {
+                expect(this.requests[0].requestHeaders['Prefer']).to.be.undefined;
+            });
+
+            it("returns the correct response", function () {
+                expect(responseObject).to.deep.equal({ message: "Unexpected Error", status: 404 });
+            });
+        });
+
+        describe("not crm error", function () {
+            var responseObject;
+            before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
+                dynamicsWebApiTest.create(mocks.data.testEntity, "tests").then(function (object) {
+                    responseObject = object;
+                    done();
+                }).catch(function (object) {
+                    responseObject = object;
+                    done();
+                });
+
+                var response = mocks.responses.upsertPreventCreateResponse;
+                this.requests[0].respond(response.status, response.responseHeaders, 'something');
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
+                global.XMLHttpRequest = null;
+            });
+
+            it("sends the request to the right end point", function () {
+                expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl);
+            });
+
+            it("uses the correct method", function () {
+                expect(this.requests[0].method).to.equal('POST');
+            });
+
+            it("sends the right data", function () {
+                expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
+            });
+
+            it("does not have Prefer header", function () {
+                expect(this.requests[0].requestHeaders['Prefer']).to.be.undefined;
+            });
+
+            it("returns the correct response", function () {
+                expect(responseObject).to.deep.equal({ message: "something", status: 404 });
+            });
+        });
     });
 
     describe("return representation", function() {

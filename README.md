@@ -157,12 +157,13 @@ webApiUrl | String | A complete URL string to Web API. Example of the URL: "http
 webApiVersion | String | Version of the Web API. Default version is "8.0".
 
 Configuration property `webApiVersion` is required only when DynamicsWebApi used inside CRM. 
-Property `webApiUrl` is required when DynamicsWebApi used externally. 
+Property `webApiUrl` is required when DynamicsWebApi used externally.
+
 **Important!** If both configuration properties set then `webApiUrl` will have a higher priority than `webApiVersion`, so the last one will be skipped.
 
 **Important!** Please note, if you are using `DynamicsWebApi` **outside Microsoft Dynamics 365** and set `useEntityNames` to `true` **the first request** to Web Api 
 will fetch `LogicalCollectionName` and `LogicalName` from entity metadata for all entities. It does not happen when `DynamicsWebApi`
-is used in Microsoft Dynamics 365 Web Resources (there is no additional request).
+is used in Microsoft Dynamics 365 Web Resources (there is no additional request, no impact on perfomance).
 
 ## Request Examples
 
@@ -185,7 +186,7 @@ an invalid property you will receive either an error saying that the request is 
 Property Name | Type | Operation(s) Supported | Description
 ------------ | ------------- | ------------- | -------------
 async | Boolean | All | **Important! XHR requests only!** Indicates whether the requests should be made synchronously or asynchronously. Default value is `true` (asynchronously).
-collection | String | All | The name of the Entity Collection, for example, for `account` use `accounts`, `opportunity` - `opportunities` and etc.
+collection | String | All | The name of the Entity Collection (or Entity Logical name in `v1.4.0+`).
 count | Boolean | `retrieveMultipleRequest`, `retrieveAllRequest` | Boolean that sets the $count system query option with a value of true to include a count of entities that match the filter criteria up to 5000 (per page). Do not use $top with $count!
 duplicateDetection | Boolean | `createRequest`, `updateRequest`, `upsertRequest` | `v.1.3.4+` **Web API v9+ only!** Boolean that enables duplicate detection. [More info](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/webapi/update-delete-entities-using-web-api#check-for-duplicate-records)
 entity | Object | `updateRequest`, `upsertRequest` | A JavaScript object with properties corresponding to the logical name of entity attributes (exceptions are lookups and single-valued navigation properties).
@@ -199,6 +200,7 @@ includeAnnotations | String | `retrieveRequest`, `retrieveMultipleRequest`, `ret
 key | String | `retrieveRequest`, `updateRequest`, `upsertRequest`, `deleteRequest` | `v.1.3.4+` A String representing collection record's Primary Key (GUID) or Alternate Key(s).
 maxPageSize | Number | `retrieveMultipleRequest`, `retrieveAllRequest` | Sets the odata.maxpagesize preference value to request the number of entities returned in the response.
 navigationProperty | String | `retrieveRequest` | A String representing the name of a single-valued navigation property. Useful when needed to retrieve information about a related record in a single request.
+noCache | Boolean | All | `v.1.4.0+` If set to `true`, DynamicsWebApi adds a request header `Cache-Control: no-cache`. Default value is `false`.
 orderBy | Array | `retrieveMultipleRequest`, `retrieveAllRequest` | An Array (of Strings) representing the order in which items are returned using the $orderby system query option. Use the asc or desc suffix to specify ascending or descending order respectively. The default is ascending if the suffix isn't applied.
 returnRepresentation | Boolean | `updateRequest`, `upsertRequest` | Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
 savedQuery | String | `retrieveRequest` | A String representing the GUID value of the saved query.
@@ -624,8 +626,6 @@ It is possible to count records separately from RetrieveMultiple call. In order 
 
 IMPORTANT! The count value does not represent the total number of entities in the system. It is limited by the maximum number of entities that can be returned.
 
-For now please use dynamicsWebApi.retrieveMultipleRequest function and loop through all pages to rollup all records. dynamicsWebApi.countAll will be available soon.
-
 ```js
 dynamicsWebApi.count("leads", "statecode eq 0").then(function (count) {
     //do something with count here
@@ -650,7 +650,7 @@ dynamicsWebApi.countAll("leads", "statecode eq 0").then(function (count) {
 });
 ```
 
-Downside of this workaround is that it not only returns a count number but also all data for records in a collection. In order to make a small
+Downside of this workaround is that it does not only return a count number but also all data for records in a collection. In order to make a small
 optimisation I added the third parameter to the function that can be used to reduce the length of the response. The third parameter represents
 a select query option.
 
@@ -951,7 +951,7 @@ dynamicsWebApi.retrieveRequest(request).then(function (record) {
 
 ```js
 var request = {
-	key: '00000000-0000-0000-0000-000000000001',
+    key: '00000000-0000-0000-0000-000000000001',
     collection: 'leads',
     select: ['fullname', 'subject']
 };
@@ -964,6 +964,69 @@ dynamicsWebApi.retrieveRequest(request).then(function (record) {
 });
 ```
 
+## Making requests using Entity Logical Names
+
+Starting from version 1.4.0, it is possible to make requests using Entity Logical Names (for example: `account`, instead of `accounts`).
+There's a small perfomance impact when this feature is used **outside CRM/D365 Web Resources**: DynamicsWebApi makes a request to
+Entity Metadata and retrieves LogicalCollectionName and LogicalName for all entities during **the first call to Web Api** on the page.
+
+To enable this feature set `useEntityNames: true` in DynamicsWebApi config.
+
+```js
+var dynamicsWebApi = new DynamicsWebApi({ useEntityNames: true });
+
+//make request using entity names
+dynamicsWebApi.retrieve(leadId, 'lead', ['fullname', 'subject']).then(function (record) {
+    //do something with a record here
+})
+.catch(function (error) {
+    //catch an error
+});
+
+//this will also work in request functions, even though the name of the property is a collection
+
+var request = {
+	collection: 'lead',
+	key: leadId,
+	select:  ['fullname', 'subject']
+};
+
+dynamicsWebApi.retrieveRequest(request).then(function (record) {
+	//do something with a record here
+})
+.catch(function (error) {
+    //catch an error
+});
+```
+
+This feature also applies when you set a navigation property and provide an entity name in the value:
+
+```js
+var account = {
+	name: 'account name'
+	'primarycontactid@odata.bind': 'contact(00000000-0000-0000-0000-000000000001)'
+}
+
+dynamicsWebApi.create(account, 'account').then(function(accountId)){
+	//newly created accountId
+}).catch(function (error) {
+    //catch error here
+});
+```
+
+In the example above, entity names will be replaced with collection names: `contact` with `contacts`, `account` with `accounts`.
+This happens, because DynamicsWebApi automatically checks all properties that end with `@odata.bind` or `@odata.id`. 
+Thus, there may be a case when those properties are not used but you still need a collection name instead of an entity name.
+Please use the following method to get a collection name from a cached entity metadata:
+
+```js
+//IMPORTANT! collectionName will be null if there was no call to Web API prior to that
+//this restriction does not apply if DynamicsWebApi used inside CRM/D365
+var collectionName = dynamicsWebApi.utility.getCollectionName('account');
+```
+
+Please note, everything said above will happen only if you set `useEntityNames: true` in the DynamicsWebApi config.
+
 ### In Progress
 
 - [X] Overloaded functions with rich request options for all Web API operations.
@@ -975,14 +1038,14 @@ the config option "formatted" will enable developers to retrieve all information
 - [X] Simplified names for "Formatted" properties. `Implemented in v.1.3.0`
 - [X] RUD operations using Alternate Keys. `Implemented in v.1.3.4`
 - [X] Duplicate Detection for Web API v.9. `Implemented in v.1.3.4`
-- [ ] Ability to use entity names instead of collection names.
+- [X] Ability to use entity names instead of collection names. `Implemented in v.1.4.0`
 - [ ] Batch requests.
 - [ ] Web API Authentication for On-Premise instances.
 - [ ] Intellisense for request objects.
 
 Many more features to come!
 
-Thank you for your patience!
+Thank you for your patience and for using DynamcisWebApi!
 
 ## JavaScript Promises
 Please use the following library that implements [ES6 Promises](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise): [DynamicsWebApi with Promises](/scripts/dynamics-web-api.js).
