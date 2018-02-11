@@ -1069,7 +1069,6 @@ the config option "formatted" will enable developers to retrieve all information
 - [X] Duplicate Detection for Web API v.9. `Implemented in v.1.3.4`
 - [X] Ability to use entity names instead of collection names. `Implemented in v.1.4.0`
 - [ ] Batch requests.
-- [ ] Web API Authentication for On-Premise instances.
 - [ ] Intellisense for request objects.
 
 Many more features to come!
