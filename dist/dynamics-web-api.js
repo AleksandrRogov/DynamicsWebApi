@@ -1,4 +1,4 @@
-/*! dynamics-web-api v1.4.0 (c) 2017 Aleksandr Rogov */
+/*! dynamics-web-api v1.4.1 (c) 2018 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -762,9 +762,21 @@ if (!String.prototype.endsWith || !String.prototype.startsWith) {
  */
 
 /**
- * DynamicsWebApi - a Microsoft Dynamics CRM Web API helper library. Current version uses Promises instead of Callbacks.
- * 
+ * Constructor.
+ * @constructor
  * @param {DWAConfig} [config] - configuration object
+ * @example
+   //Empty constructor (will work only inside CRM/D365)
+   *var dynamicsWebApi = new DynamicsWebApi();
+  * @example
+   //Constructor with a configuration parameter (only for CRM/D365)
+   *var dynamicsWebApi = new DynamicsWebApi({ webApiVersion: '9.0' });
+  * @example
+   //Constructor with a configuration parameter for CRM/D365 and Node.js
+   *var dynamicsWebApi = new DynamicsWebApi({
+   *    webApiUrl: 'https:/myorg.api.crm.dynamics.com/api/data/v9.0/',
+   *    includeAnnotations: 'OData.Community.Display.V1.FormattedValue'
+   *});
  */
 function DynamicsWebApi(config) {
 
@@ -786,6 +798,8 @@ function DynamicsWebApi(config) {
      * Sets the configuration parameters for DynamicsWebApi helper.
      *
      * @param {DWAConfig} config - configuration object
+     * @example
+       dynamicsWebApi.setConfig({ webApiVersion: '9.0' });
      */
     this.setConfig = function (config) {
 
@@ -833,18 +847,50 @@ function DynamicsWebApi(config) {
 
     this.setConfig(config);
 
-    /**
-     * Makes a request to web api
-     *
-     * @param {string} method - Method of the request.
-     * @param {DWARequest} request - Request to Web Api
-     * @param {string} [functionName] - Indictes the name of the function that called make request.
-     * @returns {Promise}
-     */
     var _makeRequest = function (method, request, functionName) {
         return new Promise(function (resolve, reject) {
             Request.makeRequest(method, request, functionName, _internalConfig, resolve, reject);
         });
+    };
+
+    /**
+     * Sends an asynchronous request to create a new record.
+     *
+     * @param {DWARequest} request - An object that represents all possible options for a current request.
+     * @returns {Promise}
+     * @example
+        *var lead = {
+        *    subject: "Test WebAPI",
+        *    firstname: "Test",
+        *    lastname: "WebAPI",
+        *    jobtitle: "Title"
+        *};
+        *
+        *var request = {
+        *    entity: lead,
+        *    collection: "leads",
+        *    returnRepresentation: true
+        *}
+        *
+        *dynamicsWebApi.createRequest(request).then(function (response) {
+        *}).catch(function (error) {
+        *});
+     */
+    this.createRequest = function (request) {
+        ErrorHelper.parameterCheck(request, 'DynamicsWebApi.create', 'request');
+
+        return _makeRequest('POST', request, 'create')
+            .then(function (response) {
+                if (response.data) {
+                    return response.data;
+                }
+
+                var entityUrl = response.headers['OData-EntityId']
+                    ? response.headers['OData-EntityId']
+                    : response.headers['odata-entityid'];
+                var id = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(entityUrl)[0];
+                return id;
+            });
     };
 
     /**
@@ -855,6 +901,17 @@ function DynamicsWebApi(config) {
      * @param {string|Array} [prefer] - Sets a Prefer header value. For example: ['retrun=representation', 'odata.include-annotations="*"']
      * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
      * @returns {Promise}
+     * @example
+        *var lead = {
+        *    subject: "Test WebAPI",
+        *    firstname: "Test",
+        *    lastname: "WebAPI",
+        *    jobtitle: "Title"
+        *};
+        *
+        *dynamicsWebApi.create(lead, "leads").then(function (id) {
+        *}).catch(function (error) {
+        *});
      */
     this.create = function (object, collection, prefer, select) {
         ErrorHelper.parameterCheck(object, "DynamicsWebApi.create", "object");
@@ -875,18 +932,7 @@ function DynamicsWebApi(config) {
             entity: object
         };
 
-        return _makeRequest('POST', request, 'create')
-            .then(function (response) {
-                if (response.data) {
-                    return response.data;
-                }
-
-                var entityUrl = response.headers['OData-EntityId']
-                    ? response.headers['OData-EntityId']
-                    : response.headers['odata-entityid'];
-                var id = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(entityUrl)[0];
-                return id;
-            });
+        return this.createRequest(request);
     };
 
     /**
@@ -894,6 +940,20 @@ function DynamicsWebApi(config) {
      *
      * @param {DWARequest} request - An object that represents all possible options for a current request.
      * @returns {Promise}
+     * @example
+        *var request = {
+        *    key: '7d577253-3ef0-4a0a-bb7f-8335c2596e70',
+        *    collection: "leads",
+        *    select: ["fullname", "subject"],
+        *    ifnonematch: 'W/"468026"',
+        *    includeAnnotations: "OData.Community.Display.V1.FormattedValue"
+        *};
+        *
+        *dynamicsWebApi.retrieveRequest(request).then(function (response) {
+        *
+        *}).catch(function (error) {
+        *
+        *});
      */
     this.retrieveRequest = function (request) {
         ErrorHelper.parameterCheck(request, 'DynamicsWebApi.retrieve', 'request');
@@ -1183,13 +1243,6 @@ function DynamicsWebApi(config) {
         return this.upsertRequest(request);
     }
 
-    /**
-     * Sends an asynchronous request to retrieve records.
-     *
-     * @param {DWARequest} request - An object that represents all possible options for a current request.
-     * @param {string} [nextPageLink] - Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
-     * @returns {Promise}
-     */
     var retrieveMultipleRequest = function (request, nextPageLink) {
 
         if (nextPageLink) {
@@ -1211,6 +1264,13 @@ function DynamicsWebApi(config) {
             });
     };
 
+    /**
+     * Sends an asynchronous request to retrieve records.
+     *
+     * @param {DWARequest} request - An object that represents all possible options for a current request.
+     * @param {string} [nextPageLink] - Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
+     * @returns {Promise}
+     */
     this.retrieveMultipleRequest = retrieveMultipleRequest;
 
     var _retrieveAllRequest = function (request, nextPageLink, records) {
@@ -1324,17 +1384,6 @@ function DynamicsWebApi(config) {
         });
     }
 
-    /**
-     * Sends an asynchronous request to execute FetchXml to retrieve records. Returns: DWA.Types.FetchXmlResponse
-     *
-     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-     * @param {string} fetchXml - FetchXML is a proprietary query language that provides capabilities to perform aggregation.
-     * @param {string} [includeAnnotations] - Use this parameter to include annotations to a result. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie
-     * @param {number} [pageNumber] - Page number.
-     * @param {string} [pagingCookie] - Paging cookie. For retrieving the first page, pagingCookie should be null.
-     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
-     * @returns {Promise}
-     */
     var executeFetchXml = function (collection, fetchXml, includeAnnotations, pageNumber, pagingCookie, impersonateUserId) {
 
         ErrorHelper.stringParameterCheck(fetchXml, "DynamicsWebApi.executeFetchXml", "fetchXml");
@@ -1383,7 +1432,20 @@ function DynamicsWebApi(config) {
      * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      * @returns {Promise}
      */
-    this.fetch = this.executeFetchXml = executeFetchXml;
+    this.fetch = executeFetchXml;
+
+    /**
+     * Sends an asynchronous request to execute FetchXml to retrieve records. Returns: DWA.Types.FetchXmlResponse
+     *
+     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
+     * @param {string} fetchXml - FetchXML is a proprietary query language that provides capabilities to perform aggregation.
+     * @param {string} [includeAnnotations] - Use this parameter to include annotations to a result. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie
+     * @param {number} [pageNumber] - Page number.
+     * @param {string} [pagingCookie] - Paging cookie. For retrieving the first page, pagingCookie should be null.
+     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+     * @returns {Promise}
+     */
+    this.executeFetchXml = executeFetchXml;
 
     var _executeFetchXmlAll = function (collection, fetchXml, includeAnnotations, pageNumber, pagingCookie, impersonateUserId, records) {
         var records = records || [];
@@ -1399,6 +1461,10 @@ function DynamicsWebApi(config) {
         });
     }
 
+    var innerExecuteFetchXmlAll = function (collection, fetchXml, includeAnnotations, impersonateUserId) {
+        return _executeFetchXmlAll(collection, fetchXml, includeAnnotations, null, null, impersonateUserId);
+    }
+
     /**
      * Sends an asynchronous request to execute FetchXml to retrieve all records.
      *
@@ -1408,9 +1474,18 @@ function DynamicsWebApi(config) {
      * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      * @returns {Promise}
      */
-    this.fetchAll = this.executeFetchXmlAll = function (collection, fetchXml, includeAnnotations, impersonateUserId) {
-        return _executeFetchXmlAll(collection, fetchXml, includeAnnotations, null, null, impersonateUserId);
-    }
+    this.fetchAll = innerExecuteFetchXmlAll;
+
+    /**
+     * Sends an asynchronous request to execute FetchXml to retrieve all records.
+     *
+     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
+     * @param {string} fetchXml - FetchXML is a proprietary query language that provides capabilities to perform aggregation.
+     * @param {string} [includeAnnotations] - Use this parameter to include annotations to a result. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie
+     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+     * @returns {Promise}
+     */
+    this.executeFetchXmlAll = innerExecuteFetchXmlAll;
 
     /**
      * Associate for a collection-valued navigation property. (1:N or N:N)
@@ -1545,16 +1620,6 @@ function DynamicsWebApi(config) {
         return _executeFunction(functionName, parameters, collection, id, impersonateUserId);
     }
 
-    /**
-     * Executes a function
-     *
-     * @param {string} id - A String representing the GUID value for the record.
-     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-     * @param {string} functionName - The name of the function.
-     * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
-     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
-     * @returns {Promise}
-     */
     var _executeFunction = function (functionName, parameters, collection, id, impersonateUserId, isUnbound) {
 
         ErrorHelper.stringParameterCheck(functionName, "DynamicsWebApi.executeFunction", "functionName");
@@ -1600,16 +1665,6 @@ function DynamicsWebApi(config) {
         return _executeAction(actionName, requestObject, collection, id, impersonateUserId);
     }
 
-    /**
-     * Executes a Web API action
-     *
-     * @param {string} [id] - A String representing the GUID value for the record.
-     * @param {string} [collection] - The name of the Entity Collection or Entity Logical name.
-     * @param {string} actionName - The name of the Web API action.
-     * @param {Object} requestObject - Action request body object.
-     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
-     * @returns {Promise}
-     */
     var _executeAction = function (actionName, requestObject, collection, id, impersonateUserId, isUnbound) {
 
         ErrorHelper.stringParameterCheck(actionName, "DynamicsWebApi.executeAction", "actionName");
@@ -1645,10 +1700,27 @@ function DynamicsWebApi(config) {
     }
 };
 
+/**
+ * DynamicsWebApi Utility helper class
+ * @typicalname dynamicsWebApi.utility
+ */
 DynamicsWebApi.prototype.utility = {
+    /**
+     * Searches for a collection name by provided entity name in a cached entity metadata.
+     * The returned collection name can be null.
+     *
+     * @param {string} entityName - entity name
+     * @returns {string} a collection name
+     */
     getCollectionName: Request.getCollectionName
 };
 
+/**
+ * Microsoft Dynamics CRM Web API helper library written in JavaScript.
+ * It is compatible with: Dynamics 365 (online), Dynamics 365 (on-premise), Dynamics CRM 2016, Dynamics CRM Online.
+ * @module dynamics-web-api
+ * @typicalname dynamicsWebApi
+ */
 module.exports = DynamicsWebApi;
 
 /***/ }),
@@ -1945,7 +2017,9 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
 
         if (request.filter) {
             ErrorHelper.stringParameterCheck(request.filter, 'DynamicsWebApi.' + functionName, "request.filter");
-            requestArray.push("$filter=" + request.filter);
+            var removeBracketsFromGuidReg = /[^"']{([\w\d]{8}[-]?(?:[\w\d]{4}[-]?){3}[\w\d]{12})}(?:[^"']|$)/g;
+            var filterResult = request.filter.replace(removeBracketsFromGuidReg, ' $1 ').trim();
+            requestArray.push("$filter=" + filterResult);
         }
 
         if (request.savedQuery) {
