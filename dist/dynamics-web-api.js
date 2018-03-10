@@ -541,6 +541,13 @@ function stringifyData(data, config) {
                     }
                 }
             }
+            else
+                if (key.startsWith('oData') ||
+                    key.endsWith('_Formatted') ||
+                    key.endsWith('_NavigationProperty') ||
+                    key.endsWith('_LogicalName')) {
+                    value = undefined;
+                }
 
             return value;
         });
@@ -656,7 +663,9 @@ function _getEntityNames(entityName, config, successCallback, errorCallback) {
 }
 
 function _isEntityNameException(entityName) {
-    var exceptions = ['EntityDefinitions', '$metadata'];
+    var exceptions = [
+        'EntityDefinitions', '$metadata', 'RelationshipDefinitions',
+        'GlobalOptionSetDefinitions', 'ManagedPropertyDefinitions'];
 
     return exceptions.indexOf(entityName) > -1;
 }
@@ -759,6 +768,7 @@ if (!String.prototype.endsWith || !String.prototype.startsWith) {
  * @property {boolean} noCache - If set to 'true', DynamicsWebApi adds a request header 'Cache-Control: no-cache'. Default value is 'false'.
  * @property {string} savedQuery - A String representing the GUID value of the saved query.
  * @property {string} userQuery - A String representing the GUID value of the user query.
+ * @property {boolean} mergeLabels - If set to 'true', DynamicsWebApi adds a request header 'MSCRM.MergeLabels: true'. Default value is 'false'
  */
 
 /**
@@ -1016,9 +1026,12 @@ function DynamicsWebApi(config) {
             request.ifmatch = '*'; //to prevent upsert
         }
 
+        //EntityDefinitions cannot be updated using "PATCH" method
+        var method = request.collection.indexOf('EntityDefinitions') > -1 ? 'PUT' : 'PATCH';
+
         //copy locally
         var ifmatch = request.ifmatch;
-        return _makeRequest('PATCH', request, 'update')
+        return _makeRequest(method, request, 'update')
             .then(function (response) {
                 if (response.data) {
                     return response.data;
@@ -1643,7 +1656,7 @@ function DynamicsWebApi(config) {
      * Executes an unbound Web API action (not bound to a particular entity record)
      *
      * @param {string} actionName - The name of the Web API action.
-     * @param {Object} requestObject - Action request body object.
+     * @param {Object} [requestObject] - Action request body object.
      * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      * @returns {Promise}
      */
@@ -1657,7 +1670,7 @@ function DynamicsWebApi(config) {
      * @param {string} id - A String representing the GUID value for the record.
      * @param {string} collection - The name of the Entity Collection or Entity Logical name.
      * @param {string} actionName - The name of the Web API action.
-     * @param {Object} requestObject - Action request body object.
+     * @param {Object} [requestObject] - Action request body object.
      * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      * @returns {Promise}
      */
@@ -1781,6 +1794,7 @@ function parseBatchResponse(response) {
 
 function populateFormattedValues(object) {
     var keys = Object.keys(object);
+    //object._dwa_extendedProperties = [];
 
     for (var i = 0; i < keys.length; i++) {
         if (object[keys[i]] != null && object[keys[i]].constructor === Array) {
@@ -1820,6 +1834,7 @@ function populateFormattedValues(object) {
 
         if (newKey) {
             object[newKey] = object[keys[i]];
+            //object._dwa_extendedProperties.push(newKey);
         }
     }
 
@@ -1924,6 +1939,7 @@ var xhrRequest = function (method, uri, data, additionalHeaders, successCallback
                         }
                     }
                     error.status = request.status;
+                    error.statusText = request.statusText;
                     errorCallback(error);
                     break;
             }
@@ -2081,16 +2097,23 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
         }
 
         if (request.entity) {
-            ErrorHelper.parameterCheck(request.entity, 'DynamicsWebApi.' + functionName, 'request.entity')
+            ErrorHelper.parameterCheck(request.entity, 'DynamicsWebApi.' + functionName, 'request.entity');
+
+
         }
 
         if (request.data) {
-            ErrorHelper.parameterCheck(request.data, 'DynamicsWebApi.' + functionName, 'request.data')
+            ErrorHelper.parameterCheck(request.data, 'DynamicsWebApi.' + functionName, 'request.data');
         }
 
         if (request.noCache) {
             ErrorHelper.boolParameterCheck(request.noCache, 'DynamicsWebApi.' + functionName, 'request.noCache');
             headers['Cache-Control'] = 'no-cache';
+        }
+
+        if (request.mergeLabels){
+            ErrorHelper.boolParameterCheck(request.mergeLabels, 'DynamicsWebApi.' + functionName, 'request.mergeLabels');
+            headers['MSCRM.MergeLabels'] = 'true';
         }
 
         if (request.expand && request.expand.length) {

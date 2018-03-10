@@ -103,7 +103,7 @@ describe("xhr -", function() {
             });
 
             it("returns the correct response", function () {
-                expect(responseObject).to.deep.equal({ message: "message", status: 404 });
+                expect(responseObject).to.deep.equal({ message: "message", status: 404, statusText: "Not Found" });
             });
         });
 
@@ -151,7 +151,7 @@ describe("xhr -", function() {
             });
 
             it("returns the correct response", function () {
-                expect(responseObject).to.deep.equal({ message: "Unexpected Error", status: 404 });
+                expect(responseObject).to.deep.equal({ message: "Unexpected Error", status: 404, statusText: "Not Found" });
             });
         });
 
@@ -199,7 +199,7 @@ describe("xhr -", function() {
             });
 
             it("returns the correct response", function () {
-                expect(responseObject).to.deep.equal({ message: "something", status: 404 });
+                expect(responseObject).to.deep.equal({ message: "something", status: 404, statusText: "Not Found" });
             });
         });
     });

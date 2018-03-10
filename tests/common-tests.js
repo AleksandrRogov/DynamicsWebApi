@@ -105,6 +105,24 @@ describe("RequestConverter.convertRequestOptions -", function () {
         expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
     });
 
+    it("mergeLabels=true", function () {
+        var dwaRequest = {
+            mergeLabels: true
+        };
+
+        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: { 'MSCRM.MergeLabels': 'true' } });
+    });
+
+    it("mergeLabels=false", function () {
+        var dwaRequest = {
+            mergeLabels: false
+        };
+
+        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
+    });
+
     it("expand is empty", function () {
         var dwaRequest = {
             expand: undefined
@@ -1681,6 +1699,40 @@ describe("Request.sendRequest", function () {
             expect(scope.isDone()).to.be.true;
         });
     });
+
+    describe("removes additional properties set by DynamicsWebApi", function () {
+        var scope;
+        var url = 'test';
+        before(function () {
+            var response = mocks.responses.basicEmptyResponseSuccess;
+            scope = nock(mocks.webApiUrl + 'test')
+                .patch("", mocks.data.testEntity)
+                .reply(response.status, response.responseText, response.responseHeaders);
+        });
+
+        after(function () {
+            nock.cleanAll();
+        });
+
+        it("returns a correct response", function (done) {
+            Request.sendRequest('PATCH', url, { webApiUrl: mocks.webApiUrl }, mocks.data.testEntityAdditionalAttributes, null, function (object) {
+                var expectedO = {
+                    status: mocks.responses.basicEmptyResponseSuccess.status,
+                    headers: {},
+                    data: null
+                };
+                expect(object).to.deep.equal(expectedO);
+                done();
+            }, function (object) {
+                expect(object).to.be.undefined;
+                done();
+            });
+        });
+
+        it("all requests have been made", function () {
+            expect(scope.isDone()).to.be.true;
+        });
+    });
 });
 
 describe("parseResponse", function () {
@@ -1692,5 +1744,16 @@ describe("parseResponse", function () {
     it("parses formatted values - array", function () {
         var response = parseResponse(mocks.responses.multipleFormattedResponse.responseText);
         expect(response).to.be.deep.equal(mocks.responses.multipleFormatted());
+    });
+
+    it("parses formatted and aliased values", function () {
+        var response = parseResponse(mocks.responses.responseFormattedAliased200.responseText);
+        expect(response).to.be.deep.equal(mocks.responses.responseFormattedAliasedEntity());
+    });
+
+    it("when alias are not unique throws error", function () {
+        expect(function () {
+            parseResponse(mocks.responses.responseFormattedAliasedNotUnique200.responseText);
+        }).to.throw("The alias name of the linked entity must be unique!");
     });
 });

@@ -23,12 +23,40 @@ var dataStubs = {
         name: "record",
         subject: "test"
     },
+    testEntityAdditionalAttributes: {
+        name: "record",
+        subject: "test",
+        oDataTest: 'test',
+        key_Formatted: 'test',
+        key_NavigationProperty: 'test',
+        key_LogicalName: 'test'
+    },
     testEntityFormatted: {
         name: "record",
         subject: "test",
         option: "value",
         "@odata.context": "context",
-        "option@OData.Community.Display.V1.FormattedValue": "formatted"
+        "option@OData.Community.Display.V1.FormattedValue": "formatted",
+        "option@Microsoft.Dynamics.CRM.associatednavigationproperty": "formatted",
+        "option@Microsoft.Dynamics.CRM.lookuplogicalname": "formatted"
+    },
+    testEntityFormattedAliased: {
+        name: "record",
+        subject: "test",
+        option: "value",
+        "@odata.context": "context",
+        "option@OData.Community.Display.V1.FormattedValue": "formatted",
+        "alias_x002e_value1@OData.Community.Display.V1.FormattedValue": "formatted",
+        "alias_x002e_value1": "value"
+    },
+    testEntityFormattedAliasedNotUnique: {
+        name: "record",
+        subject: "test",
+        option: "value",
+        "@odata.context": "context",
+        "option@OData.Community.Display.V1.FormattedValue": "formatted",
+        "alias_x002e_value1@OData.Community.Display.V1.FormattedValue": "formatted",
+        "option_x002e_value1": "value"
     },
     entityDefinitionList: {
         '@odata.contxt': 'context',
@@ -230,6 +258,14 @@ var responseStubs = {
         status: 200,
         responseText: JSON.stringify(dataStubs.testEntityFormatted)
     },
+    responseFormattedAliased200: {
+        status: 200,
+        responseText: JSON.stringify(dataStubs.testEntityFormattedAliased)
+    },
+    responseFormattedAliasedNotUnique200: {
+        status: 200,
+        responseText: JSON.stringify(dataStubs.testEntityFormattedAliasedNotUnique)
+    },
     responseEntityDefinitions: {
         status: 200,
         responseText: JSON.stringify(dataStubs.entityDefinitionList)
@@ -323,6 +359,21 @@ var responseStubs = {
         var stub = dataStubs.testEntityFormatted;
         stub.oDataContext = stub["@odata.context"];
         stub.option_Formatted = stub["option@OData.Community.Display.V1.FormattedValue"];
+        stub.option_NavigationProperty = stub["option@Microsoft.Dynamics.CRM.associatednavigationproperty"];
+        stub.option_LogicalName = stub["option@Microsoft.Dynamics.CRM.lookuplogicalname"];
+        return stub;
+    },
+    responseFormattedAliasedEntity: function () {
+        var stub = dataStubs.testEntityFormattedAliased;
+        stub.oDataContext = stub["@odata.context"];
+        stub.option_Formatted = stub["option@OData.Community.Display.V1.FormattedValue"];
+        stub.alias_x002e_value1_Formatted = stub["alias_x002e_value1@OData.Community.Display.V1.FormattedValue"];
+        stub.alias = {
+            _dwaType: "alias",
+            value1: stub["alias_x002e_value1"],
+            value1_Formatted: stub["alias_x002e_value1@OData.Community.Display.V1.FormattedValue"],
+            "value1@OData.Community.Display.V1.FormattedValue": stub["alias_x002e_value1@OData.Community.Display.V1.FormattedValue"]
+        }
         return stub;
     },
     multipleWithLink: function () {
