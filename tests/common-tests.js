@@ -209,7 +209,7 @@ describe("RequestConverter.convertRequestOptions -", function () {
         };
 
         var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property($filter=" + ("name eq 'name'") + ")", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property($filter=" + (encodeURIComponent("name eq 'name'")) + ")", headers: {} });
     });
 
     it("expand - property,orderBy empty", function () {
@@ -391,7 +391,16 @@ describe("RequestConverter.convertRequestOptions -", function () {
         };
 
         var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$filter=name eq 'name'", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "$filter=" + encodeURIComponent("name eq 'name'"), headers: {} });
+    });
+
+    it("filter - special symbols encoded", function () {
+        var dwaRequest = {
+            filter: "email eq 'test+email@example.com'"
+        };
+
+        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
+        expect(result).to.deep.equal({ url: stubUrl, query: "$filter=" + encodeURIComponent("email eq 'test+email@example.com'"), headers: {} });
     });
 
     it("filter - remove brackets from guid", function () {
@@ -400,7 +409,7 @@ describe("RequestConverter.convertRequestOptions -", function () {
         };
 
         var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$filter=name eq 'name' and testid1 eq 0000a000-0000-0000-0000-000000000001 and testid2 eq 0000a000-0000-0000-0000-000000000002 and teststring eq '{0000a000-0000-0000-0000-000000000003}'", headers: {} });
+        expect(result).to.deep.equal({ url: stubUrl, query: "$filter=" + encodeURIComponent("name eq 'name' and testid1 eq 0000a000-0000-0000-0000-000000000001 and testid2 eq 0000a000-0000-0000-0000-000000000002 and teststring eq '{0000a000-0000-0000-0000-000000000003}'"), headers: {} });
     });
 
     it("ifmatch empty", function () {

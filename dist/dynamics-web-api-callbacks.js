@@ -370,6 +370,24 @@ var buildPreferHeader = __webpack_require__(12);
  */
 
 /**
+ * @param {Array} array
+ * @param {boolean} [performJoin]
+ * @param {boolean} [joinSymbol]
+ */
+function encodeURIComponentArray(array, performJoin, joinSymbol) {
+    performJoin = performJoin == null ? true : performJoin;
+    joinSymbol = joinSymbol || ',';
+
+    for (var i = 0; i < array.length; i++) {
+        array[i] = encodeURIComponent(array[i]);
+    }
+
+    return performJoin
+        ? array.join(joinSymbol)
+        : array;
+}
+
+/**
  * Converts optional parameters of the request to URL. If expand parameter exists this function is called recursively.
  *
  * @param {Object} request - Request object
@@ -417,7 +435,7 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
             ErrorHelper.stringParameterCheck(request.filter, 'DynamicsWebApi.' + functionName, "request.filter");
             var removeBracketsFromGuidReg = /[^"']{([\w\d]{8}[-]?(?:[\w\d]{4}[-]?){3}[\w\d]{12})}(?:[^"']|$)/g;
             var filterResult = request.filter.replace(removeBracketsFromGuidReg, ' $1 ').trim();
-            requestArray.push("$filter=" + filterResult);
+            requestArray.push("$filter=" + encodeURIComponent(filterResult));
         }
 
         if (request.savedQuery) {
@@ -480,8 +498,6 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
 
         if (request.entity) {
             ErrorHelper.parameterCheck(request.entity, 'DynamicsWebApi.' + functionName, 'request.entity');
-
-
         }
 
         if (request.data) {
@@ -493,7 +509,7 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
             headers['Cache-Control'] = 'no-cache';
         }
 
-        if (request.mergeLabels){
+        if (request.mergeLabels) {
             ErrorHelper.boolParameterCheck(request.mergeLabels, 'DynamicsWebApi.' + functionName, 'request.mergeLabels');
             headers['MSCRM.MergeLabels'] = 'true';
         }
@@ -571,7 +587,7 @@ function convertRequest(request, functionName, config) {
         }
         else
             if (result.query) {
-                result.url += "?" + encodeURI(result.query);
+                result.url += "?" + result.query;
             }
     }
     else {
@@ -2164,30 +2180,18 @@ function parseBatchResponse(response) {
     return result;
 }
 
-function populateFormattedValues(object) {
-    var keys = Object.keys(object);
-    //object._dwa_extendedProperties = [];
-
-    for (var i = 0; i < keys.length; i++) {
-        if (object[keys[i]] != null && object[keys[i]].constructor === Array) {
-            for (var j = 0; j < object[keys[i]].length; j++) {
-                object[keys[i]][j] = populateFormattedValues(object[keys[i]][j]);
-            }
-        }
-
-        if (keys[i].indexOf('@') == -1)
-            continue;
-
-        var format = keys[i].split('@');
-        var newKey = null;
+function getFormattedKeyValue(keyName, value) {
+    var newKey = null;
+    if (keyName.indexOf('@') !== -1) {
+        var format = keyName.split('@');
         switch (format[1]) {
             case 'odata.context':
                 newKey = 'oDataContext';
                 break;
             case 'odata.count':
                 newKey = 'oDataCount';
-                object[keys[i]] = object[keys[i]] != null
-                    ? parseInt(object[keys[i]])
+                value = value != null
+                    ? parseInt(value)
                     : 0;
                 break;
             case 'odata.nextLink':
@@ -2203,10 +2207,50 @@ function populateFormattedValues(object) {
                 newKey = format[0] + '_LogicalName';
                 break;
         }
+    }
 
-        if (newKey) {
-            object[newKey] = object[keys[i]];
-            //object._dwa_extendedProperties.push(newKey);
+    return [newKey, value];
+}
+
+function parseData(object) {
+    var keys = Object.keys(object);
+
+    for (var i = 0; i < keys.length; i++) {
+        var currentKey = keys[i];
+
+        if (object[currentKey] != null && object[currentKey].constructor === Array) {
+            for (var j = 0; j < object[currentKey].length; j++) {
+                object[currentKey][j] = parseData(object[currentKey][j]);
+            }
+        }
+
+        //parse formatted values
+        var formattedKeyValue = getFormattedKeyValue(currentKey, object[currentKey]);
+        if (formattedKeyValue[0]) {
+            object[formattedKeyValue[0]] = formattedKeyValue[1];
+        }
+
+        //parse aliased values
+        if (currentKey.indexOf('_x002e_') !== -1) {
+            var aliasKeys = currentKey.split('_x002e_');
+
+            if (!object.hasOwnProperty(aliasKeys[0])) {
+                object[aliasKeys[0]] = { _dwaType: 'alias' };
+            }
+            //throw an error if there is already a property which is not an 'alias'
+            else if (
+                typeof (object[aliasKeys[0]]) !== 'object' ||
+                typeof (object[aliasKeys[0]]) === 'object' && !object[aliasKeys[0]].hasOwnProperty('_dwaType')) {
+                throw new Error('The alias name of the linked entity must be unique!');
+            }
+
+            object[aliasKeys[0]][aliasKeys[1]] = object[currentKey];
+
+            //aliases also contain formatted values
+            formattedKeyValue = getFormattedKeyValue(aliasKeys[1], object[currentKey]);
+            if (formattedKeyValue[0]) {
+                object[aliasKeys[0]][formattedKeyValue[0]] = formattedKeyValue[1];
+            }
         }
     }
 
@@ -2224,7 +2268,7 @@ module.exports = function parseResponse(response) {
             ? responseData = parseBatchResponse(response)[0]
             : responseData = JSON.parse(response, dateReviver);
 
-        responseData = populateFormattedValues(responseData);
+        responseData = parseData(responseData);
     }
 
     return responseData;
