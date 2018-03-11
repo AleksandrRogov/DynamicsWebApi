@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.4.1 (c) 2018 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.4.2 (c) 2018 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -368,24 +368,6 @@ var buildPreferHeader = __webpack_require__(12);
  * @property {Object} headers Heades object (always an Object; can be empty: {})
  * @property {boolean} async
  */
-
-/**
- * @param {Array} array
- * @param {boolean} [performJoin]
- * @param {boolean} [joinSymbol]
- */
-function encodeURIComponentArray(array, performJoin, joinSymbol) {
-    performJoin = performJoin == null ? true : performJoin;
-    joinSymbol = joinSymbol || ',';
-
-    for (var i = 0; i < array.length; i++) {
-        array[i] = encodeURIComponent(array[i]);
-    }
-
-    return performJoin
-        ? array.join(joinSymbol)
-        : array;
-}
 
 /**
  * Converts optional parameters of the request to URL. If expand parameter exists this function is called recursively.
