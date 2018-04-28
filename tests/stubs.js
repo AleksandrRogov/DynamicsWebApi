@@ -23,6 +23,16 @@ var dataStubs = {
         name: "record",
         subject: "test"
     },
+    testEntityDefinition: {
+        name: "record",
+        subject: "test",
+        MetadataId: "00000000-0000-0000-0000-000000000001"
+    },
+    testAttributeDefinition: {
+        name: "record",
+        subject: "test",
+        MetadataId: "00000000-0000-0000-0000-000000000002"
+    },
     testEntityAdditionalAttributes: {
         name: "record",
         subject: "test",
@@ -241,12 +251,19 @@ var responseStubs = {
             "OData-EntityId": webApiUrl + "tests(" + dataStubs.testEntityId + ")"
         }
     },
+    createAttributeReturnId: {
+        status: 204,
+        responseHeaders: {
+            "OData-EntityId": webApiUrl + "EntityDefinitions(" + dataStubs.testEntityId + ")/Attributes(" + dataStubs.testEntityId2 + ")"
+        }
+    },
     createReturnRepresentation: {
         status: 201,
         responseText: JSON.stringify(dataStubs.testEntity)
     },
     testEntityUrl: webApiUrl + "tests(" + dataStubs.testEntityId + ")",
     entityDefinitionsUrl: webApiUrl + 'EntityDefinitions',
+    entityDefinitionsIdUrl: webApiUrl + 'EntityDefinitions(' + dataStubs.testEntityId + ')',
     basicEmptyResponseSuccess: {
         status: 204
     },

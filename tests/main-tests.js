@@ -2994,6 +2994,563 @@ describe("promises -", function () {
         });
     });
 
+    describe("dynamicsWebApi.createEntity -", function () {
+        describe("basic", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.createReturnId;
+                scope = nock(mocks.responses.entityDefinitionsUrl)
+                    .post("", mocks.data.testEntity)
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.createEntity(mocks.data.testEntity)
+                    .then(function (object) {
+                        expect(object).to.deep.equal(mocks.data.testEntityId);
+                        done();
+                    }).catch(function (object) {
+                        console.error(object.message);
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+    });
+
+    describe("dynamicsWebApi.updateEntity -", function () {
+
+        describe("basic", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.basicEmptyResponseSuccess;
+                scope = nock(mocks.responses.entityDefinitionsIdUrl, {
+                    reqheaders: {
+                        "If-Match": "*"
+                    }
+                })
+                    .put("", mocks.data.testEntityDefinition)
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.updateEntity(mocks.data.testEntityDefinition)
+                    .then(function (object) {
+                        expect(object).to.be.true;
+                        done();
+                    }).catch(function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+
+        describe("mergeLabels = true", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.basicEmptyResponseSuccess;
+                scope = nock(mocks.responses.entityDefinitionsIdUrl, {
+                    reqheaders: {
+                        "If-Match": "*",
+                        "MSCRM.MergeLabels": "true"
+                    }
+                })
+                    .put("", mocks.data.testEntityDefinition)
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.updateEntity(mocks.data.testEntityDefinition, true)
+                    .then(function (object) {
+                        expect(object).to.be.true;
+                        done();
+                    }).catch(function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+    });
+
+    describe("dynamicsWebApi.retrieveEntity -", function () {
+
+        describe("basic", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.response200;
+                scope = nock(mocks.responses.entityDefinitionsIdUrl)
+                    .get("")
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.retrieveEntity(mocks.data.testEntityId)
+                    .then(function (object) {
+                        expect(object).to.deep.equal(mocks.data.testEntity);
+                        done();
+                    }).catch(function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+
+        describe("basic - alternate key", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.response200;
+                scope = nock(mocks.responses.entityDefinitionsUrl + "(alternateKey='keyValue')")
+                    .get("")
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.retrieveEntity("alternateKey='keyValue'")
+                    .then(function (object) {
+                        expect(object).to.deep.equal(mocks.data.testEntity);
+                        done();
+                    }).catch(function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+
+        describe("select", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.response200;
+                scope = nock(mocks.responses.entityDefinitionsIdUrl)
+                    .get("?$select=LogicalName")
+                    .reply(response.status, response.responseText, response.responseHeaders)
+                    .get("?$select=LogicalName,SchemaName")
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("[LogicalName] returns a correct response", function (done) {
+                dynamicsWebApiTest.retrieveEntity(mocks.data.testEntityId, ["LogicalName"])
+                    .then(function (object) {
+                        expect(object).to.deep.equal(mocks.data.testEntity);
+                        done();
+                    }).catch(function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("[LogicalName, SchemaName] returns a correct response", function (done) {
+                dynamicsWebApiTest.retrieveEntity(mocks.data.testEntityId, ["LogicalName", "SchemaName"])
+                    .then(function (object) {
+                        expect(object).to.deep.equal(mocks.data.testEntity);
+                        done();
+                    }).catch(function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+    });
+
+    describe("dynamicsWebApi.retrieveEntities -", function () {
+
+        describe("basic", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.responseEntityDefinitions;
+                scope = nock(mocks.responses.entityDefinitionsUrl)
+                    .get("")
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.retrieveEntities()
+                    .then(function (object) {
+                        expect(object).to.deep.equal(mocks.data.entityDefinitionList);
+                        done();
+                    }).catch(function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+    });
+
+    describe("dynamicsWebApi.createAttribute -", function () {
+        describe("basic", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.createAttributeReturnId;
+                scope = nock(mocks.responses.entityDefinitionsIdUrl + '/Attributes')
+                    .post("", mocks.data.testEntity)
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.createAttribute(mocks.data.testEntityId, mocks.data.testEntity)
+                    .then(function (object) {
+                        expect(object).to.deep.equal(mocks.data.testEntityId2);
+                        done();
+                    }).catch(function (object) {
+                        console.error(object.message);
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+    });
+
+    describe("dynamicsWebApi.updateAttribute -", function () {
+
+        describe("basic", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.basicEmptyResponseSuccess;
+                scope = nock(mocks.responses.entityDefinitionsIdUrl + '/Attributes(' + mocks.data.testEntityId2 + ')', {
+                    reqheaders: {
+                        "If-Match": "*"
+                    }
+                })
+                    .put("", mocks.data.testAttributeDefinition)
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.updateAttribute(mocks.data.testEntityId, mocks.data.testAttributeDefinition)
+                    .then(function (object) {
+                        expect(object).to.be.true;
+                        done();
+                    }).catch(function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+
+        describe("mergeLabels = true", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.basicEmptyResponseSuccess;
+                scope = nock(mocks.responses.entityDefinitionsIdUrl + '/Attributes(' + mocks.data.testEntityId2 + ')', {
+                    reqheaders: {
+                        "If-Match": "*",
+                        "MSCRM.MergeLabels": "true"
+                    }
+                })
+                    .put("", mocks.data.testAttributeDefinition)
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.updateAttribute(mocks.data.testEntityId, mocks.data.testAttributeDefinition, null, true)
+                    .then(function (object) {
+                        expect(object).to.be.true;
+                        done();
+                    }).catch(function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+
+        describe("with Attribute Type", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.basicEmptyResponseSuccess;
+                scope = nock(mocks.responses.entityDefinitionsIdUrl + '/Attributes(' + mocks.data.testEntityId2 + ')/AttributeType', {
+                    reqheaders: {
+                        "If-Match": "*"
+                    }
+                })
+                    .put("", mocks.data.testAttributeDefinition)
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.updateAttribute(mocks.data.testEntityId, mocks.data.testAttributeDefinition, 'AttributeType')
+                    .then(function (object) {
+                        expect(object).to.be.true;
+                        done();
+                    }).catch(function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+
+        describe("with Attribute Type & mergeLabels = true", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.basicEmptyResponseSuccess;
+                scope = nock(mocks.responses.entityDefinitionsIdUrl + '/Attributes(' + mocks.data.testEntityId2 + ')/AttributeType', {
+                    reqheaders: {
+                        "If-Match": "*",
+                        "MSCRM.MergeLabels": "true"
+                    }
+                })
+                    .put("", mocks.data.testAttributeDefinition)
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.updateAttribute(mocks.data.testEntityId, mocks.data.testAttributeDefinition, 'AttributeType', true)
+                    .then(function (object) {
+                        expect(object).to.be.true;
+                        done();
+                    }).catch(function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+    });
+
+    describe("dynamicsWebApi.retrieveAttributes -", function () {
+
+        describe("basic", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.responseEntityDefinitions;
+                scope = nock(mocks.responses.entityDefinitionsIdUrl + '/Attributes')
+                    .get("")
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.retrieveAttributes(mocks.data.testEntityId)
+                    .then(function (object) {
+                        expect(object).to.deep.equal(mocks.data.entityDefinitionList);
+                        done();
+                    }).catch(function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+
+        describe("with AttributeType", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.responseEntityDefinitions;
+                scope = nock(mocks.responses.entityDefinitionsIdUrl + '/Attributes/AttributeType')
+                    .get("")
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.retrieveAttributes(mocks.data.testEntityId, 'AttributeType')
+                    .then(function (object) {
+                        expect(object).to.deep.equal(mocks.data.entityDefinitionList);
+                        done();
+                    }).catch(function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+    });
+
+    describe("dynamicsWebApi.retrieveAttribute -", function () {
+
+        describe("basic", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.response200;
+                scope = nock(mocks.responses.entityDefinitionsIdUrl + '/Attributes(' + mocks.data.testEntityId2 + ')')
+                    .get("")
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.retrieveAttribute(mocks.data.testEntityId, mocks.data.testEntityId2)
+                    .then(function (object) {
+                        expect(object).to.deep.equal(mocks.data.testEntity);
+                        done();
+                    }).catch(function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+
+        describe("basic - AlternateKeys", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.response200;
+                scope = nock(mocks.responses.entityDefinitionsUrl + "(SchemaName='Test')/Attributes(LogicalName='Test2')")
+                    .get("")
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.retrieveAttribute("SchemaName='Test'", "LogicalName='Test2'")
+                    .then(function (object) {
+                        expect(object).to.deep.equal(mocks.data.testEntity);
+                        done();
+                    }).catch(function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+
+        describe("with AttributeType", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.response200;
+                scope = nock(mocks.responses.entityDefinitionsIdUrl + '/Attributes(' + mocks.data.testEntityId2 + ')/AttributeType')
+                    .get("")
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.retrieveAttribute(mocks.data.testEntityId, mocks.data.testEntityId2, 'AttributeType')
+                    .then(function (object) {
+                        expect(object).to.deep.equal(mocks.data.testEntity);
+                        done();
+                    }).catch(function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+    });
+
     describe("dynamicsWebApi.constructor -", function () {
 
         describe("webApiVersion", function () {
