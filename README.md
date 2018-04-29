@@ -39,6 +39,16 @@ Any suggestions are welcome!
     * [Fetch All records](#fetch-all-records)
   * [Execute Web API functions](#execute-web-api-functions)
   * [Execute Web API actions](#execute-web-api-actions)
+  * [Entity and Attribute Metadata requests examples](#entity-and-attribute-metadata-requests-examples)
+    * [Create Entity](#create-entity)
+    * [Retrieve Entity](#retrieve-entity)
+    * [Update Entity](#update-entity)
+    * [Retrieve Multiple Entities](#retrieve-multiple-entities)
+    * [Create Attribute](#create-attribute)
+    * [Retrieve Attribute](#retrieve-attribute)
+    * [Update Attribute](#update-attribute)
+    * [Retrieve Multiple Attributes](#retrieve-multiple-attributes)
+    * [Use requests to query Entity and Attribute metadata](#use-requests-to-query-entity-and-attribute-metadata)
 * [Formatted Values and Lookup Properties](#formatted-values-and-lookup-properties)
 * [Using Alternate Keys](#using-alternate-keys)
 * [Making requests using Entity Logical Names](#making-requests-using-entity-logical-names)
@@ -64,7 +74,7 @@ dynamicsWebApi.executeUnboundFunction("WhoAmI").then(function (response) {
 ```
 
 ### DynamicsWebApi for Node.js
-DynamicsWebApi can be used as Node.js module to access Dynamics 365 Web API using OAuth. 
+DynamicsWebApi can be used as Node.js module to access Dynamics 365 Web API using OAuth.
 
 First of all, install a package from NPM:
 
@@ -119,7 +129,7 @@ function acquireToken(dynamicsWebApiCallback){
 }
 
 //create DynamicsWebApi object
-var dynamicsWebApi = new DynamicsWebApi({ 
+var dynamicsWebApi = new DynamicsWebApi({
     webApiUrl: 'https:/myorg.api.crm.dynamics.com/api/data/v9.0/',
     onTokenRefresh: acquireToken
 });
@@ -135,16 +145,26 @@ dynamicsWebApi.executeUnboundFunction("WhoAmI").then(function (response) {
 ### Configuration
 To initialize a new instance of DynamicsWebApi with a configuration object, please use the following code:
 
+#### Web browser
+
 ```js
-//config can be passed directly to the constructor
 var dynamicsWebApi = new DynamicsWebApi({ webApiVersion: '9.0' });
+```
+
+#### Node.js
+
+```js
+var dynamicsWebApi = new DynamicsWebApi({
+    webApiUrl: 'https:/myorg.api.crm.dynamics.com/api/data/v9.0/',
+    onTokenRefresh: acquireToken
+});
 ```
 
 You can set a configuration dynamically if needed:
 
 ```js
 //or can be set dynamically
-dynamicsWebApi.setConfig({ webApiVersion: '9.0' });
+dynamicsWebApi.setConfig({ webApiVersion: '8.2' });
 ```
 
 #### Configuration Parameters
@@ -203,7 +223,9 @@ includeAnnotations | String | `retrieveRequest`, `retrieveMultipleRequest`, `ret
 key | String | `retrieveRequest`, `createRequest`, `updateRequest`, `upsertRequest`, `deleteRequest` | `v.1.3.4+` A String representing collection record's Primary Key (GUID) or Alternate Key(s).
 maxPageSize | Number | `retrieveMultipleRequest`, `retrieveAllRequest` | Sets the odata.maxpagesize preference value to request the number of entities returned in the response.
 mergeLabels | Boolean | `updateRequest` | `v.1.4.2+` **Metadata Update only!** Sets `MSCRM.MergeLabels` header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is `false`. [More info](https://msdn.microsoft.com/en-us/library/mt593078.aspx#bkmk_updateEntities)
-navigationProperty | String | `retrieveRequest` | A String representing the name of a single-valued navigation property. Useful when needed to retrieve information about a related record in a single request.
+metadataAttributeType | String | `retrieveRequest`, `updateRequest` | `v.1.4.3+` Casts the Attributes to a specific type. (Used in requests to Attribute Metadata) [More Info](https://msdn.microsoft.com/en-us/library/mt607522.aspx#Anchor_4)
+navigationProperty | String | `retrieveRequest`, `createRequest`, `updateRequest` | A String representing the name of a single-valued navigation property. Useful when needed to retrieve information about a related record in a single request.
+navigationPropertyKey | String | `retrieveRequest`, `createRequest`, `updateRequest` | `v.1.4.3+` A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata)
 noCache | Boolean | All | `v.1.4.0+` If set to `true`, DynamicsWebApi adds a request header `Cache-Control: no-cache`. Default value is `false`.
 orderBy | Array | `retrieveMultipleRequest`, `retrieveAllRequest` | An Array (of Strings) representing the order in which items are returned using the $orderby system query option. Use the asc or desc suffix to specify ascending or descending order respectively. The default is ascending if the suffix isn't applied.
 returnRepresentation | Boolean | `createRequest`, `updateRequest`, `upsertRequest` | Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
@@ -898,6 +920,356 @@ var actionRequest = {
 dynamicsWebApi.executeUnboundAction("WinOpportunity", actionRequest).then(function () {
     //success
 }).catch(function (error) {
+    //catch an error
+});
+```
+
+## Entity and Attribute Metadata requests examples
+
+`Version 1.4.3+`
+
+Before working with metadata read [the following section from Microsoft Documentation](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/webapi/use-web-api-metadata).
+
+### Create Entity
+
+```js
+var entityDefinition = {
+    "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
+    "Attributes": [
+    {
+        "AttributeType": "String",
+        "AttributeTypeName": {
+            "Value": "StringType"
+        },
+        "Description": {
+            "@odata.type": "Microsoft.Dynamics.CRM.Label",
+            "LocalizedLabels": [{
+                "@odata.type": "Microsoft.Dynamics.CRM.LocalizedLabel",
+                "Label": "Type the name of the bank account",
+                "LanguageCode": 1033
+            }]
+        },
+        "DisplayName": {
+            "@odata.type": "Microsoft.Dynamics.CRM.Label",
+            "LocalizedLabels": [{
+                "@odata.type": "Microsoft.Dynamics.CRM.LocalizedLabel",
+                "Label": "Account Name",
+                "LanguageCode": 1033
+            }]
+        },
+        "IsPrimaryName": true,
+        "RequiredLevel": {
+            "Value": "None",
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifyrequirementlevelsettings"
+        },
+        "SchemaName": "new_AccountName",
+        "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
+        "FormatName": {
+            "Value": "Text"
+        },
+        "MaxLength": 100
+    }],
+    "Description": {
+        "@odata.type": "Microsoft.Dynamics.CRM.Label",
+        "LocalizedLabels": [{
+            "@odata.type": "Microsoft.Dynamics.CRM.LocalizedLabel",
+            "Label": "An entity to store information about customer bank accounts",
+            "LanguageCode": 1033
+        }]
+    },
+    "DisplayCollectionName": {
+        "@odata.type": "Microsoft.Dynamics.CRM.Label",
+        "LocalizedLabels": [{
+            "@odata.type": "Microsoft.Dynamics.CRM.LocalizedLabel",
+            "Label": "Bank Accounts",
+            "LanguageCode": 1033
+        }]
+    },
+    "DisplayName": {
+        "@odata.type": "Microsoft.Dynamics.CRM.Label",
+        "LocalizedLabels": [{
+            "@odata.type": "Microsoft.Dynamics.CRM.LocalizedLabel",
+            "Label": "Bank Account",
+            "LanguageCode": 1033
+        }]
+    },
+    "HasActivities": false,
+    "HasNotes": false,
+    "IsActivity": false,
+    "OwnershipType": "UserOwned",
+    "SchemaName": "new_BankAccount"
+};
+
+dynamicsWebApi.createEntity(entityDefinition).then(function(entityId){
+    //entityId is newly created entity id (MetadataId)
+}).catch(function(error){
+    //catch an error
+})
+```
+
+### Retrieve Entity
+
+Entity Metadata can be retrieved by either Primary Key (**MetadataId**) or by an Alternate Key (**LogicalName**). [More Info](https://msdn.microsoft.com/en-us/library/mt788314.aspx#bkmk_byName)
+
+```js
+var entityKey = '00000000-0000-0000-0000-000000000001';
+//or you can use an alternate key:
+//var entityKey = "LogicalName='new_accountname'";
+dynamicsWebApi.retrieveEntity(entityKey, ['SchemaName', 'LogicalName']).then(function(entityMetadata){
+    var schemaName = entityMetadata.SchemaName;
+}).catch(function(error){
+    //catch an error
+});
+```
+
+### Update Entity
+
+Microsoft recommends to make changes in the entity metadata that has been priorly retrieved to avoid any mistake. I would also recommend to read information about **MSCRM.MergeLabels** header prior updating metadata. More information about the header can be found [here](https://msdn.microsoft.com/en-us/library/mt593078.aspx#Anchor_2).
+
+**Important!** Make sure you set **`MetadataId`** property when you update the metadata, DynamicsWebApi use it as a primary key for the EntityDefinition record.
+
+```js
+var entityKey = "LogicalName='new_accountname'";
+dynamicsWebApi.retrieveEntity(entityKey).then(function(entityMetadata){
+    //1. change label
+    entityMetadata.DispalyName.LocalizedLabels[0].Label = 'New Bank Account';
+    //2. update metadata
+    return dynamicsWebApi.updateEntity(entityMetadata);
+}).catch(function(error){
+    //catch an error
+});
+```
+
+**Important!** When you update an entity, you must publish changes in CRM. [More Info](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/customize-dev/publish-customizations)
+
+### Retrieve Multiple Entities
+
+```js
+dynamicsWebApi.retrieveEntities(['LogicalName'], "OwnershipType eq Microsoft.Dynamics.CRM.OwnershipTypes'UserOwned'").then(function(response){
+    var firstLogicalName = response.value[0].LogicalName;
+}).catch(function(error){
+    //catch an error
+});
+```
+
+### Create Attribute
+
+```js
+var entityKey = '00000000-0000-0000-0000-000000000001';
+var attributeDefinition = {
+    "AttributeType": "Money",
+    "AttributeTypeName": {
+        "Value": "MoneyType"
+    },
+    "Description": {
+        "@odata.type": "Microsoft.Dynamics.CRM.Label",
+        "LocalizedLabels": [{
+            "@odata.type": "Microsoft.Dynamics.CRM.LocalizedLabel",
+            "Label": "Enter the balance amount",
+            "LanguageCode": 1033
+        }]
+    },
+    "DisplayName": {
+        "@odata.type": "Microsoft.Dynamics.CRM.Label",
+        "LocalizedLabels": [{
+            "@odata.type": "Microsoft.Dynamics.CRM.LocalizedLabel",
+            "Label": "Balance",
+            "LanguageCode": 1033
+        }]
+    },
+    "RequiredLevel": {
+        "Value": "None",
+        "CanBeChanged": true,
+        "ManagedPropertyLogicalName": "canmodifyrequirementlevelsettings"
+    },
+    "SchemaName": "new_Balance",
+    "@odata.type": "Microsoft.Dynamics.CRM.MoneyAttributeMetadata",
+    "PrecisionSource": 2
+};
+
+dynamicsWebApi.createAttribute(entityKey, attributeDefinition).then(function(attributeId){
+    //attributeId is a PrimaryKey (MetadataId) for newly created attribute
+}).catch(function(error){
+    //catch an error
+});
+```
+
+### Retrieve Attribute
+
+Attribute Metadata can be retrieved by either Primary Key (**MetadataId**) or by an Alternate Key (**LogicalName**). [More Info](https://msdn.microsoft.com/en-us/library/mt788314.aspx#bkmk_byName)
+
+The following example will retrieve only common properties available in [AttributeMetadata](https://msdn.microsoft.com/en-us/library/mt607551.aspx) entity.
+
+```js
+var entityKey = '00000000-0000-0000-0000-000000000001';
+//or you can use an alternate key:
+//var entityKey = "LogicalName='new_accountname'";
+var attributeKey = '00000000-0000-0000-0000-000000000002';
+//or you can use an alternate key:
+//var attributeKey = "LogicalName='new_balance'";
+dynamicsWebApi.retrieveAttribute(entityKey, attributeKey, ['SchemaName']).then(function(attributeMetadata){
+    var schemaName = attributeMetadata.SchemaName;
+}).catch(function(error){
+    //catch an error
+});
+```
+
+Use parameter in the function to cast the attribute to a specific type.
+
+```js
+var entityKey = '00000000-0000-0000-0000-000000000001';
+var attributeKey = '00000000-0000-0000-0000-000000000002';
+dynamicsWebApi.retrieveAttribute(entityKey, attributeKey, ['SchemaName'], 'Microsoft.Dynamics.CRM.MoneyAttributeMetadata')
+    .then(function(attributeMetadata){
+        var schemaName = attributeMetadata.SchemaName;
+    }).catch(function(error){
+        //catch an error
+    });
+```
+
+### Update Attribute
+
+**Important!** Make sure you set **`MetadataId`** property when you update the metadata, DynamicsWebApi use it as a primary key for the EntityDefinition record.
+
+The following example will update only common properties availible in [AttributeMetadata](https://msdn.microsoft.com/en-us/library/mt607551.aspx) entity. If you need to update specific properties of Attributes with type that inherit from the AttributeMetadata you will need to cast the attribute to the specific type. [More Info](https://msdn.microsoft.com/en-us/library/mt607522.aspx#Anchor_4)
+
+```js
+var entityKey = "LogicalName='new_accountname'";
+var attributeKey = "LogicalName='new_balance'";
+dynamicsWebApi.retrieveAttribute(entityKey, attributeKey).then(function(attributeMetadata){
+    //1. change label
+    attributeMetadata.DispalyName.LocalizedLabels[0].Label = 'New Balance';
+    //2. update metadata
+    return dynamicsWebApi.updateAttribute(entityKey, attributeMetadata);
+}).catch(function(error){
+    //catch an error
+});
+```
+
+To cast a property to a specific type use a parameter in the function.
+
+```js
+var entityKey = "LogicalName='new_accountname'";
+var attributeKey = "LogicalName='new_balance'";
+var attributeType = 'Microsoft.Dynamics.CRM.MoneyAttributeMetadata';
+dynamicsWebApi.retrieveAttribute(entityKey, attributeKey, attributeType).then(function(attributeMetadata){
+    //1. change label
+    attributeMetadata.DispalyName.LocalizedLabels[0].Label = 'New Balance';
+    //2. update metadata
+    return dynamicsWebApi.updateAttribute(entityKey, attributeMetadata, attributeType);
+}).catch(function(error){
+    //catch an error
+});
+```
+
+**Important!** Make sure you include the attribute type in the update function as well.
+
+**Important!** When you update an attribute, you must publish changes in CRM. [More Info](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/customize-dev/publish-customizations)
+
+### Retrieve Multiple Attributes
+
+The following example will retrieve only common properties available in [AttributeMetadata](https://msdn.microsoft.com/en-us/library/mt607551.aspx) entity.
+
+```js
+var entityKey = "LogicalName='new_accountname'";
+dynamicsWebApi.retrieveAttributes(entityKey).then(function(response){
+    var firstAttribute = response.value[0];
+}).catch(function(error){
+    //catch an error
+});
+```
+
+To retrieve only attributes of a specific type use a parameter in a function:
+
+```js
+var entityKey = "LogicalName='new_accountname'";
+dynamicsWebApi.retrieveAttributes(entityKey, 'Microsoft.Dynamics.CRM.MoneyAttributeMetadata').then(function(response){
+    var firstAttribute = response.value[0];
+}).catch(function(error){
+    //catch an error
+});
+```
+
+### Use requests to query Entity and Attribute metadata
+
+You can also use common request functions to create, retrieve and update entity and attribute metadata. Just use the following rules:
+
+1. Always set `collectionName: 'EntityDefinitions'`.
+2. To retrieve a specific **entity metadata** by a Primary or Alternate Key use `key` property. For example: `key: 'LogicalName="account"'`.
+3. To get attributes, set `navigationProperty: 'Attributes'`.
+4. To retrieve a specific **attribute metadata** by Primary or Alternate Key use `navigationPropertyKey`. For example: `navigationPropertyKey: '00000000-0000-0000-0000-000000000002'`.
+5. During entity or attribute metadata update you can use `mergeLabels` property to set **MSCRM.MergeLabels** attribute. By default `mergeLabels: false`.
+6. To send entity or attribute definition use `entity` property.
+
+#### Examples
+
+Retrieve entity metadata with attributes (with common properties):
+
+```js
+var request = {
+    collectionName: 'EntityDefinitions',
+    key: '00000000-0000-0000-0000-000000000001',
+    select: ['LogicalName', 'SchemaName'],
+    expand: 'Attributes'
+};
+
+dynamicsWebApi.retrieveRequest(request).then(function(entityMetadata){
+    var attributes = entityMetadata.Attributes;
+}).catch(function(error){
+    //catch an error
+});
+```
+
+Retrieve attribute metadata and cast it to the StringType:
+
+```js
+var request = {
+    collectionName: 'EntityDefinitions',
+    key: 'LogicalName="account"',
+    navigationProperty: 'Attributes',
+    navigationPropertyKey: 'LogicalName="firstname"',
+    metadataAttributeType: 'Microsoft.Dynamics.CRM.StringAttributeMetadata'
+};
+
+dynamicsWebApi.retrieveRequest(request).then(function(attributeMetadata){
+    var displayNameDefaultLabel = attributeMetadata.DisplayName.LocalizedLabels[0].Label;
+}).catch(function(error){
+    //catch an error
+});
+```
+
+Update entity metadata with **MSCRM.MergeLabels** header set to `true`:
+
+```js
+var request = {
+    collectionName: 'EntityDefinitions',
+    key: 'LogicalName="account"'
+};
+
+dynamicsWebApi.retrieveRequest(request).then(function(entityMetadata){
+    //1. change label
+    entityMetadata.DisplayName.LocalizedLabels[0].Label = 'Organization';
+    //2. configure update request
+    var updateRequest = {
+        collectionName: 'EntityDefinitions',
+        key: entityMetadata.MetadataId,
+        mergeLabels: true,
+        entity: entityMetadata
+    };
+    //3. call update request
+    return dynamicsWebApi.updateRequest(updateRequest);
+}).catch(function(error){
+    //catch an error
+});
+
+//it is the same as:
+dynamicsWebApi.retrieveEntity('LogicalName="account"').then(function(entityMetadata){
+    //1. change label
+    entityMetadata.DisplayName.LocalizedLabels[0].Label = 'Organization';
+    //2. call update request
+    return dynamicsWebApi.updateEntity(entityMetadata, true);
+}).catch(function(error){
     //catch an error
 });
 ```
