@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.4.2 (c) 2018 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.4.3 (c) 2018 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -382,22 +382,34 @@ var buildPreferHeader = __webpack_require__(12);
 function convertRequestOptions(request, functionName, url, joinSymbol, config) {
     var headers = {};
     var requestArray = [];
-    joinSymbol = joinSymbol != null ? joinSymbol : "&";
+    joinSymbol = joinSymbol != null ? joinSymbol : '&';
 
     if (request) {
         if (request.navigationProperty) {
-            ErrorHelper.stringParameterCheck(request.navigationProperty, 'DynamicsWebApi.' + functionName, "request.navigationProperty");
-            url += "/" + request.navigationProperty;
+            ErrorHelper.stringParameterCheck(request.navigationProperty, 'DynamicsWebApi.' + functionName, 'request.navigationProperty');
+            url += '/' + request.navigationProperty;
+
+            if (request.navigationPropertyKey) {
+                var navigationKey = ErrorHelper.keyParameterCheck(request.navigationPropertyKey, 'DynamicsWebApi.' + functionName, 'request.navigationPropertyKey');
+                url += '(' + navigationKey + ')';
+            }
+
+            if (request.navigationProperty === 'Attributes') {
+                if (request.metadataAttributeType) {
+                    ErrorHelper.stringParameterCheck(request.metadataAttributeType, 'DynamicsWebApi.' + functionName, 'request.metadataAttributeType');
+                    url += '/' + request.metadataAttributeType;
+                }
+            }
         }
 
         if (request.select != null && request.select.length) {
-            ErrorHelper.arrayParameterCheck(request.select, 'DynamicsWebApi.' + functionName, "request.select");
+            ErrorHelper.arrayParameterCheck(request.select, 'DynamicsWebApi.' + functionName, 'request.select');
 
-            if (functionName == "retrieve" && request.select.length == 1 && request.select[0].endsWith("/$ref")) {
-                url += "/" + request.select[0];
+            if (functionName == 'retrieve' && request.select.length == 1 && request.select[0].endsWith('/$ref')) {
+                url += '/' + request.select[0];
             }
             else {
-                if (request.select[0].startsWith("/") && functionName == "retrieve") {
+                if (request.select[0].startsWith('/') && functionName == 'retrieve') {
                     if (request.navigationProperty == null) {
                         url += request.select.shift();
                     }
@@ -408,7 +420,7 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
 
                 //check if anything left in the array
                 if (request.select.length) {
-                    requestArray.push("$select=" + request.select.join(','));
+                    requestArray.push('$select=' + request.select.join(','));
                 }
             }
         }
@@ -1148,7 +1160,7 @@ function DynamicsWebApi(config) {
                 var entityUrl = response.headers['OData-EntityId']
                     ? response.headers['OData-EntityId']
                     : response.headers['odata-entityid'];
-                var id = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(entityUrl)[0];
+                var id = /([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})\)$/i.exec(entityUrl)[1];
                 successCallback(id);
             }
         }
@@ -2065,7 +2077,207 @@ function DynamicsWebApi(config) {
         };
 
         _makeRequest('POST', request, 'executeAction', onSuccess, errorCallback);
-    }
+    };
+
+    /**
+     * Sends an asynchronous request to create an entity definition.
+     *
+     * @param {string} entityDefinition - Entity Definition.
+     * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
+     * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
+     */
+    this.createEntity = function (entityDefinition, successCallback, errorCallback) {
+
+        ErrorHelper.parameterCheck(entityDefinition, 'DynamicsWebApi.createEntity', 'entityDefinition');
+
+        var request = {
+            collection: 'EntityDefinitions',
+            entity: entityDefinition
+        };
+        this.createRequest(request, successCallback, errorCallback);
+    };
+
+    /**
+     * Sends an asynchronous request to update an entity definition.
+     *
+     * @param {string} entityDefinition - Entity Definition.
+     * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
+     * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
+     * @param {boolean} [mergeLabels] - Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false.
+     */
+    this.updateEntity = function (entityDefinition, successCallback, errorCallback, mergeLabels) {
+
+        ErrorHelper.parameterCheck(entityDefinition, 'DynamicsWebApi.updateEntity', 'entityDefinition');
+        ErrorHelper.guidParameterCheck(entityDefinition.MetadataId, 'DynamicsWebApi.updateEntity', 'entityDefinition.MetadataId');
+
+        var request = {
+            collection: 'EntityDefinitions',
+            mergeLabels: mergeLabels,
+            key: entityDefinition.MetadataId,
+            entity: entityDefinition
+        };
+        this.updateRequest(request, successCallback, errorCallback);
+    };
+
+    /**
+     * Sends an asynchronous request to retrieve a specific entity definition.
+     *
+     * @param {string} entityKey - The Entity MetadataId or Alternate Key (such as LogicalName).
+     * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
+     * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
+     * @param {Array} [select] - Use the $select system query option to limit the properties returned.
+     * @param {string|Array} [expand] - A String or Array of Expand Objects representing the $expand Query Option value to control which related records need to be returned.
+     */
+    this.retrieveEntity = function (entityKey, successCallback, errorCallback, select, expand) {
+
+        ErrorHelper.keyParameterCheck(entityKey, 'DynamicsWebApi.retrieveEntity', 'entityKey');
+
+        var request = {
+            collection: 'EntityDefinitions',
+            key: entityKey,
+            select: select,
+            expand: expand
+        };
+
+        this.retrieveRequest(request, successCallback, errorCallback);
+    };
+
+    /**
+     * Sends an asynchronous request to retrieve entity definitions.
+     *
+     * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
+     * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
+     * @param {Array} [select] - Use the $select system query option to limit the properties returned.
+     * @param {string} [filter] - Use the $filter system query option to set criteria for which entity definitions will be returned.
+     */
+    this.retrieveEntities = function (successCallback, errorCallback, select, filter) {
+        var request = {
+            collection: 'EntityDefinitions',
+            select: select,
+            filter: filter
+        };
+
+        this.retrieveRequest(request, successCallback, errorCallback);
+    };
+
+    /**
+     * Sends an asynchronous request to create an attribute.
+     *
+     * @param {string} entityKey - The Entity MetadataId or Alternate Key (such as LogicalName).
+     * @param {Object} attributeDefinition - Object that describes the attribute.
+     * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
+     * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
+     */
+    this.createAttribute = function (entityKey, attributeDefinition, successCallback, errorCallback) {
+        ErrorHelper.keyParameterCheck(entityKey, 'DynamicsWebApi.createAttribute', 'entityKey');
+        ErrorHelper.parameterCheck(attributeDefinition, 'DynamicsWebApi.createAttribute', 'attributeDefinition');
+
+        var request = {
+            collection: 'EntityDefinitions',
+            key: entityKey,
+            entity: attributeDefinition,
+            navigationProperty: 'Attributes'
+        };
+
+        this.createRequest(request, successCallback, errorCallback);
+    };
+
+    /**
+     * Sends an asynchronous request to update an attribute.
+     *
+     * @param {string} entityKey - The Entity MetadataId or Alternate Key (such as LogicalName).
+     * @param {Object} attributeDefinition - Object that describes the attribute.
+     * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
+     * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
+     * @param {string} [attributeType] - Use this parameter to cast the Attribute to a specific type.
+     * @param {boolean} [mergeLabels] - Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false.
+     */
+    this.updateAttribute = function (entityKey, attributeDefinition, successCallback, errorCallback, attributeType, mergeLabels) {
+        ErrorHelper.keyParameterCheck(entityKey, 'DynamicsWebApi.updateAttribute', 'entityKey');
+        ErrorHelper.parameterCheck(attributeDefinition, 'DynamicsWebApi.updateAttribute', 'attributeDefinition');
+        ErrorHelper.guidParameterCheck(attributeDefinition.MetadataId, 'DynamicsWebApi.updateAttribute', 'attributeDefinition.MetadataId');
+
+        if (attributeType) {
+            ErrorHelper.stringParameterCheck(attributeType, 'DynamicsWebApi.updateAttribute', 'attributeType');
+        }
+
+        var request = {
+            collection: 'EntityDefinitions',
+            key: entityKey,
+            entity: attributeDefinition,
+            navigationProperty: 'Attributes',
+            navigationPropertyKey: attributeDefinition.MetadataId,
+            mergeLabels: mergeLabels,
+            metadataAttributeType: attributeType
+        };
+
+        this.updateRequest(request, successCallback, errorCallback);
+    };
+
+    /**
+     * Sends an asynchronous request to retrieve attribute metadata for a specified entity definition.
+     *
+     * @param {string} entityKey - The Entity MetadataId or Alternate Key (such as LogicalName).
+     * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
+     * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
+     * @param {string} [attributeType] - Use this parameter to cast the Attributes to a specific type.
+     * @param {Array} [select] - Use the $select system query option to limit the properties returned.
+     * @param {string} [filter] - Use the $filter system query option to set criteria for which attribute definitions will be returned.
+     * @param {string|Array} [expand] - A String or Array of Expand Objects representing the $expand Query Option value to control which related records need to be returned.
+     */
+    this.retrieveAttributes = function (entityKey, successCallback, errorCallback, attributeType, select, filter, expand) {
+
+        ErrorHelper.keyParameterCheck(entityKey, 'DynamicsWebApi.retrieveAttributes', 'entityKey');
+
+        if (attributeType) {
+            ErrorHelper.stringParameterCheck(attributeType, 'DynamicsWebApi.retrieveAttributes', 'attributeType');
+        }
+
+        var request = {
+            collection: 'EntityDefinitions',
+            key: entityKey,
+            navigationProperty: 'Attributes',
+            select: select,
+            filter: filter,
+            expand: expand,
+            metadataAttributeType: attributeType
+        };
+
+        this.retrieveRequest(request, successCallback, errorCallback);
+    };
+
+    /**
+     * Sends an asynchronous request to retrieve a specific attribute metadata for a specified entity definition.
+     *
+     * @param {string} entityKey - The Entity MetadataId or Alternate Key (such as LogicalName).
+     * @param {string} attributeKey - The Attribute Metadata id.
+     * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
+     * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
+     * @param {string} [attributeType] - Use this parameter to cast the Attribute to a specific type.
+     * @param {Array} [select] - Use the $select system query option to limit the properties returned.
+     * @param {string|Array} [expand] - A String or Array of Expand Objects representing the $expand Query Option value to control which related records need to be returned.
+     */
+    this.retrieveAttribute = function (entityKey, attributeKey, successCallback, errorCallback, attributeType, select, expand) {
+
+        ErrorHelper.keyParameterCheck(entityKey, 'DynamicsWebApi.retrieveAttribute', 'entityKey');
+        ErrorHelper.keyParameterCheck(attributeKey, 'DynamicsWebApi.retrieveAttribute', 'attributeKey');
+
+        if (attributeType) {
+            ErrorHelper.stringParameterCheck(attributeType, 'DynamicsWebApi.retrieveAttribute', 'attributeType');
+        }
+
+        var request = {
+            collection: 'EntityDefinitions',
+            key: entityKey,
+            navigationProperty: 'Attributes',
+            select: select,
+            expand: expand,
+            metadataAttributeType: attributeType,
+            navigationPropertyKey: attributeKey
+        };
+
+        this.retrieveRequest(request, successCallback, errorCallback);
+    };
 
     /**
      * Creates a new instance of DynamicsWebApi
