@@ -1441,6 +1441,8 @@ the config option "formatted" will enable developers to retrieve all information
 - [X] RUD operations using Alternate Keys. `Implemented in v.1.3.4`
 - [X] Duplicate Detection for Web API v.9. `Implemented in v.1.3.4`
 - [X] Ability to use entity names instead of collection names. `Implemented in v.1.4.0`
+- [X] Entity and Attribute Metadata helpers. `Implemented in v.1.4.3`
+- [ ] Entity Relationships and Global Option Sets helpers.
 - [ ] Batch requests.
 - [ ] Intellisense for request objects.
 
