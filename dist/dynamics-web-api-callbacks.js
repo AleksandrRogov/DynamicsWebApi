@@ -428,7 +428,18 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
         if (request.filter) {
             ErrorHelper.stringParameterCheck(request.filter, 'DynamicsWebApi.' + functionName, "request.filter");
             var removeBracketsFromGuidReg = /[^"']{([\w\d]{8}[-]?(?:[\w\d]{4}[-]?){3}[\w\d]{12})}(?:[^"']|$)/g;
-            var filterResult = request.filter.replace(removeBracketsFromGuidReg, ' $1 ').trim();
+            var filterResult = request.filter;
+
+            //fix bug 2018-06-11
+            while ((m = removeBracketsFromGuidReg.exec(filterResult)) !== null) {
+                if (m.index === removeBracketsFromGuidReg.lastIndex) {
+                    regex.lastIndex++;
+                }
+
+                var replacement = m[0].endsWith(')') ? ')' : ' ';
+                filterResult = filterResult.replace(m[0], ' ' + m[1] + replacement);
+            }
+
             requestArray.push("$filter=" + encodeURIComponent(filterResult));
         }
 
@@ -857,7 +868,9 @@ function sendRequest(method, path, config, data, additionalHeaders, successCallb
 
         for (var key in additionalHeaders) {
             batchBody.push(key + ': ' + additionalHeaders[key]);
-            delete additionalHeaders[key];
+
+            //authorization header is an exception. bug #27
+            if (key != 'Authorization') delete additionalHeaders[key];
         }
 
         batchBody.push('\n--' + batchBoundary + '--');
@@ -1027,6 +1040,8 @@ if (!String.prototype.endsWith || !String.prototype.startsWith) {
  * @property {Object} entity - A JavaScript object with properties corresponding to the logical name of entity attributes (exceptions are lookups and single-valued navigation properties).
  * @property {string} impersonate - Impersonates the user. A String representing the GUID value for the Dynamics 365 system user id.
  * @property {string} navigationProperty - A String representing the name of a single-valued navigation property. Useful when needed to retrieve information about a related record in a single request.
+ * @property {string} navigationPropertyKey - v.1.4.3+ A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata).
+ * @property {string} metadataAttributeType - v.1.4.3+ Casts the AttributeMetadata to a specific type. (Used in requests to Attribute Metadata).
  * @property {boolean} noCache - If set to 'true', DynamicsWebApi adds a request header 'Cache-Control: no-cache'. Default value is 'false'.
  * @property {string} savedQuery - A String representing the GUID value of the saved query.
  * @property {string} userQuery - A String representing the GUID value of the user query.

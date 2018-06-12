@@ -412,6 +412,26 @@ describe("RequestConverter.convertRequestOptions -", function () {
         expect(result).to.deep.equal({ url: stubUrl, query: "$filter=" + encodeURIComponent("name eq 'name' and testid1 eq 0000a000-0000-0000-0000-000000000001 and testid2 eq 0000a000-0000-0000-0000-000000000002 and teststring eq '{0000a000-0000-0000-0000-000000000003}'"), headers: {} });
     });
 
+    //test bug 2018-06-11
+    it("filter - grouping & remove brackets from guid ", function () {
+        var dwaRequest = {
+            filter: "name eq 'name' and (testid1 eq {0000a000-0000-0000-0000-000000000001} or testid2 eq {0000a000-0000-0000-0000-000000000002})"
+        };
+
+        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
+        expect(result).to.deep.equal({ url: stubUrl, query: "$filter=" + encodeURIComponent("name eq 'name' and (testid1 eq 0000a000-0000-0000-0000-000000000001 or testid2 eq 0000a000-0000-0000-0000-000000000002)"), headers: {} });
+    });
+
+    //test bug 2018-06-11
+    it("filter - grouping & remove brackets from a single guid", function () {
+        var dwaRequest = {
+            filter: "name eq 'name' and (testid1 eq {0000a000-0000-0000-0000-000000000001})"
+        };
+
+        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
+        expect(result).to.deep.equal({ url: stubUrl, query: "$filter=" + encodeURIComponent("name eq 'name' and (testid1 eq 0000a000-0000-0000-0000-000000000001)"), headers: {} });
+    });
+
     it("ifmatch empty", function () {
         var dwaRequest = {
             ifmatch: ""
