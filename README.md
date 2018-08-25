@@ -49,6 +49,11 @@ Any suggestions are welcome!
     * [Update Attribute](#update-attribute)
     * [Retrieve Multiple Attributes](#retrieve-multiple-attributes)
     * [Use requests to query Entity and Attribute metadata](#use-requests-to-query-entity-and-attribute-metadata)
+	* [Create Relationship](#create-relationship)
+	* [Update Relationship](#update-relationship)
+	* [Delete Relationship](#delete-relationship)
+	* [Retrieve Relationship](#retrieve-relationship)
+	* [Retrieve Multiple Relationships](#retrieve-multiple-relationships)
 * [Formatted Values and Lookup Properties](#formatted-values-and-lookup-properties)
 * [Using Alternate Keys](#using-alternate-keys)
 * [Making requests using Entity Logical Names](#making-requests-using-entity-logical-names)
@@ -253,7 +258,7 @@ As well as multi-level expands are not implemented yet. This situation may be ch
 For complex requests to Web API with multi-level expands use `executeFetchXml` function.
 
 Starting from version 1.2.8, all requests to Web API that have long URLs (more than 2000 characters) are automatically converted to a Batch Request.
-This feature is very convenient if you are trying to make a call using big Fetch XMLs. No special parameters needed to do a convertation.
+This feature is very convenient when you make a call with big Fetch XMLs. No special parameters needed to do a convertation.
 
 ### Create a record
 
@@ -1201,6 +1206,158 @@ You can also use common request functions to create, retrieve and update entity 
 4. To retrieve a specific **attribute metadata** by Primary or Alternate Key use `navigationPropertyKey`. For example: `navigationPropertyKey: '00000000-0000-0000-0000-000000000002'`.
 5. During entity or attribute metadata update you can use `mergeLabels` property to set **MSCRM.MergeLabels** attribute. By default `mergeLabels: false`.
 6. To send entity or attribute definition use `entity` property.
+
+### Create Relationship
+
+```js
+var newRelationship = {
+    "SchemaName": "dwa_contact_dwa_dynamicswebapitest",
+    "@odata.type": "Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata",
+    "AssociatedMenuConfiguration": {
+        "Behavior": "UseCollectionName",
+        "Group": "Details",
+        "Label": {
+            "@odata.type": "Microsoft.Dynamics.CRM.Label",
+            "LocalizedLabels": [
+             {
+                 "@odata.type": "Microsoft.Dynamics.CRM.LocalizedLabel",
+                 "Label": "DWA Test",
+                 "LanguageCode": 1033
+             }
+            ],
+            "UserLocalizedLabel": {
+                "@odata.type": "Microsoft.Dynamics.CRM.LocalizedLabel",
+                "Label": "DWA Test",
+                "LanguageCode": 1033
+            }
+        },
+        "Order": 10000
+    },
+    "CascadeConfiguration": {
+        "Assign": "Cascade",
+        "Delete": "Cascade",
+        "Merge": "Cascade",
+        "Reparent": "Cascade",
+        "Share": "Cascade",
+        "Unshare": "Cascade"
+    },
+    "ReferencedAttribute": "contactid",
+    "ReferencedEntity": "contact",
+    "ReferencingEntity": "dwa_dynamicswebapitest",
+    "Lookup": {
+        "AttributeType": "Lookup",
+        "AttributeTypeName": {
+            "Value": "LookupType"
+        },
+        "Description": {
+            "@odata.type": "Microsoft.Dynamics.CRM.Label",
+            "LocalizedLabels": [
+             {
+                 "@odata.type": "Microsoft.Dynamics.CRM.LocalizedLabel",
+                 "Label": "The owner of the test",
+                 "LanguageCode": 1033
+             }
+            ],
+            "UserLocalizedLabel": {
+                "@odata.type": "Microsoft.Dynamics.CRM.LocalizedLabel",
+                "Label": "The owner of the test",
+                "LanguageCode": 1033
+            }
+        },
+        "DisplayName": {
+            "@odata.type": "Microsoft.Dynamics.CRM.Label",
+            "LocalizedLabels": [
+             {
+                 "@odata.type": "Microsoft.Dynamics.CRM.LocalizedLabel",
+                 "Label": "DWA Test Owner",
+                 "LanguageCode": 1033
+             }
+            ],
+            "UserLocalizedLabel": {
+                "@odata.type": "Microsoft.Dynamics.CRM.LocalizedLabel",
+                "Label": "DWA Test Owner",
+                "LanguageCode": 1033
+            }
+        },
+        "RequiredLevel": {
+            "Value": "ApplicationRequired",
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifyrequirementlevelsettings"
+        },
+        "SchemaName": "dwa_TestOwner",
+        "@odata.type": "Microsoft.Dynamics.CRM.LookupAttributeMetadata"
+    }
+};
+
+dynamicsWebApi.createRelationship(newRelationship).then(function (relationshipId) {
+    //relationshipId is a PrimaryKey (MetadataId) for a newly created relationship
+}).catch(function (error) {
+    //catch errors
+});
+```
+### Update Relationship
+
+**Important!** Make sure you set **`MetadataId`** property when you update the metadata, DynamicsWebApi use it as a primary key for the EntityDefinition record.
+
+```js
+var metadataId = '10cb680e-b6a7-e811-816a-480fcfe97e21';
+
+dynamicsWebApi.retrieveRelationship(metadataId).then(function (relationship) {
+    relationship.AssociatedMenuConfiguration.Label.LocalizedLabels[0].Label = "New Label";
+    return dynamicsWebApi.updateRelationship(relationship);
+}).then(function (updateResponse) {
+    //check update response
+}).catch(function (error) {
+    //catch errors
+});
+```
+
+### Delete Relationship
+
+```js
+var metadataId = '10cb680e-b6a7-e811-816a-480fcfe97e21';
+
+dynamicsWebApi.deleteRelationship(metadataId).then(function (isDeleted) {
+    //isDeleted should be true
+}).catch(function (error) {
+    //catch errors
+});
+```
+
+### Retrieve Relationship
+
+```js
+var metadataId = '10cb680e-b6a7-e811-816a-480fcfe97e21';
+
+dynamicsWebApi.retrieveRelationship(metadataId).then(function (relationship) {
+    //work with a retrieved relationship
+}).catch(function (error) {
+    //catch errors
+});
+```
+
+You can also cast a relationship into a specific type:
+
+```js
+var metadataId = '10cb680e-b6a7-e811-816a-480fcfe97e21';
+var relationshipType = 'Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata';
+dynamicsWebApi.retrieveRelationship(metadataId, relationshipType).then(function (relationship) {
+    //work with a retrieved relationship
+}).catch(function (error) {
+    //catch errors
+});
+```
+
+### Retrieve Multiple Relationships
+
+```js
+dynamicsWebApi.retrieveRelationships(['SchemaName', 'MetadataId'], "ReferencedEntity eq 'account'")
+.then(function (relationship) {
+    //work with a retrieved relationship
+}).catch(function (error) {
+    //catch errors
+});
+```
 
 #### Examples
 
