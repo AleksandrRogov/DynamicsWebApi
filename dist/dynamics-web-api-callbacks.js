@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.4.3 (c) 2018 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.4.4 (c) 2018 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -17,9 +17,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	function __webpack_require__(moduleId) {
 /******/
 /******/ 		// Check if module is in cache
-/******/ 		if(installedModules[moduleId]) {
+/******/ 		if(installedModules[moduleId])
 /******/ 			return installedModules[moduleId].exports;
-/******/ 		}
+/******/
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = installedModules[moduleId] = {
 /******/ 			i: moduleId,
@@ -74,7 +74,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 6);
+/******/ 	return __webpack_require__(__webpack_require__.s = 14);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -353,7 +353,7 @@ String.prototype.startsWith = function (searchString, position) {
 
 var DWA = __webpack_require__(0);
 var ErrorHelper = __webpack_require__(1);
-var buildPreferHeader = __webpack_require__(12);
+var buildPreferHeader = __webpack_require__(11);
 
 /**
  * @typedef {Object} ConvertedRequestOptions
@@ -694,7 +694,7 @@ var Utility = {
      * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
      * @returns {string}
      */
-    buildFunctionParameters: __webpack_require__(11),
+    buildFunctionParameters: __webpack_require__(10),
 
     /**
      * Parses a paging cookie returned in response
@@ -703,7 +703,7 @@ var Utility = {
      * @param {number} currentPageNumber - A current page number. Fix empty paging-cookie for complex fetch xmls.
      * @returns {{cookie: "", number: 0, next: 1}}
      */
-    getFetchXmlPagingCookie: __webpack_require__(14),
+    getFetchXmlPagingCookie: __webpack_require__(13),
 
     /**
      * Converts a response to a reference object
@@ -711,7 +711,7 @@ var Utility = {
      * @param {Object} responseData - Response object
      * @returns {ReferenceObject}
      */
-    convertToReferenceObject: __webpack_require__(13),
+    convertToReferenceObject: __webpack_require__(12),
 
     /**
      * Checks whether the value is JS Null.
@@ -889,7 +889,7 @@ function sendRequest(method, path, config, data, additionalHeaders, successCallb
 
     var executeRequest;
 
-        executeRequest = __webpack_require__(10);
+        executeRequest = __webpack_require__(9);
 
 
     var sendInternalRequest = function (token) {
@@ -991,6 +991,425 @@ module.exports = {
 
 /***/ }),
 /* 6 */
+/***/ (function(module, exports) {
+
+module.exports = function dateReviver(key, value) {
+    ///<summary>
+    /// Private function to convert matching string values to Date objects.
+    ///</summary>
+    ///<param name="key" type="String">
+    /// The key used to identify the object property
+    ///</param>
+    ///<param name="value" type="String">
+    /// The string value representing a date
+    ///</param>
+    var a;
+    if (typeof value === 'string') {
+        a = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:Z|[-+]\d{2}:\d{2})$/.exec(value);
+        if (a) {
+            return new Date(Date.UTC(+a[1], +a[2] - 1, +a[3], +a[4], +a[5], +a[6]));
+        }
+    }
+    return value;
+};
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var DWA = __webpack_require__(0);
+var dateReviver = __webpack_require__(6);
+
+//string es6 polyfill
+if (!String.prototype.endsWith || !String.prototype.startsWith) {
+    __webpack_require__(2);
+}
+
+//https://github.com/emiltholin/google-api-batch-utils
+function parseBatchResponse(response) {
+    // Not the same delimiter in the response as we specify ourselves in the request,
+    // so we have to extract it.
+    var delimiter = response.substr(0, response.indexOf('\r\n'));
+    var parts = response.split(delimiter);
+    // The first part will always be an empty string. Just remove it.
+    parts.shift();
+    // The last part will be the "--". Just remove it.
+    parts.pop();
+
+    var result = [];
+    for (var i = 0; i < parts.length; i++) {
+        var part = parts[i];
+        var p = part.substring(part.indexOf("{"), part.lastIndexOf("}") + 1);
+        result.push(JSON.parse(p, dateReviver));
+    }
+    return result;
+}
+
+function getFormattedKeyValue(keyName, value) {
+    var newKey = null;
+    if (keyName.indexOf('@') !== -1) {
+        var format = keyName.split('@');
+        switch (format[1]) {
+            case 'odata.context':
+                newKey = 'oDataContext';
+                break;
+            case 'odata.count':
+                newKey = 'oDataCount';
+                value = value != null
+                    ? parseInt(value)
+                    : 0;
+                break;
+            case 'odata.nextLink':
+                newKey = 'oDataNextLink';
+                break;
+            case DWA.Prefer.Annotations.FormattedValue:
+                newKey = format[0] + '_Formatted';
+                break;
+            case DWA.Prefer.Annotations.AssociatedNavigationProperty:
+                newKey = format[0] + '_NavigationProperty';
+                break;
+            case DWA.Prefer.Annotations.LookupLogicalName:
+                newKey = format[0] + '_LogicalName';
+                break;
+        }
+    }
+
+    return [newKey, value];
+}
+
+function parseData(object) {
+    var keys = Object.keys(object);
+
+    for (var i = 0; i < keys.length; i++) {
+        var currentKey = keys[i];
+
+        if (object[currentKey] != null && object[currentKey].constructor === Array) {
+            for (var j = 0; j < object[currentKey].length; j++) {
+                object[currentKey][j] = parseData(object[currentKey][j]);
+            }
+        }
+
+        //parse formatted values
+        var formattedKeyValue = getFormattedKeyValue(currentKey, object[currentKey]);
+        if (formattedKeyValue[0]) {
+            object[formattedKeyValue[0]] = formattedKeyValue[1];
+        }
+
+        //parse aliased values
+        if (currentKey.indexOf('_x002e_') !== -1) {
+            var aliasKeys = currentKey.split('_x002e_');
+
+            if (!object.hasOwnProperty(aliasKeys[0])) {
+                object[aliasKeys[0]] = { _dwaType: 'alias' };
+            }
+            //throw an error if there is already a property which is not an 'alias'
+            else if (
+                typeof (object[aliasKeys[0]]) !== 'object' ||
+                typeof (object[aliasKeys[0]]) === 'object' && !object[aliasKeys[0]].hasOwnProperty('_dwaType')) {
+                throw new Error('The alias name of the linked entity must be unique!');
+            }
+
+            object[aliasKeys[0]][aliasKeys[1]] = object[currentKey];
+
+            //aliases also contain formatted values
+            formattedKeyValue = getFormattedKeyValue(aliasKeys[1], object[currentKey]);
+            if (formattedKeyValue[0]) {
+                object[aliasKeys[0]][formattedKeyValue[0]] = formattedKeyValue[1];
+            }
+        }
+    }
+
+    return object;
+}
+
+/**
+ *
+ * @param {string} response
+ */
+module.exports = function parseResponse(response) {
+    var responseData = null;
+    if (response.length) {
+        responseData = response.indexOf('--batchresponse_') > -1
+            ? responseData = parseBatchResponse(response)[0]
+            : responseData = JSON.parse(response, dateReviver);
+
+        responseData = parseData(responseData);
+    }
+
+    return responseData;
+}
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports) {
+
+module.exports = function parseResponseHeaders(headerStr) {
+    var headers = {};
+    if (!headerStr) {
+        return headers;
+    }
+    var headerPairs = headerStr.split('\u000d\u000a');
+    for (var i = 0, ilen = headerPairs.length; i < ilen; i++) {
+        var headerPair = headerPairs[i];
+        var index = headerPair.indexOf('\u003a\u0020');
+        if (index > 0) {
+            headers[headerPair.substring(0, index)] = headerPair.substring(index + 2);
+        }
+    }
+    return headers;
+};
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var parseResponse = __webpack_require__(7);
+var parseResponseHeaders = __webpack_require__(8);
+
+/**
+ * Sends a request to given URL with given parameters
+ *
+ * @param {string} method - Method of the request.
+ * @param {string} uri - Request URI.
+ * @param {Function} successCallback - A callback called on success of the request.
+ * @param {Function} errorCallback - A callback called when a request failed.
+ * @param {string} [data] - Data to send in the request.
+ * @param {Object} [additionalHeaders] - Object with headers. IMPORTANT! This object does not contain default headers needed for every request.
+ */
+var xhrRequest = function (method, uri, data, additionalHeaders, successCallback, errorCallback, async) {
+    var request = new XMLHttpRequest();
+    request.open(method, uri, async);
+    //request.setRequestHeader("OData-MaxVersion", "4.0");
+    //request.setRequestHeader("OData-Version", "4.0");
+    //request.setRequestHeader("Accept", "application/json");
+    //request.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+
+    //set additional headers
+    for (var key in additionalHeaders) {
+        request.setRequestHeader(key, additionalHeaders[key]);
+    }
+
+    request.onreadystatechange = function () {
+        if (request.readyState === 4) {
+            switch (request.status) {
+                case 200: // Success with content returned in response body.
+                case 201: // Success with content returned in response body.
+                case 204: // Success with no content returned in response body.
+                case 304: {// Success with Not Modified
+                    var responseData = parseResponse(request.responseText);
+
+                    var response = {
+                        data: responseData,
+                        headers: parseResponseHeaders(request.getAllResponseHeaders()),
+                        status: request.status
+                    };
+
+                    successCallback(response);
+                    break;
+                }
+                default: // All other statuses are error cases.
+                    var error;
+                    try {
+                        error = JSON.parse(request.response).error;
+                    } catch (e) {
+                        if (request.response.length > 0) {
+                            error = { message: request.response };
+                        }
+                        else {
+                            error = { message: "Unexpected Error" };
+                        }
+                    }
+                    error.status = request.status;
+                    error.statusText = request.statusText;
+                    errorCallback(error);
+                    break;
+            }
+
+            request = null;
+        }
+    };
+
+    request.onerror = function () {
+        errorCallback({ message: "Network Error" });
+        request = null;
+    };
+
+    request.ontimeout = function (error) {
+        errorCallback({ message: "Request Timed Out" });
+        request = null;
+    };
+
+    data
+        ? request.send(data)
+        : request.send();
+};
+
+module.exports = xhrRequest;
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports) {
+
+/**
+ * Builds parametes for a funciton. Returns '()' (if no parameters) or '([params])?[query]'
+ *
+ * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
+ * @returns {string}
+ */
+module.exports = function buildFunctionParameters(parameters) {
+    if (parameters) {
+        var parameterNames = Object.keys(parameters);
+        var functionParameters = "";
+        var urlQuery = "";
+
+        for (var i = 1; i <= parameterNames.length; i++) {
+            var parameterName = parameterNames[i - 1];
+            var value = parameters[parameterName];
+
+            if (i > 1) {
+                functionParameters += ",";
+                urlQuery += "&";
+            }
+
+            functionParameters += parameterName + "=@p" + i;
+            urlQuery += "@p" + i + "=" + ((typeof value == "string") ? "'" + value + "'" : value);
+        }
+
+        return "(" + functionParameters + ")?" + urlQuery;
+    }
+    else {
+        return "()";
+    }
+};
+
+/***/ }),
+/* 11 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var DWA = __webpack_require__(0);
+var ErrorHelper = __webpack_require__(1);
+
+/**
+ * Builds a Prefer header value
+ * @param {Object} request Request object
+ * @param {string} functionName name of the current function
+ * @param {Object} config DynamicsWebApi config
+ * @returns {string}
+ */
+module.exports = function buildPreferHeader(request, functionName, config) {
+    var returnRepresentation = request.returnRepresentation;
+    var includeAnnotations = request.includeAnnotations;
+    var maxPageSize = request.maxPageSize;
+
+    if (request.prefer && request.prefer.length) {
+        ErrorHelper.stringOrArrayParameterCheck(request.prefer, "DynamicsWebApi." + functionName, "request.prefer");
+        var prefer = request.prefer;
+        if (typeof prefer === "string") {
+            prefer = prefer.split(',');
+        }
+        for (var i in prefer) {
+            var item = prefer[i].trim();
+            if (item === DWA.Prefer.ReturnRepresentation) {
+                returnRepresentation = true;
+            }
+            else if (item.startsWith("odata.include-annotations=")) {
+                includeAnnotations = item.replace('odata.include-annotations=', '').replace(/"/g,'');
+            }
+            else if (item.startsWith("odata.maxpagesize=")) {
+                maxPageSize = item.replace('odata.maxpagesize=', '').replace(/"/g, '');
+            }
+        }
+    }
+
+    if (config) {
+        if (returnRepresentation == null) {
+            returnRepresentation = config.returnRepresentation;
+        }
+        includeAnnotations = includeAnnotations ? includeAnnotations : config.includeAnnotations;
+        maxPageSize = maxPageSize ? maxPageSize : config.maxPageSize;
+    }
+
+    var prefer = [];
+
+    if (returnRepresentation) {
+        ErrorHelper.boolParameterCheck(returnRepresentation, "DynamicsWebApi." + functionName, "request.returnRepresentation");
+        prefer.push(DWA.Prefer.ReturnRepresentation);
+    }
+
+    if (includeAnnotations) {
+        ErrorHelper.stringParameterCheck(includeAnnotations, "DynamicsWebApi." + functionName, "request.includeAnnotations");
+        prefer.push('odata.include-annotations="' + includeAnnotations + '"');
+    }
+
+    if (maxPageSize && maxPageSize > 0) {
+        ErrorHelper.numberParameterCheck(maxPageSize, "DynamicsWebApi." + functionName, "request.maxPageSize");
+        prefer.push('odata.maxpagesize=' + maxPageSize);
+    }
+
+    return prefer.join(',');
+}
+
+/***/ }),
+/* 12 */
+/***/ (function(module, exports) {
+
+/**
+ * @typedef {Object} ReferenceObject
+ * @property {string} id Id of the Entity record
+ * @property {string} collection Collection name that the record belongs to
+ * @property {string} oDataContext OData context returned in the response
+ */
+
+/**
+ * Converts a response to a reference object
+ *
+ * @param {Object} responseData - Response object
+ * @returns {ReferenceObject}
+ */
+module.exports = function convertToReferenceObject(responseData) {
+    var result = /\/(\w+)\(([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})/i.exec(responseData["@odata.id"]);
+    return { id: result[2], collection: result[1], oDataContext: responseData["@odata.context"] };
+}
+
+/***/ }),
+/* 13 */
+/***/ (function(module, exports) {
+
+/**
+ * Parses a paging cookie returned in response
+ *
+ * @param {string} pageCookies - Page cookies returned in @Microsoft.Dynamics.CRM.fetchxmlpagingcookie.
+ * @param {number} currentPageNumber - A current page number. Fix empty paging-cookie for complex fetch xmls.
+ * @returns {{cookie: "", number: 0, next: 1}}
+ */
+module.exports = function getFetchXmlPagingCookie(pageCookies, currentPageNumber) {
+    pageCookies = pageCookies ? pageCookies : "";
+    currentPageNumber = currentPageNumber ? currentPageNumber : 1;
+
+    //get the page cokies
+    pageCookies = unescape(unescape(pageCookies));
+
+    var info = /pagingcookie="(<cookie page="(\d+)".+<\/cookie>)/.exec(pageCookies);
+
+    if (info != null) {
+        var page = parseInt(info[2]);
+        return {
+            cookie: info[1].replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '\'').replace(/\'/g, '&' + 'quot;'),
+            page: page,
+            nextPage: page + 1
+        };
+    } else {
+        //http://stackoverflow.com/questions/41262772/execution-of-fetch-xml-using-web-api-dynamics-365 workaround
+        return {
+            cookie: "",
+            page: currentPageNumber,
+            nextPage: currentPageNumber + 1
+        }
+    }
+}
+
+/***/ }),
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var DWA = __webpack_require__(0);
@@ -1264,7 +1683,9 @@ function DynamicsWebApi(config) {
         };
 
         //EntityDefinitions cannot be updated using "PATCH" method
-        var method = request.collection.indexOf('EntityDefinitions') > -1 ? 'PUT' : 'PATCH';
+        var method = request.collection.indexOf('EntityDefinitions') > -1 ||
+                     request.collection.indexOf('RelationshipDefinitions') > -1
+                        ? 'PUT' : 'PATCH';
 
         _makeRequest(method, request, 'update', onSuccess, onError);
     }
@@ -2295,6 +2716,116 @@ function DynamicsWebApi(config) {
     };
 
     /**
+     * Sends an asynchronous request to create a relationship definition.
+     *
+     * @param {string} relationshipDefinition - Relationship Definition.
+     * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
+     * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
+     * @returns {Promise}
+     */
+    this.createRelationship = function (relationshipDefinition, successCallback, errorCallback) {
+
+        ErrorHelper.parameterCheck(relationshipDefinition, 'DynamicsWebApi.createRelationship', 'relationshipDefinition');
+
+        var request = {
+            collection: 'RelationshipDefinitions',
+            entity: relationshipDefinition
+        };
+
+        this.createRequest(request, successCallback, errorCallback);
+    };
+
+    /**
+     * Sends an asynchronous request to update a relationship definition.
+     *
+     * @param {string} relationshipDefinition - Relationship Definition.
+     * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
+     * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
+     * @param {boolean} [mergeLabels] - Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false.
+     * @returns {Promise}
+     */
+    this.updateRelationship = function (relationshipDefinition, successCallback, errorCallback, relationshipType, mergeLabels) {
+
+        ErrorHelper.parameterCheck(relationshipDefinition, 'DynamicsWebApi.updateRelationship', 'relationshipDefinition');
+        ErrorHelper.guidParameterCheck(relationshipDefinition.MetadataId, 'DynamicsWebApi.updateRelationship', 'relationshipDefinition.MetadataId');
+
+        var request = {
+            collection: 'RelationshipDefinitions',
+            mergeLabels: mergeLabels,
+            key: relationshipDefinition.MetadataId,
+            entity: relationshipDefinition,
+            navigationProperty: relationshipType
+        };
+
+        this.updateRequest(request, successCallback, errorCallback);
+    };
+
+    /**
+     * Sends an asynchronous request to delete a relationship definition.
+     *
+     * @param {string} metadataId - A String representing the GUID value.
+     * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
+     * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
+     * @returns {Promise}
+     */
+    this.deleteRelationship = function (metadataId, successCallback, errorCallback) {
+        ErrorHelper.keyParameterCheck(metadataId, 'DynamicsWebApi.deleteRelationship', 'metadataId');
+
+        var request = {
+            collection: 'RelationshipDefinitions',
+            key: metadataId
+        };
+
+        this.deleteRequest(request, successCallback, errorCallback);
+    };
+
+    /**
+     * Sends an asynchronous request to retrieve relationship definitions.
+     *
+     * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
+     * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
+     * @param {string} [relationshipType] - Use this parameter to cast a Relationship to a specific type: 1:M or M:M.
+     * @param {Array} [select] - Use the $select system query option to limit the properties returned.
+     * @param {string} [filter] - Use the $filter system query option to set criteria for which relationships will be returned.
+     * @returns {Promise}
+     */
+    this.retrieveRelationships = function (successCallback, errorCallback, relationshipType, select, filter) {
+
+        var request = {
+            collection: 'RelationshipDefinitions',
+            navigationProperty: relationshipType,
+            select: select,
+            filter: filter
+        };
+
+        this.retrieveMultipleRequest(request, successCallback, errorCallback);
+    };
+
+    /**
+     * Sends an asynchronous request to retrieve a specific relationship definition.
+     *
+     * @param {string} metadataId - String representing the Metadata Id GUID.
+     * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
+     * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
+     * @param {string} [relationshipType] - Use this parameter to cast a Relationship to a specific type: 1:M or M:M.
+     * @param {Array} [select] - Use the $select system query option to limit the properties returned.
+     * @returns {Promise}
+     */
+    this.retrieveRelationship = function (metadataId, successCallback, errorCallback, relationshipType, select) {
+
+        ErrorHelper.keyParameterCheck(metadataId, 'DynamicsWebApi.retrieveRelationship', 'metadataId');
+
+        var request = {
+            collection: 'RelationshipDefinitions',
+            navigationProperty: relationshipType,
+            key: metadataId,
+            select: select
+        };
+
+        this.retrieveRequest(request, successCallback, errorCallback);
+    };
+
+    /**
      * Creates a new instance of DynamicsWebApi
      *
      * @param {DWAConfig} [config] - configuration object.
@@ -2332,425 +2863,6 @@ DynamicsWebApi.prototype.utility = {
  * @typicalname dynamicsWebApi
  */
 module.exports = DynamicsWebApi;
-
-/***/ }),
-/* 7 */
-/***/ (function(module, exports) {
-
-module.exports = function dateReviver(key, value) {
-    ///<summary>
-    /// Private function to convert matching string values to Date objects.
-    ///</summary>
-    ///<param name="key" type="String">
-    /// The key used to identify the object property
-    ///</param>
-    ///<param name="value" type="String">
-    /// The string value representing a date
-    ///</param>
-    var a;
-    if (typeof value === 'string') {
-        a = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:Z|[-+]\d{2}:\d{2})$/.exec(value);
-        if (a) {
-            return new Date(Date.UTC(+a[1], +a[2] - 1, +a[3], +a[4], +a[5], +a[6]));
-        }
-    }
-    return value;
-};
-
-/***/ }),
-/* 8 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var DWA = __webpack_require__(0);
-var dateReviver = __webpack_require__(7);
-
-//string es6 polyfill
-if (!String.prototype.endsWith || !String.prototype.startsWith) {
-    __webpack_require__(2);
-}
-
-//https://github.com/emiltholin/google-api-batch-utils
-function parseBatchResponse(response) {
-    // Not the same delimiter in the response as we specify ourselves in the request,
-    // so we have to extract it.
-    var delimiter = response.substr(0, response.indexOf('\r\n'));
-    var parts = response.split(delimiter);
-    // The first part will always be an empty string. Just remove it.
-    parts.shift();
-    // The last part will be the "--". Just remove it.
-    parts.pop();
-
-    var result = [];
-    for (var i = 0; i < parts.length; i++) {
-        var part = parts[i];
-        var p = part.substring(part.indexOf("{"), part.lastIndexOf("}") + 1);
-        result.push(JSON.parse(p, dateReviver));
-    }
-    return result;
-}
-
-function getFormattedKeyValue(keyName, value) {
-    var newKey = null;
-    if (keyName.indexOf('@') !== -1) {
-        var format = keyName.split('@');
-        switch (format[1]) {
-            case 'odata.context':
-                newKey = 'oDataContext';
-                break;
-            case 'odata.count':
-                newKey = 'oDataCount';
-                value = value != null
-                    ? parseInt(value)
-                    : 0;
-                break;
-            case 'odata.nextLink':
-                newKey = 'oDataNextLink';
-                break;
-            case DWA.Prefer.Annotations.FormattedValue:
-                newKey = format[0] + '_Formatted';
-                break;
-            case DWA.Prefer.Annotations.AssociatedNavigationProperty:
-                newKey = format[0] + '_NavigationProperty';
-                break;
-            case DWA.Prefer.Annotations.LookupLogicalName:
-                newKey = format[0] + '_LogicalName';
-                break;
-        }
-    }
-
-    return [newKey, value];
-}
-
-function parseData(object) {
-    var keys = Object.keys(object);
-
-    for (var i = 0; i < keys.length; i++) {
-        var currentKey = keys[i];
-
-        if (object[currentKey] != null && object[currentKey].constructor === Array) {
-            for (var j = 0; j < object[currentKey].length; j++) {
-                object[currentKey][j] = parseData(object[currentKey][j]);
-            }
-        }
-
-        //parse formatted values
-        var formattedKeyValue = getFormattedKeyValue(currentKey, object[currentKey]);
-        if (formattedKeyValue[0]) {
-            object[formattedKeyValue[0]] = formattedKeyValue[1];
-        }
-
-        //parse aliased values
-        if (currentKey.indexOf('_x002e_') !== -1) {
-            var aliasKeys = currentKey.split('_x002e_');
-
-            if (!object.hasOwnProperty(aliasKeys[0])) {
-                object[aliasKeys[0]] = { _dwaType: 'alias' };
-            }
-            //throw an error if there is already a property which is not an 'alias'
-            else if (
-                typeof (object[aliasKeys[0]]) !== 'object' ||
-                typeof (object[aliasKeys[0]]) === 'object' && !object[aliasKeys[0]].hasOwnProperty('_dwaType')) {
-                throw new Error('The alias name of the linked entity must be unique!');
-            }
-
-            object[aliasKeys[0]][aliasKeys[1]] = object[currentKey];
-
-            //aliases also contain formatted values
-            formattedKeyValue = getFormattedKeyValue(aliasKeys[1], object[currentKey]);
-            if (formattedKeyValue[0]) {
-                object[aliasKeys[0]][formattedKeyValue[0]] = formattedKeyValue[1];
-            }
-        }
-    }
-
-    return object;
-}
-
-/**
- *
- * @param {string} response
- */
-module.exports = function parseResponse(response) {
-    var responseData = null;
-    if (response.length) {
-        responseData = response.indexOf('--batchresponse_') > -1
-            ? responseData = parseBatchResponse(response)[0]
-            : responseData = JSON.parse(response, dateReviver);
-
-        responseData = parseData(responseData);
-    }
-
-    return responseData;
-}
-
-/***/ }),
-/* 9 */
-/***/ (function(module, exports) {
-
-module.exports = function parseResponseHeaders(headerStr) {
-    var headers = {};
-    if (!headerStr) {
-        return headers;
-    }
-    var headerPairs = headerStr.split('\u000d\u000a');
-    for (var i = 0, ilen = headerPairs.length; i < ilen; i++) {
-        var headerPair = headerPairs[i];
-        var index = headerPair.indexOf('\u003a\u0020');
-        if (index > 0) {
-            headers[headerPair.substring(0, index)] = headerPair.substring(index + 2);
-        }
-    }
-    return headers;
-};
-
-/***/ }),
-/* 10 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var parseResponse = __webpack_require__(8);
-var parseResponseHeaders = __webpack_require__(9);
-
-/**
- * Sends a request to given URL with given parameters
- *
- * @param {string} method - Method of the request.
- * @param {string} uri - Request URI.
- * @param {Function} successCallback - A callback called on success of the request.
- * @param {Function} errorCallback - A callback called when a request failed.
- * @param {string} [data] - Data to send in the request.
- * @param {Object} [additionalHeaders] - Object with headers. IMPORTANT! This object does not contain default headers needed for every request.
- */
-var xhrRequest = function (method, uri, data, additionalHeaders, successCallback, errorCallback, async) {
-    var request = new XMLHttpRequest();
-    request.open(method, uri, async);
-    //request.setRequestHeader("OData-MaxVersion", "4.0");
-    //request.setRequestHeader("OData-Version", "4.0");
-    //request.setRequestHeader("Accept", "application/json");
-    //request.setRequestHeader("Content-Type", "application/json; charset=utf-8");
-
-    //set additional headers
-    for (var key in additionalHeaders) {
-        request.setRequestHeader(key, additionalHeaders[key]);
-    }
-
-    request.onreadystatechange = function () {
-        if (request.readyState === 4) {
-            switch (request.status) {
-                case 200: // Success with content returned in response body.
-                case 201: // Success with content returned in response body.
-                case 204: // Success with no content returned in response body.
-                case 304: {// Success with Not Modified
-                    var responseData = parseResponse(request.responseText);
-
-                    var response = {
-                        data: responseData,
-                        headers: parseResponseHeaders(request.getAllResponseHeaders()),
-                        status: request.status
-                    };
-
-                    successCallback(response);
-                    break;
-                }
-                default: // All other statuses are error cases.
-                    var error;
-                    try {
-                        error = JSON.parse(request.response).error;
-                    } catch (e) {
-                        if (request.response.length > 0) {
-                            error = { message: request.response };
-                        }
-                        else {
-                            error = { message: "Unexpected Error" };
-                        }
-                    }
-                    error.status = request.status;
-                    error.statusText = request.statusText;
-                    errorCallback(error);
-                    break;
-            }
-
-            request = null;
-        }
-    };
-
-    request.onerror = function () {
-        errorCallback({ message: "Network Error" });
-        request = null;
-    };
-
-    request.ontimeout = function (error) {
-        errorCallback({ message: "Request Timed Out" });
-        request = null;
-    };
-
-    data
-        ? request.send(data)
-        : request.send();
-};
-
-module.exports = xhrRequest;
-
-/***/ }),
-/* 11 */
-/***/ (function(module, exports) {
-
-/**
- * Builds parametes for a funciton. Returns '()' (if no parameters) or '([params])?[query]'
- *
- * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
- * @returns {string}
- */
-module.exports = function buildFunctionParameters(parameters) {
-    if (parameters) {
-        var parameterNames = Object.keys(parameters);
-        var functionParameters = "";
-        var urlQuery = "";
-
-        for (var i = 1; i <= parameterNames.length; i++) {
-            var parameterName = parameterNames[i - 1];
-            var value = parameters[parameterName];
-
-            if (i > 1) {
-                functionParameters += ",";
-                urlQuery += "&";
-            }
-
-            functionParameters += parameterName + "=@p" + i;
-            urlQuery += "@p" + i + "=" + ((typeof value == "string") ? "'" + value + "'" : value);
-        }
-
-        return "(" + functionParameters + ")?" + urlQuery;
-    }
-    else {
-        return "()";
-    }
-};
-
-/***/ }),
-/* 12 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var DWA = __webpack_require__(0);
-var ErrorHelper = __webpack_require__(1);
-
-/**
- * Builds a Prefer header value
- * @param {Object} request Request object
- * @param {string} functionName name of the current function
- * @param {Object} config DynamicsWebApi config
- * @returns {string}
- */
-module.exports = function buildPreferHeader(request, functionName, config) {
-    var returnRepresentation = request.returnRepresentation;
-    var includeAnnotations = request.includeAnnotations;
-    var maxPageSize = request.maxPageSize;
-
-    if (request.prefer && request.prefer.length) {
-        ErrorHelper.stringOrArrayParameterCheck(request.prefer, "DynamicsWebApi." + functionName, "request.prefer");
-        var prefer = request.prefer;
-        if (typeof prefer === "string") {
-            prefer = prefer.split(',');
-        }
-        for (var i in prefer) {
-            var item = prefer[i].trim();
-            if (item === DWA.Prefer.ReturnRepresentation) {
-                returnRepresentation = true;
-            }
-            else if (item.startsWith("odata.include-annotations=")) {
-                includeAnnotations = item.replace('odata.include-annotations=', '').replace(/"/g,'');
-            }
-            else if (item.startsWith("odata.maxpagesize=")) {
-                maxPageSize = item.replace('odata.maxpagesize=', '').replace(/"/g, '');
-            }
-        }
-    }
-
-    if (config) {
-        if (returnRepresentation == null) {
-            returnRepresentation = config.returnRepresentation;
-        }
-        includeAnnotations = includeAnnotations ? includeAnnotations : config.includeAnnotations;
-        maxPageSize = maxPageSize ? maxPageSize : config.maxPageSize;
-    }
-
-    var prefer = [];
-
-    if (returnRepresentation) {
-        ErrorHelper.boolParameterCheck(returnRepresentation, "DynamicsWebApi." + functionName, "request.returnRepresentation");
-        prefer.push(DWA.Prefer.ReturnRepresentation);
-    }
-
-    if (includeAnnotations) {
-        ErrorHelper.stringParameterCheck(includeAnnotations, "DynamicsWebApi." + functionName, "request.includeAnnotations");
-        prefer.push('odata.include-annotations="' + includeAnnotations + '"');
-    }
-
-    if (maxPageSize && maxPageSize > 0) {
-        ErrorHelper.numberParameterCheck(maxPageSize, "DynamicsWebApi." + functionName, "request.maxPageSize");
-        prefer.push('odata.maxpagesize=' + maxPageSize);
-    }
-
-    return prefer.join(',');
-}
-
-/***/ }),
-/* 13 */
-/***/ (function(module, exports) {
-
-/**
- * @typedef {Object} ReferenceObject
- * @property {string} id Id of the Entity record
- * @property {string} collection Collection name that the record belongs to
- * @property {string} oDataContext OData context returned in the response
- */
-
-/**
- * Converts a response to a reference object
- *
- * @param {Object} responseData - Response object
- * @returns {ReferenceObject}
- */
-module.exports = function convertToReferenceObject(responseData) {
-    var result = /\/(\w+)\(([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})/i.exec(responseData["@odata.id"]);
-    return { id: result[2], collection: result[1], oDataContext: responseData["@odata.context"] };
-}
-
-/***/ }),
-/* 14 */
-/***/ (function(module, exports) {
-
-/**
- * Parses a paging cookie returned in response
- *
- * @param {string} pageCookies - Page cookies returned in @Microsoft.Dynamics.CRM.fetchxmlpagingcookie.
- * @param {number} currentPageNumber - A current page number. Fix empty paging-cookie for complex fetch xmls.
- * @returns {{cookie: "", number: 0, next: 1}}
- */
-module.exports = function getFetchXmlPagingCookie(pageCookies, currentPageNumber) {
-    pageCookies = pageCookies ? pageCookies : "";
-    currentPageNumber = currentPageNumber ? currentPageNumber : 1;
-
-    //get the page cokies
-    pageCookies = unescape(unescape(pageCookies));
-
-    var info = /pagingcookie="(<cookie page="(\d+)".+<\/cookie>)/.exec(pageCookies);
-
-    if (info != null) {
-        var page = parseInt(info[2]);
-        return {
-            cookie: info[1].replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '\'').replace(/\'/g, '&' + 'quot;'),
-            page: page,
-            nextPage: page + 1
-        };
-    } else {
-        //http://stackoverflow.com/questions/41262772/execution-of-fetch-xml-using-web-api-dynamics-365 workaround
-        return {
-            cookie: "",
-            page: currentPageNumber,
-            nextPage: currentPageNumber + 1
-        }
-    }
-}
 
 /***/ })
 /******/ ]);
