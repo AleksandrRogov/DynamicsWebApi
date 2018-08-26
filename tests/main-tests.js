@@ -4304,6 +4304,48 @@ describe("promises -", function () {
             });
         });
 
+        describe("authorization - plain token", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.multipleResponse;
+                scope = nock(mocks.webApiUrl, {
+                    reqheaders: {
+                        Authorization: "Bearer token001"
+                    }
+                })
+                    .get("/tests")
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("sends the request to the right end point and returns a response", function (done) {
+                var getToken = function (callback) {
+                    var adalCallback = function (token) {
+                        callback(token);
+                    };
+
+                    adalCallback("token001");
+                };
+
+                var dynamicsWebApiAuth = new DynamicsWebApi({ onTokenRefresh: getToken, webApiUrl: mocks.webApiUrl });
+                dynamicsWebApiAuth.retrieveMultipleRequest({ collection: "tests" })
+                    .then(function (object) {
+                        expect(object).to.deep.equal(mocks.responses.multiple());
+                        done();
+                    }).catch(function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+
         describe("authorization - two requests use different authorization tokens", function () {
             var scope;
             var scope2;
