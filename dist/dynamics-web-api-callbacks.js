@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.4.4 (c) 2018 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.4.5 (c) 2018 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -897,7 +897,10 @@ function sendRequest(method, path, config, data, additionalHeaders, successCallb
             if (!additionalHeaders) {
                 additionalHeaders = {};
             }
-            additionalHeaders['Authorization'] = 'Bearer ' + token.accessToken;
+            additionalHeaders['Authorization'] = 'Bearer ' +
+                (token.hasOwnProperty('accessToken') ?
+                    token.accessToken :
+                    token);
         }
 
         executeRequest(method, config.webApiUrl + path, stringifiedData, additionalHeaders, successCallback, errorCallback, isAsync);
@@ -2177,7 +2180,7 @@ function DynamicsWebApi(config) {
         }
 
         //add page number and paging cookie to fetch xml
-        fetchXml = fetchXml.replace(/^(<fetch[\w\d\s'"=]+)/, replacementString);
+        fetchXml = fetchXml.replace(/^(<fetch)/, replacementString);
 
         var request = {
             collection: collection,
