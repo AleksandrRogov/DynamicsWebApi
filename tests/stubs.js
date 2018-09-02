@@ -147,21 +147,21 @@ var dataStubs = {
         '</entity>' +
         '</fetch>',
         fetchXml1:
-        '<fetch mapping="logical" count="5" page="1">' +
+        '<fetch page="1" mapping="logical" count="5">' +
         '<entity name="account">' +
         '<attribute name="accountid"/>' +
         '<attribute name="name"/>' +
         '</entity>' +
         '</fetch>',
         fetchXml2cookie:
-        '<fetch mapping="logical" count="5" page="2" paging-cookie="&lt;cookie page=&quot;1&quot;&gt;&lt;accountid last=&quot;{EF72AE29-B3DE-E611-8102-5065F38A7BF1}&quot; first=&quot;{475B158C-541C-E511-80D3-3863BB347BA8}&quot; /&gt;&lt;/cookie&gt;">' +
+        '<fetch page="2" paging-cookie="&lt;cookie page=&quot;1&quot;&gt;&lt;accountid last=&quot;{EF72AE29-B3DE-E611-8102-5065F38A7BF1}&quot; first=&quot;{475B158C-541C-E511-80D3-3863BB347BA8}&quot; /&gt;&lt;/cookie&gt;" mapping="logical" count="5">' +
         '<entity name="account">' +
         '<attribute name="accountid"/>' +
         '<attribute name="name"/>' +
         '</entity>' +
         '</fetch>',
         fetchXml2:
-        '<fetch mapping="logical" count="5" page="2">' +
+        '<fetch page="2" mapping="logical" count="5">' +
         '<entity name="account">' +
         '<attribute name="accountid"/>' +
         '<attribute name="name"/>' +
