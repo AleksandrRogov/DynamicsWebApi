@@ -1,4 +1,4 @@
-/*! dwa v1.4.5 (c) 2018 Aleksandr Rogov */
+/*! dwa v1.4.6 (c) 2018 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();

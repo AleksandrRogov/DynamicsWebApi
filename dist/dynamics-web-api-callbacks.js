@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.4.5 (c) 2018 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.4.6 (c) 2018 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -610,7 +610,7 @@ function convertRequest(request, functionName, config) {
     }
 
     return { url: result.url, headers: result.headers, async: result.async };
-};
+}
 
 var RequestConverter = {
     convertRequestOptions: convertRequestOptions,
@@ -625,7 +625,7 @@ module.exports = RequestConverter;
 
 function isNull (value) {
     return typeof value === "undefined" || typeof value === "unknown" || value == null;
-};
+}
 
 //https://stackoverflow.com/a/8809472
 function generateUUID() { // Public Domain/MIT
@@ -638,7 +638,7 @@ function generateUUID() { // Public Domain/MIT
         d = Math.floor(d / 16);
         return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
     });
-};
+}
 
 function getXrmContext() {
     if (typeof GetGlobalContext != 'undefined') {
@@ -657,7 +657,7 @@ function getXrmContext() {
     }
 
     throw new Error('Xrm Context is not available. In most cases, it can be resolved by adding a reference to a ClientGlobalContext.js.aspx. Please refer to MSDN documentation for more details.');
-};
+}
 
 function getClientUrl() {
     var context = getXrmContext();
@@ -672,11 +672,11 @@ function getClientUrl() {
     }
 
     return '';
-};
+}
 
 function initWebApiUrl(version) {
     return getClientUrl() + '/api/data/v' + version + '/';
-};
+}
 
 function getXrmInternal() {
     //todo: Xrm.Internal namespace is not supported
@@ -685,7 +685,7 @@ function getXrmInternal() {
     }
 
     return null;
-};
+}
 
 var Utility = {
     /**
@@ -729,7 +729,7 @@ var Utility = {
     getClientUrl: getClientUrl,
 
     initWebApiUrl: initWebApiUrl
-}
+};
 
 module.exports = Utility;
 
@@ -1304,9 +1304,11 @@ module.exports = function buildPreferHeader(request, functionName, config) {
     var includeAnnotations = request.includeAnnotations;
     var maxPageSize = request.maxPageSize;
 
+    var prefer;
+
     if (request.prefer && request.prefer.length) {
         ErrorHelper.stringOrArrayParameterCheck(request.prefer, "DynamicsWebApi." + functionName, "request.prefer");
-        var prefer = request.prefer;
+        prefer = request.prefer;
         if (typeof prefer === "string") {
             prefer = prefer.split(',');
         }
@@ -1324,6 +1326,8 @@ module.exports = function buildPreferHeader(request, functionName, config) {
         }
     }
 
+    prefer = [];
+
     if (config) {
         if (returnRepresentation == null) {
             returnRepresentation = config.returnRepresentation;
@@ -1331,8 +1335,6 @@ module.exports = function buildPreferHeader(request, functionName, config) {
         includeAnnotations = includeAnnotations ? includeAnnotations : config.includeAnnotations;
         maxPageSize = maxPageSize ? maxPageSize : config.maxPageSize;
     }
-
-    var prefer = [];
 
     if (returnRepresentation) {
         ErrorHelper.boolParameterCheck(returnRepresentation, "DynamicsWebApi." + functionName, "request.returnRepresentation");
@@ -1407,9 +1409,9 @@ module.exports = function getFetchXmlPagingCookie(pageCookies, currentPageNumber
             cookie: "",
             page: currentPageNumber,
             nextPage: currentPageNumber + 1
-        }
+        };
     }
-}
+};
 
 /***/ }),
 /* 14 */
@@ -1600,7 +1602,7 @@ function DynamicsWebApi(config) {
                 var id = /([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})\)$/i.exec(entityUrl)[1];
                 successCallback(id);
             }
-        }
+        };
 
         _makeRequest("POST", request, 'create', onSuccess, errorCallback);
     };
@@ -1675,7 +1677,7 @@ function DynamicsWebApi(config) {
         //copy locally
         var ifmatch = request.ifmatch;
         var onError = function (xhr) {
-            if (ifmatch && xhr.status == 412) {
+            if (ifmatch && xhr.status === 412) {
                 //precondition failed - not deleted
                 successCallback(false);
             }
@@ -1685,13 +1687,12 @@ function DynamicsWebApi(config) {
             }
         };
 
-        //EntityDefinitions cannot be updated using "PATCH" method
-        var method = request.collection.indexOf('EntityDefinitions') > -1 ||
-                     request.collection.indexOf('RelationshipDefinitions') > -1
-                        ? 'PUT' : 'PATCH';
+        //Metadata definitions, cannot be updated using "PATCH" method
+        var method = /EntityDefinitions|RelationshipDefinitions|GlobalOptionSetDefinitions/.test(request.collection)
+            ? 'PUT' : 'PATCH';
 
         _makeRequest(method, request, 'update', onSuccess, onError);
-    }
+    };
 
     /**
      * Sends an asynchronous request to update a record.
@@ -1790,7 +1791,7 @@ function DynamicsWebApi(config) {
      */
     this.deleteRequest = function (request, successCallback, errorCallback) {
 
-        ErrorHelper.parameterCheck(request, "DynamicsWebApi.delete", "request")
+        ErrorHelper.parameterCheck(request, "DynamicsWebApi.delete", "request");
         ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.delete", "successCallback");
         ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.delete", "errorCallback");
 
@@ -1801,7 +1802,7 @@ function DynamicsWebApi(config) {
         //copy locally
         var ifmatch = request.ifmatch;
         var onError = function (xhr) {
-            if (ifmatch && xhr.status == 412) {
+            if (ifmatch && xhr.status === 412) {
                 //precondition failed - not deleted
                 successCallback(false);
             }
@@ -1812,7 +1813,7 @@ function DynamicsWebApi(config) {
         };
 
         _makeRequest('DELETE', request, 'delete', onSuccess, onError);
-    }
+    };
 
     /**
      * Sends an asynchronous request to delete a record.
@@ -1857,14 +1858,14 @@ function DynamicsWebApi(config) {
      */
     this.retrieveRequest = function (request, successCallback, errorCallback) {
 
-        ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieve", "request")
+        ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieve", "request");
         ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.retrieve", "successCallback");
         ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.retrieve", "errorCallback");
 
         //copy locally
         var select = request.select;
         var onSuccess = function (response) {
-            if (select != null && select.length == 1 && select[0].endsWith("/$ref") && response.data["@odata.id"] != null) {
+            if (select != null && select.length === 1 && select[0].endsWith("/$ref") && response.data["@odata.id"] != null) {
                 successCallback(Utility.convertToReferenceObject(response.data));
             }
             else {
@@ -1873,7 +1874,7 @@ function DynamicsWebApi(config) {
         };
 
         _makeRequest('GET', request, 'retrieve', onSuccess, errorCallback);
-    }
+    };
 
     /**
      * Sends an asynchronous request to retrieve a record.
@@ -1888,7 +1889,7 @@ function DynamicsWebApi(config) {
     this.retrieve = function (key, collection, successCallback, errorCallback, select, expand) {
 
         ErrorHelper.stringParameterCheck(key, "DynamicsWebApi.retrieve", "key");
-        key = ErrorHelper.keyParameterCheck(key, "DynamicsWebApi.retrieve", "key")
+        key = ErrorHelper.keyParameterCheck(key, "DynamicsWebApi.retrieve", "key");
         ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.retrieve", "collection");
         ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.retrieve", "successCallback");
         ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.retrieve", "errorCallback");
@@ -1945,11 +1946,11 @@ function DynamicsWebApi(config) {
         };
 
         var onError = function (xhr) {
-            if (ifnonematch && xhr.status == 412) {
+            if (ifnonematch && xhr.status === 412) {
                 //if prevent update
                 successCallback();
             }
-            else if (ifmatch && xhr.status == 404) {
+            else if (ifmatch && xhr.status === 404) {
                 //if prevent create
                 successCallback();
             }
@@ -1960,7 +1961,7 @@ function DynamicsWebApi(config) {
         };
 
         _makeRequest('PATCH', request, 'upsert', onSuccess, onError);
-    }
+    };
 
     /**
      * Sends an asynchronous request to upsert a record.
@@ -1976,7 +1977,7 @@ function DynamicsWebApi(config) {
     this.upsert = function (key, collection, object, successCallback, errorCallback, prefer, select) {
 
         ErrorHelper.stringParameterCheck(key, "DynamicsWebApi.upsert", "key");
-        key = ErrorHelper.keyParameterCheck(key, "DynamicsWebApi.upsert", "key")
+        key = ErrorHelper.keyParameterCheck(key, "DynamicsWebApi.upsert", "key");
 
         ErrorHelper.parameterCheck(object, "DynamicsWebApi.upsert", "object");
         ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.upsert", "collection");
@@ -2001,7 +2002,7 @@ function DynamicsWebApi(config) {
         };
 
         this.upsertRequest(request, successCallback, errorCallback);
-    }
+    };
 
     /**
      * Sends an asynchronous request to count records. IMPORTANT! The count value does not represent the total number of entities in the system. It is limited by the maximum number of entities that can be returned. Returns: Number
@@ -2029,10 +2030,10 @@ function DynamicsWebApi(config) {
                 navigationProperty: '$count'
             };
 
-            _makeRequest('GET', request, 'count', onSuccess, errorCallback)
+            _makeRequest('GET', request, 'count', onSuccess, errorCallback);
         }
         else {
-            return this.retrieveMultipleRequest({
+            this.retrieveMultipleRequest({
                 collection: collection,
                 filter: filter,
                 count: true
@@ -2040,7 +2041,7 @@ function DynamicsWebApi(config) {
                 successCallback(response.oDataCount ? response.oDataCount : 0);
             }, errorCallback);
         }
-    }
+    };
 
     /**
      * Sends an asynchronous request to count records. Returns: Number
@@ -2052,7 +2053,7 @@ function DynamicsWebApi(config) {
      * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
      */
     this.countAll = function (collection, successCallback, errorCallback, filter, select) {
-        return this.retrieveAllRequest({
+        this.retrieveAllRequest({
             collection: collection,
             filter: filter,
             select: select
@@ -2061,26 +2062,26 @@ function DynamicsWebApi(config) {
                 ? (response.value ? response.value.length : 0)
                 : 0);
         }, errorCallback);
-    }
+    };
 
     /**
      * Sends an asynchronous request to retrieve records.
      *
      * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-     * @param {Array} [select] - Use the $select system query option to limit the properties returned.
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
+     * @param {Array} [select] - Use the $select system query option to limit the properties returned.
      * @param {string} [filter] - Use the $filter system query option to set criteria for which entities will be returned.
      * @param {string} [nextPageLink] - Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
      */
     this.retrieveMultiple = function (collection, successCallback, errorCallback, select, filter, nextPageLink) {
 
-        return this.retrieveMultipleRequest({
+        this.retrieveMultipleRequest({
             collection: collection,
             select: select,
             filter: filter
         }, successCallback, errorCallback, nextPageLink);
-    }
+    };
 
     /**
      * Sends an asynchronous request to retrieve all records.
@@ -2092,12 +2093,12 @@ function DynamicsWebApi(config) {
      * @param {string} [filter] - Use the $filter system query option to set criteria for which entities will be returned.
      */
     this.retrieveAll = function (collection, successCallback, errorCallback, select, filter) {
-        return _retrieveAllRequest({
+        _retrieveAllRequest({
             collection: collection,
             select: select,
             filter: filter
         }, successCallback, errorCallback);
-    }
+    };
 
     var retrieveMultipleRequest = function (request, successCallback, errorCallback, nextPageLink) {
 
@@ -2121,7 +2122,7 @@ function DynamicsWebApi(config) {
         };
 
         _makeRequest('GET', request, 'retrieveMultiple', onSuccess, errorCallback);
-    }
+    };
 
     /**
      * Sends an asynchronous request to retrieve records.
@@ -2135,7 +2136,7 @@ function DynamicsWebApi(config) {
 
     var _retrieveAllRequest = function (request, successCallback, errorCallback, nextPageLink, records) {
 
-        var records = records || [];
+        records = records || [];
 
         var internalSuccessCallback = function (response) {
             records = records.concat(response.value);
@@ -2160,7 +2161,7 @@ function DynamicsWebApi(config) {
      */
     this.retrieveAllRequest = function (request, successCallback, errorCallback) {
         _retrieveAllRequest(request, successCallback, errorCallback);
-    }
+    };
 
     var executeFetchXml = function (collection, fetchXml, successCallback, errorCallback, includeAnnotations, pageNumber, pagingCookie, impersonateUserId) {
 
@@ -2186,9 +2187,7 @@ function DynamicsWebApi(config) {
             collection: collection,
             includeAnnotations: includeAnnotations,
             impersonate: impersonateUserId,
-            fetchXml: fetchXml,
-            impersonate: impersonateUserId,
-            includeAnnotations: includeAnnotations
+            fetchXml: fetchXml
         };
 
         var onSuccess = function (response) {
@@ -2200,7 +2199,7 @@ function DynamicsWebApi(config) {
         };
 
         _makeRequest('GET', request, 'executeFetchXml', onSuccess, errorCallback);
-    }
+    };
 
     /**
      * Sends an asynchronous request to count records. Returns: DWA.Types.FetchXmlResponse
@@ -2231,7 +2230,7 @@ function DynamicsWebApi(config) {
     this.executeFetchXml = executeFetchXml;
 
     var _executeFetchXmlAll = function (collection, fetchXml, successCallback, errorCallback, includeAnnotations, pageNumber, pagingCookie, impersonateUserId, records) {
-        var records = records || [];
+        records = records || [];
 
         var internalSuccessCallback = function (response) {
             records = records.concat(response.value);
@@ -2245,11 +2244,11 @@ function DynamicsWebApi(config) {
         };
 
         executeFetchXml(collection, fetchXml, internalSuccessCallback, errorCallback, includeAnnotations, pageNumber, pagingCookie, impersonateUserId);
-    }
+    };
 
     var innerExecuteFetchXmlAll = function (collection, fetchXml, successCallback, errorCallback, includeAnnotations, impersonateUserId) {
-        return _executeFetchXmlAll(collection, fetchXml, successCallback, errorCallback, includeAnnotations, null, null, impersonateUserId);
-    }
+        _executeFetchXmlAll(collection, fetchXml, successCallback, errorCallback, includeAnnotations, null, null, impersonateUserId);
+    };
 
     /**
      * Sends an asynchronous request to execute FetchXml to retrieve all records.
@@ -2310,7 +2309,7 @@ function DynamicsWebApi(config) {
         };
 
         _makeRequest('POST', request, 'associate', onSuccess, errorCallback);
-    }
+    };
 
     /**
      * Disassociate for a collection-valued navigation property.
@@ -2340,11 +2339,11 @@ function DynamicsWebApi(config) {
             _additionalUrl: relationshipName + '(' + relatedKey + ')/$ref',
             collection: collection,
             key: primaryKey,
-            impersonate: impersonateUserId,
+            impersonate: impersonateUserId
         };
 
         _makeRequest('DELETE', request, 'disassociate', onSuccess, errorCallback);
-    }
+    };
 
     /**
      * Associate for a single-valued navigation property. (1:N)
@@ -2381,7 +2380,7 @@ function DynamicsWebApi(config) {
         };
 
         _makeRequest('PUT', request, 'associateSingleValued', onSuccess, errorCallback);
-    }
+    };
 
     /**
      * Removes a reference to an entity for a single-valued navigation property. (1:N)
@@ -2405,7 +2404,7 @@ function DynamicsWebApi(config) {
             _additionalUrl: singleValuedNavigationPropertyName + "/$ref",
             key: key,
             collection: collection,
-            impersonate: impersonateUserId,
+            impersonate: impersonateUserId
         };
 
         var onSuccess = function () {
@@ -2413,20 +2412,20 @@ function DynamicsWebApi(config) {
         };
 
         _makeRequest('DELETE', request, 'disassociateSingleValued', onSuccess, errorCallback);
-    }
+    };
 
     /**
      * Executes an unbound function (not bound to a particular entity record)
      *
      * @param {string} functionName - The name of the function.
-     * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
+     * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
      * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
     this.executeUnboundFunction = function (functionName, successCallback, errorCallback, parameters, impersonateUserId) {
-        return _executeFunction(functionName, parameters, null, null, successCallback, errorCallback, impersonateUserId, true);
-    }
+        _executeFunction(functionName, parameters, null, null, successCallback, errorCallback, impersonateUserId, true);
+    };
 
     /**
      * Executes a bound function
@@ -2440,8 +2439,8 @@ function DynamicsWebApi(config) {
      * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
     this.executeBoundFunction = function (id, collection, functionName, successCallback, errorCallback, parameters, impersonateUserId) {
-        return _executeFunction(functionName, parameters, collection, id, successCallback, errorCallback, impersonateUserId);
-    }
+        _executeFunction(functionName, parameters, collection, id, successCallback, errorCallback, impersonateUserId);
+    };
 
     var _executeFunction = function (functionName, parameters, collection, id, successCallback, errorCallback, impersonateUserId, isUnbound) {
 
@@ -2454,7 +2453,7 @@ function DynamicsWebApi(config) {
             _unboundRequest: isUnbound,
             key: id,
             collection: collection,
-            impersonate: impersonateUserId,
+            impersonate: impersonateUserId
         };
 
         var onSuccess = function (response) {
@@ -2464,7 +2463,7 @@ function DynamicsWebApi(config) {
         };
 
         _makeRequest('GET', request, 'executeFunction', onSuccess, errorCallback);
-    }
+    };
 
     /**
      * Executes an unbound Web API action (not bound to a particular entity record)
@@ -2476,8 +2475,8 @@ function DynamicsWebApi(config) {
      * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
     this.executeUnboundAction = function (actionName, requestObject, successCallback, errorCallback, impersonateUserId) {
-        return _executeAction(actionName, requestObject, null, null, successCallback, errorCallback, impersonateUserId, true);
-    }
+        _executeAction(actionName, requestObject, null, null, successCallback, errorCallback, impersonateUserId, true);
+    };
 
     /**
      * Executes a bound Web API action (bound to a particular entity record)
@@ -2491,8 +2490,8 @@ function DynamicsWebApi(config) {
      * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
     this.executeBoundAction = function (id, collection, actionName, requestObject, successCallback, errorCallback, impersonateUserId) {
-        return _executeAction(actionName, requestObject, collection, id, successCallback, errorCallback, impersonateUserId);
-    }
+        _executeAction(actionName, requestObject, collection, id, successCallback, errorCallback, impersonateUserId);
+    };
 
     var _executeAction = function (actionName, requestObject, collection, id, successCallback, errorCallback, impersonateUserId, isUnbound) {
 
@@ -2724,7 +2723,6 @@ function DynamicsWebApi(config) {
      * @param {string} relationshipDefinition - Relationship Definition.
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
-     * @returns {Promise}
      */
     this.createRelationship = function (relationshipDefinition, successCallback, errorCallback) {
 
@@ -2744,8 +2742,8 @@ function DynamicsWebApi(config) {
      * @param {string} relationshipDefinition - Relationship Definition.
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
+     * @param {string} [relationshipType] - Use this parameter to cast the Relationship to a specific type.
      * @param {boolean} [mergeLabels] - Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false.
-     * @returns {Promise}
      */
     this.updateRelationship = function (relationshipDefinition, successCallback, errorCallback, relationshipType, mergeLabels) {
 
@@ -2769,7 +2767,6 @@ function DynamicsWebApi(config) {
      * @param {string} metadataId - A String representing the GUID value.
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
-     * @returns {Promise}
      */
     this.deleteRelationship = function (metadataId, successCallback, errorCallback) {
         ErrorHelper.keyParameterCheck(metadataId, 'DynamicsWebApi.deleteRelationship', 'metadataId');
@@ -2790,7 +2787,6 @@ function DynamicsWebApi(config) {
      * @param {string} [relationshipType] - Use this parameter to cast a Relationship to a specific type: 1:M or M:M.
      * @param {Array} [select] - Use the $select system query option to limit the properties returned.
      * @param {string} [filter] - Use the $filter system query option to set criteria for which relationships will be returned.
-     * @returns {Promise}
      */
     this.retrieveRelationships = function (successCallback, errorCallback, relationshipType, select, filter) {
 
@@ -2812,7 +2808,6 @@ function DynamicsWebApi(config) {
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
      * @param {string} [relationshipType] - Use this parameter to cast a Relationship to a specific type: 1:M or M:M.
      * @param {Array} [select] - Use the $select system query option to limit the properties returned.
-     * @returns {Promise}
      */
     this.retrieveRelationship = function (metadataId, successCallback, errorCallback, relationshipType, select) {
 
@@ -2829,10 +2824,110 @@ function DynamicsWebApi(config) {
     };
 
     /**
+     * Sends an asynchronous request to create a Global Option Set definition
+     *
+     * @param {string} globalOptionSetDefinition - Global Option Set Definition.
+     * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
+     * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
+     */
+    this.createGlobalOptionSet = function (globalOptionSetDefinition, successCallback, errorCallback) {
+
+        ErrorHelper.parameterCheck(globalOptionSetDefinition, 'DynamicsWebApi.createGlobalOptionSet', 'globalOptionSetDefinition');
+
+        var request = {
+            collection: 'GlobalOptionSetDefinitions',
+            entity: globalOptionSetDefinition
+        };
+
+        this.createRequest(request, successCallback, errorCallback);
+    };
+
+    /**
+     * Sends an asynchronous request to update a Global Option Set.
+     *
+     * @param {string} globalOptionSetDefinition - Global Option Set Definition.
+     * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
+     * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
+     * @param {boolean} [mergeLabels] - Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false.
+     */
+    this.updateGlobalOptionSet = function (globalOptionSetDefinition, successCallback, errorCallback, mergeLabels) {
+
+        ErrorHelper.parameterCheck(globalOptionSetDefinition, 'DynamicsWebApi.updateGlobalOptionSet', 'globalOptionSetDefinition');
+        ErrorHelper.guidParameterCheck(globalOptionSetDefinition.MetadataId, 'DynamicsWebApi.updateGlobalOptionSet', 'globalOptionSetDefinition.MetadataId');
+
+        var request = {
+            collection: 'GlobalOptionSetDefinitions',
+            mergeLabels: mergeLabels,
+            key: globalOptionSetDefinition.MetadataId,
+            entity: globalOptionSetDefinition
+        };
+        this.updateRequest(request, successCallback, errorCallback);
+    };
+
+    /**
+     * Sends an asynchronous request to delete a Global Option Set.
+     *
+     * @param {string} globalOptionSetKey - A String representing the GUID value or Alternate Key (such as Name).
+     * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
+     * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
+     */
+    this.deleteGlobalOptionSet = function (globalOptionSetKey, successCallback, errorCallback) {
+        ErrorHelper.keyParameterCheck(globalOptionSetKey, 'DynamicsWebApi.deleteGlobalOptionSet', 'globalOptionSetKey');
+
+        var request = {
+            collection: 'GlobalOptionSetDefinitions',
+            key: globalOptionSetKey
+        };
+
+        this.deleteRequest(request, successCallback, errorCallback);
+    };
+
+    /**
+     * Sends an asynchronous request to retrieve Global Option Set definitions.
+     * 
+     * @param {string} globalOptionSetKey - The Global Option Set MetadataID or Alternate Key (such as Name).
+     * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
+     * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
+     * @param {string} [castType] - Use this parameter to cast a Global Option Set to a specific type.
+     * @param {Array} [select] - Use the $select system query option to limit the properties returned
+     */
+    this.retrieveGlobalOptionSet = function (globalOptionSetKey, successCallback, errorCallback, castType, select) {
+        ErrorHelper.keyParameterCheck(globalOptionSetKey, 'DynamicsWebApi.retrieveGlobalOptionSet', 'globalOptionSetKey');
+
+        var request = {
+            collection: 'GlobalOptionSetDefinitions',
+            key: globalOptionSetKey,
+            navigationProperty: castType,
+            select: select
+        };
+
+        this.retrieveRequest(request, successCallback, errorCallback);
+    };
+
+    /**
+     * Sends an asynchronous request to retrieve Global Option Set definitions.
+     *
+     * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
+     * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
+     * @param {string} [castType] - Use this parameter to cast a Global Option Set to a specific type.
+     * @param {Array} [select] - Use the $select system query option to limit the properties returned
+     */
+    this.retrieveGlobalOptionSets = function (successCallback, errorCallback, castType, select) {
+
+        var request = {
+            collection: 'GlobalOptionSetDefinitions',
+            navigationProperty: castType,
+            select: select
+        };
+
+        this.retrieveMultipleRequest(request, successCallback, errorCallback);
+    };
+
+    /**
      * Creates a new instance of DynamicsWebApi
      *
      * @param {DWAConfig} [config] - configuration object.
-     * @returns {DynamicsWebApi}
+     * @returns {DynamicsWebApi} The new instance of a DynamicsWebApi
      */
     this.initializeInstance = function (config) {
 
@@ -2841,8 +2936,8 @@ function DynamicsWebApi(config) {
         }
 
         return new DynamicsWebApi(config);
-    }
-};
+    };
+}
 
 /**
  * DynamicsWebApi Utility helper class
