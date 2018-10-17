@@ -3739,6 +3739,278 @@ describe("callbacks -", function () {
         });
     });
 
+    describe("dynamicsWebApi.createGlobalOptionSet -", function () {
+        describe("basic", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.createReturnId;
+                scope = nock(mocks.responses.globalOptionSetDefinitionsUrl)
+                    .post("", mocks.data.testEntity)
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.createGlobalOptionSet(mocks.data.testEntity, function (object) {
+                        expect(object).to.deep.equal(mocks.data.testEntityId);
+                        done();
+                    }, function (object) {
+                        console.error(object.message);
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+    });
+
+    describe("dynamicsWebApi.updateGlobalOptionSet -", function () {
+
+        describe("basic", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.basicEmptyResponseSuccess;
+                scope = nock(mocks.responses.globalOptionSetDefinitionsIdUrl, {
+                    reqheaders: {
+                        "If-Match": "*"
+                    }
+                })
+                    .put("", mocks.data.testEntityDefinition)
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.updateGlobalOptionSet(mocks.data.testEntityDefinition, function (object) {
+                        expect(object).to.be.true;
+                        done();
+                    }, function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+
+        describe("mergeLabels = true", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.basicEmptyResponseSuccess;
+                scope = nock(mocks.responses.globalOptionSetDefinitionsIdUrl, {
+                    reqheaders: {
+                        "If-Match": "*",
+                        "MSCRM.MergeLabels": "true"
+                    }
+                })
+                    .put("", mocks.data.testEntityDefinition)
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.updateGlobalOptionSet(mocks.data.testEntityDefinition, function (object) {
+                        expect(object).to.be.true;
+                        done();
+                    }, function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    }, true);
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+    });
+
+    describe("dynamicsWebApi.deleteGlobalOptionSet -", function () {
+
+        describe("basic", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.basicEmptyResponseSuccess;
+                scope = nock(mocks.responses.globalOptionSetDefinitionsIdUrl)
+                    .delete("")
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.deleteGlobalOptionSet(mocks.data.testEntityId, function (object) {
+                        expect(object).to.be.true;
+                        done();
+                    }, function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+    });
+
+    describe("dynamicsWebApi.retrieveGlobalOptionSet -", function () {
+
+        describe("basic", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.response200;
+                scope = nock(mocks.responses.globalOptionSetDefinitionsIdUrl)
+                    .get("")
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.retrieveGlobalOptionSet(mocks.data.testEntityId, function (object) {
+                        expect(object).to.deep.equal(mocks.data.testEntity);
+                        done();
+                    }, function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+
+        describe("select", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.response200;
+                scope = nock(mocks.responses.globalOptionSetDefinitionsIdUrl)
+                    .get("?$select=LogicalName")
+                    .reply(response.status, response.responseText, response.responseHeaders)
+                    .get("?$select=LogicalName,SchemaName")
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("[LogicalName] returns a correct response", function (done) {
+                dynamicsWebApiTest.retrieveGlobalOptionSet(mocks.data.testEntityId, function (object) {
+                        expect(object).to.deep.equal(mocks.data.testEntity);
+                        done();
+                    }, function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    }, null, ["LogicalName"]);
+            });
+
+            it("[LogicalName, SchemaName] returns a correct response", function (done) {
+                dynamicsWebApiTest.retrieveGlobalOptionSet(mocks.data.testEntityId, function (object) {
+                        expect(object).to.deep.equal(mocks.data.testEntity);
+                        done();
+                    }, function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    }, null, ["LogicalName", "SchemaName"]);
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+    });
+
+    describe("dynamicsWebApi.retrieveGlobalOptionSets -", function () {
+
+        describe("basic", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.responseEntityDefinitions;
+                scope = nock(mocks.responses.globalOptionSetDefinitionsUrl)
+                    .get("")
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.retrieveGlobalOptionSets(function (object) {
+                        expect(object).to.deep.equal(mocks.data.entityDefinitionList);
+                        done();
+                    }, function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+
+        describe("cast, select", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.responseEntityDefinitions;
+                scope = nock(mocks.responses.globalOptionSetDefinitionsUrl + "/casttype")
+                    .get("?$select=LogicalName")
+                    .reply(response.status, response.responseText, response.responseHeaders)
+                    .get("?$select=LogicalName,SchemaName")
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("[LogicalName] returns a correct response", function (done) {
+                dynamicsWebApiTest.retrieveGlobalOptionSets(function (object) {
+                        expect(object).to.deep.equal(mocks.data.entityDefinitionList);
+                        done();
+                    }, function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    }, "casttype", ["LogicalName"]);
+            });
+
+            it("[LogicalName, SchemaName] returns a correct response", function (done) {
+                dynamicsWebApiTest.retrieveGlobalOptionSets(function (object) {
+                        expect(object).to.deep.equal(mocks.data.entityDefinitionList);
+                        done();
+                    }, function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    }, "casttype", ["LogicalName", "SchemaName"]);
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+    });
+
     describe("dynamicsWebApi.constructor -", function () {
 
         describe("webApiVersion", function () {

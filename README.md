@@ -39,7 +39,7 @@ Any suggestions are welcome!
     * [Fetch All records](#fetch-all-records)
   * [Execute Web API functions](#execute-web-api-functions)
   * [Execute Web API actions](#execute-web-api-actions)
-  * [Entity and Attribute Metadata requests examples](#entity-and-attribute-metadata-requests-examples)
+  * [Working with Metadata Definitions](#working-with-metadata-definitions)
     * [Create Entity](#create-entity)
     * [Retrieve Entity](#retrieve-entity)
     * [Update Entity](#update-entity)
@@ -54,6 +54,11 @@ Any suggestions are welcome!
 	* [Delete Relationship](#delete-relationship)
 	* [Retrieve Relationship](#retrieve-relationship)
 	* [Retrieve Multiple Relationships](#retrieve-multiple-relationships)
+	* [Create Global Option Set](#create-global-option-set)
+	* [Update Global Option Set](#update-global-option-set)
+	* [Delete Global Option Set](#delete-global-option-set)
+	* [Retrieve Global Option Set](#retrieve-global-option-set)
+	* [Retrieve Multiple Global Option Sets](#retrieve-multiple-global-option-sets)
 * [Formatted Values and Lookup Properties](#formatted-values-and-lookup-properties)
 * [Using Alternate Keys](#using-alternate-keys)
 * [Making requests using Entity Logical Names](#making-requests-using-entity-logical-names)
@@ -929,7 +934,7 @@ dynamicsWebApi.executeUnboundAction("WinOpportunity", actionRequest).then(functi
 });
 ```
 
-## Entity and Attribute Metadata requests examples
+## Working with Metadata Definitions
 
 `Version 1.4.3+`
 
@@ -1207,6 +1212,78 @@ You can also use common request functions to create, retrieve and update entity 
 5. During entity or attribute metadata update you can use `mergeLabels` property to set **MSCRM.MergeLabels** attribute. By default `mergeLabels: false`.
 6. To send entity or attribute definition use `entity` property.
 
+#### Examples
+
+Retrieve entity metadata with attributes (with common properties):
+
+```js
+var request = {
+    collectionName: 'EntityDefinitions',
+    key: '00000000-0000-0000-0000-000000000001',
+    select: ['LogicalName', 'SchemaName'],
+    expand: 'Attributes'
+};
+
+dynamicsWebApi.retrieveRequest(request).then(function(entityMetadata){
+    var attributes = entityMetadata.Attributes;
+}).catch(function(error){
+    //catch an error
+});
+```
+
+Retrieve attribute metadata and cast it to the StringType:
+
+```js
+var request = {
+    collectionName: 'EntityDefinitions',
+    key: 'LogicalName="account"',
+    navigationProperty: 'Attributes',
+    navigationPropertyKey: 'LogicalName="firstname"',
+    metadataAttributeType: 'Microsoft.Dynamics.CRM.StringAttributeMetadata'
+};
+
+dynamicsWebApi.retrieveRequest(request).then(function(attributeMetadata){
+    var displayNameDefaultLabel = attributeMetadata.DisplayName.LocalizedLabels[0].Label;
+}).catch(function(error){
+    //catch an error
+});
+```
+
+Update entity metadata with **MSCRM.MergeLabels** header set to `true`:
+
+```js
+var request = {
+    collectionName: 'EntityDefinitions',
+    key: 'LogicalName="account"'
+};
+
+dynamicsWebApi.retrieveRequest(request).then(function(entityMetadata){
+    //1. change label
+    entityMetadata.DisplayName.LocalizedLabels[0].Label = 'Organization';
+    //2. configure update request
+    var updateRequest = {
+        collectionName: 'EntityDefinitions',
+        key: entityMetadata.MetadataId,
+        mergeLabels: true,
+        entity: entityMetadata
+    };
+    //3. call update request
+    return dynamicsWebApi.updateRequest(updateRequest);
+}).catch(function(error){
+    //catch an error
+});
+
+//it is the same as:
+dynamicsWebApi.retrieveEntity('LogicalName="account"').then(function(entityMetadata){
+    //1. change label
+    entityMetadata.DisplayName.LocalizedLabels[0].Label = 'Organization';
+    //2. call update request
+    return dynamicsWebApi.updateEntity(entityMetadata, true);
+}).catch(function(error){
+    //catch an error
+});
+```
+
 ### Create Relationship
 
 ```js
@@ -1359,75 +1436,159 @@ dynamicsWebApi.retrieveRelationships(['SchemaName', 'MetadataId'], "ReferencedEn
 });
 ```
 
-#### Examples
+### Create Global Option Set
 
-Retrieve entity metadata with attributes (with common properties):
+`version 1.4.6+`
 
 ```js
-var request = {
-    collectionName: 'EntityDefinitions',
-    key: '00000000-0000-0000-0000-000000000001',
-    select: ['LogicalName', 'SchemaName'],
-    expand: 'Attributes'
+var optionSetDefinition = {
+    "@odata.type": "Microsoft.Dynamics.CRM.OptionSetMetadata",
+    IsCustomOptionSet: true,
+    IsGlobal: true,
+    IsManaged: false,
+    Name: "new_customglobaloptionset",
+    OptionSetType: "Picklist",
+    Options: [{
+        Value: 0,
+        Label: {
+            LocalizedLabels: [{
+                Label: "Label 1", LanguageCode: 1033
+            }],
+            UserLocalizedLabel: {
+                Label: "Label 1", LanguageCode: 1033
+            }
+        },
+        Description: {
+            LocalizedLabels: [],
+            UserLocalizedLabel: null
+        }
+    }, {
+        Value: 1,
+        Label: {
+            LocalizedLabels: [{
+                Label: "Label 2", LanguageCode: 1033
+            }],
+            UserLocalizedLabel: {
+                Label: "Label 2", LanguageCode: 1033
+            }
+        },
+        Description: {
+            LocalizedLabels: [],
+            UserLocalizedLabel: null
+        }
+    }],
+    Description: {
+        LocalizedLabels: [{
+            Label: "Description to the Global Option Set.", LanguageCode: 1033
+        }],
+        UserLocalizedLabel: {
+            Label: "Description to the Global Option Set.", LanguageCode: 1033
+        }
+    },
+    DisplayName: {
+        LocalizedLabels: [{
+            Label: "Display name to the Custom Global Option Set.", LanguageCode: 1033
+        }],
+        UserLocalizedLabel: {
+            Label: "Display name to the Custom Global Option Set.", LanguageCode: 1033
+        }
+    },
+    IsCustomizable: {
+        Value: true, "CanBeChanged": true, ManagedPropertyLogicalName: "iscustomizable"
+    }
 };
 
-dynamicsWebApi.retrieveRequest(request).then(function(entityMetadata){
-    var attributes = entityMetadata.Attributes;
-}).catch(function(error){
-    //catch an error
+dynamicsWebApi.createGlobalOptionSet(optionSetDefinition).then(function (id) {
+    //metadata id
+}).catch(function (error) {
+    //catch error here
 });
 ```
 
-Retrieve attribute metadata and cast it to the StringType:
+### Update Global Option Set
+
+`version 1.4.6+`
+
+**Important!** Publish your changes after update, otherwise a label won't be modified.
 
 ```js
-var request = {
-    collectionName: 'EntityDefinitions',
-    key: 'LogicalName="account"',
-    navigationProperty: 'Attributes',
-    navigationPropertyKey: 'LogicalName="firstname"',
-    metadataAttributeType: 'Microsoft.Dynamics.CRM.StringAttributeMetadata'
-};
+var key = '6e133d25-abd1-e811-816e-480fcfeab9c1';
+//or
+key = "Name='new_customglobaloptionset'";
 
-dynamicsWebApi.retrieveRequest(request).then(function(attributeMetadata){
-    var displayNameDefaultLabel = attributeMetadata.DisplayName.LocalizedLabels[0].Label;
-}).catch(function(error){
-    //catch an error
+dynamicsWebApi.retrieveGlobalOptionSet(key).then(function (response) {
+    response.DisplayName.LocalizedLabels[0].Label = "Updated Display name to the Custom Global Option Set.";
+    return dynamicsWebApi.updateGlobalOptionSet(response);
+}).then(function (response) {
+    //check if it was updated
+}).catch (function (error) {
+    //catch error here
 });
 ```
 
-Update entity metadata with **MSCRM.MergeLabels** header set to `true`:
+### Delete Global Option Set
+
+`version 1.4.6+`
 
 ```js
-var request = {
-    collectionName: 'EntityDefinitions',
-    key: 'LogicalName="account"'
-};
+var key = '6e133d25-abd1-e811-816e-480fcfeab9c1';
+//or
+key = "Name='new_customglobaloptionset'";
 
-dynamicsWebApi.retrieveRequest(request).then(function(entityMetadata){
-    //1. change label
-    entityMetadata.DisplayName.LocalizedLabels[0].Label = 'Organization';
-    //2. configure update request
-    var updateRequest = {
-        collectionName: 'EntityDefinitions',
-        key: entityMetadata.MetadataId,
-        mergeLabels: true,
-        entity: entityMetadata
-    };
-    //3. call update request
-    return dynamicsWebApi.updateRequest(updateRequest);
-}).catch(function(error){
-    //catch an error
+dynamicsWebApi.deleteGlobalOptionSet(key).then(function (response) {
+    //check if it was deleted
+}).catch(function (error) {
+    //catch error here
+});
+```
+
+### Retrieve Global Option Set
+
+`version 1.4.6+`
+
+```js
+var key = '6e133d25-abd1-e811-816e-480fcfeab9c1';
+//or
+key = "Name='new_customglobaloptionset'";
+
+dynamicsWebApi.retrieveGlobalOptionSet(key).then(function (response) {
+    //response.DisplayName.LocalizedLabels[0].Label
+}).catch (function (error) {
+    //catch error here
 });
 
-//it is the same as:
-dynamicsWebApi.retrieveEntity('LogicalName="account"').then(function(entityMetadata){
-    //1. change label
-    entityMetadata.DisplayName.LocalizedLabels[0].Label = 'Organization';
-    //2. call update request
-    return dynamicsWebApi.updateEntity(entityMetadata, true);
-}).catch(function(error){
-    //catch an error
+//select specific attributes
+//select specific attributes
+dynamicsWebApi.retrieveGlobalOptionSet(key, null, ['Name']).then(function (response) {
+    //response.DisplayName.LocalizedLabels[0].Label
+}).catch (function (error) {
+    //catch error here
+});
+
+//Options attribute exists only in OptionSetMetadata, therefore we need to cast to it
+dynamicsWebApi.retrieveGlobalOptionSet(key, 'Microsoft.Dynamics.CRM.OptionSetMetadata', ['Name', 'Options']).then(function (response) {
+    //response.DisplayName.LocalizedLabels[0].Label
+}).catch (function (error) {
+    //catch error here
+});
+```
+
+### Retrieve Multiple Global Option Sets
+
+`version 1.4.6+`
+
+```js
+dynamicsWebApi.retrieveGlobalOptionSets().then(function (response) {
+	var optionSet = response.value[0]; //first global option set
+}).catch (function (error) {
+    //catch error here
+});
+
+//select specific attributes
+dynamicsWebApi.retrieveGlobalOptionSets('Microsoft.Dynamics.CRM.OptionSetMetadata', ['Name', 'Options']).then(function (response) {
+	var optionSet = response.value[0]; //first global option set
+}).catch (function (error) {
+    //catch error here
 });
 ```
 
@@ -1599,7 +1760,7 @@ the config option "formatted" will enable developers to retrieve all information
 - [X] Duplicate Detection for Web API v.9. `Implemented in v.1.3.4`
 - [X] Ability to use entity names instead of collection names. `Implemented in v.1.4.0`
 - [X] Entity and Attribute Metadata helpers. `Implemented in v.1.4.3`
-- [ ] Entity Relationships and Global Option Sets helpers.
+- [X] Entity Relationships and Global Option Sets helpers. `Implemented in v.1.4.6`
 - [ ] Batch requests.
 - [ ] Intellisense for request objects.
 

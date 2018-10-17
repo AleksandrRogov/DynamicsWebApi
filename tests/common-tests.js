@@ -50,7 +50,7 @@ describe("Utility.getFetchXmlPagingCookie -", function () {
             nextPage: 3
         });
 
-        var result = Utility.getFetchXmlPagingCookie();
+        result = Utility.getFetchXmlPagingCookie();
         expect(result).to.deep.equal({
             cookie: "",
             page: 1,

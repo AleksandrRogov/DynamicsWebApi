@@ -266,6 +266,8 @@ var responseStubs = {
     entityDefinitionsIdUrl: webApiUrl + 'EntityDefinitions(' + dataStubs.testEntityId + ')',
     relationshipDefinitionsUrl: webApiUrl + 'RelationshipDefinitions',
     relationshipDefinitionsIdUrl: webApiUrl + 'RelationshipDefinitions(' + dataStubs.testEntityId + ')',
+    globalOptionSetDefinitionsUrl: webApiUrl + 'GlobalOptionSetDefinitions',
+    globalOptionSetDefinitionsIdUrl: webApiUrl + 'GlobalOptionSetDefinitions(' + dataStubs.testEntityId + ')',
     basicEmptyResponseSuccess: {
         status: 204
     },
