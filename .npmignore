@@ -5,3 +5,4 @@ obj
 
 *.njsproj
 *.sln
+.ntvs_analysis.dat
