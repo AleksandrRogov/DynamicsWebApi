@@ -12,6 +12,11 @@ Libraries for browsers can be found in [dist](/dist/) folder.
 
 Any suggestions are welcome!
 
+**Important!** For some reason, npm was not removing `.git` folder from a published package, 
+even though [it should have done it by default](https://docs.npmjs.com/misc/developers#keeping-files-out-of-your-package), therefore
+`npm update dynamics-web-api` was not working properly. If you see an error during an update of the package, 
+please go to `node_modules\dynamics-web-api` of your application and remove `.git` directory manually. This error has been fixed in `v.1.4.7`.
+
 ## Table of Contents
 
 * [Getting Started](#getting-started)
