@@ -1,4 +1,4 @@
-/*! dynamics-web-api v1.4.6 (c) 2018 Aleksandr Rogov */
+/*! dynamics-web-api v1.4.7 (c) 2018 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -278,10 +278,6 @@ var ErrorHelper = {
         }
     },
 
-    /**
-     * @param parameter {string} - parameter
-     *
-     */
     keyParameterCheck: function (parameter, functionName, parameterName) {
 
         try {
@@ -298,7 +294,7 @@ var ErrorHelper = {
 
             if (alternateKeys.length) {
                 for (var i = 0; i < alternateKeys.length; i++){
-                    alternateKeys[i] = alternateKeys[i].trim();
+                    alternateKeys[i] = alternateKeys[i].trim().replace('"', "'");
                     /^[\w\d\_]+\='[^\'\r\n]+'$/i.exec(alternateKeys[i])[0];
                 }
             }
