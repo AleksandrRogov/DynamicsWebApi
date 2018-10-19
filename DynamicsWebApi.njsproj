@@ -75,7 +75,6 @@
     </Compile>
     <Compile Include="lib\requests\http.js" />
     <Compile Include="lib\requests\xhr.js" />
-    <Compile Include="lib\test.js" />
     <Compile Include="lib\utilities\buildPreferHeader.js">
       <SubType>Code</SubType>
     </Compile>
