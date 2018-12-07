@@ -147,7 +147,7 @@ function acquireToken(dynamicsWebApiCallback){
 
 //create DynamicsWebApi object
 var dynamicsWebApi = new DynamicsWebApi({
-    webApiUrl: 'https:/myorg.api.crm.dynamics.com/api/data/v9.0/',
+    webApiUrl: 'https://myorg.api.crm.dynamics.com/api/data/v9.0/',
     onTokenRefresh: acquireToken
 });
 
