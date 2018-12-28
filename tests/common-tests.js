@@ -1492,7 +1492,7 @@ describe('Request.makeRequest', function () {
                 webApiUrl: mocks.webApiUrl,
                 useEntityNames: true
             };
-            Request.makeRequest('GET', request, 'any', config, function (object) {
+            Request.makeRequest('GET', request, 'any', config, null, function (object) {
                 var expectedO = {
                     status: 200,
                     headers: {},
@@ -1545,7 +1545,7 @@ describe('Request.makeRequest', function () {
                 done();
             };
 
-            Request.makeRequest('GET', request, 'any', config, function (object) {
+            Request.makeRequest('GET', request, 'any', config, null, function (object) {
                 var expectedO = {
                     status: 200,
                     headers: {},
@@ -1558,7 +1558,7 @@ describe('Request.makeRequest', function () {
                     key: mocks.data.testEntityId
                 };
 
-                Request.makeRequest('GET', request2, 'any', config, function (object1) {
+                Request.makeRequest('GET', request2, 'any', config, null, function (object1) {
                     var expectedO1 = {
                         status: 200,
                         headers: {},
@@ -1602,7 +1602,7 @@ describe('Request.makeRequest', function () {
                 webApiUrl: mocks.webApiUrl,
                 useEntityNames: true
             };
-            Request.makeRequest('GET', request, 'any', config, function (object) {
+            Request.makeRequest('GET', request, 'any', config, null, function (object) {
                 var expectedO = {
                     status: 200,
                     headers: {},
@@ -1652,7 +1652,7 @@ describe('Request.makeRequest', function () {
                 webApiUrl: mocks.webApiUrl,
                 useEntityNames: true
             };
-            Request.makeRequest('GET', request, 'any', config, function (object) {
+            Request.makeRequest('GET', request, 'any', config, null, function (object) {
                 var expectedO = {
                     status: 200,
                     headers: {},
@@ -1708,7 +1708,7 @@ describe("Request.sendRequest", function () {
         });
 
         it("returns a correct response", function (done) {
-            Request.sendRequest('GET', url, { webApiUrl: mocks.webApiUrl }, null, null, function (object) {
+            Request.sendRequest('GET', url, { webApiUrl: mocks.webApiUrl }, null, null, null, function (object) {
                 var multiple = mocks.responses.multiple();
                 //delete multiple.oDataContext;
                 var expectedO = {
@@ -1744,11 +1744,11 @@ describe("Request.sendRequest", function () {
         });
 
         it("returns a correct response", function (done) {
-            Request.sendRequest('PATCH', url, { webApiUrl: mocks.webApiUrl }, mocks.data.testEntityAdditionalAttributes, null, function (object) {
+            Request.sendRequest('PATCH', url, { webApiUrl: mocks.webApiUrl }, mocks.data.testEntityAdditionalAttributes, null, null, function (object) {
                 var expectedO = {
                     status: mocks.responses.basicEmptyResponseSuccess.status,
                     headers: {},
-                    data: null
+                    data: undefined
                 };
                 expect(object).to.deep.equal(expectedO);
                 done();
@@ -1766,23 +1766,23 @@ describe("Request.sendRequest", function () {
 
 describe("parseResponse", function () {
     it("parses formatted values", function () {
-        var response = parseResponse(mocks.responses.responseFormatted200.responseText);
+        var response = parseResponse(mocks.responses.responseFormatted200.responseText, [], [{}]);
         expect(response).to.be.deep.equal(mocks.responses.responseFormattedEntity());
     });
 
     it("parses formatted values - array", function () {
-        var response = parseResponse(mocks.responses.multipleFormattedResponse.responseText);
+        var response = parseResponse(mocks.responses.multipleFormattedResponse.responseText, [], [{}]);
         expect(response).to.be.deep.equal(mocks.responses.multipleFormatted());
     });
 
     it("parses formatted and aliased values", function () {
-        var response = parseResponse(mocks.responses.responseFormattedAliased200.responseText);
+        var response = parseResponse(mocks.responses.responseFormattedAliased200.responseText, [], [{}]);
         expect(response).to.be.deep.equal(mocks.responses.responseFormattedAliasedEntity());
     });
 
     it("when alias are not unique throws error", function () {
         expect(function () {
-            parseResponse(mocks.responses.responseFormattedAliasedNotUnique200.responseText);
+            parseResponse(mocks.responses.responseFormattedAliasedNotUnique200.responseText, [], [{}]);
         }).to.throw("The alias name of the linked entity must be unique!");
     });
 });
