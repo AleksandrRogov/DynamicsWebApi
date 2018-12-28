@@ -61,6 +61,7 @@
     <Compile Include="lib\requests\helpers\parseResponse.js">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="lib\utilities\BatchConverter.js" />
     <Compile Include="lib\utilities\buildFunctionParameters.js">
       <SubType>Code</SubType>
     </Compile>
