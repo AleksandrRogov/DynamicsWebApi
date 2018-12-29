@@ -4478,6 +4478,122 @@ describe("promises -", function () {
         });
     });
 
+    describe("dynamicsWebApi.executeBatch -", function () {
+        describe("retrieve multiple / create / retrieve multiple", function () {
+            var scope;
+            var rBody = mocks.data.batchRetrieveMultipleCreateRetrieveMultiple;
+            var rBodys = rBody.split('\n');
+            var checkBody = '';
+            for (var i = 0; i < rBodys.length; i++) {
+                checkBody += rBodys[i];
+            }
+            before(function () {
+                var response = mocks.responses.batchRetrieveMultipleCreateRetrieveMultiple;
+                scope = nock(mocks.webApiUrl + '$batch')
+                    .filteringRequestBody(function (body) {
+                        body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
+                        body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'changeset_XXX');
+                        var bodys = body.split('\n');
+
+                        var resultBody = '';
+                        for (var i = 0; i < bodys.length; i++) {
+                            resultBody += bodys[i];
+                        }
+                        return resultBody;
+                    })
+                    .post("", checkBody)
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.startBatch();
+
+                dynamicsWebApiTest.retrieveMultiple('tests');
+                dynamicsWebApiTest.create({ firstname: "Test", lastname: "Batch!" }, 'records');
+                dynamicsWebApiTest.retrieveMultiple('morerecords');
+
+                dynamicsWebApiTest.executeBatch()
+                    .then(function (object) {
+                        expect(object.length).to.be.eq(3);
+
+                        expect(object[0]).to.deep.equal(mocks.responses.multiple());
+                        expect(object[1]).to.deep.equal(mocks.data.testEntityId);
+                        expect(object[2]).to.deep.equal(mocks.responses.multiple2());
+
+                        done();
+                    }).catch(function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+
+        describe("retrieve multiple / update / retrieve multiple", function () {
+            var scope;
+            var rBody = mocks.data.batchRetrieveMultipleCreateRetrieveMultiple;
+            var rBodys = rBody.split('\n');
+            var checkBody = '';
+            for (var i = 0; i < rBodys.length; i++) {
+                checkBody += rBodys[i];
+            }
+            before(function () {
+                var response = mocks.responses.batchRetrieveMultipleCreateRetrieveMultiple;
+                scope = nock(mocks.webApiUrl + '$batch')
+                    .filteringRequestBody(function (body) {
+                        body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
+                        body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'changeset_XXX');
+                        var bodys = body.split('\n');
+
+                        var resultBody = '';
+                        for (var i = 0; i < bodys.length; i++) {
+                            resultBody += bodys[i];
+                        }
+                        return resultBody;
+                    })
+                    .post("", checkBody)
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.startBatch();
+
+                dynamicsWebApiTest.retrieveMultiple('tests');
+                dynamicsWebApiTest.update({ firstname: "Test", lastname: "Batch!" }, 'records');
+                dynamicsWebApiTest.retrieveMultiple('morerecords');
+
+                dynamicsWebApiTest.executeBatch()
+                    .then(function (object) {
+                        expect(object.length).to.be.eq(3);
+
+                        expect(object[0]).to.deep.equal(mocks.responses.multiple());
+                        expect(object[1]).to.deep.equal(true);
+                        expect(object[2]).to.deep.equal(mocks.responses.multiple2());
+
+                        done();
+                    }).catch(function (object) {
+                        expect(object).to.be.undefined;
+                        done();
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+    });
+
     describe("dynamicsWebApi.constructor -", function () {
 
         describe("webApiVersion", function () {

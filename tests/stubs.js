@@ -102,6 +102,13 @@ var dataStubs = {
             { name: "name2", subject: "subject2" }
         ]
     },
+    multiple2: {
+        "@odata.context": "context",
+        value: [
+            { name: "name3", subject: "subject3" },
+            { name: "name4", subject: "subject4" }
+        ]
+    },
     multipleFormatted: {
         "@odata.context": "context",
         value: [
@@ -126,47 +133,77 @@ var dataStubs = {
         ]
     },
     batch:
-    '--dwa_batch_XXX\n' +
-    'Content-Type: application/http\n' +
-    'Content-Transfer-Encoding: binary\n\n' +
-    'GET {0} HTTP/1.1\n' +
-    'Accept: application/json\n' +
-    'OData-MaxVersion: 4.0\n' +
-    'OData-Version: 4.0\n' +
-    'Content-Type: application/json; charset=utf-8\n\n' +
-    '--dwa_batch_XXX--',
-
+        '--dwa_batch_XXX\n' +
+        'Content-Type: application/http\n' +
+        'Content-Transfer-Encoding: binary\n\n' +
+        'GET {0} HTTP/1.1\n' +
+        'Accept: application/json\n' +
+        'OData-MaxVersion: 4.0\n' +
+        'OData-Version: 4.0\n' +
+        'Content-Type: application/json; charset=utf-8\n\n' +
+        '--dwa_batch_XXX--',
+    batchRetrieveMultipleCreateRetrieveMultiple:
+        '--dwa_batch_XXX\n' +
+        'Content-Type: application/http\n' +
+        'Content-Transfer-Encoding: binary\n' +
+        '\n' +
+        'GET ' + webApiUrl + 'tests HTTP/1.1\n' +
+        'Accept: application/json\n' +
+        '\n' +
+        '--dwa_batch_XXX\n' +
+        'Content-Type: multipart/mixed;boundary=changeset_XXX\n' +
+        '\n' +
+        '--changeset_XXX\n' +
+        'Content-Type: application/http\n' +
+        'Content-Transfer-Encoding: binary\n' +
+        'Content-ID: 1\n' +
+        '\n' +
+        'POST ' + webApiUrl + 'records HTTP/1.1\n' +
+        'Content-Type: application/json\n' +
+        '\n' +
+        '{"firstname":"Test","lastname":"Batch!"}\n' +
+        '\n' +
+        '--changeset_XXX--\n' +
+        '\n' +
+        '--dwa_batch_XXX\n' +
+        'Content-Type: application/http\n' +
+        'Content-Transfer-Encoding: binary\n' +
+        '\n' +
+        'GET ' + webApiUrl + 'morerecords HTTP/1.1\n' +
+        'Accept: application/json\n' +
+        '\n' +
+        '--dwa_batch_XXX--',
     fetchXmls: {
         cookiePage1: "%253Ccookie%2520pagenumber%253D%25222%2522%2520pagingcookie%253D%2522%253Ccookie%2520page%253D%25221%2522%253E%253Caccountid%2520last%253D%2522%257BEF72AE29-B3DE-E611-8102-5065F38A7BF1%257D%2522%2520first%253D%2522%257B475B158C-541C-E511-80D3-3863BB347BA8%257D%2522%2520/%253E%253C/cookie%253E%2522%2520istracking%253D%2522False%2522%2520/%253E",
         cookiePage2: "%253Ccookie%2520pagenumber%253D%25222%2522%2520pagingcookie%253D%2522%253Ccookie%2520page%253D%25222%2522%253E%253Caccountid%2520last%253D%2522%257BF972AE29-B3DE-E611-8102-5065F38A7BF1%257D%2522%2520first%253D%2522%257BF172AE29-B3DE-E611-8102-5065F38A7BF1%257D%2522%2520/%253E%253C/cookie%253E%2522%2520istracking%253D%2522False%2522%2520/%253E",
         fetchXml:
-        '<fetch mapping="logical" count="5">' +
-        '<entity name="account">' +
-        '<attribute name="accountid"/>' +
-        '<attribute name="name"/>' +
-        '</entity>' +
-        '</fetch>',
+            '<fetch mapping="logical" count="5">' +
+            '<entity name="account">' +
+            '<attribute name="accountid"/>' +
+            '<attribute name="name"/>' +
+            '</entity>' +
+            '</fetch>',
         fetchXml1:
-        '<fetch page="1" mapping="logical" count="5">' +
-        '<entity name="account">' +
-        '<attribute name="accountid"/>' +
-        '<attribute name="name"/>' +
-        '</entity>' +
-        '</fetch>',
+            '<fetch page="1" mapping="logical" count="5">' +
+            '<entity name="account">' +
+            '<attribute name="accountid"/>' +
+            '<attribute name="name"/>' +
+            '</entity>' +
+            '</fetch>',
         fetchXml2cookie:
-        '<fetch page="2" paging-cookie="&lt;cookie page=&quot;1&quot;&gt;&lt;accountid last=&quot;{EF72AE29-B3DE-E611-8102-5065F38A7BF1}&quot; first=&quot;{475B158C-541C-E511-80D3-3863BB347BA8}&quot; /&gt;&lt;/cookie&gt;" mapping="logical" count="5">' +
-        '<entity name="account">' +
-        '<attribute name="accountid"/>' +
-        '<attribute name="name"/>' +
-        '</entity>' +
-        '</fetch>',
+            '<fetch page="2" paging-cookie="&lt;cookie page=&quot;1&quot;&gt;&lt;accountid last=&quot;{EF72AE29-B3DE-E611-8102-5065F38A7BF1}&quot; first=&quot;{475B158C-541C-E511-80D3-3863BB347BA8}&quot; /&gt;&lt;/cookie&gt;" mapping="logical" count="5">' +
+            '<entity name="account">' +
+            '<attribute name="accountid"/>' +
+            '<attribute name="name"/>' +
+            '</entity>' +
+            '</fetch>',
         fetchXml2:
-        '<fetch page="2" mapping="logical" count="5">' +
-        '<entity name="account">' +
-        '<attribute name="accountid"/>' +
-        '<attribute name="name"/>' +
-        '</entity>' +
-        '</fetch>',
+            '<fetch page="2" mapping="logical" count="5">' +
+            '<entity name="account">' +
+            '<attribute name="accountid"/>' +
+            '<attribute name="name"/>' +
+            '</entity>' +
+            '</fetch>',
         fetchXmlResponsePage1Cookie: {
             "@odata.context": "context",
             "@Microsoft.Dynamics.CRM.fetchxmlpagingcookie": "%253Ccookie%2520pagenumber%253D%25222%2522%2520pagingcookie%253D%2522%253Ccookie%2520page%253D%25221%2522%253E%253Caccountid%2520last%253D%2522%257BEF72AE29-B3DE-E611-8102-5065F38A7BF1%257D%2522%2520first%253D%2522%257B475B158C-541C-E511-80D3-3863BB347BA8%257D%2522%2520/%253E%253C/cookie%253E%2522%2520istracking%253D%2522False%2522%2520/%253E",
@@ -322,17 +359,93 @@ var responseStubs = {
     batch: {
         status: 200,
         responseText:
-        '--batchresponse_904020fa-6213-43d4-a26a-5347b70095e8\r\n' +
-        'Content-Type: application/http\r\n' +
-        'Content-Transfer-Encoding: binary\r\n\r\n' +
+            '--batchresponse_904020fa-6213-43d4-a26a-5347b70095e8\r\n' +
+            'Content-Type: application/http\r\n' +
+            'Content-Transfer-Encoding: binary\r\n\r\n' +
 
-        'HTTP/ 1.1 200 OK\r\n' +
-        'Access-Control-Expose-Headers: Preference-Applied, OData-EntityId, Location, ETag, OData-Version, Content-Encoding, Transfer-Encoding, Content-Length, Retry-After\r\n' +
-        'Content-Type: application/json; odata.metadata=minimal\r\n' +
-        'OData-Version: 4.0\r\n\r\n' +
+            'HTTP/ 1.1 200 OK\r\n' +
+            'Access-Control-Expose-Headers: Preference-Applied, OData-EntityId, Location, ETag, OData-Version, Content-Encoding, Transfer-Encoding, Content-Length, Retry-After\r\n' +
+            'Content-Type: application/json; odata.metadata=minimal\r\n' +
+            'OData-Version: 4.0\r\n\r\n' +
 
-        JSON.stringify(dataStubs.multiple) + '\r\n' +
-        '--batchresponse_904020fa-6213-43d4-a26a-5347b70095e8--'
+            JSON.stringify(dataStubs.multiple) + '\r\n' +
+            '--batchresponse_904020fa-6213-43d4-a26a-5347b70095e8--'
+    },
+    batchRetrieveMultipleCreateRetrieveMultiple: {
+        status: 200,
+        responseText:
+            '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae\r\n' +
+            'Content-Type: application/http\r\n' +
+            'Content-Transfer-Encoding: binary\r\n' +
+
+            'HTTP/1.1 200 OK\r\n' +
+            'Content-Type: application/json; odata.metadata=minimal\r\n' +
+            'OData-Version: 4.0\r\n' +
+
+            JSON.stringify(dataStubs.multiple) + '\r\n' +
+            '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae\r\n' +
+            'Content-Type: multipart/mixed; boundary=changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n' +
+            '\r\n' +
+            '--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n' +
+            'Content-Type: application/http\r\n' +
+            'Content-Transfer-Encoding: binary\r\n' +
+            'Content-ID: 1' +
+
+            'HTTP/1.1 204 No Content\r\n' +
+            'OData-Version: 4.0\r\n' +
+            'Location: https://url.com/api/data/v8.2/tests(' + dataStubs.testEntityId + ')\r\n' +
+            'OData-EntityId: https://url.com/api/data/v8.2/tests(' + dataStubs.testEntityId + ')\r\n' +
+            '\r\n' +
+            '\r\n' +
+            '--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd--\r\n' +
+            '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae\r\n' +
+            'Content-Type: application/http\r\n' +
+            'Content-Transfer-Encoding: binary\r\n' +
+
+            'HTTP/1.1 200 OK\r\n' +
+            'Content-Type: application/json; odata.metadata=minimal\r\n' +
+            'OData-Version: 4.0\r\n' +
+
+            JSON.stringify(dataStubs.multiple2) + '\r\n' +
+            '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae--'
+    },
+    batchRetrieveMultipleUpdateRetrieveMultiple: {
+        status: 200,
+        responseText:
+            '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae\r\n' +
+            'Content-Type: application/http\r\n' +
+            'Content-Transfer-Encoding: binary\r\n' +
+
+            'HTTP/1.1 200 OK\r\n' +
+            'Content-Type: application/json; odata.metadata=minimal\r\n' +
+            'OData-Version: 4.0\r\n' +
+
+            JSON.stringify(dataStubs.multiple) + '\r\n' +
+            '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae\r\n' +
+            'Content-Type: multipart/mixed; boundary=changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n' +
+            '\r\n' +
+            '--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n' +
+            'Content-Type: application/http\r\n' +
+            'Content-Transfer-Encoding: binary\r\n' +
+            'Content-ID: 1' +
+
+            'HTTP/1.1 204 No Content\r\n' +
+            'OData-Version: 4.0\r\n' +
+            'Location: https://url.com/api/data/v8.2/tests(' + dataStubs.testEntityId + ')\r\n' +
+            'OData-EntityId: https://url.com/api/data/v8.2/tests(' + dataStubs.testEntityId + ')\r\n' +
+            '\r\n' +
+            '\r\n' +
+            '--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd--\r\n' +
+            '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae\r\n' +
+            'Content-Type: application/http\r\n' +
+            'Content-Transfer-Encoding: binary\r\n' +
+
+            'HTTP/1.1 200 OK\r\n' +
+            'Content-Type: application/json; odata.metadata=minimal\r\n' +
+            'OData-Version: 4.0\r\n' +
+
+            JSON.stringify(dataStubs.multiple2) + '\r\n' +
+            '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae--'
     },
     fetchXmlResponsePage1Cookie: {
         status: 200,
@@ -394,7 +507,7 @@ var responseStubs = {
             value1: stub["alias_x002e_value1"],
             value1_Formatted: stub["alias_x002e_value1@OData.Community.Display.V1.FormattedValue"],
             "value1@OData.Community.Display.V1.FormattedValue": stub["alias_x002e_value1@OData.Community.Display.V1.FormattedValue"]
-        }
+        };
         return stub;
     },
     multipleWithLink: function () {
@@ -407,7 +520,11 @@ var responseStubs = {
         var stub = dataStubs.multiple;
         stub.oDataContext = stub["@odata.context"];
         return stub;
-
+    },
+    multiple2: function () {
+        var stub = dataStubs.multiple2;
+        stub.oDataContext = stub["@odata.context"];
+        return stub;
     },
     multipleFormatted: function () {
         var stub = dataStubs.multipleFormatted;
