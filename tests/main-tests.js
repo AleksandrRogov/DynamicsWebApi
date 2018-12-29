@@ -1922,7 +1922,7 @@ describe("promises -", function () {
                     collection: "tests",
                     entity: mocks.data.testEntity,
                     ifmatch: "match"
-                }
+                };
 
                 dynamicsWebApiTest
                     .updateRequest(dwaRequest)
@@ -1964,7 +1964,7 @@ describe("promises -", function () {
                     collection: "tests",
                     entity: mocks.data.testEntity,
                     ifmatch: "match"
-                }
+                };
 
                 dynamicsWebApiTest
                     .updateRequest(dwaRequest)
@@ -2006,7 +2006,7 @@ describe("promises -", function () {
                     collection: "tests",
                     entity: mocks.data.testEntity,
                     ifmatch: "match"
-                }
+                };
 
                 dynamicsWebApiTest
                     .updateRequest(dwaRequest)
@@ -2032,7 +2032,7 @@ describe("promises -", function () {
                 id: mocks.data.testEntityId,
                 collection: "tests",
                 entity: mocks.data.testEntity
-            }
+            };
 
             var scope;
             before(function () {
