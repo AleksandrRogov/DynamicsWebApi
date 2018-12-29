@@ -1627,16 +1627,16 @@ dynamicsWebApi.retrieveMultiple('contacts');
 //execute a batch request:
 dynamicsWebApi.executeBatch()
     .then(function (responses) {
-	    //'responses' is an array of responses of each individual request
-		//they have the same sequence as the calls between startBatch() and executeBatch()
+        //'responses' is an array of responses of each individual request
+        //they have the same sequence as the calls between startBatch() and executeBatch()
         //in this case responses.length is 3
 
         //dynamicsWebApi.retrieveMultiple response:
-		var accounts = responses[0];
-		//dynamicsWebApi.update response
+        var accounts = responses[0];
+        //dynamicsWebApi.update response
         var isUpdated = responses[1]; //should be 'true'
         //dynamicsWebApi.retrieveMultiple response:
-		var contacts = responses[2]; //will contain an updated contact
+        var contacts = responses[2]; //will contain an updated contact
 
     }).catch(function (error) {
 	    //catch error here
