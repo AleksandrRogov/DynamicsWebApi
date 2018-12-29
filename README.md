@@ -66,6 +66,7 @@ please go to `node_modules\dynamics-web-api` of your application and remove `.gi
 	* [Delete Global Option Set](#delete-global-option-set)
 	* [Retrieve Global Option Set](#retrieve-global-option-set)
 	* [Retrieve Multiple Global Option Sets](#retrieve-multiple-global-option-sets)
+  * [Execute Batch Operations](#execute-batch-operations)
 * [Formatted Values and Lookup Properties](#formatted-values-and-lookup-properties)
 * [Using Alternate Keys](#using-alternate-keys)
 * [Making requests using Entity Logical Names](#making-requests-using-entity-logical-names)
@@ -1599,6 +1600,66 @@ dynamicsWebApi.retrieveGlobalOptionSets('Microsoft.Dynamics.CRM.OptionSetMetadat
 });
 ```
 
+## Execute Batch Operations
+
+`version 1.5.0+`
+
+Batch requests bundle multiple operations into a single one and have the following advantages:
+
+* Reduces a number of requests sent to the Web API server. `Each user is allowed up to 60,000 API requests, per organization instance, within five minute sliding interval.` [More Info](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/api-limits)
+* Provides a way to run multiple operations in a single transaction. If any operation that changes data (within a single changeset) fails all completed ones will be rolled back.
+* All operations within a batch request run consequently (FIFO).
+
+Batch requests are not simple to compose and DynamicsWebApi provides an easy way to execute such operations:
+
+```js
+
+//when you want to start a batch operation call the following function:
+//it is important to call it, otherwise all operations below will be executed right away.
+dynamicsWebApi.startBatch();
+
+//call necessary operations just like you would normally do.
+//these calls will be converted into a single batch request
+dynamicsWebApi.retrieveMultiple('accounts');
+dynamicsWebApi.update('00000000-0000-0000-0000-000000000002', 'contacts', { firstname: "Test", lastname: "Batch!" });
+dynamicsWebApi.retrieveMultiple('contacts');
+
+//execute a batch request:
+dynamicsWebApi.executeBatch()
+    .then(function (responses) {
+	    //'responses' is an array of responses of each individual request
+		//they have the same sequence as the calls between startBatch() and executeBatch()
+        //in this case responses.length is 3
+
+        //dynamicsWebApi.retrieveMultiple response:
+		var accounts = responses[0];
+		//dynamicsWebApi.update response
+        var isUpdated = responses[1]; //should be 'true'
+        //dynamicsWebApi.retrieveMultiple response:
+		var contacts = responses[2]; //will contain an updated contact
+
+    }).catch(function (error) {
+	    //catch error here
+    });
+
+```
+
+**Important!** Developers who use DynamicsWebApi with callbacks do not need to pass `successCallback` and `errorCallback` in an individual operation when `startBatch()` is called, 
+just pass `null` if you need to add additional parameters in the request.
+
+Currently, there are some limitations in DynamicsWebApi Batch Operations:
+
+* `Content-ID` header cannot be used to reference the Uri of any entity created in a single operation. **This is an upcoming feature**.
+* Operations that use pagination to recursively retrieve all records cannot be used in a batch operation. These operations include: `retrieveAll`, `retrieveAllRequest`, `countAll`, `fetchAll`, `executeFetchXmlAll`. 
+You will get an error saying that the operation is incompatible in a 'batch mode'.
+
+There are also some Web API limitations for batch operations:
+
+* Batch requests can contain up to 100 individual requests and cannot contain other batch requests.
+* The odata.continue-on-error preference is not supported by the web API. Any error that occurs in the batch will stop the processing of the remainder of the batch.
+
+You can find an official documentation that covers Web API batch requests here: [Execute batch operations using the Web API](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/webapi/execute-batch-operations-using-web-api)
+
 ## Formatted Values and Lookup Properties
 
 Starting from version 1.3.0 it became easier to access formatted values for properties and lookup data in response objects. 
@@ -1768,7 +1829,8 @@ the config option "formatted" will enable developers to retrieve all information
 - [X] Ability to use entity names instead of collection names. `Implemented in v.1.4.0`
 - [X] Entity and Attribute Metadata helpers. `Implemented in v.1.4.3`
 - [X] Entity Relationships and Global Option Sets helpers. `Implemented in v.1.4.6`
-- [ ] Batch requests.
+- [X] Batch requests.
+- [ ] Implement `Content-ID` header to reference a created entity in batch operation.
 - [ ] Intellisense for request objects.
 
 Many more features to come!
