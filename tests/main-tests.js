@@ -30,9 +30,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntityId);
                         done();
                     }).catch(function (object) {
-                        console.error(object.message);
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -65,8 +63,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -99,8 +96,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -135,8 +131,7 @@ describe("promises -", function () {
                         expect(object).to.be.true;
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -170,8 +165,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.updatedEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -207,8 +201,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.updatedEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -219,8 +212,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.updatedEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -250,11 +242,9 @@ describe("promises -", function () {
             it("returns a correct response", function (done) {
                 dynamicsWebApiTest.updateSingleProperty(mocks.data.testEntityId, "tests", mocks.data.updatedEntity)
                     .then(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -288,8 +278,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.updatedEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -323,8 +312,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.updatedEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -352,11 +340,9 @@ describe("promises -", function () {
             it("returns a correct response", function (done) {
                 dynamicsWebApiTest.upsert(mocks.data.testEntityId, "tests", mocks.data.testEntity)
                     .then(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -384,8 +370,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntityId);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -417,8 +402,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.updatedEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -450,8 +434,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -486,8 +469,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.updatedEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -498,8 +480,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.updatedEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -534,8 +515,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -546,8 +526,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -575,11 +554,9 @@ describe("promises -", function () {
             it("returns a correct response", function (done) {
                 dynamicsWebApiTest.deleteRecord(mocks.data.testEntityId, "tests")
                     .then(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -604,11 +581,9 @@ describe("promises -", function () {
             it("returns a correct response", function (done) {
                 dynamicsWebApiTest.deleteRecord(mocks.data.testEntityId, "tests", "fullname")
                     .then(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -639,8 +614,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -668,8 +642,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -699,8 +672,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -710,8 +682,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -743,8 +714,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -754,8 +724,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -765,8 +734,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -794,8 +762,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.referenceResponseConverted);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -823,8 +790,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -854,8 +820,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -865,8 +830,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -898,8 +862,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -909,8 +872,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -920,8 +882,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -952,8 +913,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(parseInt(mocks.responses.countBasic.responseText));
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -981,8 +941,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.multipleWithCount["@odata.count"]);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -1013,8 +972,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.multipleWithCount["@odata.count"]);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -1045,8 +1003,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.fetchXmls.fetchXmlResultPage1Cookie);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -1075,8 +1032,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.fetchXmls.fetchXmlResultPage2Cookie);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -1104,8 +1060,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.fetchXmls.fetchXmlResultPage1);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -1138,8 +1093,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.fetchXmls.fetchXmlResultPage2Cookie);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -1175,8 +1129,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal({ value: checkResponse });
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -1206,11 +1159,9 @@ describe("promises -", function () {
             it("returns a correct response", function (done) {
                 dynamicsWebApiTest.associate("tests", mocks.data.testEntityId, "tests_records", "records", mocks.data.testEntityId2)
                     .then(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
 
             });
@@ -1248,8 +1199,7 @@ describe("promises -", function () {
                         expect(colName).to.be.eq('tests');
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -1280,11 +1230,9 @@ describe("promises -", function () {
             it("returns a correct response", function (done) {
                 dynamicsWebApiTest.associate("tests", mocks.data.testEntityId, "tests_records", "records", mocks.data.testEntityId2, mocks.data.testEntityId3)
                     .then(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -1312,11 +1260,9 @@ describe("promises -", function () {
             it("returns a correct response", function (done) {
                 dynamicsWebApiTest.disassociate("tests", mocks.data.testEntityId, "tests_records", mocks.data.testEntityId2)
                     .then(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -1345,11 +1291,9 @@ describe("promises -", function () {
             it("returns a correct response", function (done) {
                 dynamicsWebApiTest.disassociate("tests", mocks.data.testEntityId, "tests_records", mocks.data.testEntityId2, mocks.data.testEntityId3)
                     .then(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -1379,11 +1323,9 @@ describe("promises -", function () {
             it("returns a correct response", function (done) {
                 dynamicsWebApiTest.associateSingleValued("tests", mocks.data.testEntityId, "tests_records", "records", mocks.data.testEntityId2)
                     .then(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -1414,11 +1356,9 @@ describe("promises -", function () {
             it("returns a correct response", function (done) {
                 dynamicsWebApiTest.associateSingleValued("tests", mocks.data.testEntityId, "tests_records", "records", mocks.data.testEntityId2, mocks.data.testEntityId3)
                     .then(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -1446,11 +1386,9 @@ describe("promises -", function () {
             it("returns a correct response", function (done) {
                 dynamicsWebApiTest.disassociateSingleValued("tests", mocks.data.testEntityId, "tests_records")
                     .then(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -1475,11 +1413,9 @@ describe("promises -", function () {
             it("returns a correct response", function (done) {
                 dynamicsWebApiTest.disassociateSingleValued("tests", mocks.data.testEntityId, "tests_records", mocks.data.testEntityId3)
                     .then(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -1512,8 +1448,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -1523,8 +1458,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -1558,8 +1492,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -1569,8 +1502,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -1601,19 +1533,16 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
             it("(with parameters) returns a correct response", function (done) {
                 dynamicsWebApiTest.executeBoundFunction(mocks.data.testEntityId, "tests", "FUN", { param1: "value1", param2: 2 })
                     .then(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -1647,8 +1576,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -1658,8 +1586,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -1687,11 +1614,9 @@ describe("promises -", function () {
             it("returns a correct response", function (done) {
                 dynamicsWebApiTest.executeUnboundAction("FUN", mocks.responses.actionRequest)
                     .then(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -1720,11 +1645,9 @@ describe("promises -", function () {
             it("returns a correct response", function (done) {
                 dynamicsWebApiTest.executeUnboundAction("FUN", mocks.responses.actionRequest, mocks.data.testEntityId2)
                     .then(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -1752,8 +1675,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -1785,8 +1707,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -1826,8 +1747,7 @@ describe("promises -", function () {
                         expect(object).to.be.true;
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -1869,8 +1789,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.updatedEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -1888,8 +1807,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.updatedEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -1930,8 +1848,7 @@ describe("promises -", function () {
                         expect(object).to.equal(true);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -1972,8 +1889,7 @@ describe("promises -", function () {
                         expect(object).to.equal(false);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -2011,8 +1927,7 @@ describe("promises -", function () {
                 dynamicsWebApiTest
                     .updateRequest(dwaRequest)
                     .then(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     }).catch(function (object) {
                         expect(object.status).to.equal(404);
                         done();
@@ -2053,11 +1968,9 @@ describe("promises -", function () {
             it("(update) returns a correct response", function (done) {
                 dynamicsWebApiTest.upsertRequest(dwaRequest)
                     .then(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -2067,8 +1980,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntityId);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -2111,8 +2023,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.updatedEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -2130,8 +2041,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -2178,11 +2088,9 @@ describe("promises -", function () {
             it("(create prevented) returns a correct response", function (done) {
                 dynamicsWebApiTest.upsertRequest(dwaRequest)
                     .then(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -2192,16 +2100,14 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
             it("(request failed) catches the error", function (done) {
                 dynamicsWebApiTest.upsertRequest(dwaRequest)
                     .then(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     }).catch(function (object) {
                         expect(object.status).to.equal(mocks.responses.upsertPreventUpdateResponse.status);
                         done();
@@ -2251,11 +2157,9 @@ describe("promises -", function () {
             it("(update prevented) returns a correct response", function (done) {
                 dynamicsWebApiTest.upsertRequest(dwaRequest)
                     .then(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -2265,16 +2169,14 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.updatedEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
             it("(request failed) catches the error", function (done) {
                 dynamicsWebApiTest.upsertRequest(dwaRequest)
                     .then(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     }).catch(function (object) {
                         expect(object.status).to.equal(mocks.responses.upsertPreventCreateResponse.status);
                         done();
@@ -2321,8 +2223,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -2363,8 +2264,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -2437,8 +2337,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.responses.multiple());
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -2468,8 +2367,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.responses.multiple());
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -2479,8 +2377,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.responses.multiple());
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -2510,8 +2407,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.responses.multiple());
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -2521,8 +2417,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.responses.multiple());
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -2550,8 +2445,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.responses.multipleWithLink());
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -2580,8 +2474,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.responses.multiple());
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -2620,8 +2513,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(checkResponse);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -2666,8 +2558,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.responses.multiple());
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -2684,8 +2575,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.responses.multipleWithCount());
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -2723,8 +2613,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.responses.multipleWithLink());
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -2763,8 +2652,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.responses.multiple());
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -2806,8 +2694,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(checkResponse);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -2857,8 +2744,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(checkResponse);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -2900,8 +2786,7 @@ describe("promises -", function () {
                         expect(object).to.equal(true);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -2947,8 +2832,7 @@ describe("promises -", function () {
                         expect(object).to.be.true;
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -2965,8 +2849,7 @@ describe("promises -", function () {
                         expect(object).to.be.false;
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -2980,8 +2863,7 @@ describe("promises -", function () {
 
                 dynamicsWebApiTest.deleteRequest(dwaRequest)
                     .then(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     }).catch(function (object) {
                         expect(object.status).to.equal(404);
                         done();
@@ -3014,9 +2896,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntityId);
                         done();
                     }).catch(function (object) {
-                        console.error(object.message);
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -3051,8 +2931,7 @@ describe("promises -", function () {
                         expect(object).to.be.true;
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -3085,8 +2964,7 @@ describe("promises -", function () {
                         expect(object).to.be.true;
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -3117,8 +2995,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -3146,8 +3023,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -3177,8 +3053,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -3188,8 +3063,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -3220,8 +3094,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.entityDefinitionList);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -3251,9 +3124,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntityId2);
                         done();
                     }).catch(function (object) {
-                        console.error(object.message);
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -3288,8 +3159,7 @@ describe("promises -", function () {
                         expect(object).to.be.true;
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -3322,8 +3192,7 @@ describe("promises -", function () {
                         expect(object).to.be.true;
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -3355,8 +3224,7 @@ describe("promises -", function () {
                         expect(object).to.be.true;
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -3389,8 +3257,7 @@ describe("promises -", function () {
                         expect(object).to.be.true;
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -3421,8 +3288,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.entityDefinitionList);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -3450,8 +3316,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.entityDefinitionList);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -3482,8 +3347,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -3511,8 +3375,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -3540,8 +3403,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -3576,8 +3438,7 @@ describe("promises -", function () {
                         expect(object).to.be.true;
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -3610,8 +3471,7 @@ describe("promises -", function () {
                         expect(object).to.be.true;
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -3643,8 +3503,7 @@ describe("promises -", function () {
                         expect(object).to.be.true;
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -3677,8 +3536,7 @@ describe("promises -", function () {
                         expect(object).to.be.true;
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -3709,8 +3567,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.entityDefinitionList);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -3738,8 +3595,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.entityDefinitionList);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -3770,8 +3626,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -3799,8 +3654,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -3828,8 +3682,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -3859,9 +3712,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntityId);
                         done();
                     }).catch(function (object) {
-                        console.error(object.message);
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -3896,8 +3747,7 @@ describe("promises -", function () {
                         expect(object).to.be.true;
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -3929,8 +3779,7 @@ describe("promises -", function () {
                         expect(object).to.be.true;
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -3963,8 +3812,7 @@ describe("promises -", function () {
                         expect(object).to.be.true;
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -3995,8 +3843,7 @@ describe("promises -", function () {
                         expect(object).to.be.true;
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -4027,8 +3874,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -4058,8 +3904,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -4069,8 +3914,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -4100,8 +3944,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -4111,8 +3954,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -4143,8 +3985,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.entityDefinitionList);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -4174,8 +4015,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.entityDefinitionList);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -4185,8 +4025,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.entityDefinitionList);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -4216,9 +4055,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntityId);
                         done();
                     }).catch(function (object) {
-                        console.error(object.message);
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -4253,8 +4090,7 @@ describe("promises -", function () {
                         expect(object).to.be.true;
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -4287,8 +4123,7 @@ describe("promises -", function () {
                         expect(object).to.be.true;
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -4319,8 +4154,7 @@ describe("promises -", function () {
                         expect(object).to.be.true;
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -4351,8 +4185,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -4382,8 +4215,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -4393,8 +4225,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -4425,8 +4256,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.entityDefinitionList);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -4456,8 +4286,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.entityDefinitionList);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -4467,8 +4296,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.entityDefinitionList);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -4526,8 +4354,7 @@ describe("promises -", function () {
 
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -4538,14 +4365,14 @@ describe("promises -", function () {
 
         describe("retrieve multiple / update / retrieve multiple", function () {
             var scope;
-            var rBody = mocks.data.batchRetrieveMultipleCreateRetrieveMultiple;
+            var rBody = mocks.data.batchRetrieveMultipleUpdateRetrieveMultiple;
             var rBodys = rBody.split('\n');
             var checkBody = '';
             for (var i = 0; i < rBodys.length; i++) {
                 checkBody += rBodys[i];
             }
             before(function () {
-                var response = mocks.responses.batchRetrieveMultipleCreateRetrieveMultiple;
+                var response = mocks.responses.batchRetrieveMultipleUpdateRetrieveMultiple;
                 scope = nock(mocks.webApiUrl + '$batch')
                     .filteringRequestBody(function (body) {
                         body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
@@ -4570,7 +4397,7 @@ describe("promises -", function () {
                 dynamicsWebApiTest.startBatch();
 
                 dynamicsWebApiTest.retrieveMultiple('tests');
-                dynamicsWebApiTest.update({ firstname: "Test", lastname: "Batch!" }, 'records');
+                dynamicsWebApiTest.update(mocks.data.testEntityId2, 'records', { firstname: "Test", lastname: "Batch!" });
                 dynamicsWebApiTest.retrieveMultiple('morerecords');
 
                 dynamicsWebApiTest.executeBatch()
@@ -4578,13 +4405,325 @@ describe("promises -", function () {
                         expect(object.length).to.be.eq(3);
 
                         expect(object[0]).to.deep.equal(mocks.responses.multiple());
-                        expect(object[1]).to.deep.equal(true);
+                        expect(object[1]).to.be.true;
                         expect(object[2]).to.deep.equal(mocks.responses.multiple2());
 
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
+                        done(object);
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+
+        describe("retrieve multiple / delete / retrieve multiple", function () {
+            var scope;
+            var rBody = mocks.data.batchRetrieveMultipleDeleteRetrieveMultiple;
+            var rBodys = rBody.split('\n');
+            var checkBody = '';
+            for (var i = 0; i < rBodys.length; i++) {
+                checkBody += rBodys[i];
+            }
+            before(function () {
+                var response = mocks.responses.batchRetrieveMultipleDeleteRetrieveMultiple;
+                scope = nock(mocks.webApiUrl + '$batch')
+                    .filteringRequestBody(function (body) {
+                        body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
+                        body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'changeset_XXX');
+                        var bodys = body.split('\n');
+
+                        var resultBody = '';
+                        for (var i = 0; i < bodys.length; i++) {
+                            resultBody += bodys[i];
+                        }
+                        return resultBody;
+                    })
+                    .post("", checkBody)
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.startBatch();
+
+                dynamicsWebApiTest.retrieveMultiple('tests');
+                dynamicsWebApiTest.deleteRecord(mocks.data.testEntityId2, 'records');
+                dynamicsWebApiTest.retrieveMultiple('morerecords');
+
+                dynamicsWebApiTest.executeBatch()
+                    .then(function (object) {
+                        expect(object.length).to.be.eq(3);
+
+                        expect(object[0]).to.deep.equal(mocks.responses.multiple());
+                        expect(object[1]).to.be.undefined;
+                        expect(object[2]).to.deep.equal(mocks.responses.multiple2());
+
                         done();
+                    }).catch(function (object) {
+                        done(object);
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+
+        describe("retrieve multiple / count / retrieve multiple", function () {
+            var scope;
+            var rBody = mocks.data.batchRetrieveMultipleCountRetrieveMultiple;
+            var rBodys = rBody.split('\n');
+            var checkBody = '';
+            for (var i = 0; i < rBodys.length; i++) {
+                checkBody += rBodys[i];
+            }
+            before(function () {
+                var response = mocks.responses.batchRetrieveMultipleCountRetrieveMultiple;
+                scope = nock(mocks.webApiUrl + '$batch')
+                    .filteringRequestBody(function (body) {
+                        body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
+                        body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'changeset_XXX');
+                        var bodys = body.split('\n');
+
+                        var resultBody = '';
+                        for (var i = 0; i < bodys.length; i++) {
+                            resultBody += bodys[i];
+                        }
+                        return resultBody;
+                    })
+                    .post("", checkBody)
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.startBatch();
+
+                dynamicsWebApiTest.retrieveMultiple('tests');
+                dynamicsWebApiTest.count('records');
+                dynamicsWebApiTest.retrieveMultiple('morerecords');
+
+                dynamicsWebApiTest.executeBatch()
+                    .then(function (object) {
+                        expect(object.length).to.be.eq(3);
+
+                        expect(object[0]).to.deep.equal(mocks.responses.multiple());
+                        expect(object[1]).to.be.eq(5);
+                        expect(object[2]).to.deep.equal(mocks.responses.multiple2());
+
+                        done();
+                    }).catch(function (object) {
+                        done(object);
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+
+        describe("retrieve multiple / retrieve multiple (count) / retrieve multiple", function () {
+            var scope;
+            var rBody = mocks.data.batchRetrieveMultipleCountFilteredRetrieveMultiple;
+            var rBodys = rBody.split('\n');
+            var checkBody = '';
+            for (var i = 0; i < rBodys.length; i++) {
+                checkBody += rBodys[i];
+            }
+            before(function () {
+                var response = mocks.responses.batchRetrieveMultipleCountFilteredRetrieveMultiple;
+                scope = nock(mocks.webApiUrl + '$batch')
+                    .filteringRequestBody(function (body) {
+                        body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
+                        body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'changeset_XXX');
+                        var bodys = body.split('\n');
+
+                        var resultBody = '';
+                        for (var i = 0; i < bodys.length; i++) {
+                            resultBody += bodys[i];
+                        }
+                        return resultBody;
+                    })
+                    .post("", checkBody)
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.startBatch();
+
+                dynamicsWebApiTest.retrieveMultiple('tests');
+                dynamicsWebApiTest.retrieveMultipleRequest({ collection: 'records', count: true, filter: 'statecode eq 0' });
+                dynamicsWebApiTest.retrieveMultiple('morerecords');
+
+                dynamicsWebApiTest.executeBatch()
+                    .then(function (object) {
+                        expect(object.length).to.be.eq(3);
+
+                        expect(object[0]).to.deep.equal(mocks.responses.multiple());
+                        expect(object[1]).to.deep.equal(mocks.responses.multipleWithCount());
+                        expect(object[2]).to.deep.equal(mocks.responses.multiple2());
+
+                        done();
+                    }).catch(function (object) {
+                        done(object);
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+
+        describe("retrieve multiple / count (filtered) / retrieve multiple", function () {
+            var scope;
+            var rBody = mocks.data.batchRetrieveMultipleCountFilteredRetrieveMultiple;
+            var rBodys = rBody.split('\n');
+            var checkBody = '';
+            for (var i = 0; i < rBodys.length; i++) {
+                checkBody += rBodys[i];
+            }
+            before(function () {
+                var response = mocks.responses.batchRetrieveMultipleCountFilteredRetrieveMultiple;
+                scope = nock(mocks.webApiUrl + '$batch')
+                    .filteringRequestBody(function (body) {
+                        body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
+                        body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'changeset_XXX');
+                        var bodys = body.split('\n');
+
+                        var resultBody = '';
+                        for (var i = 0; i < bodys.length; i++) {
+                            resultBody += bodys[i];
+                        }
+                        return resultBody;
+                    })
+                    .post("", checkBody)
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.startBatch();
+
+                dynamicsWebApiTest.retrieveMultiple('tests');
+                dynamicsWebApiTest.count('records', 'statecode eq 0');
+                dynamicsWebApiTest.retrieveMultiple('morerecords');
+
+                dynamicsWebApiTest.executeBatch()
+                    .then(function (object) {
+                        expect(object.length).to.be.eq(3);
+
+                        expect(object[0]).to.deep.equal(mocks.responses.multiple());
+                        expect(object[1]).to.deep.equal(2);
+                        expect(object[2]).to.deep.equal(mocks.responses.multiple2());
+
+                        done();
+                    }).catch(function (object) {
+                        done(object);
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+
+        describe("throws error", function () {
+
+            it("countAll", function () {
+                dynamicsWebApiTest.startBatch();
+
+                expect(function () {
+                    dynamicsWebApiTest.countAll('records');
+                }).to.throw("DynamicsWebApi.countAll cannot be used in a BATCH request.");
+            });
+
+            it("retrieveAll", function () {
+                dynamicsWebApiTest.startBatch();
+
+                expect(function () {
+                    dynamicsWebApiTest.retrieveAll('records');
+                }).to.throw("DynamicsWebApi.retrieveAll cannot be used in a BATCH request.");
+            });
+
+            it("retrieveAllRequest", function () {
+                dynamicsWebApiTest.startBatch();
+
+                expect(function () {
+                    dynamicsWebApiTest.retrieveAllRequest({ collection: 'records' });
+                }).to.throw("DynamicsWebApi.retrieveAllRequest cannot be used in a BATCH request.");
+            });
+
+            it("fetchAll", function () {
+                dynamicsWebApiTest.startBatch();
+
+                expect(function () {
+                    dynamicsWebApiTest.fetchAll('collection', 'any');
+                }).to.throw("DynamicsWebApi.executeFetchXmlAll cannot be used in a BATCH request.");
+            });
+        });
+
+        describe("update / delete", function () {
+            var scope;
+            var rBody = mocks.data.batchUpdateDelete;
+            var rBodys = rBody.split('\n');
+            var checkBody = '';
+            for (var i = 0; i < rBodys.length; i++) {
+                checkBody += rBodys[i];
+            }
+            before(function () {
+                var response = mocks.responses.batchUpdateDelete;
+                scope = nock(mocks.webApiUrl + '$batch')
+                    .filteringRequestBody(function (body) {
+                        body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
+                        body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'changeset_XXX');
+                        var bodys = body.split('\n');
+
+                        var resultBody = '';
+                        for (var i = 0; i < bodys.length; i++) {
+                            resultBody += bodys[i];
+                        }
+                        return resultBody;
+                    })
+                    .post("", checkBody)
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.startBatch();
+
+                dynamicsWebApiTest.update(mocks.data.testEntityId2, 'records', { firstname: "Test", lastname: "Batch!" });
+                dynamicsWebApiTest.deleteRecord(mocks.data.testEntityId2, 'records', 'firstname');
+
+                dynamicsWebApiTest.executeBatch()
+                    .then(function (object) {
+                        expect(object.length).to.be.eq(2);
+
+                        expect(object[0]).to.be.true;
+                        expect(object[1]).to.be.undefined;
+
+                        done();
+                    }).catch(function (object) {
+                        done(object);
                     });
             });
 
@@ -4616,8 +4755,7 @@ describe("promises -", function () {
                         expect(object).to.equal(mocks.data.testEntityId);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -4650,8 +4788,7 @@ describe("promises -", function () {
                         expect(object).to.equal(mocks.data.testEntityId);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -4692,8 +4829,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.responses.multiple());
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -4734,8 +4870,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.responses.multiple());
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -4793,8 +4928,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.responses.multiple());
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -4830,8 +4964,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.responses.multiple());
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -4868,8 +5001,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -4908,8 +5040,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.responses.multiple());
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -4943,8 +5074,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -4994,8 +5124,7 @@ describe("promises -", function () {
                         expect(object).to.be.true;
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -5032,8 +5161,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.responses.multiple());
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -5072,8 +5200,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.responses.multipleWithLink());
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -5111,8 +5238,7 @@ describe("promises -", function () {
                         expect(object).to.equal(mocks.data.testEntityId);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -5147,8 +5273,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.responses.multiple());
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -5183,8 +5308,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.responses.multiple());
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -5223,8 +5347,7 @@ describe("promises -", function () {
                         expect(object).to.equal(mocks.data.testEntityId);
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 
@@ -5256,8 +5379,7 @@ describe("promises -", function () {
                         expect(object).to.deep.equal(mocks.responses.multiple());
                         done();
                     }).catch(function (object) {
-                        expect(object).to.be.undefined;
-                        done();
+                        done(object);
                     });
             });
 

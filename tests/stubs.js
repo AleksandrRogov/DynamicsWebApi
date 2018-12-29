@@ -173,6 +173,139 @@ var dataStubs = {
         'Accept: application/json\n' +
         '\n' +
         '--dwa_batch_XXX--',
+    batchRetrieveMultipleUpdateRetrieveMultiple:
+        '--dwa_batch_XXX\n' +
+        'Content-Type: application/http\n' +
+        'Content-Transfer-Encoding: binary\n' +
+        '\n' +
+        'GET ' + webApiUrl + 'tests HTTP/1.1\n' +
+        'Accept: application/json\n' +
+        '\n' +
+        '--dwa_batch_XXX\n' +
+        'Content-Type: multipart/mixed;boundary=changeset_XXX\n' +
+        '\n' +
+        '--changeset_XXX\n' +
+        'Content-Type: application/http\n' +
+        'Content-Transfer-Encoding: binary\n' +
+        'Content-ID: 1\n' +
+        '\n' +
+        'PATCH ' + webApiUrl + 'records(00000000-0000-0000-0000-000000000002) HTTP/1.1\n' +
+        'Content-Type: application/json\n' +
+        'If-Match: *\n' +
+        '\n' +
+        '{"firstname":"Test","lastname":"Batch!"}\n' +
+        '\n' +
+        '--changeset_XXX--\n' +
+        '\n' +
+        '--dwa_batch_XXX\n' +
+        'Content-Type: application/http\n' +
+        'Content-Transfer-Encoding: binary\n' +
+        '\n' +
+        'GET ' + webApiUrl + 'morerecords HTTP/1.1\n' +
+        'Accept: application/json\n' +
+        '\n' +
+        '--dwa_batch_XXX--',
+    batchUpdateDelete:
+        '--dwa_batch_XXX\n' +
+        'Content-Type: multipart/mixed;boundary=changeset_XXX\n' +
+        '\n' +
+        '--changeset_XXX\n' +
+        'Content-Type: application/http\n' +
+        'Content-Transfer-Encoding: binary\n' +
+        'Content-ID: 1\n' +
+        '\n' +
+        'PATCH ' + webApiUrl + 'records(00000000-0000-0000-0000-000000000002) HTTP/1.1\n' +
+        'Content-Type: application/json\n' +
+        'If-Match: *\n' +
+        '\n' +
+        '{"firstname":"Test","lastname":"Batch!"}\n' +
+        '\n' +
+        '--changeset_XXX\n' +
+        'Content-Type: application/http\n' +
+        'Content-Transfer-Encoding: binary\n' +
+        'Content-ID: 2\n' +
+        '\n' +
+        'DELETE ' + webApiUrl + 'records(00000000-0000-0000-0000-000000000002)/firstname HTTP/1.1\n' +
+        'Content-Type: application/json\n' +
+        '\n' +
+        '--changeset_XXX--\n' +
+        '\n' +
+        '--dwa_batch_XXX--',
+    batchRetrieveMultipleDeleteRetrieveMultiple:
+        '--dwa_batch_XXX\n' +
+        'Content-Type: application/http\n' +
+        'Content-Transfer-Encoding: binary\n' +
+        '\n' +
+        'GET ' + webApiUrl + 'tests HTTP/1.1\n' +
+        'Accept: application/json\n' +
+        '\n' +
+        '--dwa_batch_XXX\n' +
+        'Content-Type: multipart/mixed;boundary=changeset_XXX\n' +
+        '\n' +
+        '--changeset_XXX\n' +
+        'Content-Type: application/http\n' +
+        'Content-Transfer-Encoding: binary\n' +
+        'Content-ID: 1\n' +
+        '\n' +
+        'DELETE ' + webApiUrl + 'records(00000000-0000-0000-0000-000000000002) HTTP/1.1\n' +
+        'Content-Type: application/json\n' +
+        '\n' +
+        '--changeset_XXX--\n' +
+        '\n' +
+        '--dwa_batch_XXX\n' +
+        'Content-Type: application/http\n' +
+        'Content-Transfer-Encoding: binary\n' +
+        '\n' +
+        'GET ' + webApiUrl + 'morerecords HTTP/1.1\n' +
+        'Accept: application/json\n' +
+        '\n' +
+        '--dwa_batch_XXX--',
+    batchRetrieveMultipleCountRetrieveMultiple:
+        '--dwa_batch_XXX\n' +
+        'Content-Type: application/http\n' +
+        'Content-Transfer-Encoding: binary\n' +
+        '\n' +
+        'GET ' + webApiUrl + 'tests HTTP/1.1\n' +
+        'Accept: application/json\n' +
+        '\n' +
+        '--dwa_batch_XXX\n' +
+        'Content-Type: application/http\n' +
+        'Content-Transfer-Encoding: binary\n' +
+        '\n' +
+        'GET ' + webApiUrl + 'records/$count HTTP/1.1\n' +
+        'Accept: application/json\n' +
+        '\n' +
+        '--dwa_batch_XXX\n' +
+        'Content-Type: application/http\n' +
+        'Content-Transfer-Encoding: binary\n' +
+        '\n' +
+        'GET ' + webApiUrl + 'morerecords HTTP/1.1\n' +
+        'Accept: application/json\n' +
+        '\n' +
+        '--dwa_batch_XXX--',
+    batchRetrieveMultipleCountFilteredRetrieveMultiple:
+        '--dwa_batch_XXX\n' +
+        'Content-Type: application/http\n' +
+        'Content-Transfer-Encoding: binary\n' +
+        '\n' +
+        'GET ' + webApiUrl + 'tests HTTP/1.1\n' +
+        'Accept: application/json\n' +
+        '\n' +
+        '--dwa_batch_XXX\n' +
+        'Content-Type: application/http\n' +
+        'Content-Transfer-Encoding: binary\n' +
+        '\n' +
+        'GET ' + webApiUrl + 'records?$filter=statecode%20eq%200&$count=true HTTP/1.1\n' +
+        'Accept: application/json\n' +
+        '\n' +
+        '--dwa_batch_XXX\n' +
+        'Content-Type: application/http\n' +
+        'Content-Transfer-Encoding: binary\n' +
+        '\n' +
+        'GET ' + webApiUrl + 'morerecords HTTP/1.1\n' +
+        'Accept: application/json\n' +
+        '\n' +
+        '--dwa_batch_XXX--',
     fetchXmls: {
         cookiePage1: "%253Ccookie%2520pagenumber%253D%25222%2522%2520pagingcookie%253D%2522%253Ccookie%2520page%253D%25221%2522%253E%253Caccountid%2520last%253D%2522%257BEF72AE29-B3DE-E611-8102-5065F38A7BF1%257D%2522%2520first%253D%2522%257B475B158C-541C-E511-80D3-3863BB347BA8%257D%2522%2520/%253E%253C/cookie%253E%2522%2520istracking%253D%2522False%2522%2520/%253E",
         cookiePage2: "%253Ccookie%2520pagenumber%253D%25222%2522%2520pagingcookie%253D%2522%253Ccookie%2520page%253D%25222%2522%253E%253Caccountid%2520last%253D%2522%257BF972AE29-B3DE-E611-8102-5065F38A7BF1%257D%2522%2520first%253D%2522%257BF172AE29-B3DE-E611-8102-5065F38A7BF1%257D%2522%2520/%253E%253C/cookie%253E%2522%2520istracking%253D%2522False%2522%2520/%253E",
@@ -436,6 +569,135 @@ var responseStubs = {
             '\r\n' +
             '\r\n' +
             '--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd--\r\n' +
+            '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae\r\n' +
+            'Content-Type: application/http\r\n' +
+            'Content-Transfer-Encoding: binary\r\n' +
+
+            'HTTP/1.1 200 OK\r\n' +
+            'Content-Type: application/json; odata.metadata=minimal\r\n' +
+            'OData-Version: 4.0\r\n' +
+
+            JSON.stringify(dataStubs.multiple2) + '\r\n' +
+            '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae--'
+    },
+    batchUpdateDelete: {
+        status: 200,
+        responseText:
+            '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae\r\n' +
+            'Content-Type: multipart/mixed; boundary=changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n' +
+            '\r\n' +
+            '--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n' +
+            'Content-Type: application/http\r\n' +
+            'Content-Transfer-Encoding: binary\r\n' +
+            'Content-ID: 1' +
+
+            'HTTP/1.1 204 No Content\r\n' +
+            'OData-Version: 4.0\r\n' +
+            'Location: https://url.com/api/data/v8.2/tests(' + dataStubs.testEntityId + ')\r\n' +
+            'OData-EntityId: https://url.com/api/data/v8.2/tests(' + dataStubs.testEntityId + ')\r\n' +
+            '\r\n' +
+            '\r\n' +
+            '--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n' +
+            'Content-Type: application/http\r\n' +
+            'Content-Transfer-Encoding: binary\r\n' +
+            'Content-ID: 2' +
+
+            'HTTP/1.1 204 No Content\r\n' +
+            'OData-Version: 4.0\r\n' +
+            '\r\n' +
+            '\r\n' +
+            '--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd--\r\n' +
+            '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae--'
+    },
+    batchRetrieveMultipleDeleteRetrieveMultiple: {
+        status: 200,
+        responseText:
+            '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae\r\n' +
+            'Content-Type: application/http\r\n' +
+            'Content-Transfer-Encoding: binary\r\n' +
+
+            'HTTP/1.1 200 OK\r\n' +
+            'Content-Type: application/json; odata.metadata=minimal\r\n' +
+            'OData-Version: 4.0\r\n' +
+
+            JSON.stringify(dataStubs.multiple) + '\r\n' +
+            '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae\r\n' +
+            'Content-Type: multipart/mixed; boundary=changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n' +
+            '\r\n' +
+            '--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n' +
+            'Content-Type: application/http\r\n' +
+            'Content-Transfer-Encoding: binary\r\n' +
+            'Content-ID: 1' +
+
+            'HTTP/1.1 204 No Content\r\n' +
+            'OData-Version: 4.0\r\n' +
+            '\r\n' +
+            '\r\n' +
+            '--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd--\r\n' +
+            '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae\r\n' +
+            'Content-Type: application/http\r\n' +
+            'Content-Transfer-Encoding: binary\r\n' +
+
+            'HTTP/1.1 200 OK\r\n' +
+            'Content-Type: application/json; odata.metadata=minimal\r\n' +
+            'OData-Version: 4.0\r\n' +
+
+            JSON.stringify(dataStubs.multiple2) + '\r\n' +
+            '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae--'
+    },
+    batchRetrieveMultipleCountRetrieveMultiple: {
+        status: 200,
+        responseText:
+            '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae\r\n' +
+            'Content-Type: application/http\r\n' +
+            'Content-Transfer-Encoding: binary\r\n' +
+
+            'HTTP/1.1 200 OK\r\n' +
+            'Content-Type: application/json; odata.metadata=minimal\r\n' +
+            'OData-Version: 4.0\r\n' +
+
+            JSON.stringify(dataStubs.multiple) + '\r\n' +
+            '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae\r\n' +
+            'Content-Type: application/http\r\n' +
+            'Content-Transfer-Encoding: binary\r\n' +
+            '\r\n' +
+            'HTTP/1.1 200 OK\r\n' + 
+            'Content-Type: text/plain\r\n' +
+            'OData-Version: 4.0\r\n' +
+            '\r\n' +
+            '5\r\n' +
+            '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae\r\n' +
+            'Content-Type: application/http\r\n' +
+            'Content-Transfer-Encoding: binary\r\n' +
+
+            'HTTP/1.1 200 OK\r\n' +
+            'Content-Type: application/json; odata.metadata=minimal\r\n' +
+            'OData-Version: 4.0\r\n' +
+
+            JSON.stringify(dataStubs.multiple2) + '\r\n' +
+            '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae--'
+    },
+    batchRetrieveMultipleCountFilteredRetrieveMultiple: {
+        status: 200,
+        responseText:
+            '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae\r\n' +
+            'Content-Type: application/http\r\n' +
+            'Content-Transfer-Encoding: binary\r\n' +
+
+            'HTTP/1.1 200 OK\r\n' +
+            'Content-Type: application/json; odata.metadata=minimal\r\n' +
+            'OData-Version: 4.0\r\n' +
+
+            JSON.stringify(dataStubs.multiple) + '\r\n' +
+            '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae\r\n' +
+            'Content-Type: application/http\r\n' +
+            'Content-Transfer-Encoding: binary\r\n' +
+            '\r\n' +
+            'HTTP/1.1 200 OK\r\n' +
+            'Content-Type: application/json; odata.metadata=minimal\r\n' +
+            'OData-Version: 4.0\r\n' +
+            '\r\n' +
+            JSON.stringify(dataStubs.multipleWithCount) + '\r\n' +
             '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae\r\n' +
             'Content-Type: application/http\r\n' +
             'Content-Transfer-Encoding: binary\r\n' +
