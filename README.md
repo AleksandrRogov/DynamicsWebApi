@@ -10,7 +10,7 @@ Please check [DynamicsWebApi Wiki](../../wiki/) where you will find documentatio
 
 Libraries for browsers can be found in [dist](/dist/) folder.
 
-If you find this library useful or it saved your time, please feel free to donate to [Paypal](https://paypal.me/alexrogov).
+If you find this library useful or it saved your time, please feel free to donate [![PayPalMe](/extras/paypal.png?raw=true)](https://paypal.me/alexrogov).
 
 Any suggestions and contributions are welcome!
 
@@ -46,6 +46,7 @@ please go to `node_modules\dynamics-web-api` of your application and remove `.gi
     * [Fetch All records](#fetch-all-records)
   * [Execute Web API functions](#execute-web-api-functions)
   * [Execute Web API actions](#execute-web-api-actions)
+  * [Execute Batch Operations](#execute-batch-operations)
   * [Working with Metadata Definitions](#working-with-metadata-definitions)
     * [Create Entity](#create-entity)
     * [Retrieve Entity](#retrieve-entity)
@@ -66,7 +67,6 @@ please go to `node_modules\dynamics-web-api` of your application and remove `.gi
 	* [Delete Global Option Set](#delete-global-option-set)
 	* [Retrieve Global Option Set](#retrieve-global-option-set)
 	* [Retrieve Multiple Global Option Sets](#retrieve-multiple-global-option-sets)
-  * [Execute Batch Operations](#execute-batch-operations)
 * [Formatted Values and Lookup Properties](#formatted-values-and-lookup-properties)
 * [Using Alternate Keys](#using-alternate-keys)
 * [Making requests using Entity Logical Names](#making-requests-using-entity-logical-names)
@@ -942,6 +942,103 @@ dynamicsWebApi.executeUnboundAction("WinOpportunity", actionRequest).then(functi
 });
 ```
 
+## Execute Batch Operations
+
+`version 1.5.0+`
+
+Batch requests bundle multiple operations into a single one and have the following advantages:
+
+* Reduces a number of requests sent to the Web API server. `Each user is allowed up to 60,000 API requests, per organization instance, within five minute sliding interval.` [More Info](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/api-limits)
+* Provides a way to run multiple operations in a single transaction. If any operation that changes data (within a single changeset) fails all completed ones will be rolled back.
+* All operations within a batch request run consequently (FIFO).
+
+DynamicsWebApi provides a straightforward way to execute Batch operations which may not always simple to compose. 
+The following example bundles 2 retrieve multiple operations and an update:
+
+```js
+
+//when you want to start a batch operation call the following function:
+//it is important to call it, otherwise all operations below will be executed right away.
+dynamicsWebApi.startBatch();
+
+//call necessary operations just like you would normally do.
+//these calls will be converted into a single batch request
+dynamicsWebApi.retrieveMultiple('accounts');
+dynamicsWebApi.update('00000000-0000-0000-0000-000000000002', 'contacts', { firstname: "Test", lastname: "Batch!" });
+dynamicsWebApi.retrieveMultiple('contacts');
+
+//execute a batch request:
+dynamicsWebApi.executeBatch()
+    .then(function (responses) {
+        //'responses' is an array of responses of each individual request
+        //they have the same sequence as the calls between startBatch() and executeBatch()
+        //in this case responses.length is 3
+
+        //dynamicsWebApi.retrieveMultiple response:
+        var accounts = responses[0];
+        //dynamicsWebApi.update response
+        var isUpdated = responses[1]; //should be 'true'
+        //dynamicsWebApi.retrieveMultiple response:
+        var contacts = responses[2]; //will contain an updated contact
+
+    }).catch(function (error) {
+        //catch error here
+    });
+
+```
+
+The next example shows how to run multiple operations in a single transaction which means if at least one operation fails all completed ones will be rolled back which ensures a data consistency.
+
+```js
+
+//for example, a user did a checkout and we need to create two orders
+
+var order1 = {
+    name: '1 year membership',
+    'customerid_contact@odata.bind': 'contacts(00000000-0000-0000-0000-000000000001)'
+};
+
+var order2 = {
+    name: 'book',
+    'customerid_contact@odata.bind': 'contacts(00000000-0000-0000-0000-000000000001)'
+};
+
+dynamicsWebApi.startBatch();
+
+dynamicsWebApi.create(order1, 'salesorders');
+dynamicsWebApi.create(order2, 'salesorders');
+
+dynamicsWebApi.executeBatch().then(function (responses) {
+    var salesorderId1 = responses[0];
+    var salesorderId2 = responses[1];
+}).catch(function (error) {
+    //catch error here
+    //all completed operations will be rolled back
+});
+
+```
+
+**Important!** Developers who use DynamicsWebApi with callbacks do not need to pass `successCallback` and `errorCallback` in an individual operation when `startBatch()` is called, 
+just pass `null` if you need to add additional parameters in the request, 
+for example: `dynamicsWebApi.deleteRecord('00000000-0000-0000-0000-000000000001', 'contacts', null, null, 'firstname')`.
+
+#### Limitations
+
+Currently, there are some limitations in DynamicsWebApi Batch Operations:
+
+* `Content-ID` header cannot be used to reference the Uri of any entity created in a single operation. **This is an upcoming feature**.
+* Operations that use pagination to recursively retrieve all records cannot be used in a 'batch mode'. These include: `retrieveAll`, `retrieveAllRequest`, `countAll`, `fetchAll`, `executeFetchXmlAll`.
+You will get an error saying that the operation is incompatible with a 'batch mode'.
+* The following limitation is for external applications (working outside D365 CE forms). `useEntityNames` may not work in a 'batch mode' if it is set to `true`. 
+To make sure that it works, please execute any operation before calling `dynamicsWebApi.startBatch()` so that it caches all entity names, for example: `dynamicsWebApi.count('account')`.
+
+There are also out of the box Web API limitations for batch operations:
+
+* Batch requests can contain up to 100 individual requests and cannot contain other batch requests.
+* The `odata.continue-on-error` preference is not supported by the Web API. Any error that occurs in the batch will stop the processing of the remainder of the batch.
+
+You can find an official documentation that covers Web API batch requests here: [Execute batch operations using the Web API](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/webapi/execute-batch-operations-using-web-api).
+
 ## Working with Metadata Definitions
 
 `Version 1.4.3+`
@@ -1599,66 +1696,6 @@ dynamicsWebApi.retrieveGlobalOptionSets('Microsoft.Dynamics.CRM.OptionSetMetadat
     //catch error here
 });
 ```
-
-## Execute Batch Operations
-
-`version 1.5.0+`
-
-Batch requests bundle multiple operations into a single one and have the following advantages:
-
-* Reduces a number of requests sent to the Web API server. `Each user is allowed up to 60,000 API requests, per organization instance, within five minute sliding interval.` [More Info](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/api-limits)
-* Provides a way to run multiple operations in a single transaction. If any operation that changes data (within a single changeset) fails all completed ones will be rolled back.
-* All operations within a batch request run consequently (FIFO).
-
-Batch requests are not simple to compose and DynamicsWebApi provides an easy way to execute such operations:
-
-```js
-
-//when you want to start a batch operation call the following function:
-//it is important to call it, otherwise all operations below will be executed right away.
-dynamicsWebApi.startBatch();
-
-//call necessary operations just like you would normally do.
-//these calls will be converted into a single batch request
-dynamicsWebApi.retrieveMultiple('accounts');
-dynamicsWebApi.update('00000000-0000-0000-0000-000000000002', 'contacts', { firstname: "Test", lastname: "Batch!" });
-dynamicsWebApi.retrieveMultiple('contacts');
-
-//execute a batch request:
-dynamicsWebApi.executeBatch()
-    .then(function (responses) {
-        //'responses' is an array of responses of each individual request
-        //they have the same sequence as the calls between startBatch() and executeBatch()
-        //in this case responses.length is 3
-
-        //dynamicsWebApi.retrieveMultiple response:
-        var accounts = responses[0];
-        //dynamicsWebApi.update response
-        var isUpdated = responses[1]; //should be 'true'
-        //dynamicsWebApi.retrieveMultiple response:
-        var contacts = responses[2]; //will contain an updated contact
-
-    }).catch(function (error) {
-	    //catch error here
-    });
-
-```
-
-**Important!** Developers who use DynamicsWebApi with callbacks do not need to pass `successCallback` and `errorCallback` in an individual operation when `startBatch()` is called, 
-just pass `null` if you need to add additional parameters in the request.
-
-Currently, there are some limitations in DynamicsWebApi Batch Operations:
-
-* `Content-ID` header cannot be used to reference the Uri of any entity created in a single operation. **This is an upcoming feature**.
-* Operations that use pagination to recursively retrieve all records cannot be used in a batch operation. These operations include: `retrieveAll`, `retrieveAllRequest`, `countAll`, `fetchAll`, `executeFetchXmlAll`. 
-You will get an error saying that the operation is incompatible in a 'batch mode'.
-
-There are also some Web API limitations for batch operations:
-
-* Batch requests can contain up to 100 individual requests and cannot contain other batch requests.
-* The odata.continue-on-error preference is not supported by the web API. Any error that occurs in the batch will stop the processing of the remainder of the batch.
-
-You can find an official documentation that covers Web API batch requests here: [Execute batch operations using the Web API](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/webapi/execute-batch-operations-using-web-api)
 
 ## Formatted Values and Lookup Properties
 
