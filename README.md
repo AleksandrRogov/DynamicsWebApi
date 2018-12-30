@@ -10,7 +10,7 @@ Please check [DynamicsWebApi Wiki](../../wiki/) where you will find documentatio
 
 Libraries for browsers can be found in [dist](/dist/) folder.
 
-If you find this library useful or it saved your time, please feel free to donate [![PayPalMe](/extras/paypal.png?raw=true)](https://paypal.me/alexrogov).
+If you find this library useful or it saved your time, please feel free to donate [![PayPal.Me](/extra/paypal.png)](https://paypal.me/alexrogov).
 
 Any suggestions and contributions are welcome!
 
@@ -1014,6 +1014,7 @@ dynamicsWebApi.executeBatch().then(function (responses) {
 }).catch(function (error) {
     //catch error here
     //all completed operations will be rolled back
+    alert('Cannot complete a checkout. Please try again later.');
 });
 
 ```
