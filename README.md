@@ -10,9 +10,7 @@ Please check [DynamicsWebApi Wiki](../../wiki/) where you will find documentatio
 
 Libraries for browsers can be found in [dist](/dist/) folder.
 
-If you find this library useful or it saved your time, please feel free to donate [![PayPal.Me](/extra/paypal.png)](https://paypal.me/alexrogov).
-
-Any suggestions and contributions are welcome!
+Any [suggestions and contributions](#contributions) are welcome!
 
 **Important!** For some reason, npm was not removing `.git` folder from a published package, 
 even though [it should have done it by default](https://docs.npmjs.com/misc/developers#keeping-files-out-of-your-package), therefore
@@ -72,6 +70,7 @@ please go to `node_modules\dynamics-web-api` of your application and remove `.gi
 * [Making requests using Entity Logical Names](#making-requests-using-entity-logical-names)
 * [JavaScript Promises](#javascript-promises)
 * [JavaScript Callbacks](#javascript-callbacks)
+* [Contributions](#contributions)
 
 ## Getting Started
 
@@ -173,7 +172,7 @@ var dynamicsWebApi = new DynamicsWebApi({ webApiVersion: '9.0' });
 
 ```js
 var dynamicsWebApi = new DynamicsWebApi({
-    webApiUrl: 'https:/myorg.api.crm.dynamics.com/api/data/v9.0/',
+    webApiUrl: 'https://myorg.api.crm.dynamics.com/api/data/v9.0/',
     onTokenRefresh: acquireToken
 });
 ```
@@ -194,7 +193,7 @@ maxPageSize | Number | Defaults the odata.maxpagesize preference. Use to set the
 onTokenRefresh | Function | A callback function that triggered when DynamicsWebApi requests a new OAuth token. (At this moment it is done before each call to Dynamics 365, as [recommended by Microsoft](https://msdn.microsoft.com/en-ca/library/gg327838.aspx#Anchor_2)).
 returnRepresentation | Boolean | Defaults Prefer header with value "return=representation". Use this property to return just created or updated entity in a single request.
 useEntityNames | Boolean | `v.1.4.0+` Indicates whether to use entity logical names instead of collection logical names during requests.
-webApiUrl | String | A complete URL string to Web API. Example of the URL: "https:/myorg.api.crm.dynamics.com/api/data/v8.2/". If it is specified then webApiVersion property will not be used even if it is not empty. 
+webApiUrl | String | A complete URL string to Web API. Example of the URL: "https://myorg.api.crm.dynamics.com/api/data/v8.2/". If it is specified then webApiVersion property will not be used even if it is not empty. 
 webApiVersion | String | Version of the Web API. Default version is "8.0".
 
 Configuration property `webApiVersion` is required only when DynamicsWebApi used inside CRM. 
@@ -1868,7 +1867,7 @@ the config option "formatted" will enable developers to retrieve all information
 - [X] Entity and Attribute Metadata helpers. `Implemented in v.1.4.3`
 - [X] Entity Relationships and Global Option Sets helpers. `Implemented in v.1.4.6`
 - [X] Batch requests.
-- [ ] Implement `Content-ID` header to reference a created entity in batch operation.
+- [ ] Implement `Content-ID` header to reference a created entity in a batch operation.
 - [ ] Intellisense for request objects.
 
 Many more features to come!
@@ -1882,3 +1881,16 @@ It is highly recommended to use one of the Promise Polyfills (Yaku, ES6 Promise 
 
 ## JavaScript Callbacks
 Please use the following library that implements Callbacks : [DynamicsWebApi with Callbacks](/scripts/dynamics-web-api-callbacks.js).
+
+## Contributions
+
+First of all, I would like to thank you for using `DynamicsWebApi` library in your Dynamics 365 CE project, the fact that my project helps someone to achieve their development goals already makes me happy. 
+
+And if you would like to contribute to the project you may do it in multiple ways:
+1. Submit an issue/bug if you have encountered one.
+2. If you know the root of the issue please feel free to submit a pull request, just make sure that all tests pass and if the fix needs new unit tests, please add one.
+3. Let me and community know if you have any ideas or suggestions on how to improve the project by submitting an issue on GitHub, I will label it as a 'future enhancement'.
+4. Feel free to connect with me on [LinkedIn](https://www.linkedin.com/in/alexrogov/) and if you wish to let me know how you use `DynamicsWebApi` and what project you are working on, I will be happy to hear about it.
+5. If you feel that this project saved your time and you would like to support it, then please feel free to donate: [![PayPal.Me](/extra/paypal.png)](https://paypal.me/alexrogov)
+
+Any contribution is greatly appreciated!
