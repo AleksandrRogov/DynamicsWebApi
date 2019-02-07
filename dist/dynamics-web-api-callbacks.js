@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.5.0 (c) 2018 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.5.1 (c) 2019 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -2847,7 +2847,11 @@ module.exports = function parseResponse(response, responseHeaders, parseParams) 
                     ? responseHeaders['OData-EntityId']
                     : responseHeaders['odata-entityid'];
 
-                parseResult = /([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})\)$/i.exec(entityUrl)[1];
+                var guidResult = /([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})\)$/i.exec(entityUrl);
+
+                if (guidResult) {
+                    parseResult = guidResult[1];
+                }
             }
     }
 
