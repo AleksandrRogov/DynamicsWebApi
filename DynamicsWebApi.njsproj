@@ -131,6 +131,7 @@
     <Folder Include="lib\requests\" />
     <Folder Include="lib\requests\helpers\" />
     <Folder Include="dist\" />
+    <Folder Include="types\" />
     <Folder Include="tests\" />
     <Folder Include="tests\browser\" />
     <Folder Include="typings\" />
@@ -141,6 +142,9 @@
     <Folder Include="typings\globals\sinon\" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="types\dynamics-web-api-callbacks.d.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="typings\globals\chai\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\mocha\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\node\index.d.ts" />
