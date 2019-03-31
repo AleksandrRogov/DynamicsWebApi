@@ -68,6 +68,7 @@ please go to `node_modules\dynamics-web-api` of your application and remove `.gi
 * [Formatted Values and Lookup Properties](#formatted-values-and-lookup-properties)
 * [Using Alternate Keys](#using-alternate-keys)
 * [Making requests using Entity Logical Names](#making-requests-using-entity-logical-names)
+* [Using TypeScript Declaration Files](#using-typescript-declaration-files)
 * [JavaScript Promises](#javascript-promises)
 * [JavaScript Callbacks](#javascript-callbacks)
 * [Contributions](#contributions)
@@ -1852,6 +1853,49 @@ var collectionName = dynamicsWebApi.utility.getCollectionName('account');
 
 Please note, everything said above will happen only if you set `useEntityNames: true` in the DynamicsWebApi config.
 
+## Using TypeScript Declaration Files
+
+TypeScript declaration files `d.ts` added with v.1.5.3. 
+If you are not familiar with declaration files, these files are used to provide TypeScript type information about an API that's written in JavaScript.
+You want to consume those from your TypeScript code. [Quote](https://stackoverflow.com/a/21247316/2042071)
+
+At this moment, DynamicsWebApi declaration files do not exist in a [DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped) repository but it is in my plans to upload them there.
+
+### Node.Js
+
+If you are using Node.Js with TypeScript, declarations will be fetched with an NPM package during an installation or an update process.
+At the top of a necessary `.ts` file add the following:
+
+```ts
+import * as DynamicsWebApi from "dynamics-web-api";
+//for CommonJS:
+//import DynamicsWebApi = require("dynamics-web-api");
+```
+
+### Dynamics 365 web resource
+If you are developing CRM Web Resources with TypeScript, you will need to download a necessary `d.ts` file manually from the following folder: [types](/types/).
+As you may have noticed `types` folder contains two declaration files: `dynamics-web-api.d.ts` (Promises) and `dynamics-web-api-callbacks.d.ts` (Callbacks) - download the one that you need.
+**Do not download both files! Otherwise you will have type declaration conflicts.**
+In my web resources project I usually put a declaration file under "./types/" folder. For example:
+
+```
+[project root]/
+-- src/
+  -- form_web_resource.ts
+-- types/
+  -- dynamics-web-api/
+    -- dynamics-web-api-callbacks.d.ts
+-- tsconfig.json
+```
+
+**Important!** Make sure that you include `types` folder in your `tsconfig.json`:
+```
+"include": [
+	"./src/**/*",
+	"./types/**/*"
+]
+```
+
 ### In Progress
 
 - [X] Overloaded functions with rich request options for all Web API operations.
@@ -1866,9 +1910,10 @@ the config option "formatted" will enable developers to retrieve all information
 - [X] Ability to use entity names instead of collection names. `Implemented in v.1.4.0`
 - [X] Entity and Attribute Metadata helpers. `Implemented in v.1.4.3`
 - [X] Entity Relationships and Global Option Sets helpers. `Implemented in v.1.4.6`
-- [X] Batch requests.
+- [X] Batch requests. `Implemented in v.1.5.0`
+- [X] TypeScript declaration files `d.ts` `Added in v.1.5.3`.
+- [ ] Upload DynamicsWebApi declaration files to DefinitelyTyped repository.
 - [ ] Implement `Content-ID` header to reference a created entity in a batch operation.
-- [ ] Intellisense for request objects.
 
 Many more features to come!
 

@@ -8,15 +8,16 @@ var configs = [];
     'dynamics-web-api.js',
     'dynamics-web-api-callbacks.js',
     'dynamics-web-api.min.js',
-    'dynamics-web-api-callbacks.min.js',
-    'dwa.js'
+    'dynamics-web-api-callbacks.min.js'
+    //'dwa.js'
 ].forEach(function (name) {
-    var minimize = name.endsWith('min.js');
-    var packageName = name.split('.')[0];
     var plugins = [];
+    var packageName = name.split('.')[0];
+
+    var minimize = name.endsWith('min.js');
     var outputLibrary = name === 'dwa.js'
         ? 'DWA'
-        : 'DynamicsWebApi'
+        : 'DynamicsWebApi';
 
     if (minimize) {
         plugins.push(new webpack.optimize.UglifyJsPlugin());
@@ -41,7 +42,7 @@ var configs = [];
             loaders: [
                 { test: /\.js$/, loader: 'webpack-strip-block' }
             ]
-        },
+        }
     });
 });
 

@@ -30,6 +30,10 @@ describe("Utility.buildFunctionParameters - ", function () {
         var result = Utility.buildFunctionParameters({ param1: "value1", param2: 2, param3: "value2" });
         expect(result).to.equal("(param1=@p1,param2=@p2,param3=@p3)?@p1='value1'&@p2=2&@p3='value2'");
     });
+    it("object parameter", function () {
+        var result = Utility.buildFunctionParameters({ param1: { test1: "value", '@odata.type': 'account' } });
+        expect(result).to.equal("(param1=@p1)?@p1={\"test1\":\"value\",\"@odata.type\":\"account\"}");
+    });
 });
 
 describe("Utility.getFetchXmlPagingCookie -", function () {

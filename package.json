@@ -12,6 +12,7 @@
     "dynamics-crm-online"
   ],
   "main": "lib/dynamics-web-api.js",
+  "types": "types/dynamics-web-api.d.ts",
   "author": {
     "name": "Aleksandr Rogov"
   },
