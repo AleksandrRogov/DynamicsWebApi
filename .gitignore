@@ -243,6 +243,9 @@ ModelManifest.xml
 **/CRMDeveloperExtensions.config
 /bfg.jar
 
+# Vim
+*.sw[a-p]
+
 /typings
 /gulpfile.js
 /typings.json
