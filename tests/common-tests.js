@@ -142,15 +142,57 @@ describe("Utility.", function () {
         });
     });
 
+    describe("getXrmContext - Xrm.Page is null", function () {
+        before(function () {
+            global.Xrm.Page = undefined;
+        });
+
+        after(function () {
+            global.Xrm.Page = {
+                context: {
+                    getClientUrl: function () {
+                        return "http://testorg.crm.dynamics.com";
+                    }
+                }
+            };
+        });
+
+        it("throws an error", function () {
+            expect(function () {
+                Utility.getXrmContext();
+            }).to.throw();
+        });
+    });
+
+    describe("getXrmContext - Xrm.Page.context is null", function () {
+        before(function () {
+            global.Xrm.Page.context = null;
+        });
+
+        after(function () {
+            global.Xrm.Page.context = {
+                getClientUrl: function () {
+                    return "http://testorg.crm.dynamics.com";
+                }
+            };
+        });
+
+        it("returns a correct string", function () {
+            expect(function () {
+                Utility.getXrmContext();
+            }).to.throw();
+        });
+    });
+
     describe("getClientUrl - removes a slash at the end", function () {
         before(function () {
-            Xrm.Page.context.getClientUrl = function () {
+            global.Xrm.Page.context.getClientUrl = function () {
                 return "http://testorg.crm.dynamics.com/";
             };
         });
 
         after(function () {
-            Xrm.Page.context.getClientUrl = function () {
+            global.Xrm.Page.context.getClientUrl = function () {
                 return "http://testorg.crm.dynamics.com";
             };
         });
@@ -159,6 +201,31 @@ describe("Utility.", function () {
             var result = Utility.getClientUrl();
 
             expect(result).to.be.eq("http://testorg.crm.dynamics.com");
+        });
+    });
+
+    describe("getXrmInternal", function () {
+        before(function () {
+            global.Xrm.Internal = "internal";
+        });
+
+        after(function () {
+            global.Xrm.Internal = undefined;
+
+        });
+
+        it("returns a correct string", function () {
+            var result = Utility.getXrmInternal();
+
+            expect(result).to.be.eq("internal");
+        });
+    });
+
+    describe("getXrmInternal - returns null if does not exist", function () {
+        it("returns a correct string", function () {
+            var result = Utility.getXrmInternal();
+
+            expect(result).to.be.undefined;
         });
     });
 });

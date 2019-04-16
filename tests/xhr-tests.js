@@ -259,7 +259,7 @@ describe("xhr -", function() {
                 id: mocks.data.testEntityId,
                 collection: "tests",
                 entity: mocks.data.testEntity
-            }
+            };
 
             var responseObject;
             var responseObject2;
@@ -748,7 +748,7 @@ describe("xhr -", function() {
         });
     });
 
-    describe("xhr - request error", function () {
+    describe("request error", function () {
         var responseObject;
         before(function (done) {
             global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
@@ -795,7 +795,7 @@ describe("xhr -", function() {
         });
     });
 
-    describe("xhr - request timeout", function () {
+    describe("request timeout", function () {
         var responseObject;
         before(function (done) {
             global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
@@ -805,7 +805,9 @@ describe("xhr -", function() {
                 requests.push(xhr);
             };
 
-            dynamicsWebApiTest.create(mocks.data.testEntity, "tests").then(function (object) {
+            var dynamicsWebApiTimeout = new DynamicsWebApi({ webApiVersion: "8.2", timeout: 100 });
+
+            dynamicsWebApiTimeout.create(mocks.data.testEntity, "tests").then(function (object) {
                 responseObject = object;
                 done();
             }).catch(function (object) {
