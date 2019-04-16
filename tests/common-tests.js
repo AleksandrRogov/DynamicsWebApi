@@ -13,65 +13,153 @@ var dateReviver = require('../lib/requests/helpers/dateReviver');
 var Request = require('../lib/requests/sendRequest');
 var parseResponse = require('../lib/requests/helpers/parseResponse');
 
-describe("Utility.buildFunctionParameters - ", function () {
-    it("no parameters", function () {
-        var result = Utility.buildFunctionParameters();
-        expect(result).to.equal("()");
-    });
-    it("1 parameter", function () {
-        var result = Utility.buildFunctionParameters({ param1: "value1" });
-        expect(result).to.equal("(param1=@p1)?@p1='value1'");
-    });
-    it("2 parameters", function () {
-        var result = Utility.buildFunctionParameters({ param1: "value1", param2: 2 });
-        expect(result).to.equal("(param1=@p1,param2=@p2)?@p1='value1'&@p2=2");
-    });
-    it("3 parameters", function () {
-        var result = Utility.buildFunctionParameters({ param1: "value1", param2: 2, param3: "value2" });
-        expect(result).to.equal("(param1=@p1,param2=@p2,param3=@p3)?@p1='value1'&@p2=2&@p3='value2'");
-    });
-    it("object parameter", function () {
-        var result = Utility.buildFunctionParameters({ param1: { test1: "value", '@odata.type': 'account' } });
-        expect(result).to.equal("(param1=@p1)?@p1={\"test1\":\"value\",\"@odata.type\":\"account\"}");
-    });
-});
-
-describe("Utility.getFetchXmlPagingCookie -", function () {
-    it("pagingCookie is empty", function () {
-        var result = Utility.getFetchXmlPagingCookie("", 2);
-        expect(result).to.deep.equal({
-            cookie: "",
-            page: 2,
-            nextPage: 3
+describe("Utility.", function () {
+    describe("buildFunctionParameters - ", function () {
+        it("no parameters", function () {
+            var result = Utility.buildFunctionParameters();
+            expect(result).to.equal("()");
+        });
+        it("1 parameter", function () {
+            var result = Utility.buildFunctionParameters({ param1: "value1" });
+            expect(result).to.equal("(param1=@p1)?@p1='value1'");
+        });
+        it("2 parameters", function () {
+            var result = Utility.buildFunctionParameters({ param1: "value1", param2: 2 });
+            expect(result).to.equal("(param1=@p1,param2=@p2)?@p1='value1'&@p2=2");
+        });
+        it("3 parameters", function () {
+            var result = Utility.buildFunctionParameters({ param1: "value1", param2: 2, param3: "value2" });
+            expect(result).to.equal("(param1=@p1,param2=@p2,param3=@p3)?@p1='value1'&@p2=2&@p3='value2'");
+        });
+        it("object parameter", function () {
+            var result = Utility.buildFunctionParameters({ param1: { test1: "value", '@odata.type': 'account' } });
+            expect(result).to.equal("(param1=@p1)?@p1={\"test1\":\"value\",\"@odata.type\":\"account\"}");
         });
     });
 
-    it("pagingCookie is null or undefined", function () {
-        var result = Utility.getFetchXmlPagingCookie(null, 2);
-        expect(result).to.deep.equal({
-            cookie: "",
-            page: 2,
-            nextPage: 3
+    describe("getFetchXmlPagingCookie - ", function () {
+        it("pagingCookie is empty", function () {
+            var result = Utility.getFetchXmlPagingCookie("", 2);
+            expect(result).to.deep.equal({
+                cookie: "",
+                page: 2,
+                nextPage: 3
+            });
         });
 
-        result = Utility.getFetchXmlPagingCookie();
-        expect(result).to.deep.equal({
-            cookie: "",
-            page: 1,
-            nextPage: 2
+        it("pagingCookie is null or undefined", function () {
+            var result = Utility.getFetchXmlPagingCookie(null, 2);
+            expect(result).to.deep.equal({
+                cookie: "",
+                page: 2,
+                nextPage: 3
+            });
+
+            result = Utility.getFetchXmlPagingCookie();
+            expect(result).to.deep.equal({
+                cookie: "",
+                page: 1,
+                nextPage: 2
+            });
+        });
+
+        it("pagingCookie is normal", function () {
+            var result = Utility.getFetchXmlPagingCookie(mocks.data.fetchXmls.cookiePage2, 2);
+            expect(result).to.deep.equal(mocks.data.fetchXmls.fetchXmlResultPage2Cookie.PagingInfo);
+
+            result = Utility.getFetchXmlPagingCookie(mocks.data.fetchXmls.cookiePage1, 2);
+            expect(result).to.deep.equal(mocks.data.fetchXmls.fetchXmlResultPage1Cookie.PagingInfo);
+
+            result = Utility.getFetchXmlPagingCookie(mocks.data.fetchXmls.cookiePage2);
+            expect(result).to.deep.equal(mocks.data.fetchXmls.fetchXmlResultPage2Cookie.PagingInfo);
+
         });
     });
 
-    it("pagingCookie is normal", function () {
-        var result = Utility.getFetchXmlPagingCookie(mocks.data.fetchXmls.cookiePage2, 2);
-        expect(result).to.deep.equal(mocks.data.fetchXmls.fetchXmlResultPage2Cookie.PagingInfo);
+    describe("getXrmContext - GetGlobalContext", function () {
+        before(function () {
+            global.GetGlobalContext = function () {
+                return "Global Context";
+            };
+        });
 
-        result = Utility.getFetchXmlPagingCookie(mocks.data.fetchXmls.cookiePage1, 2);
-        expect(result).to.deep.equal(mocks.data.fetchXmls.fetchXmlResultPage1Cookie.PagingInfo);
+        after(function () {
+            global.GetGlobalContext = undefined;
+        });
 
-        result = Utility.getFetchXmlPagingCookie(mocks.data.fetchXmls.cookiePage2);
-        expect(result).to.deep.equal(mocks.data.fetchXmls.fetchXmlResultPage2Cookie.PagingInfo);
+        it("returns a correct object", function () {
+            var result = Utility.getXrmContext();
 
+            expect(result).to.be.eq("Global Context");
+        });
+    });
+
+    describe("getXrmContext - Xrm.Utility.getGlobalContext", function () {
+        before(function () {
+            global.Xrm.Utility = {
+                getGlobalContext: function () {
+                    return {
+                        getClientUrl: function () {
+                            return "Xrm.Utility";
+                        }
+                    };
+                }
+            };
+        });
+
+        after(function () {
+            global.Xrm.Utility = undefined;
+        });
+
+        it("returns a correct object", function () {
+            var result = Utility.getXrmContext().getClientUrl();
+
+            expect(result).to.be.eq("Xrm.Utility");
+        });
+    });
+
+    describe("getXrmContext - Form context does not exist", function () {
+        before(function () {
+            global.Xrm = undefined;
+        });
+
+        after(function () {
+            global.Xrm = {
+                Page: {
+                    context: {
+                        getClientUrl: function () {
+                            return "http://testorg.crm.dynamics.com";
+                        }
+                    }
+                }
+            };
+        });
+
+        it("throws an error", function () {
+            expect(function () {
+                Utility.getXrmContext();
+            }).to.throw();
+        });
+    });
+
+    describe("getClientUrl - removes a slash at the end", function () {
+        before(function () {
+            Xrm.Page.context.getClientUrl = function () {
+                return "http://testorg.crm.dynamics.com/";
+            };
+        });
+
+        after(function () {
+            Xrm.Page.context.getClientUrl = function () {
+                return "http://testorg.crm.dynamics.com";
+            };
+        });
+
+        it("returns a correct string", function () {
+            var result = Utility.getClientUrl();
+
+            expect(result).to.be.eq("http://testorg.crm.dynamics.com");
+        });
     });
 });
 
@@ -1764,6 +1852,96 @@ describe("Request.sendRequest", function () {
                 done();
             }, function (object) {
                 expect(object).to.be.undefined;
+                done();
+            });
+        });
+
+        it("all requests have been made", function () {
+            expect(scope.isDone()).to.be.true;
+        });
+    });
+
+    describe("request error", function () {
+        var scope;
+        var url = 'test';
+        before(function () {
+            scope = nock(mocks.webApiUrl + 'test')
+                .post("", mocks.data.testEntity)
+                .replyWithError({ code: 'Error' });
+        });
+
+        after(function () {
+            nock.cleanAll();
+        });
+
+        it("returns a correct response", function (done) {
+            Request.sendRequest('POST', url, { webApiUrl: mocks.webApiUrl }, mocks.data.testEntityAdditionalAttributes, null, null, function (object) {
+                expect(object).to.be.undefined;
+                done(object);
+            }, function (object) {
+                expect(object).to.be.deep.equal({ code: "Error" });
+                done();
+            });
+        });
+
+        it("all requests have been made", function () {
+            expect(scope.isDone()).to.be.true;
+        });
+    });
+
+    describe("timeout - socket", function () {
+        var scope;
+        var url = 'test';
+        before(function () {
+            var response = mocks.responses.basicEmptyResponseSuccess;
+            scope = nock(mocks.webApiUrl + 'test')
+                .post("", mocks.data.testEntity)
+                .socketDelay(1000)
+                .reply(response.status, response.responseText, response.responseHeaders);
+        });
+
+        after(function () {
+            nock.cleanAll();
+        });
+
+        it("returns a correct response", function (done) {
+            Request.sendRequest('POST', url, { webApiUrl: mocks.webApiUrl, timeout: 500 }, mocks.data.testEntityAdditionalAttributes, null, null, function (object) {
+                expect(object).to.be.undefined;
+                done(object);
+            }, function (error) {
+                expect(error.message).to.be.eq("socket hang up");
+                expect(error.code).to.be.eq("ECONNRESET");
+                done();
+            });
+        });
+
+        it("all requests have been made", function () {
+            expect(scope.isDone()).to.be.true;
+        });
+    });
+
+    describe("timeout - connection delay", function () {
+        var scope;
+        var url = 'test';
+        before(function () {
+            var response = mocks.responses.basicEmptyResponseSuccess;
+            scope = nock(mocks.webApiUrl + 'test')
+                .post("", mocks.data.testEntity)
+                .delayConnection(1000)
+                .reply(response.status, response.responseText, response.responseHeaders);
+        });
+
+        after(function () {
+            nock.cleanAll();
+        });
+
+        it("returns a correct response", function (done) {
+            Request.sendRequest('POST', url, { webApiUrl: mocks.webApiUrl, timeout: 500 }, mocks.data.testEntityAdditionalAttributes, null, null, function (object) {
+                expect(object).to.be.undefined;
+                done(object);
+            }, function (error) {
+                expect(error.message).to.be.eq("socket hang up");
+                expect(error.code).to.be.eq("ECONNRESET");
                 done();
             });
         });

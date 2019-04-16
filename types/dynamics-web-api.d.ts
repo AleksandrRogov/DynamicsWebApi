@@ -1,4 +1,4 @@
-﻿// Type definitions for dynamics-web-api v1.5.3
+﻿// Type definitions for dynamics-web-api v1.5.4
 // Project: https://github.com/AleksandrRogov/DynamicsWebApi/
 // Definitions by: Aleksandr Rogov https://github.com/AleksandrRogov/
 
@@ -592,6 +592,8 @@ declare namespace DynamicsWebApi {
         returnRepresentation?: boolean;
         /**Indicates whether to use Entity Logical Names instead of Collection Logical Names.*/
         useEntityNames?: boolean;
+        /**Sets a number of milliseconds before a request times out */
+        timeout?: number;
     }
 
     /** Callback with an acquired token called by DynamicsWebApi; "token" argument can be a string or an object with a property {accessToken: <token>}  */

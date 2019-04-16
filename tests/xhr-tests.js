@@ -1,6 +1,5 @@
 ﻿var chai = require('chai');
 var expect = chai.expect;
-var nock = require('nock');
 
 var sinon = require('sinon');
 
@@ -746,6 +745,100 @@ describe("xhr -", function() {
                 expect(responseObject).to.deep.equal(mocks.responses.multipleWithLink());
                 expect(responseObject2).to.deep.equal(mocks.responses.multiple());
             });
+        });
+    });
+
+    describe("xhr - request error", function () {
+        var responseObject;
+        before(function (done) {
+            global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+            var requests = this.requests = [];
+
+            global.XMLHttpRequest.onCreate = function (xhr) {
+                requests.push(xhr);
+            };
+
+            dynamicsWebApiTest.create(mocks.data.testEntity, "tests").then(function (object) {
+                responseObject = object;
+                done();
+            }).catch(function (object) {
+                responseObject = object;
+                done();
+            });
+
+            this.requests[0].onerror();
+        });
+
+        after(function () {
+            global.XMLHttpRequest.restore();
+            global.XMLHttpRequest = null;
+        });
+
+        it("sends the request to the right end point", function () {
+            expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl);
+        });
+
+        it("uses the correct method", function () {
+            expect(this.requests[0].method).to.equal('POST');
+        });
+
+        it("sends the right data", function () {
+            expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
+        });
+
+        it("does not have Prefer header", function () {
+            expect(this.requests[0].requestHeaders['Prefer']).to.be.undefined;
+        });
+
+        it("returns the correct response", function () {
+            expect(responseObject).to.deep.equal({ message: "Network Error", status: 0, statusText: "" });
+        });
+    });
+
+    describe("xhr - request timeout", function () {
+        var responseObject;
+        before(function (done) {
+            global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+            var requests = this.requests = [];
+
+            global.XMLHttpRequest.onCreate = function (xhr) {
+                requests.push(xhr);
+            };
+
+            dynamicsWebApiTest.create(mocks.data.testEntity, "tests").then(function (object) {
+                responseObject = object;
+                done();
+            }).catch(function (object) {
+                responseObject = object;
+                done();
+            });
+
+            this.requests[0].ontimeout();
+        });
+
+        after(function () {
+            global.XMLHttpRequest.restore();
+            global.XMLHttpRequest = null;
+        });
+
+        it("sends the request to the right end point", function () {
+            expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl);
+        });
+
+        it("uses the correct method", function () {
+            expect(this.requests[0].method).to.equal('POST');
+        });
+
+        it("sends the right data", function () {
+            expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
+        });
+
+        it("does not have Prefer header", function () {
+            expect(this.requests[0].requestHeaders['Prefer']).to.be.undefined;
+        });
+
+        it("returns the correct response", function () {
+            expect(responseObject).to.deep.equal({ message: "Request Timed Out", status: 0, statusText: "" });
         });
     });
 });
