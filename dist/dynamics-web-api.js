@@ -1,4 +1,4 @@
-/*! dynamics-web-api v1.5.3 (c) 2019 Aleksandr Rogov */
+/*! dynamics-web-api v1.5.4 (c) 2019 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -150,7 +150,7 @@ module.exports = DWA;
 /* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
-function isNull (value) {
+function isNull(value) {
     return typeof value === "undefined" || typeof value === "unknown" || value == null;
 }
 
@@ -189,16 +189,12 @@ function getXrmContext() {
 function getClientUrl() {
     var context = getXrmContext();
 
-    if (context) {
-        var clientUrl = context.getClientUrl();
+    var clientUrl = context.getClientUrl();
 
-        if (clientUrl.match(/\/$/)) {
-            clientUrl = clientUrl.substring(0, clientUrl.length - 1);
-        }
-        return clientUrl;
+    if (clientUrl.match(/\/$/)) {
+        clientUrl = clientUrl.substring(0, clientUrl.length - 1);
     }
-
-    return '';
+    return clientUrl;
 }
 
 function initWebApiUrl(version) {
@@ -672,7 +668,17 @@ function sendRequest(method, path, config, data, additionalHeaders, responsePara
                     token);
         }
 
-        executeRequest(method, config.webApiUrl + path, stringifiedData, additionalHeaders, responseParseParams, successCallback, errorCallback, isAsync);
+        executeRequest({
+            method: method,
+            uri: config.webApiUrl + path,
+            data: stringifiedData,
+            additionalHeaders: additionalHeaders,
+            responseParams: responseParseParams,
+            successCallback: successCallback,
+            errorCallback: errorCallback,
+            isAsync: isAsync,
+            timeout: config.timeout
+        });
     };
 
     //call a token refresh callback only if it is set and there is no "Authorization" header set yet
@@ -760,6 +766,7 @@ module.exports = {
     getCollectionName: findCollectionName,
 
 };
+
 
 /***/ }),
 /* 5 */
@@ -888,6 +895,11 @@ function DynamicsWebApi(config) {
         if (config.includeAnnotations) {
             ErrorHelper.stringParameterCheck(config.includeAnnotations, "DynamicsWebApi.setConfig", "config.includeAnnotations");
             _internalConfig.includeAnnotations = config.includeAnnotations;
+        }
+
+        if (config.timeout) {
+            ErrorHelper.numberParameterCheck(config.timeout, "DynamicsWebApi.setConfig", "config.timeout");
+            _internalConfig.timeout = config.timeout;
         }
 
         if (config.maxPageSize) {
@@ -2427,18 +2439,19 @@ var parseResponseHeaders = __webpack_require__(8);
 /**
  * Sends a request to given URL with given parameters
  *
- * @param {string} method - Method of the request.
- * @param {string} uri - Request URI.
- * @param {string} [data] - Data to send in the request.
- * @param {Object} [additionalHeaders] - Object with headers. IMPORTANT! This object does not contain default headers needed for every request.
- * @param {any} responseParams - parameters for parsing the response
- * @param {Function} successCallback - A callback called on success of the request.
- * @param {Function} errorCallback - A callback called when a request failed.
- * @param {boolean} [async] - Indicates if the request needs to be synchronous
  */
-var xhrRequest = function (method, uri, data, additionalHeaders, responseParams, successCallback, errorCallback, async) {
+var xhrRequest = function (options) {
+    var method = options.method;
+    var uri = options.uri;
+    var data = options.data;
+    var additionalHeaders = options.additionalHeaders;
+    var responseParams = options.responseParams;
+    var successCallback = options.successCallback;
+    var errorCallback = options.errorCallback;
+    var isAsync = options.isAsync;
+
     var request = new XMLHttpRequest();
-    request.open(method, uri, async);
+    request.open(method, uri, isAsync);
 
     //set additional headers
     for (var key in additionalHeaders) {
@@ -2487,14 +2500,26 @@ var xhrRequest = function (method, uri, data, additionalHeaders, responseParams,
         }
     };
 
+    if (options.timeout) {
+        request.timeout = options.timeout;
+    }
+
     request.onerror = function () {
-        errorCallback({ message: "Network Error" });
+        errorCallback({
+            status: request.status,
+            statusText: request.statusText,
+            message: request.responseText || "Network Error"
+        });
         responseParams.length = 0;
         request = null;
     };
 
-    request.ontimeout = function (error) {
-        errorCallback({ message: "Request Timed Out" });
+    request.ontimeout = function () {
+        errorCallback({
+            status: request.status,
+            statusText: request.statusText,
+            message: request.responseText || "Request Timed Out"
+        });
         responseParams.length = 0;
         request = null;
     };
@@ -2505,6 +2530,7 @@ var xhrRequest = function (method, uri, data, additionalHeaders, responseParams,
 };
 
 module.exports = xhrRequest;
+
 
 /***/ }),
 /* 10 */
