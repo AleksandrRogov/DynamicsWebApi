@@ -1027,7 +1027,9 @@ for example: `dynamicsWebApi.deleteRecord('00000000-0000-0000-0000-000000000001'
 
 ## Use Content-ID to reference requests in a Change Set
 
-Starting from v.1.5.6 you can reference a request from a Change Set. For example, if you want to create related entities in a single batch request:
+`version 1.5.6+`
+
+You can reference a request in a Change Set. For example, if you want to create related entities in a single batch request:
 
 ```js
 var order = {
@@ -1054,6 +1056,7 @@ dynamicsWebApi.executeBatch()
 ```
 
 Note that the second response does not have a returned value, it is a CRM Web API limitation.
+
 **Important!** DynamicsWebApi automatically assigns value to a `Content-ID` if it is not provided, therefore, please set your `Content-ID` value less than 100000.
 
 #### Limitations
