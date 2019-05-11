@@ -229,19 +229,20 @@ Property Name | Type | Operation(s) Supported | Description
 ------------ | ------------- | ------------- | -------------
 async | Boolean | All | **Important! XHR requests only!** Indicates whether the requests should be made synchronously or asynchronously. Default value is `true` (asynchronously).
 collection | String | All | The name of the Entity Collection (or Entity Logical name in `v1.4.0+`).
+contentId | String | `createRequest`, `updateRequest`, `upsertRequest`, `deleteRequest` | `v1.5.6+` **BATCH REQUESTS ONLY!** Sets Content-ID header or references request in a Change Set. [More Info](https://www.odata.org/documentation/odata-version-3-0/batch-processing/)
 count | Boolean | `retrieveMultipleRequest`, `retrieveAllRequest` | Boolean that sets the $count system query option with a value of true to include a count of entities that match the filter criteria up to 5000 (per page). Do not use $top with $count!
-duplicateDetection | Boolean | `createRequest`, `updateRequest`, `upsertRequest` | `v.1.3.4+` **Web API v9+ only!** Boolean that enables duplicate detection. [More info](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/webapi/update-delete-entities-using-web-api#check-for-duplicate-records)
+duplicateDetection | Boolean | `createRequest`, `updateRequest`, `upsertRequest` | `v.1.3.4+` **Web API v9+ only!** Boolean that enables duplicate detection. [More Info](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/webapi/update-delete-entities-using-web-api#check-for-duplicate-records)
 entity | Object | `createRequest`, `updateRequest`, `upsertRequest` | A JavaScript object with properties corresponding to the logical name of entity attributes (exceptions are lookups and single-valued navigation properties).
 expand | Array | `retrieveRequest`, `createRequest`, `updateRequest`, `upsertRequest` | An array of Expand Objects (described below the table) representing the $expand OData System Query Option value to control which related records are also returned.
 filter | String | `retrieveRequest`, `retrieveMultipleRequest`, `retrieveAllRequest` | Use the $filter system query option to set criteria for which entities will be returned.
 id | String | `retrieveRequest`, `createRequest`, `updateRequest`, `upsertRequest`, `deleteRequest` | `deprecated in v.1.3.4` Use `key` field, instead of `id`. A String representing the Primary Key (GUID) of the record. 
-ifmatch | String | `retrieveRequest`, `updateRequest`, `upsertRequest`, `deleteRequest` | Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests. [More info](https://msdn.microsoft.com/en-us/library/mt607711.aspx)
-ifnonematch | String | `retrieveRequest`, `upsertRequest` | Sets If-None-Match header value that enables to use conditional retrieval in applicable requests. [More info](https://msdn.microsoft.com/en-us/library/mt607711.aspx).
+ifmatch | String | `retrieveRequest`, `updateRequest`, `upsertRequest`, `deleteRequest` | Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests. [More Info](https://msdn.microsoft.com/en-us/library/mt607711.aspx)
+ifnonematch | String | `retrieveRequest`, `upsertRequest` | Sets If-None-Match header value that enables to use conditional retrieval in applicable requests. [More Info](https://msdn.microsoft.com/en-us/library/mt607711.aspx).
 impersonate | String | All | A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
 includeAnnotations | String | `retrieveRequest`, `retrieveMultipleRequest`, `retrieveAllRequest`, `createRequest`, `updateRequest`, `upsertRequest` | Sets Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
 key | String | `retrieveRequest`, `createRequest`, `updateRequest`, `upsertRequest`, `deleteRequest` | `v.1.3.4+` A String representing collection record's Primary Key (GUID) or Alternate Key(s).
 maxPageSize | Number | `retrieveMultipleRequest`, `retrieveAllRequest` | Sets the odata.maxpagesize preference value to request the number of entities returned in the response.
-mergeLabels | Boolean | `updateRequest` | `v.1.4.2+` **Metadata Update only!** Sets `MSCRM.MergeLabels` header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is `false`. [More info](https://msdn.microsoft.com/en-us/library/mt593078.aspx#bkmk_updateEntities)
+mergeLabels | Boolean | `updateRequest` | `v.1.4.2+` **Metadata Update only!** Sets `MSCRM.MergeLabels` header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is `false`. [More Info](https://msdn.microsoft.com/en-us/library/mt593078.aspx#bkmk_updateEntities)
 metadataAttributeType | String | `retrieveRequest`, `updateRequest` | `v.1.4.3+` Casts the Attributes to a specific type. (Used in requests to Attribute Metadata) [More Info](https://msdn.microsoft.com/en-us/library/mt607522.aspx#Anchor_4)
 navigationProperty | String | `retrieveRequest`, `createRequest`, `updateRequest` | A String representing the name of a single-valued navigation property. Useful when needed to retrieve information about a related record in a single request.
 navigationPropertyKey | String | `retrieveRequest`, `createRequest`, `updateRequest` | `v.1.4.3+` A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata)
@@ -1024,11 +1025,41 @@ dynamicsWebApi.executeBatch().then(function (responses) {
 just pass `null` if you need to add additional parameters in the request, 
 for example: `dynamicsWebApi.deleteRecord('00000000-0000-0000-0000-000000000001', 'contacts', null, null, 'firstname')`.
 
+## Use Content-ID to reference requests in a Change Set
+
+Starting from v.1.5.6 you can reference a request from a Change Set. For example, if you want to create related entities in a single batch request:
+
+```js
+var order = {
+    name: '1 year membership'
+};
+
+var contact = {
+    firstname: "test content",
+    lastname: "id"
+};
+
+dynamicsWebApi.startBatch();
+dynamicsWebApi.createRequest({ entity: order, collection: 'salesorders', contentId: '1' });
+dynamicsWebApi.createRequest({ entity: contact, collection: 'customerid_contact', contentId: "$1" });
+
+dynamicsWebApi.executeBatch()
+    .then(function (responses) {
+        var salesorderId = responses[0];
+        //responses[1]; is undefined <- CRM Web API limitation
+    }).catch(function (error) {
+        //catch error here
+    });
+
+```
+
+Note that the second response does not have a returned value, it is a CRM Web API limitation.
+**Important!** DynamicsWebApi automatically assigns value to a `Content-ID` if it is not provided, therefore, please set your `Content-ID` value less than 100000.
+
 #### Limitations
 
 Currently, there are some limitations in DynamicsWebApi Batch Operations:
 
-* `Content-ID` header cannot be used to reference the Uri of any entity created in a single operation. **This is an upcoming feature**.
 * Operations that use pagination to recursively retrieve all records cannot be used in a 'batch mode'. These include: `retrieveAll`, `retrieveAllRequest`, `countAll`, `fetchAll`, `executeFetchXmlAll`.
 You will get an error saying that the operation is incompatible with a 'batch mode'.
 * The following limitation is for external applications (working outside D365 CE forms). `useEntityNames` may not work in a 'batch mode' if it is set to `true`. 
@@ -1913,8 +1944,8 @@ the config option "formatted" will enable developers to retrieve all information
 - [X] Entity Relationships and Global Option Sets helpers. `Implemented in v.1.4.6`
 - [X] Batch requests. `Implemented in v.1.5.0`
 - [X] TypeScript declaration files `d.ts` `Added in v.1.5.3`.
+- [X] Implement `Content-ID` header to reference a request in a Change Set in a batch operation `Added in v.1.5.6`.
 - [ ] Upload DynamicsWebApi declaration files to DefinitelyTyped repository.
-- [ ] Implement `Content-ID` header to reference a created entity in a batch operation.
 
 Many more features to come!
 

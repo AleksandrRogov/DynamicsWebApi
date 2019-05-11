@@ -1,4 +1,4 @@
-﻿// Type definitions for dynamics-web-api-callbacks v1.5.4
+﻿// Type definitions for dynamics-web-api-callbacks v1.5.6
 // Project: https://github.com/AleksandrRogov/DynamicsWebApi
 // Definitions by: Aleksandr Rogov https://github.com/AleksandrRogov/
 
@@ -589,6 +589,8 @@ declare namespace DynamicsWebApi {
         navigationPropertyKey?: string;
         /**Sets Prefer header request with value "return=representation".Use this property to return just created or updated entity in a single request. */
         returnRepresentation?: boolean;
+        /**BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */
+        contentId: string;
     }
 
     interface UpdateRequestBase extends CRUDRequest {
@@ -606,6 +608,8 @@ declare namespace DynamicsWebApi {
         returnRepresentation?: boolean;
         /**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
         select?: string[];
+        /**BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */
+        contentId: string;
     }
 
     interface UpdateRequest extends UpdateRequestBase {
@@ -627,6 +631,8 @@ declare namespace DynamicsWebApi {
     interface DeleteRequest extends CRUDRequest {
         /**Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests.*/
         ifmatch?: string;
+        /**BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */
+        contentId: string;
     }
 
     interface RetrieveRequest extends CRUDRequest {

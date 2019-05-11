@@ -156,7 +156,7 @@ var dataStubs = {
         '--changeset_XXX\n' +
         'Content-Type: application/http\n' +
         'Content-Transfer-Encoding: binary\n' +
-        'Content-ID: 1\n' +
+        'Content-ID: 100001\n' +
         '\n' +
         'POST ' + webApiUrl + 'records HTTP/1.1\n' +
         'Content-Type: application/json\n' +
@@ -187,7 +187,7 @@ var dataStubs = {
         '--changeset_XXX\n' +
         'Content-Type: application/http\n' +
         'Content-Transfer-Encoding: binary\n' +
-        'Content-ID: 1\n' +
+        'Content-ID: 100001\n' +
         '\n' +
         'PATCH ' + webApiUrl + 'records(00000000-0000-0000-0000-000000000002) HTTP/1.1\n' +
         'Content-Type: application/json\n' +
@@ -212,7 +212,7 @@ var dataStubs = {
         '--changeset_XXX\n' +
         'Content-Type: application/http\n' +
         'Content-Transfer-Encoding: binary\n' +
-        'Content-ID: 1\n' +
+        'Content-ID: 100001\n' +
         '\n' +
         'PATCH ' + webApiUrl + 'records(00000000-0000-0000-0000-000000000002) HTTP/1.1\n' +
         'Content-Type: application/json\n' +
@@ -223,10 +223,37 @@ var dataStubs = {
         '--changeset_XXX\n' +
         'Content-Type: application/http\n' +
         'Content-Transfer-Encoding: binary\n' +
-        'Content-ID: 2\n' +
+        'Content-ID: 100002\n' +
         '\n' +
         'DELETE ' + webApiUrl + 'records(00000000-0000-0000-0000-000000000002)/firstname HTTP/1.1\n' +
         'Content-Type: application/json\n' +
+        '\n' +
+        '--changeset_XXX--\n' +
+        '\n' +
+        '--dwa_batch_XXX--',
+    batchCreateContentID:
+        '--dwa_batch_XXX\n' +
+        'Content-Type: multipart/mixed;boundary=changeset_XXX\n' +
+        '\n' +
+        '--changeset_XXX\n' +
+        'Content-Type: application/http\n' +
+        'Content-Transfer-Encoding: binary\n' +
+        'Content-ID: 1\n' +
+        '\n' +
+        'POST ' + webApiUrl + 'records HTTP/1.1\n' +
+        'Content-Type: application/json\n' +
+        '\n' +
+        '{"firstname":"Test","lastname":"Batch!"}\n' +
+        '\n' +
+        '--changeset_XXX\n' +
+        'Content-Type: application/http\n' +
+        'Content-Transfer-Encoding: binary\n' +
+        'Content-ID: 100001\n' +
+        '\n' +
+        'POST $1/test_property HTTP/1.1\n' +
+        'Content-Type: application/json\n' +
+        '\n' +
+        '{"firstname":"Test1","lastname":"Batch!"}\n' +
         '\n' +
         '--changeset_XXX--\n' +
         '\n' +
@@ -245,7 +272,7 @@ var dataStubs = {
         '--changeset_XXX\n' +
         'Content-Type: application/http\n' +
         'Content-Transfer-Encoding: binary\n' +
-        'Content-ID: 1\n' +
+        'Content-ID: 100001\n' +
         '\n' +
         'DELETE ' + webApiUrl + 'records(00000000-0000-0000-0000-000000000002) HTTP/1.1\n' +
         'Content-Type: application/json\n' +
@@ -522,7 +549,7 @@ var responseStubs = {
             '--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n' +
             'Content-Type: application/http\r\n' +
             'Content-Transfer-Encoding: binary\r\n' +
-            'Content-ID: 1' +
+            'Content-ID: 100001' +
 
             'HTTP/1.1 204 No Content\r\n' +
             'OData-Version: 4.0\r\n' +
@@ -560,7 +587,7 @@ var responseStubs = {
             '--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n' +
             'Content-Type: application/http\r\n' +
             'Content-Transfer-Encoding: binary\r\n' +
-            'Content-ID: 1' +
+            'Content-ID: 100001' +
 
             'HTTP/1.1 204 No Content\r\n' +
             'OData-Version: 4.0\r\n' +
@@ -589,7 +616,7 @@ var responseStubs = {
             '--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n' +
             'Content-Type: application/http\r\n' +
             'Content-Transfer-Encoding: binary\r\n' +
-            'Content-ID: 1' +
+            'Content-ID: 100001' +
 
             'HTTP/1.1 204 No Content\r\n' +
             'OData-Version: 4.0\r\n' +
@@ -600,7 +627,7 @@ var responseStubs = {
             '--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n' +
             'Content-Type: application/http\r\n' +
             'Content-Transfer-Encoding: binary\r\n' +
-            'Content-ID: 2' +
+            'Content-ID: 100002' +
 
             'HTTP/1.1 204 No Content\r\n' +
             'OData-Version: 4.0\r\n' +
@@ -609,6 +636,35 @@ var responseStubs = {
             '--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd--\r\n' +
             '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae--'
     },
+    //batchCreateContentID: {
+    //    status: 200,
+    //    responseText:
+    //        '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae\r\n' +
+    //        'Content-Type: multipart/mixed; boundary=changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n' +
+    //        '\r\n' +
+    //        '--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n' +
+    //        'Content-Type: application/http\r\n' +
+    //        'Content-Transfer-Encoding: binary\r\n' +
+    //        'Content-ID: 100001' +
+
+    //        'HTTP/1.1 204 No Content\r\n' +
+    //        'OData-Version: 4.0\r\n' +
+    //        'Location: https://url.com/api/data/v8.2/tests(' + dataStubs.testEntityId + ')\r\n' +
+    //        'OData-EntityId: https://url.com/api/data/v8.2/tests(' + dataStubs.testEntityId + ')\r\n' +
+    //        '\r\n' +
+    //        '\r\n' +
+    //        '--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n' +
+    //        'Content-Type: application/http\r\n' +
+    //        'Content-Transfer-Encoding: binary\r\n' +
+    //        'Content-ID: 100002' +
+
+    //        'HTTP/1.1 204 No Content\r\n' +
+    //        'OData-Version: 4.0\r\n' +
+    //        '\r\n' +
+    //        '\r\n' +
+    //        '--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd--\r\n' +
+    //        '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae--'
+    //},
     batchRetrieveMultipleDeleteRetrieveMultiple: {
         status: 200,
         responseText:
@@ -627,7 +683,7 @@ var responseStubs = {
             '--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n' +
             'Content-Type: application/http\r\n' +
             'Content-Transfer-Encoding: binary\r\n' +
-            'Content-ID: 1' +
+            'Content-ID: 100001' +
 
             'HTTP/1.1 204 No Content\r\n' +
             'OData-Version: 4.0\r\n' +
