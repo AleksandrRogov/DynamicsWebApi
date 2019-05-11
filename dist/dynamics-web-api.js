@@ -1,4 +1,4 @@
-/*! dynamics-web-api v1.5.5 (c) 2019 Aleksandr Rogov */
+/*! dynamics-web-api v1.5.6 (c) 2019 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -828,6 +828,7 @@ if (!String.prototype.endsWith || !String.prototype.startsWith) {
  * @property {string} userQuery - A String representing the GUID value of the user query.
  * @property {boolean} mergeLabels - If set to 'true', DynamicsWebApi adds a request header 'MSCRM.MergeLabels: true'. Default value is 'false'.
  * @property {boolean} isBatch - If set to 'true', DynamicsWebApi treats a request as a part of a batch request. Call ExecuteBatch to execute all requests in a batch. Default value is 'false'.
+ * @property {string} contentId - BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set.
  */
 
 /**
@@ -2548,7 +2549,7 @@ var convertToBatch = function (requests) {
 
     var batchBody = [];
     var currentChangeSet = null;
-    var contentId = 0;
+    var contentId = 100000;
 
     for (var i = 0; i < requests.length; i++) {
         var request = requests[i];
@@ -2559,7 +2560,7 @@ var convertToBatch = function (requests) {
             batchBody.push('\n--' + currentChangeSet + '--');
 
             currentChangeSet = null;
-            contentId = 0;
+            contentId = 100000;
         }
 
         if (!currentChangeSet) {
@@ -2579,10 +2580,19 @@ var convertToBatch = function (requests) {
         batchBody.push('Content-Transfer-Encoding: binary');
 
         if (!isGet) {
-            batchBody.push('Content-ID: ' + ++contentId);
+            var contentIdValue = request.headers.hasOwnProperty('Content-ID')
+                ? request.headers['Content-ID']
+                : ++contentId;
+
+            batchBody.push('Content-ID: ' + contentIdValue);
         }
 
-        batchBody.push('\n' + request.method + ' ' + request.config.webApiUrl + request.path + ' HTTP/1.1');
+        if (!request.path.startsWith("$")) {
+            batchBody.push('\n' + request.method + ' ' + request.config.webApiUrl + request.path + ' HTTP/1.1');
+        }
+        else {
+            batchBody.push('\n' + request.method + ' ' + request.path + ' HTTP/1.1');
+        }
 
         if (isGet) {
             batchBody.push('Accept: application/json');
@@ -2592,7 +2602,7 @@ var convertToBatch = function (requests) {
         }
 
         for (var key in request.headers) {
-            if (key === 'Authorization')
+            if (key === 'Authorization' || key === 'Content-ID')
                 continue;
 
             batchBody.push(key + ': ' + request.headers[key]);
@@ -2790,6 +2800,13 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
             headers['MSCRM.MergeLabels'] = 'true';
         }
 
+        if (request.contentId) {
+            ErrorHelper.stringParameterCheck(request.contentId, 'DynamicsWebApi.' + functionName, 'request.contentId');
+            if (!request.contentId.startsWith('$')) {
+                headers['Content-ID'] = request.contentId;
+            }
+        }
+
         if (request.isBatch) {
             ErrorHelper.boolParameterCheck(request.isBatch, 'DynamicsWebApi.' + functionName, 'request.isBatch');
         }
@@ -2839,6 +2856,13 @@ function convertRequest(request, functionName, config) {
         if (request.collection) {
             ErrorHelper.stringParameterCheck(request.collection, 'DynamicsWebApi.' + functionName, "request.collection");
             url = request.collection;
+
+            if (request.contentId) {
+                ErrorHelper.stringParameterCheck(request.contentId, 'DynamicsWebApi.' + functionName, 'request.contentId');
+                if (request.contentId.startsWith('$')) {
+                    url = request.contentId + '/' + url;
+                }
+            }
 
             //add alternate key feature
             if (request.key) {
