@@ -616,7 +616,7 @@ declare namespace DynamicsWebApi {
         getCollectionName(entityName: string): string;
     }
 
-    interface RequestError {
+    interface RequestError extends Error {
         /**This code is not related to the http status code and is frequently empty */
         code?: string;
         /**A message describing the error */
