@@ -1059,7 +1059,7 @@ Note that the second response does not have a returned value, it is a CRM Web AP
 
 **Important!** DynamicsWebApi automatically assigns value to a `Content-ID` if it is not provided, therefore, please set your `Content-ID` value less than 100000.
 
-### Use Content-ID inside a request payload
+## Use Content-ID inside a request payload
 
 `version 1.5.7+`
 
@@ -1074,8 +1074,8 @@ var contact = {
 
 var order = {
     name: '1 year membership',
-	//reference a request in a navigation property
-	'customerid_contact@odata.bind': '$1'
+    //reference a request in a navigation property
+    'customerid_contact@odata.bind': '$1'
 };
 
 dynamicsWebApi.startBatch();
@@ -1084,9 +1084,9 @@ dynamicsWebApi.createRequest({ entity: order, collection: 'salesorders' });
 
 dynamicsWebApi.executeBatch()
     .then(function (responses) {
-		//in this case both ids exist in a response
-		//which makes it a preferred method
-	    var contactId = responses[0];
+        //in this case both ids exist in a response
+        //which makes it a preferred method
+        var contactId = responses[0];
         var salesorderId = responses[1];
     }).catch(function (error) {
         //catch error here
