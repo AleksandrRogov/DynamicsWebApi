@@ -1037,13 +1037,13 @@ var order = {
 };
 
 var contact = {
-    firstname: "test content",
-    lastname: "id"
+    firstname: 'John',
+    lastname: 'Doe'
 };
 
 dynamicsWebApi.startBatch();
 dynamicsWebApi.createRequest({ entity: order, collection: 'salesorders', contentId: '1' });
-dynamicsWebApi.createRequest({ entity: contact, collection: 'customerid_contact', contentId: "$1" });
+dynamicsWebApi.createRequest({ entity: contact, collection: 'customerid_contact', contentId: '$1' });
 
 dynamicsWebApi.executeBatch()
     .then(function (responses) {
@@ -1058,6 +1058,41 @@ dynamicsWebApi.executeBatch()
 Note that the second response does not have a returned value, it is a CRM Web API limitation.
 
 **Important!** DynamicsWebApi automatically assigns value to a `Content-ID` if it is not provided, therefore, please set your `Content-ID` value less than 100000.
+
+### Use Content-ID inside a request payload
+
+`version 1.5.7+`
+
+Another option to make the same request is to use `Content-ID` reference inside a request payload as following:
+
+```js
+
+var contact = {
+    firstname: 'John',
+    lastname: 'Doe''
+};
+
+var order = {
+    name: '1 year membership',
+	//reference a request in a navigation property
+	'customerid_contact@odata.bind': '$1'
+};
+
+dynamicsWebApi.startBatch();
+dynamicsWebApi.createRequest({ entity: contact, collection: 'contacts', contentId: '1' });
+dynamicsWebApi.createRequest({ entity: order, collection: 'salesorders' });
+
+dynamicsWebApi.executeBatch()
+    .then(function (responses) {
+		//in this case both ids exist in a response
+		//which makes it a preferred method
+	    var contactId = responses[0];
+        var salesorderId = responses[1];
+    }).catch(function (error) {
+        //catch error here
+    });
+
+```
 
 #### Limitations
 
