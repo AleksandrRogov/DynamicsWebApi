@@ -10,7 +10,9 @@ Please check [DynamicsWebApi Wiki](../../wiki/) where you will find documentatio
 
 Libraries for browsers can be found in [dist](/dist/) folder.
 
-Any [suggestions and contributions](#contributions) are welcome!
+If you feel that this project saved your time and you would like to support it, then please feel free to donate: [![PayPal.Me](/extra/paypal.png)](https://paypal.me/alexrogov)
+
+Please check [suggestions and contributions](#contributions) section to learn more on how you can help to improve this project.
 
 **Important!** For some reason, npm was not removing `.git` folder from a published package, 
 even though [it should have done it by default](https://docs.npmjs.com/misc/developers#keeping-files-out-of-your-package), therefore
