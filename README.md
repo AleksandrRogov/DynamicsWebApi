@@ -1025,7 +1025,7 @@ dynamicsWebApi.executeBatch().then(function (responses) {
 just pass `null` if you need to add additional parameters in the request, 
 for example: `dynamicsWebApi.deleteRecord('00000000-0000-0000-0000-000000000001', 'contacts', null, null, 'firstname')`.
 
-## Use Content-ID to reference requests in a Change Set
+### Use Content-ID to reference requests in a Change Set
 
 `version 1.5.6+`
 
@@ -1059,7 +1059,7 @@ Note that the second response does not have a returned value, it is a CRM Web AP
 
 **Important!** DynamicsWebApi automatically assigns value to a `Content-ID` if it is not provided, therefore, please set your `Content-ID` value less than 100000.
 
-## Use Content-ID inside a request payload
+### Use Content-ID inside a request payload
 
 `version 1.5.7+`
 
@@ -1069,7 +1069,7 @@ Another option to make the same request is to use `Content-ID` reference inside 
 
 var contact = {
     firstname: 'John',
-    lastname: 'Doe''
+    lastname: 'Doe'
 };
 
 var order = {
