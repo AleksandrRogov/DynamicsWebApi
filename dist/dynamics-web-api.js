@@ -1,4 +1,4 @@
-/*! dynamics-web-api v1.5.6 (c) 2019 Aleksandr Rogov */
+/*! dynamics-web-api v1.5.7 (c) 2019 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -520,7 +520,7 @@ function stringifyData(data, config) {
         stringifiedData = JSON.stringify(data, function (key, value) {
             /// <param name="key" type="String">Description</param>
             if (key.endsWith('@odata.bind') || key.endsWith('@odata.id')) {
-                if (typeof value === 'string') {
+                if (typeof value === 'string' && !value.startsWith('$')) {
                     //remove brackets in guid
                     if (/\(\{[\w\d-]+\}\)/g.test(value)) {
                         value = value.replace(/(.+)\(\{([\w\d-]+)\}\)/g, '$1($2)');
