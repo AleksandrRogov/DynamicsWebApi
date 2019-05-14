@@ -1383,7 +1383,7 @@ dynamicsWebApi.retrieveAttributes(entityKey, 'Microsoft.Dynamics.CRM.MoneyAttrib
 
 You can also use common request functions to create, retrieve and update entity and attribute metadata. Just use the following rules:
 
-1. Always set `collectionName: 'EntityDefinitions'`.
+1. Always set `collection: 'EntityDefinitions'`.
 2. To retrieve a specific **entity metadata** by a Primary or Alternate Key use `key` property. For example: `key: 'LogicalName="account"'`.
 3. To get attributes, set `navigationProperty: 'Attributes'`.
 4. To retrieve a specific **attribute metadata** by Primary or Alternate Key use `navigationPropertyKey`. For example: `navigationPropertyKey: '00000000-0000-0000-0000-000000000002'`.
@@ -1396,7 +1396,7 @@ Retrieve entity metadata with attributes (with common properties):
 
 ```js
 var request = {
-    collectionName: 'EntityDefinitions',
+    collection: 'EntityDefinitions',
     key: '00000000-0000-0000-0000-000000000001',
     select: ['LogicalName', 'SchemaName'],
     expand: 'Attributes'
@@ -1413,7 +1413,7 @@ Retrieve attribute metadata and cast it to the StringType:
 
 ```js
 var request = {
-    collectionName: 'EntityDefinitions',
+    collection: 'EntityDefinitions',
     key: 'LogicalName="account"',
     navigationProperty: 'Attributes',
     navigationPropertyKey: 'LogicalName="firstname"',
@@ -1431,7 +1431,7 @@ Update entity metadata with **MSCRM.MergeLabels** header set to `true`:
 
 ```js
 var request = {
-    collectionName: 'EntityDefinitions',
+    collection: 'EntityDefinitions',
     key: 'LogicalName="account"'
 };
 
@@ -1440,7 +1440,7 @@ dynamicsWebApi.retrieveRequest(request).then(function(entityMetadata){
     entityMetadata.DisplayName.LocalizedLabels[0].Label = 'Organization';
     //2. configure update request
     var updateRequest = {
-        collectionName: 'EntityDefinitions',
+        collection: 'EntityDefinitions',
         key: entityMetadata.MetadataId,
         mergeLabels: true,
         entity: entityMetadata
