@@ -2813,7 +2813,7 @@ function parseBatchResponse(response, parseParams, requestNumber) {
                     result.push(isNaN(plainContent) ? plainContent : parseInt(plainContent));
                 }
                 else
-                    if (parseParams[requestNumber].hasOwnProperty('valueIfEmpty')) {
+                    if (parseParams.length && parseParams[requestNumber].hasOwnProperty('valueIfEmpty')) {
                         result.push(parseParams[requestNumber].valueIfEmpty);
                     }
                     else {
