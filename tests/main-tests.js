@@ -1149,7 +1149,7 @@ describe("promises -", function () {
                     .post("/tests_records/$ref", {
                         "@odata.id": mocks.webApiUrl + "records(" + mocks.data.testEntityId2 + ")"
                     })
-                    .reply(response.status, response.responseText, response.responseHeaders)
+                    .reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -1604,7 +1604,7 @@ describe("promises -", function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
                 scope = nock(mocks.webApiUrl)
                     .post("/FUN", mocks.responses.actionRequestModified)
-                    .reply(response.status, response.responseText, response.responseHeaders)
+                    .reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {

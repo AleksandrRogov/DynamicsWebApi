@@ -539,9 +539,16 @@ function stringifyData(data, config) {
                         }
                     }
 
-                    //add full web api url if it's not set
                     if (!value.startsWith(config.webApiUrl)) {
-                        value = config.webApiUrl + value.replace(/^\\/, '');
+                        //add full web api url if it's not set
+                        if (key.endsWith('@odata.bind')) {
+                            if (!value.startsWith('/')) {
+                                value = '/' + value;
+                            }
+                        }
+                        else {
+                            value = config.webApiUrl + value.replace(/^\//, '');
+                        }
                     }
                 }
             }
@@ -557,7 +564,7 @@ function stringifyData(data, config) {
         });
 
         stringifiedData = stringifiedData.replace(/[\u007F-\uFFFF]/g, function (chr) {
-            return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substr(-4)
+            return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substr(-4);
         });
     }
 
@@ -1643,7 +1650,7 @@ function DynamicsWebApi(config) {
     /**
      * Executes a bound function
      *
-     * @param {string} id - A String representing the GUID value for the record.
+     * @param {string} [id] - A String representing the GUID value for the record.
      * @param {string} collection - The name of the Entity Collection or Entity Logical name.
      * @param {string} functionName - The name of the function.
      * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.

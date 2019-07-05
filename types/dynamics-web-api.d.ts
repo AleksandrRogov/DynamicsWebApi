@@ -291,7 +291,7 @@ declare class DynamicsWebApi {
      * @param requestObject - Action request body object.
      * @param impersonateUserId - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
-    executeBoundAction(id: string, collection: string, actionName: string, requestObject?: Object, impersonateUserId?: string): Promise<any>;
+    executeBoundAction(id?: string, collection: string, actionName: string, requestObject?: Object, impersonateUserId?: string): Promise<any>;
     /**
      * Sends an asynchronous request to create an entity definition.
      *
@@ -481,7 +481,7 @@ declare namespace DynamicsWebApi {
     interface CreateRequest extends CRUDRequest {
         /**v.1.3.4+ Web API v9+ only! Boolean that enables duplicate detection. */
         duplicateDetection?: boolean;
-        /**A JavaScript object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single - valued navigation properties). */
+        /**A JavaScript object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single-valued navigation properties). */
         entity?: any;
         /**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
         expand?: Expand[];
@@ -500,7 +500,7 @@ declare namespace DynamicsWebApi {
     interface UpdateRequestBase extends CRUDRequest {
         /**v.1.3.4+ Web API v9+ only! Boolean that enables duplicate detection. */
         duplicateDetection?: boolean;
-        /**A JavaScript object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single - valued navigation properties). */
+        /**A JavaScript object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single-valued navigation properties). */
         entity?: any;
         /**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
         expand?: Expand[];
@@ -565,6 +565,8 @@ declare namespace DynamicsWebApi {
     }
 
     interface RetrieveMultipleRequest extends Request {
+        /**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
+        expand?: Expand[];
         /**Boolean that sets the $count system query option with a value of true to include a count of entities that match the filter criteria up to 5000(per page).Do not use $top with $count! */
         count?: boolean;
         /**Use the $filter system query option to set criteria for which entities will be returned. */

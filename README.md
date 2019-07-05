@@ -235,7 +235,7 @@ contentId | String | `createRequest`, `updateRequest`, `upsertRequest`, `deleteR
 count | Boolean | `retrieveMultipleRequest`, `retrieveAllRequest` | Boolean that sets the $count system query option with a value of true to include a count of entities that match the filter criteria up to 5000 (per page). Do not use $top with $count!
 duplicateDetection | Boolean | `createRequest`, `updateRequest`, `upsertRequest` | `v.1.3.4+` **Web API v9+ only!** Boolean that enables duplicate detection. [More Info](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/webapi/update-delete-entities-using-web-api#check-for-duplicate-records)
 entity | Object | `createRequest`, `updateRequest`, `upsertRequest` | A JavaScript object with properties corresponding to the logical name of entity attributes (exceptions are lookups and single-valued navigation properties).
-expand | Array | `retrieveRequest`, `createRequest`, `updateRequest`, `upsertRequest` | An array of Expand Objects (described below the table) representing the $expand OData System Query Option value to control which related records are also returned.
+expand | Array | `retrieveRequest`, `retrieveMultipleRequest`, `createRequest`, `updateRequest`, `upsertRequest` | An array of Expand Objects (described below the table) representing the $expand OData System Query Option value to control which related records are also returned.
 filter | String | `retrieveRequest`, `retrieveMultipleRequest`, `retrieveAllRequest` | Use the $filter system query option to set criteria for which entities will be returned.
 id | String | `retrieveRequest`, `createRequest`, `updateRequest`, `upsertRequest`, `deleteRequest` | `deprecated in v.1.3.4` Use `key` field, instead of `id`. A String representing the Primary Key (GUID) of the record. 
 ifmatch | String | `retrieveRequest`, `updateRequest`, `upsertRequest`, `deleteRequest` | Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests. [More Info](https://msdn.microsoft.com/en-us/library/mt607711.aspx)
@@ -268,9 +268,9 @@ property | String | A name of a single-valued navigation property which needs to
 select | Array | An Array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
 top | Number | Limit the number of results returned by using the $top system query option.
 
-According to CRM developers ([here](http://stackoverflow.com/a/34742977/2042071) and [here](https://community.dynamics.com/crm/b/joegilldynamicscrm/archive/2016/03/23/web-api-querying-with-expand) 
-$expand does not work for retrieveMultiple requests which is claimed as a bug of CRM Web API.
-As well as multi-level expands are not implemented yet. This situation may be changed with the future updates in the platform. Please look for the news!
+The following seems to be fixed: ~~According to CRM developers ([here](http://stackoverflow.com/a/34742977/2042071) and [here](https://community.dynamics.com/crm/b/joegilldynamicscrm/archive/2016/03/23/web-api-querying-with-expand) 
+$expand does not work for retrieveMultiple requests which is claimed as a bug of CRM Web API.~~
+Unconfirmed: Multi-level expands are not implemented yet. This situation may be changed with the future updates in the platform. Please look for the news!
 
 For complex requests to Web API with multi-level expands use `executeFetchXml` function.
 

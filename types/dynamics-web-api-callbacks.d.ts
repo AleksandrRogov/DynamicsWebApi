@@ -349,7 +349,7 @@ declare class DynamicsWebApi {
      * @param errorCallback - The function that will be passed through and be called by a failed response.
      * @param impersonateUserId - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
-    executeBoundAction(id: string, collection: string, actionName: string, requestObject: Object, successCallback: Function, errorCallback: Function, impersonateUserId?: string): void;
+    executeBoundAction(id?: string, collection: string, actionName: string, requestObject: Object, successCallback: Function, errorCallback: Function, impersonateUserId?: string): void;
     /**
      * Sends an asynchronous request to create an entity definition.
      *
@@ -661,6 +661,8 @@ declare namespace DynamicsWebApi {
     }
 
     interface RetrieveMultipleRequest extends Request {
+        /**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
+        expand?: Expand[];
         /**Boolean that sets the $count system query option with a value of true to include a count of entities that match the filter criteria up to 5000(per page).Do not use $top with $count! */
         count?: boolean;
         /**Use the $filter system query option to set criteria for which entities will be returned. */

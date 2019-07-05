@@ -819,7 +819,7 @@ var responseStubs = {
         Status: 3,
         OpportunityClose: {
             subject: "Won Opportunity",
-            "testid@odata.bind": webApiUrl + "tests(" + dataStubs.testEntityId + ")"
+            "testid@odata.bind": "/tests(" + dataStubs.testEntityId + ")"
         }
     },
     upsertPreventCreateResponse: {
