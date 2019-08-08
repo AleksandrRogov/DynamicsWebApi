@@ -285,13 +285,13 @@ declare class DynamicsWebApi {
     /**
      * Executes a bound Web API action (bound to a particular entity record)
      *
-     * @param id - A String representing the GUID value for the record.
+     * @param id - A String representing the GUID value for the record (pass "null" for an optional parameter)
      * @param collection - The name of the Entity Collection or Entity Logical name.
      * @param actionName - The name of the Web API action.
      * @param requestObject - Action request body object.
      * @param impersonateUserId - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
-    executeBoundAction(id?: string, collection: string, actionName: string, requestObject?: Object, impersonateUserId?: string): Promise<any>;
+    executeBoundAction(id: string, collection: string, actionName: string, requestObject?: Object, impersonateUserId?: string): Promise<any>;
     /**
      * Sends an asynchronous request to create an entity definition.
      *
