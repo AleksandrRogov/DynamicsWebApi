@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.5.9 (c) 2019 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.5.10 (c) 2019 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -2820,7 +2820,7 @@ function parseBatchResponse(response, parseParams, requestNumber) {
                     result.push(isNaN(plainContent) ? plainContent : parseInt(plainContent));
                 }
                 else
-                    if (parseParams.length && parseParams[requestNumber].hasOwnProperty('valueIfEmpty')) {
+                    if (parseParams.length && parseParams[requestNumber] && parseParams[requestNumber].hasOwnProperty('valueIfEmpty')) {
                         result.push(parseParams[requestNumber].valueIfEmpty);
                     }
                     else {
@@ -2886,6 +2886,7 @@ module.exports = function parseResponse(response, responseHeaders, parseParams) 
 
     return parseResult;
 };
+
 
 /***/ }),
 /* 9 */
