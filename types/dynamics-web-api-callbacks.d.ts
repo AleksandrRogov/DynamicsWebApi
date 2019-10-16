@@ -200,7 +200,7 @@ declare class DynamicsWebApi {
      * @param errorCallback - The function that will be passed through and be called by a failed response.
      * @param oDataLink - Use this parameter to pass @odata.nextLink or @odata.deltaLink to return a necessary response. Pass null to retrieveMultipleOptions.
      */
-    retrieveMultipleRequest(request: DynamicsWebApi.RetrieveMultipleRequest, successCallback: Function, errorCallback: Function): void;
+    retrieveMultipleRequest(request: DynamicsWebApi.RetrieveMultipleRequest, successCallback: Function, errorCallback: Function, oDataLink?: string): void;
     /**
      * Sends an asynchronous request to retrieve all records.
      *
