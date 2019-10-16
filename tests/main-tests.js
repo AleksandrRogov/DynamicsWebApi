@@ -2660,6 +2660,83 @@ describe("promises -", function () {
                 expect(scope.isDone()).to.be.true;
             });
         });
+
+        describe("retrieves the delta link (@odata.deltaLink)", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.multipleWithDeltaLinkResponse;
+                scope = nock(mocks.responses.collectionUrl, {
+                    reqheaders: {
+                        Prefer: 'odata.track-changes'
+                    }
+                })
+                    .get("?$select=name")
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                var dwaRequest = {
+                    collection: "tests",
+                    select: ["name"],
+                    trackChanges: true
+                };
+
+                dynamicsWebApiTest.retrieveMultipleRequest(dwaRequest)
+                    .then(function (object) {
+                        expect(object).to.deep.equal(mocks.responses.multipleWithDeltaLink());
+                        done();
+                    }).catch(function (object) {
+                        done(object);
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+
+        describe("when goes by delta link (@odata.deltaLink)", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.multipleResponse;
+                var link = mocks.responses.multipleWithDeltaLink().oDataDeltaLink.split('?');
+                scope = nock(link[0], {
+                    reqheaders: {
+                        Prefer: 'odata.track-changes'
+                    }
+                })
+                    .get("?" + link[1])
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                var dwaRequest = {
+                    collection: "tests",
+                    select: ["name"],
+                    trackChanges: true
+                };
+
+                dynamicsWebApiTest.retrieveMultipleRequest(dwaRequest, mocks.responses.multipleWithDeltaLink().oDataDeltaLink)
+                    .then(function (object) {
+                        expect(object).to.deep.equal(mocks.responses.multiple());
+                        done();
+                    }).catch(function (object) {
+                        done(object);
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
     });
 
     describe("dynamicsWebApi.retrieveAllRequest -", function () {

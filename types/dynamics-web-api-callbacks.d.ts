@@ -1,4 +1,4 @@
-﻿// Type definitions for dynamics-web-api-callbacks v1.5.9
+﻿// Type definitions for dynamics-web-api-callbacks v1.5.11
 // Project: https://github.com/AleksandrRogov/DynamicsWebApi
 // Definitions by: Aleksandr Rogov https://github.com/AleksandrRogov/
 
@@ -177,11 +177,11 @@ declare class DynamicsWebApi {
      * @param collection - The name of the Entity Collection or Entity Logical name.
      * @param successCallback - The function that will be passed through and be called by a successful response.
      * @param errorCallback - The function that will be passed through and be called by a failed response.
-     * @param select] - Use the $select system query option to limit the properties returned.
+     * @param select - Use the $select system query option to limit the properties returned.
      * @param filter - Use the $filter system query option to set criteria for which entities will be returned.
-     * @param nextPageLink - Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
+     * @param oDataLink - Use this parameter to pass @odata.nextLink or @odata.deltaLink to return a necessary response. Pass null to retrieveMultipleOptions.
      */
-    retrieveMultiple(collection: string, successCallback: Function, errorCallback: Function, select?: string[], filter?: string, nextPageLink?: string): void;
+    retrieveMultiple(collection: string, successCallback: Function, errorCallback: Function, select?: string[], filter?: string, oDataLink?: string): void;
     /**
     * Sends an asynchronous request to retrieve all records.
     *
@@ -198,7 +198,7 @@ declare class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @param successCallback - The function that will be passed through and be called by a successful response.
      * @param errorCallback - The function that will be passed through and be called by a failed response.
-     * @param nextPageLink - Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
+     * @param oDataLink - Use this parameter to pass @odata.nextLink or @odata.deltaLink to return a necessary response. Pass null to retrieveMultipleOptions.
      */
     retrieveMultipleRequest(request: DynamicsWebApi.RetrieveMultipleRequest, successCallback: Function, errorCallback: Function): void;
     /**

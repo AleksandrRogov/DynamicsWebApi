@@ -132,6 +132,14 @@ var dataStubs = {
             { name: "name2", subject: "subject2" }
         ]
     },
+    multipleWithDeltaLink: {
+        "@odata.context": "context",
+        "@odata.deltaLink": webApiUrl + "tests?$select=name&$deltatoken=919042%2108%2f22%2f2017%2008%3a10%3a44",
+        value: [
+            { name: "name1", subject: "subject1" },
+            { name: "name2", subject: "subject2" }
+        ]
+    },
     batch:
         '--dwa_batch_XXX\n' +
         'Content-Type: application/http\n' +
@@ -543,6 +551,10 @@ var responseStubs = {
         status: 200,
         responseText: JSON.stringify(dataStubs.multipleWithLink)
     },
+    multipleWithDeltaLinkResponse: {
+        status: 200,
+        responseText: JSON.stringify(dataStubs.multipleWithDeltaLink)
+    },
     batch: {
         status: 200,
         responseText:
@@ -859,6 +871,12 @@ var responseStubs = {
         var stub = dataStubs.multipleWithLink;
         stub.oDataContext = stub["@odata.context"];
         stub.oDataNextLink = stub["@odata.nextLink"];
+        return stub;
+    },
+    multipleWithDeltaLink: function () {
+        var stub = dataStubs.multipleWithDeltaLink;
+        stub.oDataContext = stub["@odata.context"];
+        stub.oDataDeltaLink = stub["@odata.deltaLink"];
         return stub;
     },
     multiple: function () {

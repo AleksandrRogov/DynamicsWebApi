@@ -255,6 +255,7 @@ savedQuery | String | `retrieveRequest` | A String representing the GUID value o
 select | Array | `retrieveRequest`, `retrieveMultipleRequest`, `retrieveAllRequest`, `updateRequest`, `upsertRequest` | An Array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
 token | String | All | Authorization Token. If set, onTokenRefresh will not be called.
 top | Number | `retrieveMultipleRequest`, `retrieveAllRequest` | Limit the number of results returned by using the $top system query option. Do not use $top with $count!
+trackChanges | Boolean | `retrieveMultipleRequest` | `v.1.5.11+` Sets Prefer header with value 'odata.track-changes' to request that a delta link be returned which can subsequently be used to retrieve entity changes. __Important!__ Change Tracking must be enabled for the entity. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/use-change-tracking-synchronize-data-external-systems#enable-change-tracking-for-an-entity)
 userQuery | String | `retrieveRequest` | A String representing the GUID value of the user query.
 
 Basic and Advanced functions also have differences in `expand` parameters. For Basic ones this parameter is a type of String 
@@ -644,12 +645,39 @@ var request = {
 
 //perform a multiple records retrieve operation
 dynamicsWebApi.retrieveMultipleRequest(request).then(function (response) {
-    /// <param name="response" type="DWA.Types.MultipleResponse">Response object</param>
 
     var count = response.oDataCount;
     var nextLink = response.oDataNextLink;
     var records = response.value;
     //do something else with a records array. Access a record: response.value[0].subject;
+})
+.catch(function (error){
+    //catch an error
+});
+```
+
+#### Change Tracking
+
+```js
+//set the request parameters
+var request = {
+    collection: "leads",
+    select: ["fullname", "subject"],
+	trackChanges: true
+};
+
+//perform a multiple records retrieve operation (1)
+dynamicsWebApi.retrieveMultipleRequest(request).then(function (response) {
+
+    var deltaLink = response.oDataDeltaLink;
+	//make other requests to Web API
+	//...
+
+	//(2) only retrieve changes:
+	return dynamicsWebApi.retrieveMultipleRequest(request, response.oDataDeltaLink);
+})
+.then(function (response) {
+	//here you will get changes between the first retrieveMultipleRequest (1) and the second one (2)
 })
 .catch(function (error){
     //catch an error

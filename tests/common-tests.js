@@ -1205,6 +1205,45 @@ describe("RequestConverter.convertRequestOptions -", function () {
         });
     });
 
+    it("prefer - trackChanges & maxPageSize", function () {
+        var dwaRequest = {
+            prefer: 'odata.track-changes,odata.maxpagesize=20'
+        };
+
+        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
+        expect(result).to.deep.equal({
+            url: stubUrl, query: "", headers: {
+                Prefer: 'odata.maxpagesize=20,odata.track-changes'
+            }
+        });
+    });
+
+    it("prefer - trackChanges & includeAnnotations", function () {
+        var dwaRequest = {
+            prefer: 'odata.track-changes,odata.include-annotations="' + DWA.Prefer.Annotations.AssociatedNavigationProperty + '"'
+        };
+
+        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
+        expect(result).to.deep.equal({
+            url: stubUrl, query: "", headers: {
+                Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.AssociatedNavigationProperty + '",odata.track-changes'
+            }
+        });
+    });
+
+    it("prefer - includeAnnotations & returnRepresentation & maxPageSize & trackChanges", function () {
+        var dwaRequest = {
+            prefer: 'return=representation,odata.include-annotations="*",odata.track-changes,odata.maxpagesize=20'
+        };
+
+        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
+        expect(result).to.deep.equal({
+            url: stubUrl, query: "", headers: {
+                Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="*",odata.maxpagesize=20,odata.track-changes'
+            }
+        });
+    });
+
     it("returnRepresentation: false & config.returnRepresentation: true", function () {
         var config = {
             returnRepresentation: true

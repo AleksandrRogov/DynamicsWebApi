@@ -1,4 +1,4 @@
-﻿// Type definitions for dynamics-web-api v1.5.9
+﻿// Type definitions for dynamics-web-api v1.5.11
 // Project: https://github.com/AleksandrRogov/DynamicsWebApi/
 // Definitions by: Aleksandr Rogov https://github.com/AleksandrRogov/
 
@@ -149,11 +149,11 @@ declare class DynamicsWebApi {
      * Sends an asynchronous request to retrieve records.
      *
      * @param collection - The name of the Entity Collection or Entity Logical name.
-     * @param select] - Use the $select system query option to limit the properties returned.
+     * @param select - Use the $select system query option to limit the properties returned.
      * @param filter - Use the $filter system query option to set criteria for which entities will be returned.
-     * @param nextPageLink - Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
+     * @param oDataLink - Use this parameter to pass @odata.nextLink or @odata.deltaLink to return a necessary response. Pass null to retrieveMultipleOptions.
      */
-    retrieveMultiple(collection: string, select?: string[], filter?: string, nextPageLink?: string): Promise<any>;
+    retrieveMultiple(collection: string, select?: string[], filter?: string, oDataLink?: string): Promise<any>;
     /**
     * Sends an asynchronous request to retrieve all records.
     *
@@ -166,9 +166,9 @@ declare class DynamicsWebApi {
      * Sends an asynchronous request to retrieve records.
      *
      * @param request - An object that represents all possible options for a current request.
-     * @param nextPageLink - Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
+     * @param oDataLink - Use this parameter to pass @odata.nextLink or @odata.deltaLink to return a necessary response. Pass null to retrieveMultipleOptions
      */
-    retrieveMultipleRequest(request: DynamicsWebApi.RetrieveMultipleRequest): Promise<any>;
+    retrieveMultipleRequest(request: DynamicsWebApi.RetrieveMultipleRequest, oDataLink?: string): Promise<any>;
     /**
      * Sends an asynchronous request to retrieve all records.
      *
@@ -581,6 +581,8 @@ declare namespace DynamicsWebApi {
         select?: string[];
         /**Limit the number of results returned by using the $top system query option.Do not use $top with $count! */
         top?: number;
+        /**Sets Prefer header with value 'odata.track-changes' to request that a delta link be returned which can subsequently be used to retrieve entity changes. */
+        trackChanges?: boolean;
     }
 
     interface Config {
