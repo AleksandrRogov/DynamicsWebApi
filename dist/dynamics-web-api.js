@@ -1,4 +1,4 @@
-/*! dynamics-web-api v1.5.10 (c) 2019 Aleksandr Rogov */
+/*! dynamics-web-api v1.5.11 (c) 2019 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -836,6 +836,8 @@ if (!String.prototype.endsWith || !String.prototype.startsWith) {
  * @property {boolean} mergeLabels - If set to 'true', DynamicsWebApi adds a request header 'MSCRM.MergeLabels: true'. Default value is 'false'.
  * @property {boolean} isBatch - If set to 'true', DynamicsWebApi treats a request as a part of a batch request. Call ExecuteBatch to execute all requests in a batch. Default value is 'false'.
  * @property {string} contentId - BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set.
+ * @property {boolean} trackChanges - Preference header 'odata.track-changes' is used to request that a delta link be returned which can subsequently be used to retrieve entity changes.
+ * @property {string} deltaLink - Delta link can be used to retrieve entity changes. Important! Change Tracking must be enabled for the entity.
  */
 
 /**
@@ -2226,6 +2228,9 @@ function getFormattedKeyValue(keyName, value) {
             case 'odata.nextLink':
                 newKey = 'oDataNextLink';
                 break;
+            case 'odata.deltaLink':
+                newKey = 'oDataDeltaLink';
+                break;
             case DWA.Prefer.Annotations.FormattedValue:
                 newKey = format[0] + '_Formatted';
                 break;
@@ -2991,6 +2996,7 @@ module.exports = function buildPreferHeader(request, functionName, config) {
     var returnRepresentation = request.returnRepresentation;
     var includeAnnotations = request.includeAnnotations;
     var maxPageSize = request.maxPageSize;
+    var trackChanges = request.trackChanges;
 
     var prefer;
 
@@ -3005,11 +3011,14 @@ module.exports = function buildPreferHeader(request, functionName, config) {
             if (item === DWA.Prefer.ReturnRepresentation) {
                 returnRepresentation = true;
             }
-            else if (item.startsWith("odata.include-annotations=")) {
-                includeAnnotations = item.replace('odata.include-annotations=', '').replace(/"/g,'');
+            else if (item.indexOf("odata.include-annotations=") > -1) {
+                includeAnnotations = item.replace('odata.include-annotations=', '').replace(/"/g, '');
             }
             else if (item.startsWith("odata.maxpagesize=")) {
                 maxPageSize = item.replace('odata.maxpagesize=', '').replace(/"/g, '');
+            }
+            else if (item.indexOf("odata.track-changes") > -1) {
+                trackChanges = true;
             }
         }
     }
@@ -3037,6 +3046,11 @@ module.exports = function buildPreferHeader(request, functionName, config) {
     if (maxPageSize && maxPageSize > 0) {
         ErrorHelper.numberParameterCheck(maxPageSize, "DynamicsWebApi." + functionName, "request.maxPageSize");
         prefer.push('odata.maxpagesize=' + maxPageSize);
+    }
+
+    if (trackChanges) {
+        ErrorHelper.boolParameterCheck(trackChanges, "DynamicsWebApi." + functionName, "request.trackChanges");
+        prefer.push('odata.track-changes');
     }
 
     return prefer.join(',');

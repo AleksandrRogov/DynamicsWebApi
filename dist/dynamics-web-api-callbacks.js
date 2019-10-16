@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.5.10 (c) 2019 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.5.11 (c) 2019 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -1712,15 +1712,15 @@ function DynamicsWebApi(config) {
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
      * @param {Array} [select] - Use the $select system query option to limit the properties returned.
      * @param {string} [filter] - Use the $filter system query option to set criteria for which entities will be returned.
-     * @param {string} [nextPageLink] - Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
+     * @param {string} [oDataLink] - Use this parameter to pass @odata.nextLink or @odata.deltaLink to return a necessary response. Pass null to retrieveMultipleOptions.
      */
-    this.retrieveMultiple = function (collection, successCallback, errorCallback, select, filter, nextPageLink) {
+    this.retrieveMultiple = function (collection, successCallback, errorCallback, select, filter, oDataLink) {
 
         this.retrieveMultipleRequest({
             collection: collection,
             select: select,
             filter: filter
-        }, successCallback, errorCallback, nextPageLink);
+        }, successCallback, errorCallback, oDataLink);
     };
 
     /**
@@ -1742,16 +1742,16 @@ function DynamicsWebApi(config) {
         }, successCallback, errorCallback);
     };
 
-    var retrieveMultipleRequest = function (request, successCallback, errorCallback, nextPageLink) {
+    var retrieveMultipleRequest = function (request, successCallback, errorCallback, oDataLink) {
 
         if (!_isBatch) {
             ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.retrieveMultiple", "successCallback");
             ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.retrieveMultiple", "errorCallback");
         }
 
-        if (nextPageLink) {
-            ErrorHelper.stringParameterCheck(nextPageLink, 'DynamicsWebApi.retrieveMultiple', 'nextPageLink');
-            request.url = nextPageLink;
+        if (oDataLink) {
+            ErrorHelper.stringParameterCheck(oDataLink, 'DynamicsWebApi.retrieveMultiple', 'oDataLink');
+            request.url = oDataLink;
         }
 
         var onSuccess = function (response) {
@@ -1767,11 +1767,11 @@ function DynamicsWebApi(config) {
      * @param {DWARequest} request - An object that represents all possible options for a current request.
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
-     * @param {string} [nextPageLink] - Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
+     * @param {string} [oDataLink] - Use this parameter to pass @odata.nextLink or @odata.deltaLink to return a necessary response. Pass null to retrieveMultipleOptions.
      */
     this.retrieveMultipleRequest = retrieveMultipleRequest;
 
-    var _retrieveAllRequest = function (request, successCallback, errorCallback, nextPageLink, records) {
+    var _retrieveAllRequest = function (request, successCallback, errorCallback, oDataLink, records) {
 
         records = records || [];
 
@@ -1786,7 +1786,7 @@ function DynamicsWebApi(config) {
             }
         };
 
-        retrieveMultipleRequest(request, internalSuccessCallback, errorCallback, nextPageLink);
+        retrieveMultipleRequest(request, internalSuccessCallback, errorCallback, oDataLink);
     };
 
     /**
@@ -2696,6 +2696,9 @@ function getFormattedKeyValue(keyName, value) {
             case 'odata.nextLink':
                 newKey = 'oDataNextLink';
                 break;
+            case 'odata.deltaLink':
+                newKey = 'oDataDeltaLink';
+                break;
             case DWA.Prefer.Annotations.FormattedValue:
                 newKey = format[0] + '_Formatted';
                 break;
@@ -3171,6 +3174,7 @@ module.exports = function buildPreferHeader(request, functionName, config) {
     var returnRepresentation = request.returnRepresentation;
     var includeAnnotations = request.includeAnnotations;
     var maxPageSize = request.maxPageSize;
+    var trackChanges = request.trackChanges;
 
     var prefer;
 
@@ -3185,11 +3189,14 @@ module.exports = function buildPreferHeader(request, functionName, config) {
             if (item === DWA.Prefer.ReturnRepresentation) {
                 returnRepresentation = true;
             }
-            else if (item.startsWith("odata.include-annotations=")) {
-                includeAnnotations = item.replace('odata.include-annotations=', '').replace(/"/g,'');
+            else if (item.indexOf("odata.include-annotations=") > -1) {
+                includeAnnotations = item.replace('odata.include-annotations=', '').replace(/"/g, '');
             }
             else if (item.startsWith("odata.maxpagesize=")) {
                 maxPageSize = item.replace('odata.maxpagesize=', '').replace(/"/g, '');
+            }
+            else if (item.indexOf("odata.track-changes") > -1) {
+                trackChanges = true;
             }
         }
     }
@@ -3217,6 +3224,11 @@ module.exports = function buildPreferHeader(request, functionName, config) {
     if (maxPageSize && maxPageSize > 0) {
         ErrorHelper.numberParameterCheck(maxPageSize, "DynamicsWebApi." + functionName, "request.maxPageSize");
         prefer.push('odata.maxpagesize=' + maxPageSize);
+    }
+
+    if (trackChanges) {
+        ErrorHelper.boolParameterCheck(trackChanges, "DynamicsWebApi." + functionName, "request.trackChanges");
+        prefer.push('odata.track-changes');
     }
 
     return prefer.join(',');
