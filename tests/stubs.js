@@ -69,7 +69,8 @@ var dataStubs = {
         "option_x002e_value1": "value"
     },
     entityDefinitionList: {
-        '@odata.contxt': 'context',
+        '@odata.context': 'context',
+        oDataContext: 'context',
         value: [{
             "LogicalCollectionName": "tests",
             "LogicalName": "test",
@@ -476,7 +477,9 @@ var dataStubs = {
 };
 
 var responseStubs = {
-    collectionUrl: webApiUrl + "tests",
+    webApiUrl: webApiUrl,
+    collectionUrl: "/tests",
+    collection: "tests",
     createReturnId: {
         status: 204,
         responseHeaders: {
@@ -493,13 +496,13 @@ var responseStubs = {
         status: 201,
         responseText: JSON.stringify(dataStubs.testEntity)
     },
-    testEntityUrl: webApiUrl + "tests(" + dataStubs.testEntityId + ")",
-    entityDefinitionsUrl: webApiUrl + 'EntityDefinitions',
-    entityDefinitionsIdUrl: webApiUrl + 'EntityDefinitions(' + dataStubs.testEntityId + ')',
-    relationshipDefinitionsUrl: webApiUrl + 'RelationshipDefinitions',
-    relationshipDefinitionsIdUrl: webApiUrl + 'RelationshipDefinitions(' + dataStubs.testEntityId + ')',
-    globalOptionSetDefinitionsUrl: webApiUrl + 'GlobalOptionSetDefinitions',
-    globalOptionSetDefinitionsIdUrl: webApiUrl + 'GlobalOptionSetDefinitions(' + dataStubs.testEntityId + ')',
+    testEntityUrl: "/tests(" + dataStubs.testEntityId + ")",
+    entityDefinitionsUrl: '/EntityDefinitions',
+    entityDefinitionsIdUrl: '/EntityDefinitions(' + dataStubs.testEntityId + ')',
+    relationshipDefinitionsUrl: '/RelationshipDefinitions',
+    relationshipDefinitionsIdUrl: '/RelationshipDefinitions(' + dataStubs.testEntityId + ')',
+    globalOptionSetDefinitionsUrl: '/GlobalOptionSetDefinitions',
+    globalOptionSetDefinitionsIdUrl: '/GlobalOptionSetDefinitions(' + dataStubs.testEntityId + ')',
     basicEmptyResponseSuccess: {
         status: 204
     },
@@ -909,5 +912,5 @@ module.exports = {
     responses: responseStubs,
     webApiUrl: webApiUrl,
     webApiUrl81: webApiUrl81,
-    webApiUrl80: webApiUrl80,
+    webApiUrl80: webApiUrl80
 }

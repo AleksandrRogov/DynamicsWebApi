@@ -1,10 +1,10 @@
-# DynamicsWebApi for Microsoft Dynamics CRM Web API
+# DynamicsWebApi for Microsoft Dynamics 365 CE (CRM) / Common Data Service Web API
 
 [![Travis](https://img.shields.io/travis/AleksandrRogov/DynamicsWebApi.svg?style=flat-square)](https://travis-ci.org/AleksandrRogov/DynamicsWebApi)
 [![Coveralls](https://img.shields.io/coveralls/AleksandrRogov/DynamicsWebApi.svg?style=flat-square)](https://coveralls.io/github/AleksandrRogov/DynamicsWebApi)
 
-DynamicsWebApi is a Microsoft Dynamics CRM Web API helper library written in JavaScript.
-It is compatible with: Dynamics 365 (online), Dynamics 365 (on-premises), Dynamics CRM 2016, Dynamics CRM Online.
+DynamicsWebApi is a Microsoft Dynamics 365 CE (CRM) / Common Data Service Web API helper library written in JavaScript.
+It is compatible with: Common Data Service, Dynamics 365 CE (online), Dynamics 365 CE (on-premises), Dynamics CRM 2016, Dynamics CRM Online
 
 Please check [DynamicsWebApi Wiki](../../wiki/) where you will find documentation to DynamicsWebApi API and more.
 
@@ -18,6 +18,8 @@ Please check [suggestions and contributions](#contributions) section to learn mo
 even though [it should have done it by default](https://docs.npmjs.com/misc/developers#keeping-files-out-of-your-package), therefore
 `npm update dynamics-web-api` was not working properly. If you see an error during an update of the package, 
 please go to `node_modules\dynamics-web-api` of your application and remove `.git` directory manually. This error has been fixed in `v.1.4.7`.
+
+Please note, that "Dynamics 365" in this readme refers to Microsoft Dynamics 365 Customer Engagement / Common Data Service.
 
 ## Table of Contents
 
@@ -2029,7 +2031,7 @@ Please use the following library that implements Callbacks : [DynamicsWebApi wit
 
 ## Contributions
 
-First of all, I would like to thank you for using `DynamicsWebApi` library in your Dynamics 365 CE project, the fact that my project helps someone to achieve their development goals already makes me happy. 
+First of all, I would like to thank you for using `DynamicsWebApi` library in your Dynamics 365 CE / Common Data Service project, the fact that my project helps someone to achieve their development goals already makes me happy. 
 
 And if you would like to contribute to the project you may do it in multiple ways:
 1. Submit an issue/bug if you have encountered one.

@@ -14,8 +14,8 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.createReturnId;
-                scope = nock(mocks.responses.collectionUrl)
-                    .post("", mocks.data.testEntity)
+                scope = nock(mocks.webApiUrl)
+                    .post(mocks.responses.collectionUrl, mocks.data.testEntity)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -42,12 +42,12 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.createReturnRepresentation;
-                scope = nock(mocks.responses.collectionUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         "Prefer": DWA.Prefer.ReturnRepresentation
                     }
                 })
-                    .post("", mocks.data.testEntity)
+                    .post(mocks.responses.collectionUrl, mocks.data.testEntity)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -75,12 +75,12 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.createReturnRepresentation;
-                scope = nock(mocks.responses.collectionUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         "Prefer": DWA.Prefer.ReturnRepresentation
                     }
                 })
-                    .post("?$select=name", mocks.data.testEntity)
+                    .post(mocks.responses.collectionUrl + "?$select=name", mocks.data.testEntity)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -111,12 +111,12 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
-                scope = nock(mocks.responses.testEntityUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         "If-Match": "*"
                     }
                 })
-                    .patch("", mocks.data.testEntity)
+                    .patch(mocks.responses.testEntityUrl, mocks.data.testEntity)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -143,13 +143,13 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.updateReturnRepresentation;
-                scope = nock(mocks.responses.testEntityUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         "If-Match": "*",
                         "Prefer": DWA.Prefer.ReturnRepresentation
                     }
                 })
-                    .patch("", mocks.data.testEntity)
+                    .patch(mocks.responses.testEntityUrl, mocks.data.testEntity)
                     .reply(response.status, response.responseText, response.responseHeaders);
 
             });
@@ -177,15 +177,15 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.updateReturnRepresentation;
-                scope = nock(mocks.responses.testEntityUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         "If-Match": "*",
                         "Prefer": DWA.Prefer.ReturnRepresentation
                     }
                 })
-                    .patch("?$select=fullname", mocks.data.testEntity)
+                    .patch(mocks.responses.testEntityUrl + "?$select=fullname", mocks.data.testEntity)
                     .reply(response.status, response.responseText, response.responseHeaders)
-                    .patch("?$select=fullname,subject", mocks.data.testEntity)
+                    .patch(mocks.responses.testEntityUrl + "?$select=fullname,subject", mocks.data.testEntity)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -227,8 +227,8 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
-                scope = nock(mocks.responses.testEntityUrl)
-                    .put("/fullname", {
+                scope = nock(mocks.webApiUrl)
+                    .put(mocks.responses.testEntityUrl + "/fullname", {
                         value: mocks.data.updatedEntity.fullname
                     })
                     .reply(response.status, response.responseText, response.responseHeaders);
@@ -257,12 +257,12 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.updateReturnRepresentation;
-                scope = nock(mocks.responses.testEntityUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         "Prefer": DWA.Prefer.ReturnRepresentation
                     }
                 })
-                    .put("/fullname", {
+                    .put(mocks.responses.testEntityUrl + "/fullname", {
                         value: mocks.data.updatedEntity.fullname
                     })
                     .reply(response.status, response.responseText, response.responseHeaders);
@@ -291,12 +291,12 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.updateReturnRepresentation;
-                scope = nock(mocks.responses.testEntityUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         "Prefer": DWA.Prefer.ReturnRepresentation
                     }
                 })
-                    .put("/fullname?$select=name", {
+                    .put(mocks.responses.testEntityUrl + "/fullname?$select=name", {
                         value: mocks.data.updatedEntity.fullname
                     })
                     .reply(response.status, response.responseText, response.responseHeaders);
@@ -329,8 +329,8 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
-                scope = nock(mocks.responses.testEntityUrl)
-                    .patch("", mocks.data.testEntityUrl)
+                scope = nock(mocks.webApiUrl)
+                    .patch(mocks.responses.testEntityUrl, mocks.data.testEntityUrl)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -357,8 +357,8 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.createReturnId;
-                scope = nock(mocks.responses.testEntityUrl)
-                    .patch("", mocks.data.testEntityUrl)
+                scope = nock(mocks.webApiUrl)
+                    .patch(mocks.responses.testEntityUrl, mocks.data.testEntityUrl)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -385,12 +385,12 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.updateReturnRepresentation;
-                scope = nock(mocks.responses.testEntityUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         "Prefer": DWA.Prefer.ReturnRepresentation
                     }
                 })
-                    .patch("", mocks.data.testEntityUrl)
+                    .patch(mocks.responses.testEntityUrl, mocks.data.testEntityUrl)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -417,12 +417,12 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.createReturnRepresentation;
-                scope = nock(mocks.responses.testEntityUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         "Prefer": DWA.Prefer.ReturnRepresentation
                     }
                 })
-                    .patch("", mocks.data.testEntity)
+                    .patch(mocks.responses.testEntityUrl, mocks.data.testEntity)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -449,14 +449,14 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.updateReturnRepresentation;
-                scope = nock(mocks.responses.testEntityUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         "Prefer": DWA.Prefer.ReturnRepresentation
                     }
                 })
-                    .patch("?$select=fullname", mocks.data.testEntity)
+                    .patch(mocks.responses.testEntityUrl + "?$select=fullname", mocks.data.testEntity)
                     .reply(response.status, response.responseText, response.responseHeaders)
-                    .patch("?$select=fullname,subject", mocks.data.testEntity)
+                    .patch(mocks.responses.testEntityUrl + "?$select=fullname,subject", mocks.data.testEntity)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -495,14 +495,14 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.createReturnRepresentation;
-                scope = nock(mocks.responses.testEntityUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         "Prefer": DWA.Prefer.ReturnRepresentation
                     }
                 })
-                    .patch("?$select=fullname", mocks.data.testEntity)
+                    .patch(mocks.responses.testEntityUrl + "?$select=fullname", mocks.data.testEntity)
                     .reply(response.status, response.responseText, response.responseHeaders)
-                    .patch("?$select=fullname,subject", mocks.data.testEntity)
+                    .patch(mocks.responses.testEntityUrl + "?$select=fullname,subject", mocks.data.testEntity)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -544,9 +544,9 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
-                scope = nock(mocks.responses.testEntityUrl)
-                    .delete("")
-                    .reply(response.status, response.responseText, response.responseHeaders)
+                scope = nock(mocks.webApiUrl)
+                    .delete(mocks.responses.testEntityUrl)
+                    .reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -572,9 +572,9 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
-                scope = nock(mocks.responses.testEntityUrl)
-                    .delete("/fullname")
-                    .reply(response.status, response.responseText, response.responseHeaders)
+                scope = nock(mocks.webApiUrl)
+                    .delete(mocks.responses.testEntityUrl + "/fullname")
+                    .reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -603,9 +603,9 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.response200;
-                scope = nock(mocks.responses.testEntityUrl)
-                    .get("")
-                    .reply(response.status, response.responseText, response.responseHeaders)
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.testEntityUrl)
+                    .reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -631,9 +631,9 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.response200;
-                scope = nock(mocks.responses.collectionUrl + "(alternateKey='keyValue')")
-                    .get("")
-                    .reply(response.status, response.responseText, response.responseHeaders)
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.collectionUrl + "(alternateKey=%27keyValue%27)")
+                    .reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -659,10 +659,10 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.response200;
-                scope = nock(mocks.responses.testEntityUrl)
-                    .get("?$select=fullname")
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.testEntityUrl + "?$select=fullname")
                     .reply(response.status, response.responseText, response.responseHeaders)
-                    .get("?$select=fullname,subject")
+                    .get(mocks.responses.testEntityUrl + "?$select=fullname,subject")
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -699,12 +699,12 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.response200;
-                scope = nock(mocks.responses.testEntityUrl)
-                    .get("/reference")
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.testEntityUrl + "/reference")
                     .reply(response.status, response.responseText, response.responseHeaders)
-                    .get("/reference?$select=fullname")
+                    .get(mocks.responses.testEntityUrl + "/reference?$select=fullname")
                     .reply(response.status, response.responseText, response.responseHeaders)
-                    .get("/reference?$select=fullname,subject")
+                    .get(mocks.responses.testEntityUrl + "/reference?$select=fullname,subject")
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -751,9 +751,9 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.retrieveReferenceResponse;
-                scope = nock(mocks.responses.testEntityUrl)
-                    .get("/reference/$ref")
-                    .reply(response.status, response.responseText, response.responseHeaders)
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.testEntityUrl + "/reference/$ref")
+                    .reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -779,9 +779,9 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.response200;
-                scope = nock(mocks.responses.testEntityUrl)
-                    .get("?$expand=reference(something)")
-                    .reply(response.status, response.responseText, response.responseHeaders)
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.testEntityUrl + "?$expand=reference(something)")
+                    .reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -807,10 +807,10 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.response200;
-                scope = nock(mocks.responses.testEntityUrl)
-                    .get("?$select=fullname&$expand=reference(something)")
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.testEntityUrl + "?$select=fullname&$expand=reference(something)")
                     .reply(response.status, response.responseText, response.responseHeaders)
-                    .get("?$select=fullname,subject&$expand=reference(something)")
+                    .get(mocks.responses.testEntityUrl + "?$select=fullname,subject&$expand=reference(something)")
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -847,12 +847,12 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.response200;
-                scope = nock(mocks.responses.testEntityUrl)
-                    .get("/reference?$expand=reference(something)")
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.testEntityUrl + "/reference?$expand=reference(something)")
                     .reply(response.status, response.responseText, response.responseHeaders)
-                    .get("/reference?$select=fullname&$expand=reference(something)")
+                    .get(mocks.responses.testEntityUrl + "/reference?$select=fullname&$expand=reference(something)")
                     .reply(response.status, response.responseText, response.responseHeaders)
-                    .get("/reference?$select=fullname,subject&$expand=reference(something)")
+                    .get(mocks.responses.testEntityUrl + "/reference?$select=fullname,subject&$expand=reference(something)")
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -902,9 +902,9 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.countBasic;
-                scope = nock(mocks.responses.collectionUrl)
-                    .get("/$count")
-                    .reply(response.status, response.responseText, response.responseHeaders)
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.collectionUrl + "/$count")
+                    .reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -930,9 +930,9 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.multipleWithCountResponse;
-                scope = nock(mocks.responses.collectionUrl)
-                    .get("?$filter=name%20eq%20%27name%27&$count=true")
-                    .reply(response.status, response.responseText, response.responseHeaders)
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.collectionUrl + "?$filter=name%20eq%20%27name%27&$count=true")
+                    .reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -961,9 +961,9 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.multipleWithCountResponse;
-                scope = nock(mocks.responses.collectionUrl)
-                    .get("?$filter=name%20eq%20%27name%27")
-                    .reply(response.status, response.responseText, response.responseHeaders)
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.collectionUrl + "?$filter=name%20eq%20%27name%27")
+                    .reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -992,8 +992,8 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.fetchXmlResponsePage1Cookie;
-                scope = nock(mocks.responses.collectionUrl)
-                    .get("?fetchXml=" + encodeURIComponent(mocks.data.fetchXmls.fetchXml1))
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.collectionUrl + "?fetchXml=" + encodeURIComponent(mocks.data.fetchXmls.fetchXml1))
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -1020,9 +1020,9 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.fetchXmlResponsePage2Cookie;
-                scope = nock(mocks.responses.collectionUrl)
-                    .get("?fetchXml=" + encodeURIComponent(mocks.data.fetchXmls.fetchXml2cookie))
-                    .reply(response.status, response.responseText, response.responseHeaders)
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.collectionUrl + "?fetchXml=" + encodeURIComponent(mocks.data.fetchXmls.fetchXml2cookie))
+                    .reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -1049,9 +1049,9 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.fetchXmlResponsePage1;
-                scope = nock(mocks.responses.collectionUrl)
-                    .get("?fetchXml=" + encodeURIComponent(mocks.data.fetchXmls.fetchXml1))
-                    .reply(response.status, response.responseText, response.responseHeaders)
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.collectionUrl + "?fetchXml=" + encodeURIComponent(mocks.data.fetchXmls.fetchXml1))
+                    .reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -1077,13 +1077,13 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.fetchXmlResponsePage2Cookie;
-                scope = nock(mocks.responses.collectionUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.FormattedValue + '"'
                     }
                 })
-                    .get("?fetchXml=" + encodeURIComponent(mocks.data.fetchXmls.fetchXml2cookie))
-                    .reply(response.status, response.responseText, response.responseHeaders)
+                    .get(mocks.responses.collectionUrl + "?fetchXml=" + encodeURIComponent(mocks.data.fetchXmls.fetchXml2cookie))
+                    .reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -1114,10 +1114,10 @@ describe("callbacks -", function () {
             before(function () {
                 var response = mocks.responses.fetchXmlResponsePage1Cookie;
                 var response2 = mocks.responses.fetchXmlResponsePage2NoCookie;
-                scope = nock(mocks.responses.collectionUrl)
-                    .get("?fetchXml=" + encodeURIComponent(mocks.data.fetchXmls.fetchXml1))
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.collectionUrl + "?fetchXml=" + encodeURIComponent(mocks.data.fetchXmls.fetchXml1))
                     .reply(response.status, response.responseText, response.responseHeaders)
-                    .get("?fetchXml=" + encodeURIComponent(mocks.data.fetchXmls.fetchXml2cookie))
+                    .get(mocks.responses.collectionUrl + "?fetchXml=" + encodeURIComponent(mocks.data.fetchXmls.fetchXml2cookie))
                     .reply(response2.status, response2.responseText, response2.responseHeaders);
             });
 
@@ -1149,11 +1149,11 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
-                scope = nock(mocks.responses.testEntityUrl)
-                    .post("/tests_records/$ref", {
+                scope = nock(mocks.webApiUrl)
+                    .post(mocks.responses.testEntityUrl + "/tests_records/$ref", {
                         "@odata.id": mocks.webApiUrl + "records(" + mocks.data.testEntityId2 + ")"
                     })
-                    .reply(response.status, response.responseText, response.responseHeaders)
+                    .reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -1180,15 +1180,15 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
-                scope = nock(mocks.responses.testEntityUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         MSCRMCallerID: mocks.data.testEntityId3
                     }
                 })
-                    .post("/tests_records/$ref", {
+                    .post(mocks.responses.testEntityUrl + "/tests_records/$ref", {
                         "@odata.id": mocks.webApiUrl + "records(" + mocks.data.testEntityId2 + ")"
                     })
-                    .reply(response.status, response.responseText, response.responseHeaders)
+                    .reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -1217,9 +1217,9 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
-                scope = nock(mocks.responses.testEntityUrl)
-                    .delete("/tests_records(" + mocks.data.testEntityId2 + ")/$ref")
-                    .reply(response.status, response.responseText, response.responseHeaders)
+                scope = nock(mocks.responses.webApiUrl)
+                    .delete(mocks.responses.testEntityUrl + "/tests_records(" + mocks.data.testEntityId2 + ")/$ref")
+                    .reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -1245,13 +1245,13 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
-                scope = nock(mocks.responses.testEntityUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         MSCRMCallerID: mocks.data.testEntityId3
                     }
                 })
-                    .delete("/tests_records(" + mocks.data.testEntityId2 + ")/$ref")
-                    .reply(response.status, response.responseText, response.responseHeaders)
+                    .delete(mocks.responses.testEntityUrl + "/tests_records(" + mocks.data.testEntityId2 + ")/$ref")
+                    .reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -1280,11 +1280,11 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
-                scope = nock(mocks.responses.testEntityUrl)
-                    .put("/tests_records/$ref", {
+                scope = nock(mocks.webApiUrl)
+                    .put(mocks.responses.testEntityUrl + "/tests_records/$ref", {
                         "@odata.id": mocks.webApiUrl + "records(" + mocks.data.testEntityId2 + ")"
                     })
-                    .reply(response.status, response.responseText, response.responseHeaders)
+                    .reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -1310,15 +1310,15 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
-                scope = nock(mocks.responses.testEntityUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         MSCRMCallerID: mocks.data.testEntityId3
                     }
                 })
-                    .put("/tests_records/$ref", {
+                    .put(mocks.responses.testEntityUrl + "/tests_records/$ref", {
                         "@odata.id": mocks.webApiUrl + "records(" + mocks.data.testEntityId2 + ")"
                     })
-                    .reply(response.status, response.responseText, response.responseHeaders)
+                    .reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -1347,9 +1347,9 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
-                scope = nock(mocks.responses.testEntityUrl)
-                    .delete("/tests_records/$ref")
-                    .reply(response.status, response.responseText, response.responseHeaders)
+                scope = nock(mocks.webApiUrl)
+                    .delete(mocks.responses.testEntityUrl + "/tests_records/$ref")
+                    .reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -1375,13 +1375,13 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
-                scope = nock(mocks.responses.testEntityUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         MSCRMCallerID: mocks.data.testEntityId3
                     }
                 })
-                    .delete("/tests_records/$ref")
-                    .reply(response.status, response.responseText, response.responseHeaders)
+                    .delete(mocks.responses.testEntityUrl + "/tests_records/$ref")
+                    .reply(response.status, response.responseText, response.responseHeaders);
             });
 
             it("returns a correct response", function (done) {
@@ -1491,10 +1491,10 @@ describe("callbacks -", function () {
             before(function () {
                 var response = mocks.responses.response200;
                 var response2 = mocks.responses.basicEmptyResponseSuccess;
-                scope = nock(mocks.responses.testEntityUrl)
-                    .get("/FUN()")
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.testEntityUrl + "/FUN()")
                     .reply(response.status, response.responseText, response.responseHeaders)
-                    .get("/FUN(param1=@p1,param2=@p2)?@p1=%27value1%27&@p2=2")
+                    .get(mocks.responses.testEntityUrl + "/FUN(param1=@p1,param2=@p2)?@p1=%27value1%27&@p2=2")
                     .reply(response2.status, response2.responseText, response2.responseHeaders);
             });
 
@@ -1531,14 +1531,14 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.response200;
-                scope = nock(mocks.responses.testEntityUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         MSCRMCallerID: mocks.data.testEntityId
                     }
                 })
-                    .get("/FUN()")
+                    .get(mocks.responses.testEntityUrl + "/FUN()")
                     .reply(response.status, response.responseText, response.responseHeaders)
-                    .get("/FUN(param1=@p1,param2=@p2)?@p1=%27value1%27&@p2=2")
+                    .get(mocks.responses.testEntityUrl + "/FUN(param1=@p1,param2=@p2)?@p1=%27value1%27&@p2=2")
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -1580,7 +1580,7 @@ describe("callbacks -", function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
                 scope = nock(mocks.webApiUrl)
                     .post("/FUN", mocks.responses.actionRequestModified)
-                    .reply(response.status, response.responseText, response.responseHeaders)
+                    .reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -1612,7 +1612,7 @@ describe("callbacks -", function () {
                     }
                 })
                     .post("/FUN", mocks.responses.actionRequestModified)
-                    .reply(response.status, response.responseText, response.responseHeaders)
+                    .reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -1638,9 +1638,9 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.response200;
-                scope = nock(mocks.responses.testEntityUrl)
-                    .post("/FUN", mocks.responses.actionRequestModified)
-                    .reply(response.status, response.responseText, response.responseHeaders)
+                scope = nock(mocks.webApiUrl)
+                    .post(mocks.responses.testEntityUrl + "/FUN", mocks.responses.actionRequestModified)
+                    .reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -1666,13 +1666,13 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.response200;
-                scope = nock(mocks.responses.testEntityUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         MSCRMCallerID: mocks.data.testEntityId2
                     }
                 })
-                    .post("/FUN", mocks.responses.actionRequestModified)
-                    .reply(response.status, response.responseText, response.responseHeaders)
+                    .post(mocks.responses.testEntityUrl + "/FUN", mocks.responses.actionRequestModified)
+                    .reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -1700,13 +1700,13 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
-                scope = nock(mocks.responses.testEntityUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         'If-Match': '*'
                     }
                 })
-                    .patch("", mocks.data.testEntity)
-                    .reply(response.status, response.responseText, response.responseHeaders)
+                    .patch(mocks.responses.testEntityUrl, mocks.data.testEntity)
+                    .reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -1718,7 +1718,7 @@ describe("callbacks -", function () {
                     id: mocks.data.testEntityId,
                     collection: "tests",
                     entity: mocks.data.testEntity
-                }
+                };
 
                 dynamicsWebApiTest.updateRequest(dwaRequest, function (object) {
                     expect(object).to.be.true;
@@ -1738,15 +1738,15 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.updateReturnRepresentation;
-                scope = nock(mocks.responses.testEntityUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         'If-Match': '*',
                         'Prefer': DWA.Prefer.ReturnRepresentation
                     }
                 })
-                    .patch("", mocks.data.testEntity)
+                    .patch(mocks.responses.testEntityUrl, mocks.data.testEntity)
                     .reply(response.status, response.responseText, response.responseHeaders)
-                    .patch("?$select=fullname,subject", mocks.data.testEntity)
+                    .patch(mocks.responses.testEntityUrl + "?$select=fullname,subject", mocks.data.testEntity)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -1760,7 +1760,7 @@ describe("callbacks -", function () {
                     collection: "tests",
                     entity: mocks.data.testEntity,
                     returnRepresentation: true
-                }
+                };
 
                 dynamicsWebApiTest.updateRequest(dwaRequest, function (object) {
                     expect(object).to.deep.equal(mocks.data.updatedEntity);
@@ -1778,7 +1778,7 @@ describe("callbacks -", function () {
                     entity: mocks.data.testEntity,
                     returnRepresentation: true,
                     select: ["fullname", "subject"]
-                }
+                };
 
                 dynamicsWebApiTest.updateRequest(dwaRequest, function (object) {
                     expect(object).to.deep.equal(mocks.data.updatedEntity);
@@ -1799,13 +1799,13 @@ describe("callbacks -", function () {
             before(function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
 
-                scope = nock(mocks.responses.testEntityUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         'If-Match': 'match'
                     }
                 })
-                    .patch("", mocks.data.testEntity)
-                    .reply(response.status, response.responseText, response.responseHeaders)
+                    .patch(mocks.responses.testEntityUrl, mocks.data.testEntity)
+                    .reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -1818,7 +1818,7 @@ describe("callbacks -", function () {
                     collection: "tests",
                     entity: mocks.data.testEntity,
                     ifmatch: "match"
-                }
+                };
 
                 dynamicsWebApiTest
                     .updateRequest(dwaRequest, function (object) {
@@ -1840,13 +1840,13 @@ describe("callbacks -", function () {
             before(function () {
                 var response = mocks.responses.upsertPreventUpdateResponse;
 
-                scope = nock(mocks.responses.testEntityUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         'If-Match': 'match'
                     }
                 })
-                    .patch("", mocks.data.testEntity)
-                    .reply(response.status, response.responseText, response.responseHeaders)
+                    .patch(mocks.responses.testEntityUrl, mocks.data.testEntity)
+                    .reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -1859,7 +1859,7 @@ describe("callbacks -", function () {
                     collection: "tests",
                     entity: mocks.data.testEntity,
                     ifmatch: "match"
-                }
+                };
 
                 dynamicsWebApiTest
                     .updateRequest(dwaRequest, function (object) {
@@ -1881,13 +1881,13 @@ describe("callbacks -", function () {
             before(function () {
                 var response = mocks.responses.upsertPreventCreateResponse;
 
-                scope = nock(mocks.responses.testEntityUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         'If-Match': 'match'
                     }
                 })
-                    .patch("", mocks.data.testEntity)
-                    .reply(response.status, response.responseText, response.responseHeaders)
+                    .patch(mocks.responses.testEntityUrl, mocks.data.testEntity)
+                    .reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -1900,7 +1900,7 @@ describe("callbacks -", function () {
                     collection: "tests",
                     entity: mocks.data.testEntity,
                     ifmatch: "match"
-                }
+                };
 
                 dynamicsWebApiTest
                     .updateRequest(dwaRequest, function (object) {
@@ -1925,17 +1925,17 @@ describe("callbacks -", function () {
                 id: mocks.data.testEntityId,
                 collection: "tests",
                 entity: mocks.data.testEntity
-            }
+            };
 
             var scope;
             before(function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
                 var response2 = mocks.responses.createReturnId;
 
-                scope = nock(mocks.responses.testEntityUrl)
-                    .patch("", mocks.data.testEntity)
+                scope = nock(mocks.webApiUrl)
+                    .patch(mocks.responses.testEntityUrl, mocks.data.testEntity)
                     .reply(response.status, response.responseText, response.responseHeaders)
-                    .patch("", mocks.data.testEntity)
+                    .patch(mocks.responses.testEntityUrl, mocks.data.testEntity)
                     .reply(response2.status, response2.responseText, response2.responseHeaders);
             });
 
@@ -1974,14 +1974,14 @@ describe("callbacks -", function () {
                 var response = mocks.responses.updateReturnRepresentation;
                 var response2 = mocks.responses.createReturnRepresentation;
 
-                scope = nock(mocks.responses.testEntityUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         Prefer: DWA.Prefer.ReturnRepresentation
                     }
                 })
-                    .patch("", mocks.data.testEntity)
+                    .patch(mocks.responses.testEntityUrl, mocks.data.testEntity)
                     .reply(response.status, response.responseText, response.responseHeaders)
-                    .patch("?$select=name", mocks.data.testEntity)
+                    .patch(mocks.responses.testEntityUrl + "?$select=name", mocks.data.testEntity)
                     .reply(response2.status, response2.responseText, response2.responseHeaders);
             });
 
@@ -1995,7 +1995,7 @@ describe("callbacks -", function () {
                     collection: "tests",
                     entity: mocks.data.testEntity,
                     returnRepresentation: true
-                }
+                };
 
                 dynamicsWebApiTest.upsertRequest(dwaRequest, function (object) {
                     expect(object).to.deep.equal(mocks.data.updatedEntity);
@@ -2013,7 +2013,7 @@ describe("callbacks -", function () {
                     entity: mocks.data.testEntity,
                     returnRepresentation: true,
                     select: ["name"]
-                }
+                };
 
                 dynamicsWebApiTest.upsertRequest(dwaRequest, function (object) {
                     expect(object).to.deep.equal(mocks.data.testEntity);
@@ -2036,27 +2036,27 @@ describe("callbacks -", function () {
                 entity: mocks.data.testEntity,
                 returnRepresentation: true,
                 ifmatch: '*'
-            }
+            };
             var scope;
             before(function () {
                 var response = mocks.responses.upsertPreventCreateResponse;
                 var response2 = mocks.responses.createReturnRepresentation;
                 var response3 = mocks.responses.upsertPreventUpdateResponse;
 
-                scope = nock(mocks.responses.testEntityUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         Prefer: DWA.Prefer.ReturnRepresentation,
                         'If-Match': '*'
                     }
                 })
                     //create prevented
-                    .patch("", mocks.data.testEntity)
+                    .patch(mocks.responses.testEntityUrl, mocks.data.testEntity)
                     .reply(response.status, response.responseText, response.responseHeaders)
                     //create succeeded
-                    .patch("", mocks.data.testEntity)
+                    .patch(mocks.responses.testEntityUrl, mocks.data.testEntity)
                     .reply(response2.status, response2.responseText, response2.responseHeaders)
                     //request failed
-                    .patch("", mocks.data.testEntity)
+                    .patch(mocks.responses.testEntityUrl, mocks.data.testEntity)
                     .reply(response3.status, response3.responseText, response3.responseHeaders);
             });
 
@@ -2106,27 +2106,27 @@ describe("callbacks -", function () {
                 entity: mocks.data.testEntity,
                 returnRepresentation: true,
                 ifnonematch: '*'
-            }
+            };
             var scope;
             before(function () {
                 var response = mocks.responses.upsertPreventUpdateResponse;
                 var response2 = mocks.responses.updateReturnRepresentation;
                 var response3 = mocks.responses.upsertPreventCreateResponse;
 
-                scope = nock(mocks.responses.testEntityUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         Prefer: DWA.Prefer.ReturnRepresentation,
                         'If-None-Match': '*'
                     }
                 })
                     //update prevented
-                    .patch("", mocks.data.testEntity)
+                    .patch(mocks.responses.testEntityUrl, mocks.data.testEntity)
                     .reply(response.status, response.responseText, response.responseHeaders)
                     //update succeeded
-                    .patch("", mocks.data.testEntity)
+                    .patch(mocks.responses.testEntityUrl, mocks.data.testEntity)
                     .reply(response2.status, response2.responseText, response2.responseHeaders)
                     //request failed
-                    .patch("", mocks.data.testEntity)
+                    .patch(mocks.responses.testEntityUrl, mocks.data.testEntity)
                     .reply(response3.status, response3.responseText, response3.responseHeaders);
             });
 
@@ -2176,13 +2176,13 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.response200;
-                scope = nock(mocks.responses.testEntityUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         'If-Match': 'match',
                         'MSCRMCallerID': mocks.data.testEntityId2
                     }
                 })
-                    .get("?$expand=prop")
+                    .get(mocks.responses.testEntityUrl + "?$expand=prop")
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -2217,13 +2217,13 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.response200;
-                scope = nock(mocks.responses.testEntityUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         'If-Match': 'match',
                         'MSCRMCallerID': mocks.data.testEntityId2
                     }
                 })
-                    .get("?$expand=prop($filter=" + encodeURI("field eq ") + '%27value%27)')
+                    .get(mocks.responses.testEntityUrl + "?$expand=prop($filter=" + encodeURI("field eq ") + '%27value%27)')
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -2258,13 +2258,13 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.retrieveReferenceResponse;
-                scope = nock(mocks.responses.testEntityUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         'If-Match': 'match',
                         'MSCRMCallerID': mocks.data.testEntityId2
                     }
                 })
-                    .get("/ownerid/$ref")
+                    .get(mocks.responses.testEntityUrl + "/ownerid/$ref")
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -2302,8 +2302,8 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.multipleResponse;
-                scope = nock(mocks.responses.collectionUrl)
-                    .get("")
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.collectionUrl)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -2330,10 +2330,10 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.multipleResponse;
-                scope = nock(mocks.responses.collectionUrl)
-                    .get("?$select=fullname")
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.collectionUrl + "?$select=fullname")
                     .reply(response.status, response.responseText, response.responseHeaders)
-                    .get("?$select=fullname,subject")
+                    .get(mocks.responses.collectionUrl + "?$select=fullname,subject")
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -2370,10 +2370,10 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.multipleResponse;
-                scope = nock(mocks.responses.collectionUrl)
-                    .get("?$filter=name%20eq%20%27name%27")
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.collectionUrl + "?$filter=name%20eq%20%27name%27")
                     .reply(response.status, response.responseText, response.responseHeaders)
-                    .get("?$select=fullname&$filter=name%20eq%20%27name%27")
+                    .get(mocks.responses.collectionUrl + "?$select=fullname&$filter=name%20eq%20%27name%27")
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -2410,8 +2410,8 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.multipleWithLinkResponse;
-                scope = nock(mocks.responses.collectionUrl)
-                    .get("")
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.collectionUrl)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -2438,9 +2438,13 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.multipleResponse;
-                var link = mocks.responses.multipleWithLink().oDataNextLink.split('?');
-                scope = nock(link[0])
-                    .get("?" + link[1])
+                var linkQuery = mocks.responses.multipleWithLink().oDataNextLink.split('?');
+                var link = linkQuery[0].split('/');
+                var getLink = `/${link.pop()}?${linkQuery[1]}`;
+                link = link.join('/');
+
+                scope = nock(link)
+                    .get(getLink)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -2472,12 +2476,17 @@ describe("callbacks -", function () {
             before(function () {
                 var response = mocks.responses.multipleWithLinkResponse;
                 var response2 = mocks.responses.multipleResponse;
-                var link = mocks.responses.multipleWithLink().oDataNextLink.split('?');
-                scope = nock(mocks.responses.collectionUrl)
-                    .get("?$select=name")
+
+                var linkQuery = mocks.responses.multipleWithLink().oDataNextLink.split('?');
+                var link = linkQuery[0].split('/');
+                var getLink = `/${link.pop()}?${linkQuery[1]}`;
+                link = link.join('/');
+
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.collectionUrl + "?$select=name")
                     .reply(response.status, response.responseText, response.responseHeaders);
-                scope2 = nock(link[0])
-                    .get("?" + link[1])
+                scope2 = nock(link)
+                    .get(getLink)
                     .reply(response2.status, response2.responseText, response2.responseHeaders);
             });
 
@@ -2511,14 +2520,14 @@ describe("callbacks -", function () {
             before(function () {
                 var response = mocks.responses.multipleResponse;
                 var response2 = mocks.responses.multipleWithCountResponse;
-                scope = nock(mocks.responses.collectionUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.FormattedValue + '"'
                     }
                 })
-                    .get("?$select=name")
+                    .get(mocks.responses.collectionUrl + "?$select=name")
                     .reply(response.status, response.responseText, response.responseHeaders)
-                    .get("?$select=name&$count=true")
+                    .get(mocks.responses.collectionUrl + "?$select=name&$count=true")
                     .reply(response2.status, response2.responseText, response2.responseHeaders);
             });
 
@@ -2568,12 +2577,12 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.multipleWithLinkResponse;
-                scope = nock(mocks.responses.collectionUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.FormattedValue + '"'
                     }
                 })
-                    .get("?$select=name")
+                    .get(mocks.responses.collectionUrl + "?$select=name")
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -2606,13 +2615,17 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.multipleResponse;
-                var link = mocks.responses.multipleWithLink().oDataNextLink.split('?');
-                scope = nock(link[0], {
+                var linkQuery = mocks.responses.multipleWithLink().oDataNextLink.split('?');
+                var link = linkQuery[0].split('/');
+                var getLink = `/${link.pop()}?${linkQuery[1]}`;
+                link = link.join('/');
+
+                scope = nock(link, {
                     reqheaders: {
                         Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.FormattedValue + '"'
                     }
                 })
-                    .get("?" + link[1])
+                    .get(getLink)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -2648,12 +2661,12 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.multipleResponse;
-                scope = nock(mocks.responses.collectionUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.FormattedValue + '"'
                     }
                 })
-                    .get("?$select=name")
+                    .get(mocks.responses.collectionUrl + "?$select=name")
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -2689,20 +2702,25 @@ describe("callbacks -", function () {
             before(function () {
                 var response = mocks.responses.multipleWithLinkResponse;
                 var response2 = mocks.responses.multipleResponse;
-                var link = mocks.responses.multipleWithLink().oDataNextLink.split('?');
-                scope = nock(mocks.responses.collectionUrl, {
+
+                var linkQuery = mocks.responses.multipleWithLink().oDataNextLink.split('?');
+                var link = linkQuery[0].split('/');
+                var getLink = `/${link.pop()}?${linkQuery[1]}`;
+                link = link.join('/');
+
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.FormattedValue + '"'
                     }
                 })
-                    .get("?$select=name")
+                    .get(mocks.responses.collectionUrl + "?$select=name")
                     .reply(response.status, response.responseText, response.responseHeaders);
-                scope2 = nock(link[0], {
+                scope2 = nock(link, {
                     reqheaders: {
                         Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.FormattedValue + '"'
                     }
                 })
-                    .get("?" + link[1])
+                    .get(getLink)
                     .reply(response2.status, response2.responseText, response2.responseHeaders);
             });
 
@@ -2741,12 +2759,12 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
-                scope = nock(mocks.responses.testEntityUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         MSCRMCallerID: mocks.data.testEntityId2
                     }
                 })
-                    .delete("")
+                    .delete(mocks.responses.testEntityUrl)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -2782,16 +2800,16 @@ describe("callbacks -", function () {
                 var response2 = mocks.responses.upsertPreventUpdateResponse;
                 var response3 = mocks.responses.upsertPreventCreateResponse;
 
-                scope = nock(mocks.responses.testEntityUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         MSCRMCallerID: mocks.data.testEntityId2
                     }
                 })
-                    .delete("")
+                    .delete(mocks.responses.testEntityUrl)
                     .reply(response.status, response.responseText, response.responseHeaders)
-                    .delete("")
+                    .delete(mocks.responses.testEntityUrl)
                     .reply(response2.status, response2.responseText, response2.responseHeaders)
-                    .delete("")
+                    .delete(mocks.responses.testEntityUrl)
                     .reply(response3.status, response3.responseText, response3.responseHeaders);
             });
 
@@ -2861,8 +2879,8 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.createReturnId;
-                scope = nock(mocks.responses.entityDefinitionsUrl)
-                    .post("", mocks.data.testEntity)
+                scope = nock(mocks.webApiUrl)
+                    .post(mocks.responses.entityDefinitionsUrl, mocks.data.testEntity)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -2893,12 +2911,12 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
-                scope = nock(mocks.responses.entityDefinitionsIdUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         "If-Match": "*"
                     }
                 })
-                    .put("", mocks.data.testEntityDefinition)
+                    .put(mocks.responses.entityDefinitionsIdUrl, mocks.data.testEntityDefinition)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -2925,13 +2943,13 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
-                scope = nock(mocks.responses.entityDefinitionsIdUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         "If-Match": "*",
                         "MSCRM.MergeLabels": "true"
                     }
                 })
-                    .put("", mocks.data.testEntityDefinition)
+                    .put(mocks.responses.entityDefinitionsIdUrl, mocks.data.testEntityDefinition)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -2961,8 +2979,8 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.response200;
-                scope = nock(mocks.responses.entityDefinitionsIdUrl)
-                    .get("")
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.entityDefinitionsIdUrl)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -2989,8 +3007,8 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.response200;
-                scope = nock(mocks.responses.entityDefinitionsUrl + "(alternateKey='keyValue')")
-                    .get("")
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.entityDefinitionsUrl + "(alternateKey=%27keyValue%27)")
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -3017,10 +3035,10 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.response200;
-                scope = nock(mocks.responses.entityDefinitionsIdUrl)
-                    .get("?$select=LogicalName")
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.entityDefinitionsIdUrl + "?$select=LogicalName")
                     .reply(response.status, response.responseText, response.responseHeaders)
-                    .get("?$select=LogicalName,SchemaName")
+                    .get(mocks.responses.entityDefinitionsIdUrl + "?$select=LogicalName,SchemaName")
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -3060,8 +3078,8 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.responseEntityDefinitions;
-                scope = nock(mocks.responses.entityDefinitionsUrl)
-                    .get("")
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.entityDefinitionsUrl)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -3090,8 +3108,8 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.createAttributeReturnId;
-                scope = nock(mocks.responses.entityDefinitionsIdUrl + '/Attributes')
-                    .post("", mocks.data.testEntity)
+                scope = nock(mocks.webApiUrl)
+                    .post(mocks.responses.entityDefinitionsIdUrl + '/Attributes', mocks.data.testEntity)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -3122,12 +3140,12 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
-                scope = nock(mocks.responses.entityDefinitionsIdUrl + '/Attributes(' + mocks.data.testEntityId2 + ')', {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         "If-Match": "*"
                     }
                 })
-                    .put("", mocks.data.testAttributeDefinition)
+                    .put(mocks.responses.entityDefinitionsIdUrl + '/Attributes(' + mocks.data.testEntityId2 + ')', mocks.data.testAttributeDefinition)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -3154,13 +3172,13 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
-                scope = nock(mocks.responses.entityDefinitionsIdUrl + '/Attributes(' + mocks.data.testEntityId2 + ')', {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         "If-Match": "*",
                         "MSCRM.MergeLabels": "true"
                     }
                 })
-                    .put("", mocks.data.testAttributeDefinition)
+                    .put(mocks.responses.entityDefinitionsIdUrl + '/Attributes(' + mocks.data.testEntityId2 + ')', mocks.data.testAttributeDefinition)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -3187,12 +3205,12 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
-                scope = nock(mocks.responses.entityDefinitionsIdUrl + '/Attributes(' + mocks.data.testEntityId2 + ')/AttributeType', {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         "If-Match": "*"
                     }
                 })
-                    .put("", mocks.data.testAttributeDefinition)
+                    .put(mocks.responses.entityDefinitionsIdUrl + '/Attributes(' + mocks.data.testEntityId2 + ')/AttributeType', mocks.data.testAttributeDefinition)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -3219,13 +3237,13 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
-                scope = nock(mocks.responses.entityDefinitionsIdUrl + '/Attributes(' + mocks.data.testEntityId2 + ')/AttributeType', {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         "If-Match": "*",
                         "MSCRM.MergeLabels": "true"
                     }
                 })
-                    .put("", mocks.data.testAttributeDefinition)
+                    .put(mocks.responses.entityDefinitionsIdUrl + '/Attributes(' + mocks.data.testEntityId2 + ')/AttributeType', mocks.data.testAttributeDefinition)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -3255,8 +3273,8 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.responseEntityDefinitions;
-                scope = nock(mocks.responses.entityDefinitionsIdUrl + '/Attributes')
-                    .get("")
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.entityDefinitionsIdUrl + '/Attributes')
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -3283,8 +3301,8 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.responseEntityDefinitions;
-                scope = nock(mocks.responses.entityDefinitionsIdUrl + '/Attributes/AttributeType')
-                    .get("")
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.entityDefinitionsIdUrl + '/Attributes/AttributeType')
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -3314,8 +3332,8 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.response200;
-                scope = nock(mocks.responses.entityDefinitionsIdUrl + '/Attributes(' + mocks.data.testEntityId2 + ')')
-                    .get("")
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.entityDefinitionsIdUrl + '/Attributes(' + mocks.data.testEntityId2 + ')')
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -3342,8 +3360,8 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.response200;
-                scope = nock(mocks.responses.entityDefinitionsUrl + "(SchemaName='Test')/Attributes(LogicalName='Test2')")
-                    .get("")
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.entityDefinitionsUrl + "(SchemaName=%27Test%27)/Attributes(LogicalName=%27Test2%27)")
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -3370,8 +3388,8 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.response200;
-                scope = nock(mocks.responses.entityDefinitionsIdUrl + '/Attributes(' + mocks.data.testEntityId2 + ')/AttributeType')
-                    .get("")
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.entityDefinitionsIdUrl + '/Attributes(' + mocks.data.testEntityId2 + ')/AttributeType')
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -3400,8 +3418,8 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.createReturnId;
-                scope = nock(mocks.responses.relationshipDefinitionsUrl)
-                    .post("", mocks.data.testEntity)
+                scope = nock(mocks.webApiUrl)
+                    .post(mocks.responses.relationshipDefinitionsUrl, mocks.data.testEntity)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -3432,12 +3450,12 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
-                scope = nock(mocks.responses.relationshipDefinitionsIdUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         "If-Match": "*"
                     }
                 })
-                    .put("", mocks.data.testEntityDefinition)
+                    .put(mocks.responses.relationshipDefinitionsIdUrl, mocks.data.testEntityDefinition)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -3464,12 +3482,12 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
-                scope = nock(mocks.responses.relationshipDefinitionsIdUrl + "/testcast", {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         "If-Match": "*"
                     }
                 })
-                    .put("", mocks.data.testEntityDefinition)
+                    .put(mocks.responses.relationshipDefinitionsIdUrl + "/testcast", mocks.data.testEntityDefinition)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -3496,13 +3514,13 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
-                scope = nock(mocks.responses.relationshipDefinitionsIdUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         "If-Match": "*",
                         "MSCRM.MergeLabels": "true"
                     }
                 })
-                    .put("", mocks.data.testEntityDefinition)
+                    .put(mocks.responses.relationshipDefinitionsIdUrl, mocks.data.testEntityDefinition)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -3532,8 +3550,8 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
-                scope = nock(mocks.responses.relationshipDefinitionsIdUrl)
-                    .delete("")
+                scope = nock(mocks.webApiUrl)
+                    .delete(mocks.responses.relationshipDefinitionsIdUrl)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -3563,8 +3581,8 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.response200;
-                scope = nock(mocks.responses.relationshipDefinitionsIdUrl)
-                    .get("")
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.relationshipDefinitionsIdUrl)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -3591,10 +3609,10 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.response200;
-                scope = nock(mocks.responses.relationshipDefinitionsIdUrl)
-                    .get("?$select=LogicalName")
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.relationshipDefinitionsIdUrl + "?$select=LogicalName")
                     .reply(response.status, response.responseText, response.responseHeaders)
-                    .get("?$select=LogicalName,SchemaName")
+                    .get(mocks.responses.relationshipDefinitionsIdUrl + "?$select=LogicalName,SchemaName")
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -3631,10 +3649,10 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.response200;
-                scope = nock(mocks.responses.relationshipDefinitionsIdUrl + "/testcast")
-                    .get("?$select=LogicalName")
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.relationshipDefinitionsIdUrl + "/testcast?$select=LogicalName")
                     .reply(response.status, response.responseText, response.responseHeaders)
-                    .get("?$select=LogicalName,SchemaName")
+                    .get(mocks.responses.relationshipDefinitionsIdUrl + "/testcast?$select=LogicalName,SchemaName")
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -3674,8 +3692,8 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.responseEntityDefinitions;
-                scope = nock(mocks.responses.relationshipDefinitionsUrl)
-                    .get("")
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.relationshipDefinitionsUrl)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -3702,10 +3720,10 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.responseEntityDefinitions;
-                scope = nock(mocks.responses.relationshipDefinitionsUrl + "/testcast")
-                    .get("?$select=LogicalName")
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.relationshipDefinitionsUrl + "/testcast?$select=LogicalName")
                     .reply(response.status, response.responseText, response.responseHeaders)
-                    .get("?$select=LogicalName,SchemaName")
+                    .get(mocks.responses.relationshipDefinitionsUrl + "/testcast?$select=LogicalName,SchemaName")
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -3744,8 +3762,8 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.createReturnId;
-                scope = nock(mocks.responses.globalOptionSetDefinitionsUrl)
-                    .post("", mocks.data.testEntity)
+                scope = nock(mocks.webApiUrl)
+                    .post(mocks.responses.globalOptionSetDefinitionsUrl, mocks.data.testEntity)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -3755,13 +3773,13 @@ describe("callbacks -", function () {
 
             it("returns a correct response", function (done) {
                 dynamicsWebApiTest.createGlobalOptionSet(mocks.data.testEntity, function (object) {
-                        expect(object).to.deep.equal(mocks.data.testEntityId);
-                        done();
-                    }, function (object) {
-                        console.error(object.message);
-                        expect(object).to.be.undefined;
-                        done();
-                    });
+                    expect(object).to.deep.equal(mocks.data.testEntityId);
+                    done();
+                }, function (object) {
+                    console.error(object.message);
+                    expect(object).to.be.undefined;
+                    done();
+                });
             });
 
             it("all requests have been made", function () {
@@ -3776,12 +3794,12 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
-                scope = nock(mocks.responses.globalOptionSetDefinitionsIdUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         "If-Match": "*"
                     }
                 })
-                    .put("", mocks.data.testEntityDefinition)
+                    .put(mocks.responses.globalOptionSetDefinitionsIdUrl, mocks.data.testEntityDefinition)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -3791,12 +3809,12 @@ describe("callbacks -", function () {
 
             it("returns a correct response", function (done) {
                 dynamicsWebApiTest.updateGlobalOptionSet(mocks.data.testEntityDefinition, function (object) {
-                        expect(object).to.be.true;
-                        done();
-                    }, function (object) {
-                        expect(object).to.be.undefined;
-                        done();
-                    });
+                    expect(object).to.be.true;
+                    done();
+                }, function (object) {
+                    expect(object).to.be.undefined;
+                    done();
+                });
             });
 
             it("all requests have been made", function () {
@@ -3808,13 +3826,13 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
-                scope = nock(mocks.responses.globalOptionSetDefinitionsIdUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         "If-Match": "*",
                         "MSCRM.MergeLabels": "true"
                     }
                 })
-                    .put("", mocks.data.testEntityDefinition)
+                    .put(mocks.responses.globalOptionSetDefinitionsIdUrl, mocks.data.testEntityDefinition)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -3824,12 +3842,12 @@ describe("callbacks -", function () {
 
             it("returns a correct response", function (done) {
                 dynamicsWebApiTest.updateGlobalOptionSet(mocks.data.testEntityDefinition, function (object) {
-                        expect(object).to.be.true;
-                        done();
-                    }, function (object) {
-                        expect(object).to.be.undefined;
-                        done();
-                    }, true);
+                    expect(object).to.be.true;
+                    done();
+                }, function (object) {
+                    expect(object).to.be.undefined;
+                    done();
+                }, true);
             });
 
             it("all requests have been made", function () {
@@ -3844,8 +3862,8 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
-                scope = nock(mocks.responses.globalOptionSetDefinitionsIdUrl)
-                    .delete("")
+                scope = nock(mocks.webApiUrl)
+                    .delete(mocks.responses.globalOptionSetDefinitionsIdUrl)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -3855,12 +3873,12 @@ describe("callbacks -", function () {
 
             it("returns a correct response", function (done) {
                 dynamicsWebApiTest.deleteGlobalOptionSet(mocks.data.testEntityId, function (object) {
-                        expect(object).to.be.true;
-                        done();
-                    }, function (object) {
-                        expect(object).to.be.undefined;
-                        done();
-                    });
+                    expect(object).to.be.true;
+                    done();
+                }, function (object) {
+                    expect(object).to.be.undefined;
+                    done();
+                });
             });
 
             it("all requests have been made", function () {
@@ -3875,8 +3893,8 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.response200;
-                scope = nock(mocks.responses.globalOptionSetDefinitionsIdUrl)
-                    .get("")
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.globalOptionSetDefinitionsIdUrl)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -3886,12 +3904,12 @@ describe("callbacks -", function () {
 
             it("returns a correct response", function (done) {
                 dynamicsWebApiTest.retrieveGlobalOptionSet(mocks.data.testEntityId, function (object) {
-                        expect(object).to.deep.equal(mocks.data.testEntity);
-                        done();
-                    }, function (object) {
-                        expect(object).to.be.undefined;
-                        done();
-                    });
+                    expect(object).to.deep.equal(mocks.data.testEntity);
+                    done();
+                }, function (object) {
+                    expect(object).to.be.undefined;
+                    done();
+                });
             });
 
             it("all requests have been made", function () {
@@ -3903,10 +3921,10 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.response200;
-                scope = nock(mocks.responses.globalOptionSetDefinitionsIdUrl)
-                    .get("?$select=LogicalName")
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.globalOptionSetDefinitionsIdUrl + "?$select=LogicalName")
                     .reply(response.status, response.responseText, response.responseHeaders)
-                    .get("?$select=LogicalName,SchemaName")
+                    .get(mocks.responses.globalOptionSetDefinitionsIdUrl + "?$select=LogicalName,SchemaName")
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -3916,22 +3934,22 @@ describe("callbacks -", function () {
 
             it("[LogicalName] returns a correct response", function (done) {
                 dynamicsWebApiTest.retrieveGlobalOptionSet(mocks.data.testEntityId, function (object) {
-                        expect(object).to.deep.equal(mocks.data.testEntity);
-                        done();
-                    }, function (object) {
-                        expect(object).to.be.undefined;
-                        done();
-                    }, null, ["LogicalName"]);
+                    expect(object).to.deep.equal(mocks.data.testEntity);
+                    done();
+                }, function (object) {
+                    expect(object).to.be.undefined;
+                    done();
+                }, null, ["LogicalName"]);
             });
 
             it("[LogicalName, SchemaName] returns a correct response", function (done) {
                 dynamicsWebApiTest.retrieveGlobalOptionSet(mocks.data.testEntityId, function (object) {
-                        expect(object).to.deep.equal(mocks.data.testEntity);
-                        done();
-                    }, function (object) {
-                        expect(object).to.be.undefined;
-                        done();
-                    }, null, ["LogicalName", "SchemaName"]);
+                    expect(object).to.deep.equal(mocks.data.testEntity);
+                    done();
+                }, function (object) {
+                    expect(object).to.be.undefined;
+                    done();
+                }, null, ["LogicalName", "SchemaName"]);
             });
 
             it("all requests have been made", function () {
@@ -3946,8 +3964,8 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.responseEntityDefinitions;
-                scope = nock(mocks.responses.globalOptionSetDefinitionsUrl)
-                    .get("")
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.globalOptionSetDefinitionsUrl)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -3957,12 +3975,12 @@ describe("callbacks -", function () {
 
             it("returns a correct response", function (done) {
                 dynamicsWebApiTest.retrieveGlobalOptionSets(function (object) {
-                        expect(object).to.deep.equal(mocks.data.entityDefinitionList);
-                        done();
-                    }, function (object) {
-                        expect(object).to.be.undefined;
-                        done();
-                    });
+                    expect(object).to.deep.equal(mocks.data.entityDefinitionList);
+                    done();
+                }, function (object) {
+                    expect(object).to.be.undefined;
+                    done();
+                });
             });
 
             it("all requests have been made", function () {
@@ -3974,10 +3992,10 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.responseEntityDefinitions;
-                scope = nock(mocks.responses.globalOptionSetDefinitionsUrl + "/casttype")
-                    .get("?$select=LogicalName")
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.globalOptionSetDefinitionsUrl + "/casttype?$select=LogicalName")
                     .reply(response.status, response.responseText, response.responseHeaders)
-                    .get("?$select=LogicalName,SchemaName")
+                    .get(mocks.responses.globalOptionSetDefinitionsUrl + "/casttype?$select=LogicalName,SchemaName")
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -3987,22 +4005,22 @@ describe("callbacks -", function () {
 
             it("[LogicalName] returns a correct response", function (done) {
                 dynamicsWebApiTest.retrieveGlobalOptionSets(function (object) {
-                        expect(object).to.deep.equal(mocks.data.entityDefinitionList);
-                        done();
-                    }, function (object) {
-                        expect(object).to.be.undefined;
-                        done();
-                    }, "casttype", ["LogicalName"]);
+                    expect(object).to.deep.equal(mocks.data.entityDefinitionList);
+                    done();
+                }, function (object) {
+                    expect(object).to.be.undefined;
+                    done();
+                }, "casttype", ["LogicalName"]);
             });
 
             it("[LogicalName, SchemaName] returns a correct response", function (done) {
                 dynamicsWebApiTest.retrieveGlobalOptionSets(function (object) {
-                        expect(object).to.deep.equal(mocks.data.entityDefinitionList);
-                        done();
-                    }, function (object) {
-                        expect(object).to.be.undefined;
-                        done();
-                    }, "casttype", ["LogicalName", "SchemaName"]);
+                    expect(object).to.deep.equal(mocks.data.entityDefinitionList);
+                    done();
+                }, function (object) {
+                    expect(object).to.be.undefined;
+                    done();
+                }, "casttype", ["LogicalName", "SchemaName"]);
             });
 
             it("all requests have been made", function () {
@@ -4050,16 +4068,16 @@ describe("callbacks -", function () {
                 dynamicsWebApiTest.retrieveMultiple('morerecords');
 
                 dynamicsWebApiTest.executeBatch(function (object) {
-                        expect(object.length).to.be.eq(3);
+                    expect(object.length).to.be.eq(3);
 
-                        expect(object[0]).to.deep.equal(mocks.responses.multiple());
-                        expect(object[1]).to.deep.equal(mocks.data.testEntityId);
-                        expect(object[2]).to.deep.equal(mocks.responses.multiple2());
+                    expect(object[0]).to.deep.equal(mocks.responses.multiple());
+                    expect(object[1]).to.deep.equal(mocks.data.testEntityId);
+                    expect(object[2]).to.deep.equal(mocks.responses.multiple2());
 
-                        done();
-                    }, function (object) {
-                        done(object);
-                    });
+                    done();
+                }, function (object) {
+                    done(object);
+                });
             });
 
             it("all requests have been made", function () {
@@ -4105,16 +4123,16 @@ describe("callbacks -", function () {
                 dynamicsWebApiTest.retrieveMultiple('morerecords');
 
                 dynamicsWebApiTest.executeBatch(function (object) {
-                        expect(object.length).to.be.eq(3);
+                    expect(object.length).to.be.eq(3);
 
-                        expect(object[0]).to.deep.equal(mocks.responses.multiple());
-                        expect(object[1]).to.be.true;
-                        expect(object[2]).to.deep.equal(mocks.responses.multiple2());
+                    expect(object[0]).to.deep.equal(mocks.responses.multiple());
+                    expect(object[1]).to.be.true;
+                    expect(object[2]).to.deep.equal(mocks.responses.multiple2());
 
-                        done();
-                    }, function (object) {
-                        done(object);
-                    });
+                    done();
+                }, function (object) {
+                    done(object);
+                });
             });
 
             it("all requests have been made", function () {
@@ -4160,16 +4178,16 @@ describe("callbacks -", function () {
                 dynamicsWebApiTest.retrieveMultiple('morerecords');
 
                 dynamicsWebApiTest.executeBatch(function (object) {
-                        expect(object.length).to.be.eq(3);
+                    expect(object.length).to.be.eq(3);
 
-                        expect(object[0]).to.deep.equal(mocks.responses.multiple());
-                        expect(object[1]).to.be.undefined;
-                        expect(object[2]).to.deep.equal(mocks.responses.multiple2());
+                    expect(object[0]).to.deep.equal(mocks.responses.multiple());
+                    expect(object[1]).to.be.undefined;
+                    expect(object[2]).to.deep.equal(mocks.responses.multiple2());
 
-                        done();
-                    }, function (object) {
-                        done(object);
-                    });
+                    done();
+                }, function (object) {
+                    done(object);
+                });
             });
 
             it("all requests have been made", function () {
@@ -4215,16 +4233,16 @@ describe("callbacks -", function () {
                 dynamicsWebApiTest.retrieveMultiple('morerecords');
 
                 dynamicsWebApiTest.executeBatch(function (object) {
-                        expect(object.length).to.be.eq(3);
+                    expect(object.length).to.be.eq(3);
 
-                        expect(object[0]).to.deep.equal(mocks.responses.multiple());
-                        expect(object[1]).to.be.eq(5);
-                        expect(object[2]).to.deep.equal(mocks.responses.multiple2());
+                    expect(object[0]).to.deep.equal(mocks.responses.multiple());
+                    expect(object[1]).to.be.eq(5);
+                    expect(object[2]).to.deep.equal(mocks.responses.multiple2());
 
-                        done();
-                    }, function (object) {
-                        done(object);
-                    });
+                    done();
+                }, function (object) {
+                    done(object);
+                });
             });
 
             it("all requests have been made", function () {
@@ -4270,16 +4288,16 @@ describe("callbacks -", function () {
                 dynamicsWebApiTest.retrieveMultiple('morerecords');
 
                 dynamicsWebApiTest.executeBatch(function (object) {
-                        expect(object.length).to.be.eq(3);
+                    expect(object.length).to.be.eq(3);
 
-                        expect(object[0]).to.deep.equal(mocks.responses.multiple());
-                        expect(object[1]).to.deep.equal(mocks.responses.multipleWithCount());
-                        expect(object[2]).to.deep.equal(mocks.responses.multiple2());
+                    expect(object[0]).to.deep.equal(mocks.responses.multiple());
+                    expect(object[1]).to.deep.equal(mocks.responses.multipleWithCount());
+                    expect(object[2]).to.deep.equal(mocks.responses.multiple2());
 
-                        done();
-                    }, function (object) {
-                        done(object);
-                    });
+                    done();
+                }, function (object) {
+                    done(object);
+                });
             });
 
             it("all requests have been made", function () {
@@ -4325,16 +4343,16 @@ describe("callbacks -", function () {
                 dynamicsWebApiTest.retrieveMultiple('morerecords');
 
                 dynamicsWebApiTest.executeBatch(function (object) {
-                        expect(object.length).to.be.eq(3);
+                    expect(object.length).to.be.eq(3);
 
-                        expect(object[0]).to.deep.equal(mocks.responses.multiple());
-                        expect(object[1]).to.deep.equal(2);
-                        expect(object[2]).to.deep.equal(mocks.responses.multiple2());
+                    expect(object[0]).to.deep.equal(mocks.responses.multiple());
+                    expect(object[1]).to.deep.equal(2);
+                    expect(object[2]).to.deep.equal(mocks.responses.multiple2());
 
-                        done();
-                    }, function (object) {
-                        done(object);
-                    });
+                    done();
+                }, function (object) {
+                    done(object);
+                });
             });
 
             it("all requests have been made", function () {
@@ -4414,15 +4432,15 @@ describe("callbacks -", function () {
                 dynamicsWebApiTest.deleteRecord(mocks.data.testEntityId2, 'records', null, null, 'firstname');
 
                 dynamicsWebApiTest.executeBatch(function (object) {
-                        expect(object.length).to.be.eq(2);
+                    expect(object.length).to.be.eq(2);
 
-                        expect(object[0]).to.be.true;
-                        expect(object[1]).to.be.undefined;
+                    expect(object[0]).to.be.true;
+                    expect(object[1]).to.be.undefined;
 
-                        done();
-                    }, function (object) {
-                        done(object);
-                    });
+                    done();
+                }, function (object) {
+                    done(object);
+                });
             });
 
             it("all requests have been made", function () {
@@ -4611,7 +4629,7 @@ describe("callbacks -", function () {
                 nock.cleanAll();
             });
 
-            var getToken = sinon.spy(function any(callback) { callback({ accessToken: "token001" }) });
+            var getToken = sinon.spy(function any(callback) { callback({ accessToken: "token001" }); });
 
             it("sends the request to the right end point and returns a response", function (done) {
                 var dynamicsWebApiAuth = new DynamicsWebApiCallbacks({ onTokenRefresh: getToken, webApiUrl: mocks.webApiUrl });
@@ -4638,12 +4656,12 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.response200;
-                scope = nock(mocks.responses.testEntityUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         Prefer: 'odata.include-annotations="some-annotations"'
                     }
                 })
-                    .get("")
+                    .get(mocks.responses.testEntityUrl)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -4671,13 +4689,13 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.multipleResponse;
-                scope = nock(mocks.responses.collectionUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.FormattedValue + '"'
                     }
                 })
-                    .get("?$select=name")
-                    .reply(response.status, response.responseText, response.responseHeaders)
+                    .get(mocks.responses.collectionUrl + "?$select=name")
+                    .reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -4710,12 +4728,12 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.createReturnRepresentation;
-                scope = nock(mocks.responses.collectionUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         "Prefer": DWA.Prefer.ReturnRepresentation
                     }
                 })
-                    .post("", mocks.data.testEntity)
+                    .post(mocks.responses.collectionUrl, mocks.data.testEntity)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -4745,20 +4763,20 @@ describe("callbacks -", function () {
             var scope2;
             before(function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
-                scope = nock(mocks.responses.testEntityUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         'If-Match': '*'
                     }
                 })
-                    .patch("", mocks.data.testEntity)
+                    .patch(mocks.responses.testEntityUrl, mocks.data.testEntity)
                     .reply(response.status, response.responseText, response.responseHeaders);
 
-                scope2 = nock(mocks.responses.collectionUrl, {
+                scope2 = nock(mocks.webApiUrl, {
                     reqheaders: {
                         "Prefer": /.?/
                     }
                 })
-                    .post("", mocks.data.testEntity)
+                    .post(mocks.responses.collectionUrl, mocks.data.testEntity)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -4772,7 +4790,7 @@ describe("callbacks -", function () {
                     collection: "tests",
                     entity: mocks.data.testEntity,
                     returnRepresentation: false
-                }
+                };
 
                 dynamicsWebApi82.updateRequest(dwaRequest, function (object) {
                     expect(object).to.be.true;
@@ -4797,12 +4815,12 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.multipleResponse;
-                scope = nock(mocks.responses.collectionUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         Prefer: 'odata.maxpagesize=10'
                     }
                 })
-                    .get("")
+                    .get(mocks.responses.collectionUrl)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -4830,12 +4848,12 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.multipleWithLinkResponse;
-                scope = nock(mocks.responses.collectionUrl, {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         Prefer: 'odata.maxpagesize=100'
                     }
                 })
-                    .get("?$select=name")
+                    .get(mocks.responses.collectionUrl + "?$select=name")
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -5018,8 +5036,8 @@ describe("callbacks -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.multipleResponse;
-                scope = nock(mocks.responses.collectionUrl)
-                    .get("")
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.collectionUrl)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 

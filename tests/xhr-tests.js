@@ -38,7 +38,7 @@ describe("xhr -", function() {
             });
 
             it("sends the request to the right end point", function() {
-                expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl);
+                expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ''));
             });
 
             it("uses the correct method", function() {
@@ -86,7 +86,7 @@ describe("xhr -", function() {
             });
 
             it("sends the request to the right end point", function () {
-                expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl);
+                expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ''));
             });
 
             it("uses the correct method", function () {
@@ -134,7 +134,7 @@ describe("xhr -", function() {
             });
 
             it("sends the request to the right end point", function () {
-                expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl);
+                expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ''));
             });
 
             it("uses the correct method", function () {
@@ -182,7 +182,7 @@ describe("xhr -", function() {
             });
 
             it("sends the request to the right end point", function () {
-                expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl);
+                expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ''));
             });
 
             it("uses the correct method", function () {
@@ -228,7 +228,7 @@ describe("xhr -", function() {
         });
 
         it("sends the request to the right end point", function() {
-            expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl);
+            expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ''));
         });
 
         after(function() {
@@ -319,9 +319,9 @@ describe("xhr -", function() {
             });
 
             it("sends the request to the right end point", function() {
-                expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl + "?$select=fullname,subject");
-                expect(this.requests[1].url).to.equal(mocks.responses.testEntityUrl + "?$select=fullname,subject");
-                expect(this.requests[2].url).to.equal(mocks.responses.testEntityUrl + "?$select=fullname,subject");
+                expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, '') + "?$select=fullname,subject");
+                expect(this.requests[1].url).to.equal(mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, '') + "?$select=fullname,subject");
+                expect(this.requests[2].url).to.equal(mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, '') + "?$select=fullname,subject");
             });
 
             it("uses the correct method", function() {
@@ -393,7 +393,7 @@ describe("xhr -", function() {
             });
 
             it("sends the request to the right end point", function() {
-                expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl + "?$expand=prop");
+                expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, '') + "?$expand=prop");
             });
 
             it("uses the correct method", function() {
@@ -461,7 +461,7 @@ describe("xhr -", function() {
             });
 
             it("sends the request to the right end point", function() {
-                expect(this.requests[0].url).to.equal(mocks.responses.testEntityUrl + "?$expand=prop");
+                expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, '') + "?$expand=prop");
             });
 
             it("uses the correct method", function() {
@@ -508,7 +508,7 @@ describe("xhr -", function() {
             });
 
             it("sends the request to the right end point", function() {
-                expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl);
+                expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ''));
             });
 
             after(function() {
@@ -577,8 +577,8 @@ describe("xhr -", function() {
             });
 
             it("sends the request to the right end point", function() {
-                expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl + "?$select=fullname");
-                expect(this.requests[1].url).to.equal(mocks.responses.collectionUrl + "?$select=fullname,subject");
+                expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, '') + "?$select=fullname");
+                expect(this.requests[1].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, '') + "?$select=fullname,subject");
             });
 
             it("uses the correct method", function() {
@@ -647,8 +647,8 @@ describe("xhr -", function() {
             });
 
             it("sends the request to the right end point", function() {
-                expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl + "?$filter=name%20eq%20'name'");
-                expect(this.requests[1].url).to.equal(mocks.responses.collectionUrl + "?$select=fullname&$filter=name%20eq%20'name'");
+                expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, '') + "?$filter=name%20eq%20'name'");
+                expect(this.requests[1].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, '') + "?$select=fullname&$filter=name%20eq%20'name'");
             });
 
             it("uses the correct method", function() {
@@ -712,7 +712,7 @@ describe("xhr -", function() {
             });
 
             it("sends the request to the right end point", function() {
-                expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl);
+                expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ''));
                 expect(this.requests[1].url).to.equal(mocks.responses.multipleWithLink().oDataNextLink);
             });
 
@@ -775,7 +775,7 @@ describe("xhr -", function() {
         });
 
         it("sends the request to the right end point", function () {
-            expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl);
+            expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ''));
         });
 
         it("uses the correct method", function () {
@@ -824,7 +824,7 @@ describe("xhr -", function() {
         });
 
         it("sends the request to the right end point", function () {
-            expect(this.requests[0].url).to.equal(mocks.responses.collectionUrl);
+            expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ''));
         });
 
         it("uses the correct method", function () {
