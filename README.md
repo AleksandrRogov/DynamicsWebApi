@@ -37,6 +37,7 @@ Please note, that "Dynamics 365" in this readme refers to Microsoft Dynamics 365
     * [Delete a single property value](#delete-a-single-property-value)
   * [Retrieve a record](#retrieve-a-record)
   * [Retrieve multiple records](#retrieve-multiple-records)
+    * [Change Tracking](#change-tracking)
     * [Retrieve All records](#retrieve-all-records)
   * [Count](#count)
     * [Count limitation workaround](#count-limitation-workaround)
