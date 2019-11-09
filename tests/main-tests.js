@@ -2530,6 +2530,49 @@ describe("promises -", function () {
                 expect(scope2.isDone()).to.be.true;
             });
         });
+
+        describe("multiple pages - delta link", function () {
+            var scope;
+            var scope2;
+            before(function () {
+                var response = mocks.responses.multipleWithLinkResponse;
+                var response2 = mocks.responses.multipleWithDeltaLinkResponse;
+                var linkQuery = mocks.responses.multipleWithLink().oDataNextLink.split('?');
+                var link = linkQuery[0].split('/');
+                var getLink = `/${link.pop()}?${linkQuery[1]}`;
+
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.collectionUrl + "?$select=name")
+                    .reply(response.status, response.responseText, response.responseHeaders);
+                scope2 = nock(link.join('/'))
+                    .get(getLink)
+                    .reply(response2.status, response2.responseText, response2.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.retrieveAll("tests", ["name"])
+                    .then(function (object) {
+                        var multipleResponse = mocks.responses.multiple();
+                        var checkResponse = { value: multipleResponse.value.concat(multipleResponse.value) };
+                        checkResponse["@odata.deltaLink"] = mocks.responses.multipleWithDeltaLink()["@odata.deltaLink"];
+                        checkResponse.oDataDeltaLink = mocks.responses.multipleWithDeltaLink()["@odata.deltaLink"];
+
+                        expect(object).to.deep.equal(checkResponse);
+                        done();
+                    }).catch(function (object) {
+                        done(object);
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+                expect(scope2.isDone()).to.be.true;
+            });
+        });
     });
 
     describe("dynamicsWebApi.retrieveMultipleRequest -", function () {
