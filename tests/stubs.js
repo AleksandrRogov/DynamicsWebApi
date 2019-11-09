@@ -72,11 +72,11 @@ var dataStubs = {
         '@odata.context': 'context',
         oDataContext: 'context',
         value: [{
-            "LogicalCollectionName": "tests",
+            "EntitySetName": "tests",
             "LogicalName": "test",
             "MetadataId": "9dceed2b-9513-4a14-b09e-c176a6f1d9c3"
         }, {
-            "LogicalCollectionName": "records",
+            "EntitySetName": "records",
             "LogicalName": "record",
             "MetadataId": "18eb9672-3070-478c-be5b-e0324acb1188"
         }]

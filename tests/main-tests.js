@@ -1177,7 +1177,7 @@ describe("promises -", function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
                 var response2 = mocks.responses.responseEntityDefinitions;
                 scope = nock(mocks.webApiUrl)
-                    .get('/EntityDefinitions?$select=LogicalCollectionName,LogicalName')
+                    .get('/EntityDefinitions?$select=EntitySetName,LogicalName')
                     .once()
                     .reply(response2.status, response2.responseText, response2.responseHeaders)
                     .post("/tests(" + mocks.data.testEntityId + ")/tests_records/$ref", {

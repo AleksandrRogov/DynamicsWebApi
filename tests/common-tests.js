@@ -1674,7 +1674,7 @@ describe('Request.makeRequest', function () {
             var response = mocks.responses.response200;
             var response2 = mocks.responses.responseEntityDefinitions;
             scope = nock(mocks.webApiUrl)
-                .get('/EntityDefinitions?$select=LogicalCollectionName,LogicalName')
+                .get('/EntityDefinitions?$select=EntitySetName,LogicalName')
                 .once()
                 .reply(response2.status, response2.responseText, response2.responseHeaders)
                 .get('/tests(' + mocks.data.testEntityId + ')')
@@ -1721,7 +1721,7 @@ describe('Request.makeRequest', function () {
             var response = mocks.responses.response200;
             var response2 = mocks.responses.responseEntityDefinitions;
             scope = nock(mocks.webApiUrl)
-                .get('/EntityDefinitions?$select=LogicalCollectionName,LogicalName')
+                .get('/EntityDefinitions?$select=EntitySetName,LogicalName')
                 .once()
                 .reply(response2.status, response2.responseText, response2.responseHeaders)
                 .get('/tests(' + mocks.data.testEntityId + ')')
@@ -1785,7 +1785,7 @@ describe('Request.makeRequest', function () {
             var response = mocks.responses.response200;
             var response2 = mocks.responses.responseEntityDefinitions;
             scope = nock(mocks.webApiUrl)
-                .get('/EntityDefinitions?$select=LogicalCollectionName,LogicalName')
+                .get('/EntityDefinitions?$select=EntitySetName,LogicalName')
                 .once()
                 .reply(response2.status, response2.responseText, response2.responseHeaders)
                 .get('/tests(' + mocks.data.testEntityId + ')')
