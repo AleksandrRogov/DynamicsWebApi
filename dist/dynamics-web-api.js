@@ -1,4 +1,4 @@
-/*! dynamics-web-api v1.5.11 (c) 2019 Aleksandr Rogov */
+/*! dynamics-web-api v1.5.12 (c) 2019 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -1331,11 +1331,20 @@ function DynamicsWebApi(config) {
         return retrieveMultipleRequest(request, nextPageLink).then(function (response) {
             records = records.concat(response.value);
 
-            if (response.oDataNextLink) {
-                return _retrieveAllRequest(request, response.oDataNextLink, records);
+            var pageLink = response.oDataNextLink;
+
+            if (pageLink) {
+                return _retrieveAllRequest(request, pageLink, records);
             }
 
-            return { value: records };
+            var result = { value: records };
+
+            if (response.oDataDeltaLink) {
+                result["@odata.deltaLink"] = response.oDataDeltaLink;
+                result.oDataDeltaLink = response.oDataDeltaLink;
+            }
+
+            return result;
         });
     };
 

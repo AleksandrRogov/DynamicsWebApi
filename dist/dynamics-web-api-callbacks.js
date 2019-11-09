@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.5.11 (c) 2019 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.5.12 (c) 2019 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -1778,11 +1778,20 @@ function DynamicsWebApi(config) {
         var internalSuccessCallback = function (response) {
             records = records.concat(response.value);
 
-            if (response.oDataNextLink) {
-                _retrieveAllRequest(request, successCallback, errorCallback, response.oDataNextLink, records);
+            var pageLink = response.oDataNextLink;
+
+            if (pageLink) {
+                _retrieveAllRequest(request, successCallback, errorCallback, pageLink, records);
             }
             else {
-                successCallback({ value: records });
+                var result = { value: records };
+
+                if (response.oDataDeltaLink) {
+                    result["@odata.deltaLink"] = response.oDataDeltaLink;
+                    result.oDataDeltaLink = response.oDataDeltaLink;
+                }
+
+                successCallback(result);
             }
         };
 
