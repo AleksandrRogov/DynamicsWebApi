@@ -8,10 +8,11 @@
     <EnableTypeScript>true</EnableTypeScript>
     <TypeScriptSourceMap>true</TypeScriptSourceMap>
     <TypeScriptModuleKind>CommonJS</TypeScriptModuleKind>
-    <TypeScriptToolsVersion>2.3</TypeScriptToolsVersion>
+    <TypeScriptToolsVersion>3.5</TypeScriptToolsVersion>
     <NodeExePath>
     </NodeExePath>
     <LastActiveSolutionConfig>Debug|Any CPU</LastActiveSolutionConfig>
+    <ToolsVersionPromptShown>2.3</ToolsVersionPromptShown>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -61,9 +62,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="lib\utilities\BatchConverter.js" />
-    <Compile Include="lib\utilities\buildFunctionParameters.js">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="lib\polyfills\string-es6.js">
       <SubType>Code</SubType>
     </Compile>
@@ -75,15 +73,6 @@
     </Compile>
     <Compile Include="lib\requests\http.js" />
     <Compile Include="lib\requests\xhr.js" />
-    <Compile Include="lib\utilities\buildPreferHeader.js">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="lib\utilities\convertToReferenceObject.js">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="lib\utilities\getFetchXmlPagingCookie.js">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="lib\utilities\RequestConverter.js">
       <SubType>Code</SubType>
     </Compile>
@@ -119,8 +108,12 @@
     <Content Include=".travis.yml">
       <SubType>Code</SubType>
     </Content>
+    <Content Include="lib\utilities\buildPreferHeader.js" />
     <Content Include="package.json" />
     <Content Include="README.md" />
+    <Content Include="tsconfig.json">
+      <SubType>Code</SubType>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="lib\" />
@@ -130,15 +123,23 @@
     <Folder Include="lib\requests\" />
     <Folder Include="lib\requests\helpers\" />
     <Folder Include="dist\" />
-    <Folder Include="types\" />
+    <Folder Include="ts\" />
     <Folder Include="tests\" />
     <Folder Include="tests\browser\" />
+    <Folder Include="ts\requests\" />
+    <Folder Include="ts\requests\helpers\" />
+    <Folder Include="ts\utilities\" />
+    <Folder Include="types\" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="types\dynamics-web-api.d.ts" />
-    <TypeScriptCompile Include="types\dynamics-web-api-callbacks.d.ts">
+    <TypeScriptCompile Include="ts\requests\helpers\dateReviver.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="ts\utilities\Utility.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="types\dynamics-web-api-callbacks.d.ts" />
+    <TypeScriptCompile Include="types\dynamics-web-api.d.ts" />
   </ItemGroup>
   <!-- Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them. -->
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="False" />

@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "module": "commonjs",
+    "noEmitOnError": true,
+    "removeComments": false,
+    "sourceMap": false,
+    "target": "es5",
+    "allowJs": false,
+    "outDir": "lib"
+  },
+  "compileOnSave": true,
+  "include": ["./ts/**/*"],
+  "exclude": [
+    "node_modules",
+    "types"
+  ]
+}

@@ -5,11 +5,11 @@ var nock = require('nock');
 var sinon = require('sinon');
 
 var DWA = require('../lib/dwa');
-var Utility = require('../lib/utilities/Utility');
+var { Utility } = require('../lib/utilities/Utility');
 var RequestConverter = require('../lib/utilities/RequestConverter');
 var ErrorHelper = require('../lib/helpers/ErrorHelper');
 var mocks = require("./stubs");
-var dateReviver = require('../lib/requests/helpers/dateReviver');
+var { dateReviver } = require('../lib/requests/helpers/dateReviver');
 var Request = require('../lib/requests/sendRequest');
 var parseResponse = require('../lib/requests/helpers/parseResponse');
 

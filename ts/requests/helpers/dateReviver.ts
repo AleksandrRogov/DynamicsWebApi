@@ -1,6 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-function dateReviver(key, value) {
+﻿export function dateReviver(key: string, value: any) : Date {
     ///<summary>
     /// Private function to convert matching string values to Date objects.
     ///</summary>
@@ -19,4 +17,3 @@ function dateReviver(key, value) {
     }
     return value;
 }
-exports.dateReviver = dateReviver;

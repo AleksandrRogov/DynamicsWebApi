@@ -1,24 +1,38 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var Utility = /** @class */ (function () {
-    function Utility() {
-    }
+﻿declare let GetGlobalContext: any;
+declare let Xrm: any;
+
+export interface FetchXmlCookie {
+    cookie: string,
+    page: number,
+    nextPage: number
+}
+
+export interface ReferenceObject {
+    id: string,
+    collection: string,
+    oDataContext: string
+}
+
+export class Utility {
     /**
      * Builds parametes for a funciton. Returns '()' (if no parameters) or '([params])?[query]'
      *
      * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
      * @returns {string}
      */
-    Utility.buildFunctionParameters = function (parameters) {
+    static buildFunctionParameters(parameters): string {
         if (parameters) {
             var parameterNames = Object.keys(parameters);
             var functionParameters = "";
             var urlQuery = "";
+
             for (var i = 1; i <= parameterNames.length; i++) {
                 var parameterName = parameterNames[i - 1];
                 var value = parameters[parameterName];
+
                 if (value === null)
                     continue;
+
                 if (typeof value === "string") {
                     value = "'" + value + "'";
                 }
@@ -26,19 +40,23 @@ var Utility = /** @class */ (function () {
                 else if (typeof value === "object") {
                     value = JSON.stringify(value);
                 }
+
                 if (i > 1) {
                     functionParameters += ",";
                     urlQuery += "&";
                 }
+
                 functionParameters += parameterName + "=@p" + i;
                 urlQuery += "@p" + i + "=" + value;
             }
+
             return "(" + functionParameters + ")?" + urlQuery;
         }
         else {
             return "()";
         }
-    };
+    }
+
     /**
      * Parses a paging cookie returned in response
      *
@@ -46,12 +64,12 @@ var Utility = /** @class */ (function () {
      * @param {number} currentPageNumber - A current page number. Fix empty paging-cookie for complex fetch xmls.
      * @returns {{cookie: "", number: 0, next: 1}}
      */
-    Utility.getFetchXmlPagingCookie = function (pageCookies, currentPageNumber) {
-        if (pageCookies === void 0) { pageCookies = ""; }
-        if (currentPageNumber === void 0) { currentPageNumber = 1; }
+    static getFetchXmlPagingCookie(pageCookies: string = "", currentPageNumber: number = 1): FetchXmlCookie {
         //get the page cokies
         pageCookies = unescape(unescape(pageCookies));
+
         var info = /pagingcookie="(<cookie page="(\d+)".+<\/cookie>)/.exec(pageCookies);
+
         if (info != null) {
             var page = parseInt(info[2]);
             return {
@@ -59,8 +77,7 @@ var Utility = /** @class */ (function () {
                 page: page,
                 nextPage: page + 1
             };
-        }
-        else {
+        } else {
             //http://stackoverflow.com/questions/41262772/execution-of-fetch-xml-using-web-api-dynamics-365 workaround
             return {
                 cookie: "",
@@ -68,26 +85,29 @@ var Utility = /** @class */ (function () {
                 nextPage: currentPageNumber + 1
             };
         }
-    };
+    }
+
     /**
      * Converts a response to a reference object
      *
      * @param {Object} responseData - Response object
      * @returns {ReferenceObject}
      */
-    Utility.convertToReferenceObject = function (responseData) {
+    static convertToReferenceObject(responseData): ReferenceObject {
         var result = /\/(\w+)\(([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})/i.exec(responseData["@odata.id"]);
         return { id: result[2], collection: result[1], oDataContext: responseData["@odata.context"] };
-    };
+    }
+
     /**
      * Checks whether the value is JS Null.
      * @param {Object} value
      * @returns {boolean}
      */
-    Utility.isNull = function (value) {
+    static isNull(value): boolean {
         return typeof value === "undefined" || value == null;
-    };
-    Utility.generateUUID = function () {
+    }
+
+    static generateUUID(): string { // Public Domain/MIT
         var d = new Date().getTime();
         if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
             d += performance.now(); //use high-precision timer if available
@@ -97,8 +117,9 @@ var Utility = /** @class */ (function () {
             d = Math.floor(d / 16);
             return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
         });
-    };
-    Utility.getXrmContext = function () {
+    }
+
+    static getXrmContext() {
         if (typeof GetGlobalContext !== 'undefined') {
             return GetGlobalContext();
         }
@@ -113,26 +134,31 @@ var Utility = /** @class */ (function () {
                 }
             }
         }
+
         throw new Error('Xrm Context is not available. In most cases, it can be resolved by adding a reference to a ClientGlobalContext.js.aspx. Please refer to MSDN documentation for more details.');
-    };
-    Utility.getXrmInternal = function () {
+    }
+
+    static getXrmInternal() {
         //todo: Xrm.Internal namespace is not supported
         return typeof Xrm !== "undefined" ? Xrm.Internal : null;
-    };
-    Utility.getXrmUtility = function () {
+    }
+
+    static getXrmUtility() {
         return typeof Xrm !== "undefined" ? Xrm.Utility : null;
-    };
-    Utility.getClientUrl = function () {
+    }
+
+    static getClientUrl() {
         var context = Utility.getXrmContext();
+
         var clientUrl = context.getClientUrl();
+
         if (clientUrl.match(/\/$/)) {
             clientUrl = clientUrl.substring(0, clientUrl.length - 1);
         }
         return clientUrl;
-    };
-    Utility.initWebApiUrl = function (version) {
-        return Utility.getClientUrl() + "/api/data/v" + version + "/";
-    };
-    return Utility;
-}());
-exports.Utility = Utility;
+    }
+
+    static initWebApiUrl(version): string {
+        return `${Utility.getClientUrl()}/api/data/v${version}/`;
+    }
+}

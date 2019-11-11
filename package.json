@@ -29,7 +29,10 @@
     "webpack": "^2.7.0",
     "webpack-strip-block": "^0.1.1"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@types/node": "^12.12.7",
+    "@types/xrm": "^9.0.17"
+  },
   "license": "MIT",
   "scripts": {
     "test": "mocha tests/*-tests.js",
