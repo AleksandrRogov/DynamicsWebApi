@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.5.12 (c) 2019 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.5.13 (c) 2019 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -168,13 +168,13 @@ function generateUUID() { // Public Domain/MIT
 }
 
 function getXrmContext() {
-    if (typeof GetGlobalContext != 'undefined') {
+    if (typeof GetGlobalContext !== 'undefined') {
         return GetGlobalContext();
     }
     else {
-        if (typeof Xrm != 'undefined') {
+        if (typeof Xrm !== 'undefined') {
             //d365 v.9.0
-            if ((!isNull(Xrm.Utility) && !isNull(Xrm.Utility.getGlobalContext))) {
+            if (!isNull(Xrm.Utility) && !isNull(Xrm.Utility.getGlobalContext)) {
                 return Xrm.Utility.getGlobalContext();
             }
             else if (!isNull(Xrm.Page) && !isNull(Xrm.Page.context)) {
@@ -203,11 +203,11 @@ function initWebApiUrl(version) {
 
 function getXrmInternal() {
     //todo: Xrm.Internal namespace is not supported
-    if (typeof Xrm !== 'undefined') {
-        return Xrm.Internal;
-    }
+    return typeof Xrm !== "undefined" ? Xrm.Internal : null;
+}
 
-    return null;
+function getXrmUtility() {
+    return typeof Xrm !== "undefined" ? Xrm.Utility : null;
 }
 
 var Utility = {
@@ -248,6 +248,8 @@ var Utility = {
     getXrmContext: getXrmContext,
 
     getXrmInternal: getXrmInternal,
+
+    getXrmUtility: getXrmUtility,
 
     getClientUrl: getClientUrl,
 
@@ -775,7 +777,8 @@ var _entityNames;
  */
 function findCollectionName(entityName) {
     var xrmInternal = Utility.getXrmInternal();
-    if (!Utility.isNull(xrmInternal)) {
+
+    if (!Utility.isNull(xrmInternal) && typeof xrmInternal.getEntitySetName === "function") {
         return xrmInternal.getEntitySetName(entityName) || entityName;
     }
 
@@ -785,7 +788,7 @@ function findCollectionName(entityName) {
         collectionName = _entityNames[entityName];
         if (Utility.isNull(collectionName)) {
             for (var key in _entityNames) {
-                if (_entityNames[key] == entityName) {
+                if (_entityNames[key] === entityName) {
                     return entityName;
                 }
             }
@@ -989,26 +992,37 @@ function sendRequest(method, path, config, data, additionalHeaders, responsePara
 
 function _getEntityNames(entityName, config, successCallback, errorCallback) {
 
-    var resolve = function (result) {
-        _entityNames = {};
-        for (var i = 0; i < result.data.value.length; i++) {
-            _entityNames[result.data.value[i].LogicalName] = result.data.value[i].LogicalCollectionName;
-        }
+    var xrmUtility = Utility.getXrmUtility();
 
-        successCallback(findCollectionName(entityName));
-    };
+    //try using Xrm.Utility.getEntityMetadata first (because D365 caches metadata)
+    if (!Utility.isNull(xrmUtility) && typeof xrmUtility.getEntityMetadata === "function") {
+        xrmUtility.getEntityMetadata(entityName).then(function (response) {
+            successCallback(response.EntitySetName);
+        }, errorCallback);
+    }
+    else {
+        //make a web api call for Node.js apps
+        var resolve = function (result) {
+            _entityNames = {};
+            for (var i = 0; i < result.data.value.length; i++) {
+                _entityNames[result.data.value[i].LogicalName] = result.data.value[i].EntitySetName;
+            }
 
-    var reject = function (error) {
-        errorCallback({ message: 'Unable to fetch EntityDefinitions. Error: ' + error.message });
-    };
+            successCallback(findCollectionName(entityName));
+        };
 
-    var request = RequestConverter.convertRequest({
-        collection: 'EntityDefinitions',
-        select: ['LogicalCollectionName', 'LogicalName'],
-        noCache: true
-    }, 'retrieveMultiple', config);
+        var reject = function (error) {
+            errorCallback({ message: 'Unable to fetch EntityDefinitions. Error: ' + error.message });
+        };
 
-    sendRequest('GET', request.url, config, null, request.headers, null, resolve, reject, false, request.async);
+        var request = RequestConverter.convertRequest({
+            collection: 'EntityDefinitions',
+            select: ['EntitySetName', 'LogicalName'],
+            noCache: true
+        }, 'retrieveMultiple', config);
+
+        sendRequest('GET', request.url, config, null, request.headers, null, resolve, reject, false, request.async);
+    }
 }
 
 function _isEntityNameException(entityName) {
