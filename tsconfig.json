@@ -5,7 +5,7 @@
     "noEmitOnError": true,
     "removeComments": false,
     "sourceMap": false,
-    "target": "es5",
+    "target": "es6",
     "allowJs": false,
     "outDir": "lib"
   },

@@ -126,13 +126,22 @@
     <Folder Include="ts\" />
     <Folder Include="tests\" />
     <Folder Include="tests\browser\" />
+    <Folder Include="ts\polyfills\" />
     <Folder Include="ts\requests\" />
     <Folder Include="ts\requests\helpers\" />
     <Folder Include="ts\utilities\" />
     <Folder Include="types\" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="ts\dwa.ts" />
+    <TypeScriptCompile Include="ts\polyfills\string-es6.ts" />
     <TypeScriptCompile Include="ts\requests\helpers\dateReviver.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ts\requests\helpers\parseResponse.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ts\requests\helpers\parseResponseHeaders.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="ts\utilities\Utility.ts">

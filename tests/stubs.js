@@ -10,7 +10,7 @@ global.Xrm = {
     }
 };
 
-var DWA = require("../lib/dwa");
+var { DWA } = require("../lib/dwa");
 var webApiUrl = "http://testorg.crm.dynamics.com/api/data/v8.2/";
 var webApiUrl81 = "http://testorg.crm.dynamics.com/api/data/v8.1/";
 var webApiUrl80 = "http://testorg.crm.dynamics.com/api/data/v8.0/";

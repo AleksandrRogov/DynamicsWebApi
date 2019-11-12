@@ -4,7 +4,7 @@ var nock = require('nock');
 var sinon = require('sinon');
 
 var mocks = require("./stubs");
-var DWA = require("../lib/dwa");
+var { DWA } = require("../lib/dwa");
 var DynamicsWebApi = require("../lib/dynamics-web-api");
 
 var dynamicsWebApiTest = new DynamicsWebApi({ webApiVersion: "8.2" });

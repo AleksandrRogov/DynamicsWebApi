@@ -1,6 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-function parseResponseHeaders(headerStr) {
+﻿export function parseResponseHeaders(headerStr: string): any {
     var headers = {};
     if (!headerStr) {
         return headers;
@@ -15,4 +13,3 @@ function parseResponseHeaders(headerStr) {
     }
     return headers;
 }
-exports.parseResponseHeaders = parseResponseHeaders;
