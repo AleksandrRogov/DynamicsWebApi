@@ -214,6 +214,43 @@ var dataStubs = {
         'Accept: application/json\n' +
         '\n' +
         '--dwa_batch_XXX--',
+    batchUpsertUpsertUpsertWithAlternateKeys:
+        '--dwa_batch_XXX\n' +
+        'Content-Type: multipart/mixed;boundary=changeset_XXX\n' +
+        '\n' +
+        '--changeset_XXX\n' +
+        'Content-Type: application/http\n' +
+        'Content-Transfer-Encoding: binary\n' +
+        'Content-ID: 100001\n' +
+        '\n' +
+        'PATCH ' + webApiUrl + 'records(key=\'key1\') HTTP/1.1\n' +
+        'Content-Type: application/json\n' +
+        '\n' +
+        '{"firstname":"Test","lastname":"Batch!"}\n' +
+        '\n' +
+        '--changeset_XXX\n' +
+        'Content-Type: application/http\n' +
+        'Content-Transfer-Encoding: binary\n' +
+        'Content-ID: 100002\n' +
+        '\n' +
+        'PATCH ' + webApiUrl + 'records(key=\'key2\') HTTP/1.1\n' +
+        'Content-Type: application/json\n' +
+        '\n' +
+        '{"firstname":"Test","lastname":"Batch!"}\n' +
+        '\n' +
+        '--changeset_XXX\n' +
+        'Content-Type: application/http\n' +
+        'Content-Transfer-Encoding: binary\n' +
+        'Content-ID: 100003\n' +
+        '\n' +
+        'PATCH ' + webApiUrl + 'records(key=\'key3\') HTTP/1.1\n' +
+        'Content-Type: application/json\n' +
+        '\n' +
+        '{"firstname":"Test","lastname":"Batch!"}\n' +
+        '\n' +
+        '--changeset_XXX--\n' +
+        '\n' +
+        '--dwa_batch_XXX--',
     batchUpdateDelete:
         '--dwa_batch_XXX\n' +
         'Content-Type: multipart/mixed;boundary=changeset_XXX\n' +
@@ -647,6 +684,48 @@ var responseStubs = {
             'OData-Version: 4.0\r\n' +
 
             JSON.stringify(dataStubs.multiple2) + '\r\n' +
+            '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae--'
+    },
+    batchUpsertUpsertUpsertWithAlternateKeys: {
+        status: 200,
+        responseText:
+            '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae\r\n' +
+            'Content-Type: multipart/mixed; boundary=changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n' +
+            '\r\n' +
+            '--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n' +
+            'Content-Type: application/http\r\n' +
+            'Content-Transfer-Encoding: binary\r\n' +
+            'Content-ID: 100001' +
+
+            'HTTP/1.1 204 No Content\r\n' +
+            'OData-Version: 4.0\r\n' +
+            'Location: https://url.com/api/data/v8.2/tests(key=\'key1\')\r\n' +
+            'OData-EntityId: https://url.com/api/data/v8.2/tests(key=\'key1\')\r\n' +
+            '\r\n' +
+            '\r\n' +
+            '--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n' +
+            'Content-Type: application/http\r\n' +
+            'Content-Transfer-Encoding: binary\r\n' +
+            'Content-ID: 100002' +
+
+            'HTTP/1.1 204 No Content\r\n' +
+            'OData-Version: 4.0\r\n' +
+            'Location: https://url.com/api/data/v8.2/tests(key=\'key2\')\r\n' +
+            'OData-EntityId: https://url.com/api/data/v8.2/tests(key=\'key2\')\r\n' +
+            '\r\n' +
+            '\r\n' +
+            '--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n' +
+            'Content-Type: application/http\r\n' +
+            'Content-Transfer-Encoding: binary\r\n' +
+            'Content-ID: 100003' +
+
+            'HTTP/1.1 204 No Content\r\n' +
+            'OData-Version: 4.0\r\n' +
+            'Location: https://url.com/api/data/v8.2/tests(key=\'key3\')\r\n' +
+            'OData-EntityId: https://url.com/api/data/v8.2/tests(key=\'key3\')\r\n' +
+            '\r\n' +
+            '\r\n' +
+            '--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd--\r\n' +
             '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae--'
     },
     batchUpdateDelete: {

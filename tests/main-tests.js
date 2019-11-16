@@ -4975,6 +4975,62 @@ describe("promises -", function () {
                 expect(scope.isDone()).to.be.true;
             });
         });
+
+        describe("upsert / upsert / upsert with alternate keys", function () {
+            var scope;
+            var rBody = mocks.data.batchUpsertUpsertUpsertWithAlternateKeys;
+            var rBodys = rBody.split('\n');
+            var checkBody = '';
+            for (var i = 0; i < rBodys.length; i++) {
+                checkBody += rBodys[i];
+            }
+            before(function () {
+                var response = mocks.responses.batchUpsertUpsertUpsertWithAlternateKeys;
+                scope = nock(mocks.webApiUrl + '$batch')
+                    .filteringRequestBody(function (body) {
+                        body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
+                        body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'changeset_XXX');
+                        var bodys = body.split('\n');
+
+                        var resultBody = '';
+                        for (var i = 0; i < bodys.length; i++) {
+                            resultBody += bodys[i];
+                        }
+                        return resultBody;
+                    })
+                    .post("", checkBody)
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.startBatch();
+
+                dynamicsWebApiTest.upsert("key='key1'", "records", { firstname: "Test", lastname: "Batch!" });
+                dynamicsWebApiTest.upsert("key='key2'", "records", { firstname: "Test", lastname: "Batch!" });
+                dynamicsWebApiTest.upsert("key='key3'", "records", { firstname: "Test", lastname: "Batch!" });
+
+                dynamicsWebApiTest.executeBatch()
+                    .then(function (object) {
+                        expect(object.length).to.be.eq(3);
+
+                        expect(object[0]).to.be.undefined;
+                        expect(object[1]).to.be.undefined;
+                        expect(object[2]).to.be.undefined;
+
+                        done();
+                    }).catch(function (object) {
+                        done(object);
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
     });
 
     describe("dynamicsWebApi.constructor -", function () {

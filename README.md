@@ -673,7 +673,7 @@ var request = {
 dynamicsWebApi.retrieveMultipleRequest(request).then(function (response) {
 
     var deltaLink = response.oDataDeltaLink;
-	//make other requests to Web API
+    //make other requests to Web API
     //...
 
     //(2) only retrieve changes:
