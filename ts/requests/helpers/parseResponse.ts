@@ -183,7 +183,7 @@ function parseBatchResponse(response: string, parseParams: any, requestNumber: n
  * @param {Array} parseParams - parameters for parsing the response
  * @returns {any} parsed response
  */
-export function parseResponse(response: string, responseHeaders: any[], parseParams: any) {
+export function parseResponse(response: string, responseHeaders: any, parseParams: any) {
     var parseResult = undefined;
     if (response.length) {
         if (response.indexOf('--batchresponse_') > -1) {

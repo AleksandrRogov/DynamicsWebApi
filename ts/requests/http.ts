@@ -1,14 +1,29 @@
-"use strict";
-//var http = require('http');
-const http = require("http");
-const https = require("https");
-const url = require("url");
-const parseResponse_1 = require("./helpers/parseResponse");
+﻿//var http = require('http');
+import * as http from "http";
+import * as https from "https";
+import * as url from "url";
+import { parseResponse } from "./helpers/parseResponse";
+
+declare interface DynamicsWebApiError extends Error{
+    status: number
+}
+
+declare interface RequestOptions {
+    method: string,
+    uri: string,
+    data: string,
+    additionalHeaders: any,
+    responseParams: any,
+    successCallback: Function,
+    errorCallback: Function,
+    timeout: number
+}
+
 /**
  * Sends a request to given URL with given parameters
  *
  */
-function httpRequest(options) {
+function httpRequest(options: RequestOptions) {
     var method = options.method;
     var uri = options.uri;
     var data = options.data;
@@ -17,20 +32,26 @@ function httpRequest(options) {
     var successCallback = options.successCallback;
     var errorCallback = options.errorCallback;
     var timeout = options.timeout;
-    var headers = {};
+
+    var headers: http.OutgoingHttpHeaders = {};
+
     if (data) {
         headers["Content-Type"] = additionalHeaders['Content-Type'];
         headers["Content-Length"] = data.length;
+
         delete additionalHeaders['Content-Type'];
     }
+
     //set additional headers
     for (var key in additionalHeaders) {
         headers[key] = additionalHeaders[key];
     }
+
     var parsedUrl = url.parse(uri);
     var protocol = parsedUrl.protocol.replace(':', '');
     var protocolInterface = protocol === 'http' ? http : https;
-    var internalOptions = {
+
+    var internalOptions: http.RequestOptions = {
         hostname: parsedUrl.hostname,
         port: parsedUrl.port,
         path: parsedUrl.path,
@@ -38,6 +59,7 @@ function httpRequest(options) {
         timeout: timeout,
         headers: headers
     };
+
     if (process.env[`${protocol}_proxy`]) {
         /*
          * Proxied requests don't work with Node's https module so use http to
@@ -57,6 +79,7 @@ function httpRequest(options) {
             headers: headers
         };
     }
+
     var request = protocolInterface.request(internalOptions, function (res) {
         var rawData = '';
         res.setEncoding('utf8');
@@ -68,13 +91,15 @@ function httpRequest(options) {
                 case 200: // Success with content returned in response body.
                 case 201: // Success with content returned in response body.
                 case 204: // Success with no content returned in response body.
-                case 304: { // Success with Not Modified
-                    var responseData = parseResponse_1.parseResponse(rawData, res.headers, responseParams);
+                case 304: {// Success with Not Modified
+                    var responseData = parseResponse(rawData, res.headers, responseParams);
+
                     var response = {
                         data: responseData,
                         headers: res.headers,
                         status: res.statusCode
                     };
+
                     successCallback(response);
                     break;
                 }
@@ -82,11 +107,11 @@ function httpRequest(options) {
                     var crmError;
                     try {
                         var errorParsed = JSON.parse(rawData);
+
                         crmError = errorParsed.hasOwnProperty('error') && errorParsed.error
                             ? errorParsed.error
                             : { message: errorParsed.Message };
-                    }
-                    catch (e) {
+                    } catch (e) {
                         if (rawData.length > 0) {
                             crmError = { message: rawData };
                         }
@@ -94,7 +119,7 @@ function httpRequest(options) {
                             crmError = { message: "Unexpected Error" };
                         }
                     }
-                    var error = new Error();
+                    var error = <DynamicsWebApiError>new Error();
                     Object.keys(crmError).forEach(k => {
                         error[k] = crmError[k];
                     });
@@ -102,21 +127,27 @@ function httpRequest(options) {
                     errorCallback(error);
                     break;
             }
+
             responseParams.length = 0;
         });
     });
+
     if (internalOptions.timeout) {
         request.setTimeout(internalOptions.timeout, function () {
             request.abort();
         });
     }
+
     request.on('error', function (error) {
         responseParams.length = 0;
         errorCallback(error);
     });
+
     if (data) {
         request.write(data);
     }
+
     request.end();
 }
-module.exports = httpRequest;
+
+export = httpRequest;
