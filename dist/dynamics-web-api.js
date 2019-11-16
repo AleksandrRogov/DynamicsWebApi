@@ -1,4 +1,4 @@
-/*! dynamics-web-api v1.5.13 (c) 2019 Aleksandr Rogov */
+/*! dynamics-web-api v1.5.14 (c) 2019 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -2385,7 +2385,9 @@ function parseBatchResponse(response, parseParams, requestNumber) {
                         var entityUrl = /OData-EntityId.+/i.exec(batchResponse);
 
                         if (entityUrl && entityUrl.length) {
-                            result.push(/([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})\)$/i.exec(entityUrl[0])[1]);
+                            var guidResult = /([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})\)$/i.exec(entityUrl[0]);
+
+                            result.push(guidResult ? guidResult[1] : undefined);
                         }
                         else {
                             result.push(undefined);
@@ -2442,9 +2444,10 @@ module.exports = function parseResponse(response, responseHeaders, parseParams) 
             }
     }
 
-    return parseResult;
-};
+    parseParams.length = 0;
 
+    return parseResult;
+}
 
 /***/ }),
 /* 8 */
