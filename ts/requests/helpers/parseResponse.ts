@@ -158,7 +158,9 @@ function parseBatchResponse(response: string, parseParams: any, requestNumber: n
                         var entityUrl = /OData-EntityId.+/i.exec(batchResponse);
 
                         if (entityUrl && entityUrl.length) {
-                            result.push(/([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})\)$/i.exec(entityUrl[0])[1]);
+                            var guidResult = /([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})\)$/i.exec(entityUrl[0]);
+
+                            result.push(guidResult ? guidResult[1] : undefined);
                         }
                         else {
                             result.push(undefined);
@@ -183,7 +185,7 @@ function parseBatchResponse(response: string, parseParams: any, requestNumber: n
  * @param {Array} parseParams - parameters for parsing the response
  * @returns {any} parsed response
  */
-export function parseResponse(response: string, responseHeaders: any, parseParams: any) {
+export function parseResponse(response: string, responseHeaders: any, parseParams: any[]) {
     var parseResult = undefined;
     if (response.length) {
         if (response.indexOf('--batchresponse_') > -1) {
@@ -214,6 +216,8 @@ export function parseResponse(response: string, responseHeaders: any, parseParam
                 }
             }
     }
+
+    parseParams.length = 0;
 
     return parseResult;
 }

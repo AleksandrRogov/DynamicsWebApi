@@ -13,7 +13,7 @@ declare interface RequestOptions {
     uri: string,
     data: string,
     additionalHeaders: any,
-    responseParams: any,
+    responseParams: any[],
     successCallback: Function,
     errorCallback: Function,
     timeout: number
