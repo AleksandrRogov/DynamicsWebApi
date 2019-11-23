@@ -81,187 +81,6 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 0 */
 /***/ (function(module, exports) {
 
-var DWA = {
-    Types: {
-        ResponseBase: function () {
-            /// <field name='oDataContext' type='String'>The context URL (see [OData-Protocol]) for the payload.</field>  
-            this.oDataContext = "";
-        },
-        Response: function () {
-            /// <field name='value' type='Object'>Response value returned from the request.</field>  
-            DWA.Types.ResponseBase.call(this);
-
-            this.value = {};
-        },
-        ReferenceResponse: function () {
-            /// <field name='id' type='String'>A String representing the GUID value of the record.</field>  
-            /// <field name='collection' type='String'>The name of the Entity Collection that the record belongs to.</field>  
-            DWA.Types.ResponseBase.call(this);
-
-            this.id = "";
-            this.collection = "";
-        },
-        MultipleResponse: function () {
-            /// <field name='oDataNextLink' type='String'>The link to the next page.</field>  
-            /// <field name='oDataCount' type='Number'>The count of the records.</field>  
-            /// <field name='value' type='Array'>The array of the records returned from the request.</field>  
-            DWA.Types.ResponseBase.call(this);
-
-            this.oDataNextLink = "";
-            this.oDataCount = 0;
-            this.value = [];
-        },
-        FetchXmlResponse: function () {
-            /// <field name='value' type='Array'>The array of the records returned from the request.</field>  
-            /// <field name='pagingInfo' type='Object'>Paging Information</field>  
-            DWA.Types.ResponseBase.call(this);
-
-            this.value = [];
-            this.PagingInfo = {
-                /// <param name='cookie' type='String'>Paging Cookie</param>  
-                /// <param name='number' type='Number'>Page Number</param>  
-                cookie: "",
-                page: 0,
-                nextPage: 1
-            }
-        }
-    },
-    Prefer: {
-        /// <field type="String">return=representation</field>
-        ReturnRepresentation: "return=representation",
-        Annotations: {
-            /// <field type="String">Microsoft.Dynamics.CRM.associatednavigationproperty</field>
-            AssociatedNavigationProperty: 'Microsoft.Dynamics.CRM.associatednavigationproperty',
-            /// <field type="String">Microsoft.Dynamics.CRM.lookuplogicalname</field>
-            LookupLogicalName: 'Microsoft.Dynamics.CRM.lookuplogicalname',
-            /// <field type="String">*</field>
-            All: '*',
-            /// <field type="String">OData.Community.Display.V1.FormattedValue</field>
-            FormattedValue: 'OData.Community.Display.V1.FormattedValue',
-            /// <field type="String">Microsoft.Dynamics.CRM.fetchxmlpagingcookie</field>
-            FetchXmlPagingCookie: 'Microsoft.Dynamics.CRM.fetchxmlpagingcookie'
-        }
-    }
-}
-
-module.exports = DWA;
-
-/***/ }),
-/* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-function isNull(value) {
-    return typeof value === "undefined" || typeof value === "unknown" || value == null;
-}
-
-//https://stackoverflow.com/a/8809472
-function generateUUID() { // Public Domain/MIT
-    var d = new Date().getTime();
-    if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
-        d += performance.now(); //use high-precision timer if available
-    }
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        var r = (d + Math.random() * 16) % 16 | 0;
-        d = Math.floor(d / 16);
-        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-    });
-}
-
-function getXrmContext() {
-    if (typeof GetGlobalContext !== 'undefined') {
-        return GetGlobalContext();
-    }
-    else {
-        if (typeof Xrm !== 'undefined') {
-            //d365 v.9.0
-            if (!isNull(Xrm.Utility) && !isNull(Xrm.Utility.getGlobalContext)) {
-                return Xrm.Utility.getGlobalContext();
-            }
-            else if (!isNull(Xrm.Page) && !isNull(Xrm.Page.context)) {
-                return Xrm.Page.context;
-            }
-        }
-    }
-
-    throw new Error('Xrm Context is not available. In most cases, it can be resolved by adding a reference to a ClientGlobalContext.js.aspx. Please refer to MSDN documentation for more details.');
-}
-
-function getClientUrl() {
-    var context = getXrmContext();
-
-    var clientUrl = context.getClientUrl();
-
-    if (clientUrl.match(/\/$/)) {
-        clientUrl = clientUrl.substring(0, clientUrl.length - 1);
-    }
-    return clientUrl;
-}
-
-function initWebApiUrl(version) {
-    return getClientUrl() + '/api/data/v' + version + '/';
-}
-
-function getXrmInternal() {
-    //todo: Xrm.Internal namespace is not supported
-    return typeof Xrm !== "undefined" ? Xrm.Internal : null;
-}
-
-function getXrmUtility() {
-    return typeof Xrm !== "undefined" ? Xrm.Utility : null;
-}
-
-var Utility = {
-    /**
-     * Builds parametes for a funciton. Returns '()' (if no parameters) or '([params])?[query]'
-     *
-     * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
-     * @returns {string}
-     */
-    buildFunctionParameters: __webpack_require__(12),
-
-    /**
-     * Parses a paging cookie returned in response
-     *
-     * @param {string} pageCookies - Page cookies returned in @Microsoft.Dynamics.CRM.fetchxmlpagingcookie.
-     * @param {number} currentPageNumber - A current page number. Fix empty paging-cookie for complex fetch xmls.
-     * @returns {{cookie: "", number: 0, next: 1}}
-     */
-    getFetchXmlPagingCookie: __webpack_require__(15),
-
-    /**
-     * Converts a response to a reference object
-     *
-     * @param {Object} responseData - Response object
-     * @returns {ReferenceObject}
-     */
-    convertToReferenceObject: __webpack_require__(14),
-
-    /**
-     * Checks whether the value is JS Null.
-     * @param {Object} value
-     * @returns {boolean}
-     */
-    isNull: isNull,
-
-    generateUUID: generateUUID,
-
-    getXrmContext: getXrmContext,
-
-    getXrmInternal: getXrmInternal,
-
-    getXrmUtility: getXrmUtility,
-
-    getClientUrl: getClientUrl,
-
-    initWebApiUrl: initWebApiUrl
-};
-
-module.exports = Utility;
-
-/***/ }),
-/* 2 */
-/***/ (function(module, exports) {
-
 function throwParameterError(functionName, parameterName, type) {
     throw new Error(type
         ? functionName + " requires the " + parameterName + " parameter to be of type " + type
@@ -327,13 +146,13 @@ var ErrorHelper = {
         }
     },
 
-    stringOrArrayParameterCheck: function(parameter, functionName, parameterName) {
+    stringOrArrayParameterCheck: function (parameter, functionName, parameterName) {
         if (parameter.constructor !== Array && typeof parameter != "string") {
             throwParameterError(functionName, parameterName, "String or Array");
         }
     },
 
-    numberParameterCheck : function (parameter, functionName, parameterName) {
+    numberParameterCheck: function (parameter, functionName, parameterName) {
         ///<summary>
         /// Private function used to check whether required parameters are null or undefined
         ///</summary>
@@ -405,7 +224,7 @@ var ErrorHelper = {
             var alternateKeys = parameter.split(',');
 
             if (alternateKeys.length) {
-                for (var i = 0; i < alternateKeys.length; i++){
+                for (var i = 0; i < alternateKeys.length; i++) {
                     alternateKeys[i] = alternateKeys[i].trim().replace('"', "'");
                     /^[\w\d\_]+\=('[^\'\r\n]+'|\d+)$/i.exec(alternateKeys[i])[0];
                 }
@@ -444,10 +263,207 @@ var ErrorHelper = {
         if (!isBatch) {
             throw new Error("Batch operation has not been started. Please call a DynamicsWebApi.startBatch() function prior to calling DynamicsWebApi.executeBatch() to perform a batch request correctly.");
         }
+    },
+
+    handleHttpError: function (parsedError, parameters) {
+        var error = new Error();
+
+        Object.keys(parsedError).forEach(function(k) {
+            error[k] = parsedError[k];
+        });
+
+        if (parameters) {
+            Object.keys(parameters).forEach(function (k) {
+                error[k] = parameters[k];
+            });
+        }
+
+        return error;
     }
 };
 
 module.exports = ErrorHelper;
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports) {
+
+var DWA = {
+    Types: {
+        ResponseBase: function () {
+            /// <field name='oDataContext' type='String'>The context URL (see [OData-Protocol]) for the payload.</field>  
+            this.oDataContext = "";
+        },
+        Response: function () {
+            /// <field name='value' type='Object'>Response value returned from the request.</field>  
+            DWA.Types.ResponseBase.call(this);
+
+            this.value = {};
+        },
+        ReferenceResponse: function () {
+            /// <field name='id' type='String'>A String representing the GUID value of the record.</field>  
+            /// <field name='collection' type='String'>The name of the Entity Collection that the record belongs to.</field>  
+            DWA.Types.ResponseBase.call(this);
+
+            this.id = "";
+            this.collection = "";
+        },
+        MultipleResponse: function () {
+            /// <field name='oDataNextLink' type='String'>The link to the next page.</field>  
+            /// <field name='oDataCount' type='Number'>The count of the records.</field>  
+            /// <field name='value' type='Array'>The array of the records returned from the request.</field>  
+            DWA.Types.ResponseBase.call(this);
+
+            this.oDataNextLink = "";
+            this.oDataCount = 0;
+            this.value = [];
+        },
+        FetchXmlResponse: function () {
+            /// <field name='value' type='Array'>The array of the records returned from the request.</field>  
+            /// <field name='pagingInfo' type='Object'>Paging Information</field>  
+            DWA.Types.ResponseBase.call(this);
+
+            this.value = [];
+            this.PagingInfo = {
+                /// <param name='cookie' type='String'>Paging Cookie</param>  
+                /// <param name='number' type='Number'>Page Number</param>  
+                cookie: "",
+                page: 0,
+                nextPage: 1
+            }
+        }
+    },
+    Prefer: {
+        /// <field type="String">return=representation</field>
+        ReturnRepresentation: "return=representation",
+        Annotations: {
+            /// <field type="String">Microsoft.Dynamics.CRM.associatednavigationproperty</field>
+            AssociatedNavigationProperty: 'Microsoft.Dynamics.CRM.associatednavigationproperty',
+            /// <field type="String">Microsoft.Dynamics.CRM.lookuplogicalname</field>
+            LookupLogicalName: 'Microsoft.Dynamics.CRM.lookuplogicalname',
+            /// <field type="String">*</field>
+            All: '*',
+            /// <field type="String">OData.Community.Display.V1.FormattedValue</field>
+            FormattedValue: 'OData.Community.Display.V1.FormattedValue',
+            /// <field type="String">Microsoft.Dynamics.CRM.fetchxmlpagingcookie</field>
+            FetchXmlPagingCookie: 'Microsoft.Dynamics.CRM.fetchxmlpagingcookie'
+        }
+    }
+}
+
+module.exports = DWA;
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+function isNull(value) {
+    return typeof value === "undefined" || value == null;
+}
+
+//https://stackoverflow.com/a/8809472
+function generateUUID() { // Public Domain/MIT
+    var d = new Date().getTime();
+    if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
+        d += performance.now(); //use high-precision timer if available
+    }
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        var r = (d + Math.random() * 16) % 16 | 0;
+        d = Math.floor(d / 16);
+        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+}
+
+function getXrmContext() {
+    if (typeof GetGlobalContext !== 'undefined') {
+        return GetGlobalContext();
+    }
+    else {
+        if (typeof Xrm !== 'undefined') {
+            //d365 v.9.0
+            if (!isNull(Xrm.Utility) && !isNull(Xrm.Utility.getGlobalContext)) {
+                return Xrm.Utility.getGlobalContext();
+            }
+            else if (!isNull(Xrm.Page) && !isNull(Xrm.Page.context)) {
+                return Xrm.Page.context;
+            }
+        }
+    }
+
+    throw new Error('Xrm Context is not available. In most cases, it can be resolved by adding a reference to a ClientGlobalContext.js.aspx. Please refer to MSDN documentation for more details.');
+}
+
+function getClientUrl() {
+    var context = getXrmContext();
+
+    var clientUrl = context.getClientUrl();
+
+    if (clientUrl.match(/\/$/)) {
+        clientUrl = clientUrl.substring(0, clientUrl.length - 1);
+    }
+    return clientUrl;
+}
+
+function initWebApiUrl(version) {
+    return getClientUrl() + '/api/data/v' + version + '/';
+}
+
+function getXrmInternal() {
+    //todo: Xrm.Internal namespace is not supported
+    return typeof Xrm !== "undefined" ? Xrm.Internal : null;
+}
+
+function getXrmUtility() {
+    return typeof Xrm !== "undefined" ? Xrm.Utility : null;
+}
+
+var Utility = {
+    /**
+     * Builds parametes for a funciton. Returns '()' (if no parameters) or '([params])?[query]'
+     *
+     * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
+     * @returns {string}
+     */
+    buildFunctionParameters: __webpack_require__(13),
+
+    /**
+     * Parses a paging cookie returned in response
+     *
+     * @param {string} pageCookies - Page cookies returned in @Microsoft.Dynamics.CRM.fetchxmlpagingcookie.
+     * @param {number} currentPageNumber - A current page number. Fix empty paging-cookie for complex fetch xmls.
+     * @returns {{cookie: "", number: 0, next: 1}}
+     */
+    getFetchXmlPagingCookie: __webpack_require__(16),
+
+    /**
+     * Converts a response to a reference object
+     *
+     * @param {Object} responseData - Response object
+     * @returns {ReferenceObject}
+     */
+    convertToReferenceObject: __webpack_require__(15),
+
+    /**
+     * Checks whether the value is JS Null.
+     * @param {Object} value
+     * @returns {boolean}
+     */
+    isNull: isNull,
+
+    generateUUID: generateUUID,
+
+    getXrmContext: getXrmContext,
+
+    getXrmInternal: getXrmInternal,
+
+    getXrmUtility: getXrmUtility,
+
+    getClientUrl: getClientUrl,
+
+    initWebApiUrl: initWebApiUrl
+};
+
+module.exports = Utility;
 
 /***/ }),
 /* 3 */
@@ -472,9 +488,9 @@ String.prototype.startsWith = function (searchString, position) {
 /* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Utility = __webpack_require__(1);
-var RequestConverter = __webpack_require__(11);
-var BatchConverter = __webpack_require__(10);
+var Utility = __webpack_require__(2);
+var RequestConverter = __webpack_require__(12);
+var BatchConverter = __webpack_require__(11);
 
 var _entityNames;
 
@@ -664,7 +680,7 @@ function sendRequest(method, path, config, data, additionalHeaders, responsePara
 
     var executeRequest;
 
-        executeRequest = __webpack_require__(9);
+        executeRequest = __webpack_require__(10);
 
 
     var sendInternalRequest = function (token) {
@@ -796,9 +812,9 @@ module.exports = {
 "use strict";
 
 
-var DWA = __webpack_require__(0);
-var Utility = __webpack_require__(1);
-var ErrorHelper = __webpack_require__(2);
+var DWA = __webpack_require__(1);
+var Utility = __webpack_require__(2);
+var ErrorHelper = __webpack_require__(0);
 var Request = __webpack_require__(4);
 
 //string es6 polyfill
@@ -2201,6 +2217,14 @@ module.exports = DynamicsWebApi;
 /* 6 */
 /***/ (function(module, exports) {
 
+Array.isArray = function (arg) {
+    return Object.prototype.toString.call(arg) === '[object Array]';
+};
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports) {
+
 module.exports = function dateReviver(key, value) {
     ///<summary>
     /// Private function to convert matching string values to Date objects.
@@ -2222,12 +2246,13 @@ module.exports = function dateReviver(key, value) {
 };
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var DWA = __webpack_require__(0);
-var Utility = __webpack_require__(1);
-var dateReviver = __webpack_require__(6);
+var DWA = __webpack_require__(1);
+var Utility = __webpack_require__(2);
+var ErrorHelper = __webpack_require__(0);
+var dateReviver = __webpack_require__(7);
 
 //string es6 polyfill
 if (!String.prototype.endsWith || !String.prototype.startsWith) {
@@ -2367,6 +2392,11 @@ function parseBatchResponse(response, parseParams, requestNumber) {
             result = result.concat(parseBatchResponse(batchToProcess, parseParams, requestNumber));
         }
         else {
+            //check http status
+            var httpStatusReg = /HTTP\/?\s*[\d.]*\s+(\d{3})\s+([\w\s]*)$/gm.exec(batchResponse);
+            var httpStatus = parseInt(httpStatusReg[1]);
+            var httpStatusMessage = httpStatusReg[2].trim();
+
             var responseData = batchResponse.substring(batchResponse.indexOf("{"), batchResponse.lastIndexOf("}") + 1);
 
             if (!responseData) {
@@ -2395,7 +2425,18 @@ function parseBatchResponse(response, parseParams, requestNumber) {
                     }
             }
             else {
-                result.push(parseData(JSON.parse(responseData, dateReviver), parseParams[requestNumber]));
+                var parsedResponse = parseData(JSON.parse(responseData, dateReviver), parseParams[requestNumber]);
+
+                if (httpStatus >= 400) {
+                    result.push(ErrorHelper.handleHttpError(parsedResponse, {
+                        status: httpStatus,
+                        statusText: httpStatusMessage,
+                        statusMessage: httpStatusMessage
+                    }));
+                }
+                else {
+                    result.push(parsedResponse);
+                }
             }
         }
 
@@ -2450,7 +2491,7 @@ module.exports = function parseResponse(response, responseHeaders, parseParams) 
 }
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports) {
 
 module.exports = function parseResponseHeaders(headerStr) {
@@ -2470,11 +2511,16 @@ module.exports = function parseResponseHeaders(headerStr) {
 };
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var parseResponse = __webpack_require__(7);
-var parseResponseHeaders = __webpack_require__(8);
+var parseResponse = __webpack_require__(8);
+var parseResponseHeaders = __webpack_require__(9);
+var ErrorHelper = __webpack_require__(0);
+
+if (!Array.isArray) {
+    __webpack_require__(6);
+}
 
 /**
  * Sends a request to given URL with given parameters
@@ -2520,7 +2566,14 @@ var xhrRequest = function (options) {
                 default: // All other statuses are error cases.
                     var error;
                     try {
-                        error = JSON.parse(request.response).error;
+                        var errorParsed = parseResponse(request.responseText, parseResponseHeaders(request.getAllResponseHeaders()), responseParams);
+
+                        if (Array.isArray(errorParsed)) {
+                            errorCallback(errorParsed);
+                            break;
+                        }
+
+                        error = errorParsed.error;
                     } catch (e) {
                         if (request.response.length > 0) {
                             error = { message: request.response };
@@ -2529,9 +2582,12 @@ var xhrRequest = function (options) {
                             error = { message: "Unexpected Error" };
                         }
                     }
-                    error.status = request.status;
-                    error.statusText = request.statusText;
-                    errorCallback(error);
+
+                    errorCallback(ErrorHelper.handleHttpError(error, {
+                        status: request.status,
+                        statusText: request.statusText
+                    }));
+
                     break;
             }
 
@@ -2545,21 +2601,21 @@ var xhrRequest = function (options) {
     }
 
     request.onerror = function () {
-        errorCallback({
+        errorCallback(ErrorHelper.handleHttpError({
             status: request.status,
             statusText: request.statusText,
             message: request.responseText || "Network Error"
-        });
+        }));
         responseParams.length = 0;
         request = null;
     };
 
     request.ontimeout = function () {
-        errorCallback({
+        errorCallback(ErrorHelper.handleHttpError({
             status: request.status,
             statusText: request.statusText,
             message: request.responseText || "Request Timed Out"
-        });
+        }));
         responseParams.length = 0;
         request = null;
     };
@@ -2573,10 +2629,10 @@ module.exports = xhrRequest;
 
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Utility = __webpack_require__(1);
+var Utility = __webpack_require__(2);
 
 /**
  * 
@@ -2668,12 +2724,12 @@ var BatchConverter = {
 module.exports = BatchConverter;
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var DWA = __webpack_require__(0);
-var ErrorHelper = __webpack_require__(2);
-var buildPreferHeader = __webpack_require__(13);
+var DWA = __webpack_require__(1);
+var ErrorHelper = __webpack_require__(0);
+var buildPreferHeader = __webpack_require__(14);
 
 /**
  * @typedef {Object} ConvertedRequestOptions
@@ -2958,7 +3014,7 @@ var RequestConverter = {
 module.exports = RequestConverter;
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports) {
 
 /**
@@ -3005,11 +3061,11 @@ module.exports = function buildFunctionParameters(parameters) {
 };
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var DWA = __webpack_require__(0);
-var ErrorHelper = __webpack_require__(2);
+var DWA = __webpack_require__(1);
+var ErrorHelper = __webpack_require__(0);
 
 /**
  * Builds a Prefer header value
@@ -3083,7 +3139,7 @@ module.exports = function buildPreferHeader(request, functionName, config) {
 }
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports) {
 
 /**
@@ -3105,7 +3161,7 @@ module.exports = function convertToReferenceObject(responseData) {
 };
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports) {
 
 /**

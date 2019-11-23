@@ -2858,8 +2858,6 @@ describe("promises -", function () {
                 })
                     .get(getLink)
                     .reply(response2.status, response2.responseText, response2.responseHeaders);
-
-                console.log(scope2.activeMocks());
             });
 
             after(function () {
