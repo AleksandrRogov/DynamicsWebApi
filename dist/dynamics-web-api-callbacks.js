@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.5.14 (c) 2019 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.6.0 (c) 2019 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
