@@ -57,6 +57,9 @@
     <Compile Include="lib\helpers\ErrorHelper.js">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="lib\polyfills\Array-es6.js">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="lib\requests\helpers\parseResponse.js">
       <SubType>Code</SubType>
     </Compile>

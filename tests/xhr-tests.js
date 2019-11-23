@@ -198,7 +198,13 @@ describe("xhr -", function() {
             });
 
             it("returns the correct response", function () {
-                expect(responseObject).to.deep.equal({ message: "something", status: 404, statusText: "Not Found" });
+                var error = new Error("something");
+                error.status = 404;
+                error.statusText = "Not Found";
+
+                expect(responseObject.message).to.equal(error.message);
+                expect(responseObject.status).to.equal(error.status);
+                expect(responseObject.statusText).to.equal(error.statusText);
             });
         });
     });

@@ -4490,6 +4490,64 @@ describe("callbacks -", function () {
                 expect(scope.isDone()).to.be.true;
             });
         });
+
+        describe("update / delete - returns an error", function () {
+            var scope;
+            var rBody = mocks.data.batchUpdateDelete;
+            var rBodys = rBody.split('\n');
+            var checkBody = '';
+            for (var i = 0; i < rBodys.length; i++) {
+                checkBody += rBodys[i];
+            }
+            before(function () {
+                var response = mocks.responses.batchError;
+                scope = nock(mocks.webApiUrl + '$batch')
+                    .filteringRequestBody(function (body) {
+                        body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
+                        body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'changeset_XXX');
+                        var bodys = body.split('\n');
+
+                        var resultBody = '';
+                        for (var i = 0; i < bodys.length; i++) {
+                            resultBody += bodys[i];
+                        }
+                        return resultBody;
+                    })
+                    .post("", checkBody)
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.startBatch();
+
+                dynamicsWebApiTest.update(mocks.data.testEntityId2, 'records', { firstname: "Test", lastname: "Batch!" });
+                dynamicsWebApiTest.deleteRecord(mocks.data.testEntityId2, 'records', null, null, 'firstname');
+
+                dynamicsWebApiTest.executeBatch(function (object) {
+                    done(object);
+                }, function (object) {
+                    expect(object.length).to.be.eq(1);
+
+                    expect(object[0].error).to.deep.equal({
+                        "code": "0x0", "message": "error", "innererror": { "message": "error", "type": "Microsoft.Crm.CrmHttpException", "stacktrace": "stack" }
+                    });
+
+                    expect(object[0].status).to.equal(400);
+                    expect(object[0].statusMessage).to.equal("Bad Request");
+                    expect(object[0].statusText).to.equal("Bad Request");
+
+                    done();
+                });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
     });
 
     describe("dynamicsWebApi.constructor -", function () {

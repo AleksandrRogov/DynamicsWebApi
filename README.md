@@ -2016,6 +2016,7 @@ the config option "formatted" will enable developers to retrieve all information
 - [X] Batch requests. `Implemented in v.1.5.0`
 - [X] TypeScript declaration files `d.ts` `Added in v.1.5.3`.
 - [X] Implement `Content-ID` header to reference a request in a Change Set in a batch operation `Added in v.1.5.6`.
+- [X] Change Tracking `Added in v.1.5.11`.
 - [ ] Upload DynamicsWebApi declaration files to DefinitelyTyped repository.
 
 Many more features to come!
