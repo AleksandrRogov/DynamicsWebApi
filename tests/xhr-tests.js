@@ -218,7 +218,7 @@ describe("xhr -", function () {
             for (var i = 0; i < rBodys.length; i++) {
                 checkBody += rBodys[i];
             }
-            before(function () {
+            before(function (done) {
                 global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
                 var requests = this.requests = [];
 
