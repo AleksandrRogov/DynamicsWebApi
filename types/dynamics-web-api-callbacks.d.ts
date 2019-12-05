@@ -610,6 +610,12 @@ declare namespace DynamicsWebApi {
         select?: string[];
         /**BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */
         contentId?: string;
+        /**v.1.4.3 + Casts the AttributeMetadata to a specific type. (Used in requests to Attribute Metadata). */
+        metadataAttributeType?: string;
+        /**A String representing the name of a single - valued navigation property.Useful when needed to retrieve information about a related record in a single request. */
+        navigationProperty?: string;
+        /**v.1.4.3 + A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata). */
+        navigationPropertyKey?: string;
     }
 
     interface UpdateRequest extends UpdateRequestBase {
@@ -620,12 +626,6 @@ declare namespace DynamicsWebApi {
     interface UpsertRequest extends UpdateRequestBase {
         /**Sets If-None-Match header value that enables to use conditional retrieval in applicable requests. */
         ifnonematch?: string;
-        /**v.1.4.3 + Casts the AttributeMetadata to a specific type. (Used in requests to Attribute Metadata). */
-        metadataAttributeType?: string;
-        /**A String representing the name of a single - valued navigation property.Useful when needed to retrieve information about a related record in a single request. */
-        navigationProperty?: string;
-        /**v.1.4.3 + A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata). */
-        navigationPropertyKey?: string;
     }
 
     interface DeleteRequest extends CRUDRequest {
