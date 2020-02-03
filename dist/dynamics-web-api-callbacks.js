@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.6.0 (c) 2019 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.6.1 (c) 2020 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -3214,7 +3214,7 @@ module.exports = function buildFunctionParameters(parameters) {
             if (value === null)
                 continue;
 
-            if (typeof value === "string") {
+            if (typeof value === "string" && !value.startsWith("Microsoft.Dynamics.CRM")) {
                 value = "'" + value + "'";
             }
             //fix #45
