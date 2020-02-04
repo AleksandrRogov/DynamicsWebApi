@@ -406,6 +406,24 @@ var dataStubs = {
         'Accept: application/json\n' +
         '\n' +
         '--dwa_batch_XXX--',
+    batchErrorChangeSet:
+        '--dwa_batch_XXX\n' +
+        'Content-Type: multipart/mixed;boundary=changeset_XXX\n' +
+        '\n' +
+        '--changeset_XXX\n' +
+        'Content-Type: application/http\n' +
+        'Content-Transfer-Encoding: binary\n' +
+        'Content-ID: 100001\n' +
+        '\n' +
+        'HTTP/1.1 400 Bad Request\n' +
+        'REQ_ID: 5fe339e5-c75e-4dad-9597-b257ebce666b\n' +
+        'Content-Type: application/json\n' +
+        'OData-Version: 4.0\n' +
+        '\n' +
+        '{"error":{"code":"0x0","message":"error"}}\n' +
+        '\n' +
+        '--changeset_XXX\n' +
+        '--dwa_batch_XXX--',
     fetchXmls: {
         cookiePage1: "%253Ccookie%2520pagenumber%253D%25222%2522%2520pagingcookie%253D%2522%253Ccookie%2520page%253D%25221%2522%253E%253Caccountid%2520last%253D%2522%257BEF72AE29-B3DE-E611-8102-5065F38A7BF1%257D%2522%2520first%253D%2522%257B475B158C-541C-E511-80D3-3863BB347BA8%257D%2522%2520/%253E%253C/cookie%253E%2522%2520istracking%253D%2522False%2522%2520/%253E",
         cookiePage2: "%253Ccookie%2520pagenumber%253D%25222%2522%2520pagingcookie%253D%2522%253Ccookie%2520page%253D%25222%2522%253E%253Caccountid%2520last%253D%2522%257BF972AE29-B3DE-E611-8102-5065F38A7BF1%257D%2522%2520first%253D%2522%257BF172AE29-B3DE-E611-8102-5065F38A7BF1%257D%2522%2520/%253E%253C/cookie%253E%2522%2520istracking%253D%2522False%2522%2520/%253E",
@@ -443,7 +461,7 @@ var dataStubs = {
             value: [
                 { name: "name1", subject: "subject1" },
                 { name: "name2", subject: "subject2" }
-            ],
+            ]
         },
         fetchXmlResponsePage2Cookie: {
             "@odata.context": "context",
@@ -451,14 +469,14 @@ var dataStubs = {
             value: [
                 { name: "name1", subject: "subject1" },
                 { name: "name2", subject: "subject2" }
-            ],
+            ]
         },
         fetchXmlResponsePage2NoCookie: {
             "@odata.context": "context",
             value: [
                 { name: "name1", subject: "subject1" },
                 { name: "name2", subject: "subject2" }
-            ],
+            ]
         },
         fetchXmlResponsePage1: {
             "@odata.context": "context",
@@ -466,7 +484,7 @@ var dataStubs = {
             value: [
                 { name: "name1", subject: "subject1" },
                 { name: "name2", subject: "subject2" }
-            ],
+            ]
         },
         fetchXmlResultPage1Cookie: {
             "@odata.context": "context",
@@ -509,7 +527,7 @@ var dataStubs = {
                 page: 1,
                 nextPage: 2
             }
-        },
+        }
     }
 };
 
@@ -646,6 +664,26 @@ var responseStubs = {
             'OData-Version: 4.0\r\n' +
 
             JSON.stringify(dataStubs.multiple2) + '\r\n' +
+            '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae--'
+    },
+    batchError: {
+        status: 400,
+        responseText:
+            '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae\r\n' +
+            'Content-Type: multipart/mixed; boundary=changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n' +
+            '\r\n' +
+            '--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n' +
+            'Content-Type: application/http\r\n' +
+            'Content-Transfer-Encoding: binary\r\n' +
+            'Content-ID: 100001' +
+
+            'HTTP/1.1 400 Bad Request\r\n' +
+            'OData-Version: 4.0\r\n' +
+            'REQ_ID: 5fe339e5-c75e-4dad-9597-b257ebce666b\r\n' +
+            'OData-Version: 4.0\r\n' +
+            '\r\n' +
+            '{"error":{"code":"0x0","message":"error","innererror":{"message":"error","type":"Microsoft.Crm.CrmHttpException","stacktrace":"stack"}}}\r\n' +
+            '--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n' +
             '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae--'
     },
     batchRetrieveMultipleUpdateRetrieveMultiple: {

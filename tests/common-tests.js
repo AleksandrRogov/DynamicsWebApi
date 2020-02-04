@@ -7,7 +7,7 @@ var sinon = require('sinon');
 var { DWA } = require('../lib/dwa');
 var { Utility } = require('../lib/utilities/Utility');
 var RequestConverter = require('../lib/utilities/RequestConverter');
-var ErrorHelper = require('../lib/helpers/ErrorHelper');
+var { ErrorHelper } = require('../lib/helpers/ErrorHelper');
 var mocks = require("./stubs");
 var { dateReviver } = require('../lib/requests/helpers/dateReviver');
 var Request = require('../lib/requests/sendRequest');
@@ -34,6 +34,10 @@ describe("Utility.", function () {
         it("object parameter", function () {
             var result = Utility.buildFunctionParameters({ param1: { test1: "value", '@odata.type': 'account' } });
             expect(result).to.equal("(param1=@p1)?@p1={\"test1\":\"value\",\"@odata.type\":\"account\"}");
+        });
+        it("Microsoft.Dynamics.CRM namespace parameter", function () {
+            var result = Utility.buildFunctionParameters({ param1: "Microsoft.Dynamics.CRM.Enum'Type'", param2: 2, param3: "value2" });
+            expect(result).to.equal("(param1=@p1,param2=@p2,param3=@p3)?@p1=Microsoft.Dynamics.CRM.Enum'Type'&@p2=2&@p3='value2'");
         });
     });
 

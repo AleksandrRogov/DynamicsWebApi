@@ -2,11 +2,8 @@
 import * as http from "http";
 import * as https from "https";
 import * as url from "url";
+import { ErrorHelper } from "./../helpers/ErrorHelper";
 import { parseResponse } from "./helpers/parseResponse";
-
-declare interface DynamicsWebApiError extends Error{
-    status: number
-}
 
 declare interface RequestOptions {
     method: string,
@@ -106,7 +103,12 @@ function httpRequest(options: RequestOptions) {
                 default: // All other statuses are error cases.
                     var crmError;
                     try {
-                        var errorParsed = JSON.parse(rawData);
+                        var errorParsed = parseResponse(rawData, res.headers, responseParams);
+
+                        if (Array.isArray(errorParsed)) {
+                            errorCallback(errorParsed);
+                            break;
+                        }
 
                         crmError = errorParsed.hasOwnProperty('error') && errorParsed.error
                             ? errorParsed.error
@@ -119,12 +121,8 @@ function httpRequest(options: RequestOptions) {
                             crmError = { message: "Unexpected Error" };
                         }
                     }
-                    var error = <DynamicsWebApiError>new Error();
-                    Object.keys(crmError).forEach(k => {
-                        error[k] = crmError[k];
-                    });
-                    error.status = res.statusCode;
-                    errorCallback(error);
+
+                    errorCallback(ErrorHelper.handleHttpError(crmError, { status: res.statusCode, statusText: "", statusMessage: res.statusMessage }));
                     break;
             }
 

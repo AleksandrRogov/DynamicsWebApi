@@ -198,7 +198,95 @@ describe("xhr -", function() {
             });
 
             it("returns the correct response", function () {
-                expect(responseObject).to.deep.equal({ message: "something", status: 404, statusText: "Not Found" });
+                var error = new Error("something");
+                error.status = 404;
+                error.statusText = "Not Found";
+
+                expect(responseObject.message).to.equal(error.message);
+                expect(responseObject.status).to.equal(error.status);
+                expect(responseObject.statusText).to.equal(error.statusText);
+            });
+        });
+    });
+
+    describe("dynamicsWebApi.executeBatch - ", function () {
+        describe("update / delete - returns an error", function () {
+            var responseObject;
+            var rBody = mocks.data.batchUpdateDelete;
+            var rBodys = rBody.split('\n');
+            var checkBody = '';
+            for (var i = 0; i < rBodys.length; i++) {
+                checkBody += rBodys[i];
+            }
+            before(function (done) {
+                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+                var requests = this.requests = [];
+
+                global.XMLHttpRequest.onCreate = function (xhr) {
+                    requests.push(xhr);
+                };
+
+                dynamicsWebApiTest.startBatch();
+
+                dynamicsWebApiTest.update(mocks.data.testEntityId2, 'records', { firstname: "Test", lastname: "Batch!" });
+                dynamicsWebApiTest.deleteRecord(mocks.data.testEntityId2, 'records', 'firstname');
+
+                dynamicsWebApiTest.executeBatch()
+                    .then(function (object) {
+                        responseObject = object;
+                        done();
+                    }).catch(function (object) {
+                        responseObject = object;
+                        done();
+                    });
+
+                var response = mocks.responses.batchError;
+                this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+            });
+
+            after(function () {
+                global.XMLHttpRequest.restore();
+                global.XMLHttpRequest = null;
+            });
+
+            it("sends the request to the right end point", function () {
+                expect(this.requests[0].url).to.equal(mocks.webApiUrl + '$batch');
+            });
+
+            it("uses the correct method", function () {
+                expect(this.requests[0].method).to.equal('POST');
+            });
+
+            it("sends the right data", function () {
+                function filterBody(body) {
+                    body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
+                    body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'changeset_XXX');
+                    var bodys = body.split('\n');
+
+                    var resultBody = '';
+                    for (var i = 0; i < bodys.length; i++) {
+                        resultBody += bodys[i];
+                    }
+                    return resultBody;
+                }
+
+                expect(filterBody(this.requests[0].requestBody)).to.deep.equal(checkBody);
+            });
+
+            it("does not have Prefer header", function () {
+                expect(this.requests[0].requestHeaders['Prefer']).to.be.undefined;
+            });
+
+            it("returns the correct response", function () {
+                expect(responseObject.length).to.be.eq(1);
+
+                expect(responseObject[0].error).to.deep.equal({
+                    "code": "0x0", "message": "error", "innererror": { "message": "error", "type": "Microsoft.Crm.CrmHttpException", "stacktrace": "stack" }
+                });
+
+                expect(responseObject[0].status).to.equal(400);
+                expect(responseObject[0].statusMessage).to.equal("Bad Request");
+                expect(responseObject[0].statusText).to.equal("Bad Request");
             });
         });
     });

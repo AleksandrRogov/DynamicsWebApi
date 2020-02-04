@@ -33,7 +33,7 @@ export class Utility {
                 if (value === null)
                     continue;
 
-                if (typeof value === "string") {
+                if (typeof value === "string" && !value.startsWith("Microsoft.Dynamics.CRM")) {
                     value = "'" + value + "'";
                 }
                 //fix #45

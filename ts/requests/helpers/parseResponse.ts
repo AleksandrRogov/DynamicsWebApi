@@ -1,5 +1,6 @@
 ﻿import { DWA } from "../../dwa";
 import { Utility } from "../../utilities/Utility";
+import { ErrorHelper } from "../../helpers/ErrorHelper";
 import { dateReviver } from "./dateReviver";
 
 ////string es6 polyfill
@@ -140,6 +141,11 @@ function parseBatchResponse(response: string, parseParams: any, requestNumber: n
             result = result.concat(parseBatchResponse(batchToProcess, parseParams, requestNumber));
         }
         else {
+            //check http status
+            var httpStatusReg = /HTTP\/?\s*[\d.]*\s+(\d{3})\s+([\w\s]*)$/gm.exec(batchResponse);
+            var httpStatus = parseInt(httpStatusReg[1]);
+            var httpStatusMessage = httpStatusReg[2].trim();
+
             var responseData = batchResponse.substring(batchResponse.indexOf("{"), batchResponse.lastIndexOf("}") + 1);
 
             if (!responseData) {
@@ -150,7 +156,7 @@ function parseBatchResponse(response: string, parseParams: any, requestNumber: n
                     //check if a plain content is a number or not
                     result.push(isNaN(Number(plainContent)) ? plainContent : Number(plainContent));
                 }
-                else
+                else {
                     if (parseParams.length && parseParams[requestNumber] && parseParams[requestNumber].hasOwnProperty('valueIfEmpty')) {
                         result.push(parseParams[requestNumber].valueIfEmpty);
                     }
@@ -166,9 +172,21 @@ function parseBatchResponse(response: string, parseParams: any, requestNumber: n
                             result.push(undefined);
                         }
                     }
+                }
             }
             else {
-                result.push(parseData(JSON.parse(responseData, dateReviver), parseParams[requestNumber]));
+                var parsedResponse = parseData(JSON.parse(responseData, dateReviver), parseParams[requestNumber]);
+
+                if (httpStatus >= 400) {
+                    result.push(ErrorHelper.handleHttpError(parsedResponse, {
+                        status: httpStatus,
+                        statusText: httpStatusMessage,
+                        statusMessage: httpStatusMessage
+                    }));
+                }
+                else {
+                    result.push(parsedResponse);
+                }
             }
         }
 
