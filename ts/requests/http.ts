@@ -2,25 +2,15 @@
 import * as http from "http";
 import * as https from "https";
 import * as url from "url";
+import * as DWA from "../../types/dynamics-web-api-types";
 import { ErrorHelper } from "./../helpers/ErrorHelper";
 import { parseResponse } from "./helpers/parseResponse";
-
-declare interface RequestOptions {
-    method: string,
-    uri: string,
-    data: string,
-    additionalHeaders: any,
-    responseParams: any[],
-    successCallback: Function,
-    errorCallback: Function,
-    timeout: number
-}
 
 /**
  * Sends a request to given URL with given parameters
  *
  */
-function httpRequest(options: RequestOptions) {
+function httpRequest(options: DWA.RequestOptions) {
     var method = options.method;
     var uri = options.uri;
     var data = options.data;

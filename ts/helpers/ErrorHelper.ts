@@ -93,7 +93,7 @@ export class ErrorHelper {
         }
     }
 
-    static handleHttpError(parsedError, parameters): DynamicsWebApiError {
+    static handleHttpError(parsedError: any, parameters?: any): DynamicsWebApiError {
         var error = new Error();
 
         Object.keys(parsedError).forEach(k => {
