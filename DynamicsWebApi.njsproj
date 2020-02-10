@@ -151,6 +151,7 @@
     <TypeScriptCompile Include="ts\requests\xhr.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="ts\utilities\RequestUtility.ts" />
     <TypeScriptCompile Include="ts\utilities\Utility.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>

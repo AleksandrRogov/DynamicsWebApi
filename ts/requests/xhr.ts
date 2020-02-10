@@ -1,5 +1,4 @@
-﻿import * as DWA from "../../types/dynamics-web-api-types";
-
+﻿import { DynamicsWebApi } from "../../types/dynamics-web-api-types";
 import { ErrorHelper } from "./../helpers/ErrorHelper";
 import { parseResponse } from "./helpers/parseResponse";
 import { parseResponseHeaders } from "./helpers/parseResponseHeaders";
@@ -12,7 +11,7 @@ import { parseResponseHeaders } from "./helpers/parseResponseHeaders";
  * Sends a request to given URL with given parameters
  *
  */
-function xhrRequest (options: DWA.RequestOptions) {
+function xhrRequest (options: DynamicsWebApi.RequestOptions) {
     const method = options.method;
     const uri = options.uri;
     const data = options.data;

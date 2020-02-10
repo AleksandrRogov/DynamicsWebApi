@@ -22,7 +22,7 @@ export class ErrorHelper {
             req.message);
     }
 
-    static parameterCheck (parameter, functionName, parameterName, type) {
+    static parameterCheck (parameter, functionName: string, parameterName: string, type?: string) {
         ///<summary>
         /// Private function used to check whether required parameters are null or undefined
         ///</summary>

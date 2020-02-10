@@ -2,7 +2,7 @@
 import * as http from "http";
 import * as https from "https";
 import * as url from "url";
-import * as DWA from "../../types/dynamics-web-api-types";
+import { DynamicsWebApi } from "../../types/dynamics-web-api-types";
 import { ErrorHelper } from "./../helpers/ErrorHelper";
 import { parseResponse } from "./helpers/parseResponse";
 
@@ -10,7 +10,7 @@ import { parseResponse } from "./helpers/parseResponse";
  * Sends a request to given URL with given parameters
  *
  */
-function httpRequest(options: DWA.RequestOptions) {
+function httpRequest(options: DynamicsWebApi.RequestOptions) {
     var method = options.method;
     var uri = options.uri;
     var data = options.data;
