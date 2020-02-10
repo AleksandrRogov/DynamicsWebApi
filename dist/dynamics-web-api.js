@@ -722,8 +722,11 @@ function _getEntityNames(entityName, config, successCallback, errorCallback) {
 
     //try using Xrm.Utility.getEntityMetadata first (because D365 caches metadata)
     if (!Utility.isNull(xrmUtility) && typeof xrmUtility.getEntityMetadata === "function") {
-        xrmUtility.getEntityMetadata(entityName).then(function (response) {
-            successCallback(response.EntitySetName);
+        xrmUtility.getEntityMetadata(entityName, []).then(function (response) {
+            if (!response)
+                successCallback(entityName);
+            else
+                successCallback(response.EntitySetName);
         }, errorCallback);
     }
     else {
