@@ -11,6 +11,12 @@
         isAsync?: boolean
     }
 
+    interface ConvertedRequest {
+        url?: string,
+        headers?: string,
+        async?: boolean
+    }
+
     interface InternalRequest {
         /**XHR requests only! Indicates whether the requests should be made synchronously or asynchronously.Default value is 'true'(asynchronously). */
         async?: boolean;
@@ -42,6 +48,8 @@
         includeAnnotations?: string;
         /**Sets Prefer header request with value "return=representation".Use this property to return just created or updated entity in a single request. */
         returnRepresentation?: boolean;
+        /**Prefer header values */
+        prefer: string | string[];
         /**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
         select?: string[];
         /**BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */
@@ -234,7 +242,7 @@
         /**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types.*/
         includeAnnotations?: string;
         /**Sets the odata.maxpagesize preference value to request the number of entities returned in the response. */
-        maxPageSize?: string;
+        maxPageSize?: number;
         /**Sets Prefer header request with value "return=representation".Use this property to return just created or updated entity in a single request.*/
         returnRepresentation?: boolean;
         /**Indicates whether to use Entity Logical Names instead of Collection Logical Names.*/

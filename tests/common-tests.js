@@ -6,7 +6,7 @@ var sinon = require('sinon');
 
 var { DWA } = require('../lib/dwa');
 var { Utility } = require('../lib/utilities/Utility');
-var RequestConverter = require('../lib/utilities/RequestConverter');
+var { RequestUtility } = require("../lib/utilities/RequestUtility");
 var { ErrorHelper } = require('../lib/helpers/ErrorHelper');
 var mocks = require("./stubs");
 var { dateReviver } = require('../lib/requests/helpers/dateReviver');
@@ -234,19 +234,19 @@ describe("Utility.", function () {
     });
 });
 
-describe("RequestConverter.convertRequestOptions -", function () {
+describe("RequestUtility.composeUrl -", function () {
     var stubUrl = mocks.webApiUrl + "tests";
     it("request is empty", function () {
         var dwaRequest;
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl, "&");
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, "&", stubUrl);
+        expect(result).to.equal(stubUrl);
 
-        result = RequestConverter.convertRequestOptions(null, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
+        result = RequestUtility.composeUrl(null, "", null, "&", stubUrl);
+        expect(result).to.equal(stubUrl);
 
-        result = RequestConverter.convertRequestOptions({}, "", stubUrl, "&");
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
+        result = RequestUtility.composeUrl({}, "", null, "&", stubUrl);
+        expect(result).to.equal(stubUrl);
 
     });
 
@@ -255,8 +255,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             count: true
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$count=true", headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(`${stubUrl}?$count=true`);
     });
 
     it("count=false", function () {
@@ -264,26 +264,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             count: false
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
-    });
-
-    it("mergeLabels=true", function () {
-        var dwaRequest = {
-            mergeLabels: true
-        };
-
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: { 'MSCRM.MergeLabels': 'true' } });
-    });
-
-    it("mergeLabels=false", function () {
-        var dwaRequest = {
-            mergeLabels: false
-        };
-
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(stubUrl);
     });
 
     it("expand is empty", function () {
@@ -291,22 +273,22 @@ describe("RequestConverter.convertRequestOptions -", function () {
             expand: undefined
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(stubUrl);
 
         dwaRequest = {
             expand: null
         };
 
-        result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
+        result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(stubUrl);
 
         dwaRequest = {
             expand: []
         };
 
-        result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
+        result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(stubUrl);
     });
 
     it("expand - filter without expand.property", function () {
@@ -316,8 +298,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             }]
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(stubUrl);
 
         dwaRequest = {
             expand: [{
@@ -326,8 +308,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             }]
         };
 
-        result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
+        result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(stubUrl);
     });
 
     it("expand - property", function () {
@@ -337,8 +319,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             }]
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property", headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(`${stubUrl}?$expand=property`);
     });
 
     it("expand - property,filter empty", function () {
@@ -349,8 +331,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             }]
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property", headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(`${stubUrl}?$expand=property`);
 
         dwaRequest = {
             expand: [{
@@ -359,8 +341,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             }]
         };
 
-        result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property", headers: {} });
+        result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(`${stubUrl}?$expand=property`);
     });
 
     it("expand - property,filter", function () {
@@ -371,8 +353,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             }]
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property($filter=" + (encodeURIComponent("name eq 'name'")) + ")", headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(`${stubUrl}?$expand=property($filter=${encodeURIComponent("name eq 'name'")})`);
     });
 
     it("expand - property,orderBy empty", function () {
@@ -383,8 +365,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             }]
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property", headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(`${stubUrl}?$expand=property`);
 
         dwaRequest = {
             expand: [{
@@ -393,8 +375,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             }]
         };
 
-        result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property", headers: {} });
+        result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(`${stubUrl}?$expand=property`);
     });
 
     it("expand - property,orderBy", function () {
@@ -405,8 +387,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             }]
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property($orderby=name)", headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(`${stubUrl}?$expand=property($orderby=name)`);
 
         dwaRequest = {
             expand: [{
@@ -415,8 +397,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             }]
         };
 
-        result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property($orderby=name,subject)", headers: {} });
+        result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(`${stubUrl}?$expand=property($orderby=name,subject)`);
     });
 
     it("expand - property,select empty", function () {
@@ -427,8 +409,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             }]
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property", headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(`${stubUrl}?$expand=property`);
 
         dwaRequest = {
             expand: [{
@@ -437,8 +419,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             }]
         };
 
-        result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property", headers: {} });
+        result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(`${stubUrl}?$expand=property`);
     });
 
     it("expand - property,select", function () {
@@ -449,8 +431,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             }]
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property($select=name)", headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(`${stubUrl}?$expand=property($select=name)`);
 
         dwaRequest = {
             expand: [{
@@ -459,8 +441,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             }]
         };
 
-        result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property($select=name,subject)", headers: {} });
+        result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(`${stubUrl}?$expand=property($select=name,subject)`);
     });
 
     it("expand - property,top empty or <=0", function () {
@@ -471,8 +453,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             }]
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property", headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(`${stubUrl}?$expand=property`);
 
         dwaRequest = {
             expand: [{
@@ -481,8 +463,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             }]
         };
 
-        result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property", headers: {} });
+        result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(`${stubUrl}?$expand=property`);
 
         dwaRequest = {
             expand: [{
@@ -491,8 +473,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             }]
         };
 
-        result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property", headers: {} });
+        result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(`${stubUrl}?$expand=property`);
     });
 
     it("expand - property,top", function () {
@@ -503,8 +485,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             }]
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property($top=3)", headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(`${stubUrl}?$expand=property($top=3)`);
     });
 
     it("expand - different properties", function () {
@@ -516,8 +498,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             }]
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property($select=name,subject;$top=3)", headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(`${stubUrl}?$expand=property($select=name,subject;$top=3)`);
 
         dwaRequest = {
             expand: [{
@@ -528,8 +510,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             }]
         };
 
-        result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$expand=property($select=name,subject;$top=3;$orderby=order)", headers: {} });
+        result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(`${stubUrl}?$expand=property($select=name,subject;$top=3;$orderby=order)`);
     });
 
     it("filter empty", function () {
@@ -537,15 +519,15 @@ describe("RequestConverter.convertRequestOptions -", function () {
             filter: ""
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(stubUrl);
 
         dwaRequest = {
             filter: null
         };
 
-        result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
+        result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(stubUrl);
     });
 
     it("filter", function () {
@@ -553,8 +535,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             filter: "name eq 'name'"
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$filter=" + encodeURIComponent("name eq 'name'"), headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(`${stubUrl}?$filter=${encodeURIComponent("name eq 'name'")}`);
     });
 
     it("filter - special symbols encoded", function () {
@@ -562,8 +544,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             filter: "email eq 'test+email@example.com'"
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$filter=" + encodeURIComponent("email eq 'test+email@example.com'"), headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(`${stubUrl}?$filter=${encodeURIComponent("email eq 'test+email@example.com'")}`);
     });
 
     it("filter - remove brackets from guid", function () {
@@ -571,8 +553,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             filter: "name eq 'name' and testid1 eq {0000a000-0000-0000-0000-000000000001} and testid2 eq 0000a000-0000-0000-0000-000000000002 and teststring eq '{0000a000-0000-0000-0000-000000000003}'"
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$filter=" + encodeURIComponent("name eq 'name' and testid1 eq 0000a000-0000-0000-0000-000000000001 and testid2 eq 0000a000-0000-0000-0000-000000000002 and teststring eq '{0000a000-0000-0000-0000-000000000003}'"), headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(`${stubUrl}?$filter=${encodeURIComponent("name eq 'name' and testid1 eq 0000a000-0000-0000-0000-000000000001 and testid2 eq 0000a000-0000-0000-0000-000000000002 and teststring eq '{0000a000-0000-0000-0000-000000000003}'")}`);
     });
 
     //test bug 2018-06-11
@@ -581,8 +563,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             filter: "name eq 'name' and (testid1 eq {0000a000-0000-0000-0000-000000000001} or testid2 eq {0000a000-0000-0000-0000-000000000002})"
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$filter=" + encodeURIComponent("name eq 'name' and (testid1 eq 0000a000-0000-0000-0000-000000000001 or testid2 eq 0000a000-0000-0000-0000-000000000002)"), headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(`${stubUrl}?$filter=${encodeURIComponent("name eq 'name' and (testid1 eq 0000a000-0000-0000-0000-000000000001 or testid2 eq 0000a000-0000-0000-0000-000000000002)")}`);
     });
 
     //test bug 2018-06-11
@@ -591,8 +573,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             filter: "name eq 'name' and (testid1 eq {0000a000-0000-0000-0000-000000000001})"
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$filter=" + encodeURIComponent("name eq 'name' and (testid1 eq 0000a000-0000-0000-0000-000000000001)"), headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(`${stubUrl}?$filter=${encodeURIComponent("name eq 'name' and (testid1 eq 0000a000-0000-0000-0000-000000000001)")}`);
     });
 
     it("ifmatch empty", function () {
@@ -600,142 +582,15 @@ describe("RequestConverter.convertRequestOptions -", function () {
             ifmatch: ""
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(stubUrl);
 
         dwaRequest = {
             ifmatch: null
         };
 
-        result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
-    });
-
-    it("ifmatch", function () {
-        var dwaRequest = {
-            ifmatch: "*"
-        };
-
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: { "If-Match": "*" } });
-    });
-
-    it("ifnonematch empty", function () {
-        var dwaRequest = {
-            ifnonematch: ""
-        };
-
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
-
-        dwaRequest = {
-            ifnonematch: null
-        };
-
-        result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
-    });
-
-    it("ifnonematch", function () {
-        var dwaRequest = {
-            ifnonematch: "*"
-        };
-
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: { "If-None-Match": "*" } });
-    });
-
-    it("ifmatch & ifnonematch both specified - throws an error", function () {
-        var dwaRequest = {
-            ifmatch: "*",
-            ifnonematch: "*"
-        };
-
-        var result = expect(function () {
-            RequestConverter.convertRequestOptions(dwaRequest, "fun", stubUrl);
-        }).to.throw("DynamicsWebApi.fun. Either one of request.ifmatch or request.ifnonematch parameters should be used in a call, not both.");
-    });
-
-    it("impersonate empty", function () {
-        var dwaRequest = {
-            impersonate: ""
-        };
-
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
-
-        dwaRequest = {
-            impersonate: null
-        };
-
-        result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
-    });
-
-    it("impersonate", function () {
-        var dwaRequest = {
-            impersonate: mocks.data.testEntityId
-        };
-
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: { "MSCRMCallerID": mocks.data.testEntityId } });
-    });
-
-    it("includeAnnotations empty", function () {
-        var dwaRequest = {
-            includeAnnotations: ""
-        };
-
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
-
-        dwaRequest = {
-            includeAnnotations: null
-        };
-
-        result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
-    });
-
-    it("includeAnnotations", function () {
-        var dwaRequest = {
-            includeAnnotations: DWA.Prefer.Annotations.AssociatedNavigationProperty
-        };
-
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: { Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.AssociatedNavigationProperty + '"' } });
-    });
-
-    it("maxPageSize empty or <=0", function () {
-        var dwaRequest = {
-            maxPageSize: 0
-        };
-
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
-
-        dwaRequest = {
-            maxPageSize: null
-        };
-
-        result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
-
-        dwaRequest = {
-            maxPageSize: -2
-        };
-
-        result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
-    });
-
-    it("maxPageSize", function () {
-        var dwaRequest = {
-            maxPageSize: 10
-        };
-
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: { Prefer: 'odata.maxpagesize=10' } });
+        result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(stubUrl);
     });
 
     it("navigationProperty empty", function () {
@@ -743,15 +598,15 @@ describe("RequestConverter.convertRequestOptions -", function () {
             navigationProperty: ""
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(stubUrl);
 
         dwaRequest = {
             navigationProperty: null
         };
 
-        result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
+        result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(stubUrl);
     });
 
     it("navigationProperty", function () {
@@ -759,8 +614,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             navigationProperty: "nav"
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl + "/nav", query: "", headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(stubUrl + "/nav");
     });
 
     it("orderBy empty", function () {
@@ -768,15 +623,15 @@ describe("RequestConverter.convertRequestOptions -", function () {
             orderBy: []
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(stubUrl);
 
         dwaRequest = {
             orderBy: null
         };
 
-        result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
+        result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(stubUrl);
     });
 
     it("orderBy", function () {
@@ -784,72 +639,15 @@ describe("RequestConverter.convertRequestOptions -", function () {
             orderBy: ["name"]
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$orderby=name", headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(stubUrl + "?$orderby=name");
 
         dwaRequest = {
             orderBy: ["name", "subject"]
         };
 
-        result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({
-            url: stubUrl, query: "$orderby=name,subject", headers: {}
-        });
-    });
-
-    it("returnRepresentation empty", function () {
-        var dwaRequest = {
-            returnRepresentation: false
-        };
-
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
-    });
-
-    it("returnRepresentation null", function () {
-        var dwaRequest = {
-            returnRepresentation: null
-        };
-
-        result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
-    });
-
-    it("returnRepresentation", function () {
-        var dwaRequest = {
-            returnRepresentation: true
-        };
-
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: { Prefer: DWA.Prefer.ReturnRepresentation } });
-    });
-
-    it("duplicateDetection empty", function () {
-        var dwaRequest = {
-            duplicateDetection: false
-        };
-
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
-    });
-
-    it("duplicateDetection null", function () {
-        var dwaRequest = {
-            duplicateDetection: null
-        };
-
-        result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
-    });
-
-    it("duplicateDetection", function () {
-        var dwaRequest = {
-            duplicateDetection: true
-        };
-
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep
-            .equal({ url: stubUrl, query: "", headers: { 'MSCRM.SuppressDuplicateDetection': 'false' } });
+        result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(stubUrl + "?$orderby=name,subject");
     });
 
     it("select empty", function () {
@@ -857,15 +655,15 @@ describe("RequestConverter.convertRequestOptions -", function () {
             select: []
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(stubUrl);
 
         dwaRequest = {
             select: null
         };
 
-        result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
+        result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(stubUrl);
     });
 
     it("select", function () {
@@ -873,15 +671,15 @@ describe("RequestConverter.convertRequestOptions -", function () {
             select: ["name"]
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$select=name", headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(stubUrl + "?$select=name");
 
         dwaRequest = {
             select: ["name", "subject"]
         };
 
-        result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$select=name,subject", headers: {} });
+        result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.equal(stubUrl + "?$select=name,subject");
     });
 
     it("select navigation property", function () {
@@ -889,22 +687,22 @@ describe("RequestConverter.convertRequestOptions -", function () {
             select: ["/nav"]
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "retrieve", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl + "/nav", query: "", headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "retrieve", null, null, stubUrl);
+        expect(result).to.equal(stubUrl + "/nav");
 
         dwaRequest = {
             select: ["/nav", "subject"]
         };
 
-        result = RequestConverter.convertRequestOptions(dwaRequest, "retrieve", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl + "/nav", query: "$select=subject", headers: {} });
+        result = RequestUtility.composeUrl(dwaRequest, "retrieve", null, null, stubUrl);
+        expect(result).to.deep.equal(stubUrl + "/nav?$select=subject");
 
         dwaRequest = {
             select: ["/nav", "subject", "fullname"]
         };
 
-        result = RequestConverter.convertRequestOptions(dwaRequest, "retrieve", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl + "/nav", query: "$select=subject,fullname", headers: {} });
+        result = RequestUtility.composeUrl(dwaRequest, "retrieve", null, null, stubUrl);
+        expect(result).to.deep.equal(stubUrl + "/nav?$select=subject,fullname");
     });
 
     it("select reference", function () {
@@ -912,8 +710,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             select: ["nav/$ref"]
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "retrieve", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl + "/nav/$ref", query: "", headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "retrieve", null, null, stubUrl);
+        expect(result).to.deep.equal(stubUrl + "/nav/$ref");
     });
 
     it("top empty or <=0", function () {
@@ -921,22 +719,22 @@ describe("RequestConverter.convertRequestOptions -", function () {
             top: 0
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.deep.equal(stubUrl);
 
         dwaRequest = {
             top: -1
         };
 
-        result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
+        result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.deep.equal(stubUrl);
 
         dwaRequest = {
             top: null
         };
 
-        result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
+        result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.deep.equal(stubUrl);
     });
 
     it("top", function () {
@@ -944,8 +742,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             top: 3
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$top=3", headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.deep.equal(stubUrl + "?$top=3");
     });
 
     it("savedQuery empty", function () {
@@ -953,15 +751,15 @@ describe("RequestConverter.convertRequestOptions -", function () {
             savedQuery: ""
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.deep.equal(stubUrl);
 
         dwaRequest = {
             savedQuery: null
         };
 
-        result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
+        result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.deep.equal(stubUrl);
     });
 
     it("savedQuery", function () {
@@ -969,8 +767,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             savedQuery: mocks.data.testEntityId
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "savedQuery=" + mocks.data.testEntityId, headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.deep.equal(stubUrl + "?savedQuery=" + mocks.data.testEntityId);
     });
 
     it("userQuery empty", function () {
@@ -978,15 +776,15 @@ describe("RequestConverter.convertRequestOptions -", function () {
             userQuery: ""
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.deep.equal(stubUrl);
 
         dwaRequest = {
             userQuery: null
         };
 
-        result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
+        result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.deep.equal(stubUrl);
     });
 
     it("userQuery", function () {
@@ -994,8 +792,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             userQuery: mocks.data.testEntityId
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "userQuery=" + mocks.data.testEntityId, headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.deep.equal(stubUrl + "?userQuery=" + mocks.data.testEntityId);
     });
 
     it("multiple options", function () {
@@ -1005,8 +803,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             top: 5
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$select=name,subject&$top=5&$orderby=order", headers: {} });
+        var result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.deep.equal(stubUrl + "?$select=name,subject&$top=5&$orderby=order");
 
         dwaRequest.expand = [{
             property: "property",
@@ -1017,35 +815,238 @@ describe("RequestConverter.convertRequestOptions -", function () {
             select: ["name3"]
         }];
 
-        result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$select=name,subject&$top=5&$orderby=order&$expand=property($select=name;$orderby=order),property2($select=name3)", headers: {} });
+        result = RequestUtility.composeUrl(dwaRequest, "", null, null, stubUrl);
+        expect(result).to.deep.equal(stubUrl + "?$select=name,subject&$top=5&$orderby=order&$expand=property($select=name;$orderby=order),property2($select=name3)");
 
+        //todo: move to compose
+        dwaRequest.collection = "tests";
         dwaRequest.expand = null;
         dwaRequest.returnRepresentation = true;
 
-        result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$select=name,subject&$top=5&$orderby=order", headers: { Prefer: DWA.Prefer.ReturnRepresentation } });
+        result = RequestUtility.compose(dwaRequest, null, "");
+        expect(result).to.deep.equal({ url: "tests?$select=name,subject&$top=5&$orderby=order", headers: { Prefer: DWA.Prefer.ReturnRepresentation }, async: true });
 
         dwaRequest.top = 0;
         dwaRequest.count = true;
         dwaRequest.impersonate = mocks.data.testEntityId;
 
-        result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl, query: "$select=name,subject&$count=true&$orderby=order", headers: { Prefer: DWA.Prefer.ReturnRepresentation, MSCRMCallerID: mocks.data.testEntityId } });
+        result = RequestUtility.compose(dwaRequest, null, "");
+        expect(result).to.deep.equal({ url: "tests?$select=name,subject&$count=true&$orderby=order", headers: { Prefer: DWA.Prefer.ReturnRepresentation, MSCRMCallerID: mocks.data.testEntityId }, async: true });
 
         dwaRequest.impersonate = null;
         dwaRequest.navigationProperty = "nav";
 
-        result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl + "/nav", query: "$select=name,subject&$count=true&$orderby=order", headers: { Prefer: DWA.Prefer.ReturnRepresentation } });
+        result = RequestUtility.compose(dwaRequest, null, "");
+        expect(result).to.deep.equal({ url: "tests/nav?$select=name,subject&$count=true&$orderby=order", headers: { Prefer: DWA.Prefer.ReturnRepresentation }, async: true });
 
         dwaRequest.navigationProperty = null;
         dwaRequest.returnRepresentation = false;
         dwaRequest.includeAnnotations = DWA.Prefer.Annotations.All;
         dwaRequest.select[0] = "/nav";
 
-        result = RequestConverter.convertRequestOptions(dwaRequest, "retrieve", stubUrl);
-        expect(result).to.deep.equal({ url: stubUrl + "/nav", query: "$select=subject&$count=true&$orderby=order", headers: { Prefer: 'odata.include-annotations="*"' } });
+        result = RequestUtility.compose(dwaRequest, null, "retrieve");
+        expect(result).to.deep.equal({ url: "tests/nav?$select=subject&$count=true&$orderby=order", headers: { Prefer: 'odata.include-annotations="*"' }, async: true });
+    });
+});
+
+describe("RequestUtility.composeHeaders -", function () {
+    it("mergeLabels=true", function () {
+        var dwaRequest = {
+            mergeLabels: true
+        };
+
+        var result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({ 'MSCRM.MergeLabels': 'true' });
+    });
+
+    it("mergeLabels=false", function () {
+        var dwaRequest = {
+            mergeLabels: false
+        };
+
+        var result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({});
+    });
+
+    it("ifmatch", function () {
+        var dwaRequest = {
+            ifmatch: "*"
+        };
+
+        var result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({ "If-Match": "*" });
+    });
+
+    it("ifnonematch empty", function () {
+        var dwaRequest = {
+            ifnonematch: ""
+        };
+
+        var result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({});
+
+        dwaRequest = {
+            ifnonematch: null
+        };
+
+        result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({});
+    });
+
+    it("ifnonematch", function () {
+        var dwaRequest = {
+            ifnonematch: "*"
+        };
+
+        var result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({ "If-None-Match": "*" });
+    });
+
+    it("ifmatch & ifnonematch both specified - throws an error", function () {
+        var dwaRequest = {
+            ifmatch: "*",
+            ifnonematch: "*"
+        };
+
+        expect(function () {
+            RequestUtility.composeHeaders(dwaRequest, "fun");
+        }).to.throw("DynamicsWebApi.fun. Either one of request.ifmatch or request.ifnonematch parameters should be used in a call, not both.");
+    });
+
+    it("impersonate empty", function () {
+        var dwaRequest = {
+            impersonate: ""
+        };
+
+        var result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({});
+
+        dwaRequest = {
+            impersonate: null
+        };
+
+        result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({});
+    });
+
+    it("impersonate", function () {
+        var dwaRequest = {
+            impersonate: mocks.data.testEntityId
+        };
+
+        var result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({ "MSCRMCallerID": mocks.data.testEntityId });
+    });
+
+    it("includeAnnotations empty", function () {
+        var dwaRequest = {
+            includeAnnotations: ""
+        };
+
+        var result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({});
+
+        dwaRequest = {
+            includeAnnotations: null
+        };
+
+        result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({});
+    });
+
+    it("includeAnnotations", function () {
+        var dwaRequest = {
+            includeAnnotations: DWA.Prefer.Annotations.AssociatedNavigationProperty
+        };
+
+        var result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({ Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.AssociatedNavigationProperty + '"' });
+    });
+
+    it("maxPageSize empty or <=0", function () {
+        var dwaRequest = {
+            maxPageSize: 0
+        };
+
+        var result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({});
+
+        dwaRequest = {
+            maxPageSize: null
+        };
+
+        result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({});
+
+        dwaRequest = {
+            maxPageSize: -2
+        };
+
+        result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({});
+    });
+
+    it("maxPageSize", function () {
+        var dwaRequest = {
+            maxPageSize: 10
+        };
+
+        var result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({ Prefer: 'odata.maxpagesize=10' });
+    });
+
+    it("returnRepresentation empty", function () {
+        var dwaRequest = {
+            returnRepresentation: false
+        };
+
+        var result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({});
+    });
+
+    it("returnRepresentation null", function () {
+        var dwaRequest = {
+            returnRepresentation: null
+        };
+
+        var result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({});
+    });
+
+    it("returnRepresentation", function () {
+        var dwaRequest = {
+            returnRepresentation: true
+        };
+
+        var result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation });
+    });
+
+    it("duplicateDetection empty", function () {
+        var dwaRequest = {
+            duplicateDetection: false
+        };
+
+        var result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({});
+    });
+
+    it("duplicateDetection null", function () {
+        var dwaRequest = {
+            duplicateDetection: null
+        };
+
+        result = result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({});
+    });
+
+    it("duplicateDetection", function () {
+        var dwaRequest = {
+            duplicateDetection: true
+        };
+
+        var result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({ 'MSCRM.SuppressDuplicateDetection': 'false' });
     });
 
     it("includeAnnotations & returnRepresentation", function () {
@@ -1054,12 +1055,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             includeAnnotations: DWA.Prefer.Annotations.AssociatedNavigationProperty
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({
-            url: stubUrl, query: "", headers: {
-                Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="' + DWA.Prefer.Annotations.AssociatedNavigationProperty + '"'
-            }
-        });
+        var result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="' + DWA.Prefer.Annotations.AssociatedNavigationProperty + '"' });
     });
 
     it("includeAnnotations & returnRepresentation & maxPageSize", function () {
@@ -1069,12 +1066,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             maxPageSize: 20
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({
-            url: stubUrl, query: "", headers: {
-                Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="*",odata.maxpagesize=20'
-            }
-        });
+        var result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="*",odata.maxpagesize=20' });
     });
 
     it("includeAnnotations & maxPageSize", function () {
@@ -1083,12 +1076,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             maxPageSize: 20
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({
-            url: stubUrl, query: "", headers: {
-                Prefer: 'odata.include-annotations="*",odata.maxpagesize=20'
-            }
-        });
+        var result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({ Prefer: 'odata.include-annotations="*",odata.maxpagesize=20' });
     });
 
     it("returnRepresentation & maxPageSize", function () {
@@ -1097,12 +1086,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             maxPageSize: 20
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({
-            url: stubUrl, query: "", headers: {
-                Prefer: DWA.Prefer.ReturnRepresentation + ',odata.maxpagesize=20'
-            }
-        });
+        var result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation + ',odata.maxpagesize=20' });
     });
 
     it("prefer - return=representation", function () {
@@ -1110,12 +1095,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             prefer: "return=representation"
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({
-            url: stubUrl, query: "", headers: {
-                Prefer: DWA.Prefer.ReturnRepresentation
-            }
-        });
+        var result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation });
     });
 
     it("prefer - odata.include-annotations", function () {
@@ -1123,12 +1104,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             prefer: 'odata.include-annotations=*'
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({
-            url: stubUrl, query: "", headers: {
-                Prefer: 'odata.include-annotations="*"'
-            }
-        });
+        var result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({ Prefer: 'odata.include-annotations="*"' });
     });
 
     it("prefer - maxPageSize", function () {
@@ -1136,12 +1113,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             prefer: 'odata.maxpagesize=20'
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({
-            url: stubUrl, query: "", headers: {
-                Prefer: 'odata.maxpagesize=20'
-            }
-        });
+        var result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({ Prefer: 'odata.maxpagesize=20' });
     });
 
     it("prefer - includeAnnotations & returnRepresentation", function () {
@@ -1149,12 +1122,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             prefer: 'return=representation,odata.include-annotations="' + DWA.Prefer.Annotations.AssociatedNavigationProperty + '"'
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({
-            url: stubUrl, query: "", headers: {
-                Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="' + DWA.Prefer.Annotations.AssociatedNavigationProperty + '"'
-            }
-        });
+        var result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="' + DWA.Prefer.Annotations.AssociatedNavigationProperty + '"' });
     });
 
     it("prefer - includeAnnotations & returnRepresentation & maxPageSize", function () {
@@ -1162,12 +1131,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             prefer: 'return=representation,odata.include-annotations="*",odata.maxpagesize=20'
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({
-            url: stubUrl, query: "", headers: {
-                Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="*",odata.maxpagesize=20'
-            }
-        });
+        var result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="*",odata.maxpagesize=20' });
     });
 
     it("prefer - includeAnnotations & maxPageSize", function () {
@@ -1175,12 +1140,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             prefer: 'odata.include-annotations=*,odata.maxpagesize=20'
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({
-            url: stubUrl, query: "", headers: {
-                Prefer: 'odata.include-annotations="*",odata.maxpagesize=20'
-            }
-        });
+        var result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({ Prefer: 'odata.include-annotations="*",odata.maxpagesize=20' });
     });
 
     it("prefer - SPACE - includeAnnotations & maxPageSize", function () {
@@ -1188,12 +1149,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             prefer: 'odata.include-annotations=*, odata.maxpagesize=20'
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({
-            url: stubUrl, query: "", headers: {
-                Prefer: 'odata.include-annotations="*",odata.maxpagesize=20'
-            }
-        });
+        var result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({ Prefer: 'odata.include-annotations="*",odata.maxpagesize=20' });
     });
 
     it("prefer - returnRepresentation & maxPageSize", function () {
@@ -1201,12 +1158,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             prefer: 'return=representation,odata.maxpagesize=20'
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({
-            url: stubUrl, query: "", headers: {
-                Prefer: DWA.Prefer.ReturnRepresentation + ',odata.maxpagesize=20'
-            }
-        });
+        var result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation + ',odata.maxpagesize=20' });
     });
 
     it("prefer - trackChanges & maxPageSize", function () {
@@ -1214,12 +1167,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             prefer: 'odata.track-changes,odata.maxpagesize=20'
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({
-            url: stubUrl, query: "", headers: {
-                Prefer: 'odata.maxpagesize=20,odata.track-changes'
-            }
-        });
+        var result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({ Prefer: 'odata.maxpagesize=20,odata.track-changes' });
     });
 
     it("prefer - trackChanges & includeAnnotations", function () {
@@ -1227,12 +1176,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             prefer: 'odata.track-changes,odata.include-annotations="' + DWA.Prefer.Annotations.AssociatedNavigationProperty + '"'
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({
-            url: stubUrl, query: "", headers: {
-                Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.AssociatedNavigationProperty + '",odata.track-changes'
-            }
-        });
+        var result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({ Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.AssociatedNavigationProperty + '",odata.track-changes' });
     });
 
     it("prefer - includeAnnotations & returnRepresentation & maxPageSize & trackChanges", function () {
@@ -1240,12 +1185,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             prefer: 'return=representation,odata.include-annotations="*",odata.track-changes,odata.maxpagesize=20'
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
-        expect(result).to.deep.equal({
-            url: stubUrl, query: "", headers: {
-                Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="*",odata.maxpagesize=20,odata.track-changes'
-            }
-        });
+        var result = RequestUtility.composeHeaders(dwaRequest, "");
+        expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="*",odata.maxpagesize=20,odata.track-changes' });
     });
 
     it("returnRepresentation: false & config.returnRepresentation: true", function () {
@@ -1257,10 +1198,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             returnRepresentation: false
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl, null, config);
-        expect(result).to.deep.equal({
-            url: stubUrl, query: "", headers: {}
-        });
+        var result = RequestUtility.composeHeaders(dwaRequest, "", config);
+        expect(result).to.deep.equal({});
     });
 
     it("returnRepresentation: false & config.returnRepresentation: true", function () {
@@ -1272,10 +1211,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
             returnRepresentation: true
         };
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl, null, config);
-        expect(result).to.deep.equal({
-            url: stubUrl, query: "", headers: { Prefer: DWA.Prefer.ReturnRepresentation }
-        });
+        var result = RequestUtility.composeHeaders(dwaRequest, "", config);
+        expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation });
     });
 
     it("config.returnRepresentation: true", function () {
@@ -1285,10 +1222,8 @@ describe("RequestConverter.convertRequestOptions -", function () {
 
         var dwaRequest = {};
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl, null, config);
-        expect(result).to.deep.equal({
-            url: stubUrl, query: "", headers: { Prefer: DWA.Prefer.ReturnRepresentation }
-        });
+        var result = RequestUtility.composeHeaders(dwaRequest, "", config);
+        expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation });
     });
 
     it("config.returnRepresentation: false", function () {
@@ -1298,21 +1233,19 @@ describe("RequestConverter.convertRequestOptions -", function () {
 
         var dwaRequest = {};
 
-        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl, null, config);
-        expect(result).to.deep.equal({
-            url: stubUrl, query: "", headers: {}
-        });
+        var result = RequestUtility.composeHeaders(dwaRequest, "", config);
+        expect(result).to.deep.equal({});
     });
 });
 
-describe("RequestConverter.convertRequest -", function () {
+describe("RequestUtility.compose -", function () {
     //{ url: result.url, headers: result.headers }
     it("collection", function () {
         var dwaRequest = {
             collection: "cols"
         };
 
-        var result = RequestConverter.convertRequest(dwaRequest);
+        var result = RequestUtility.compose(dwaRequest);
         expect(result).to.deep.equal({ url: "cols", headers: {}, async: true });
     });
 
@@ -1321,7 +1254,7 @@ describe("RequestConverter.convertRequest -", function () {
             collection: "Cols"
         };
 
-        var result = RequestConverter.convertRequest(dwaRequest);
+        var result = RequestUtility.compose(dwaRequest);
         expect(result).to.deep.equal({ url: "Cols", headers: {}, async: true });
     });
 
@@ -1330,7 +1263,7 @@ describe("RequestConverter.convertRequest -", function () {
             collection: "EntityDefinitions"
         };
 
-        var result = RequestConverter.convertRequest(dwaRequest);
+        var result = RequestUtility.compose(dwaRequest);
         expect(result).to.deep.equal({ url: "EntityDefinitions", headers: {}, async: true });
     });
 
@@ -1340,8 +1273,8 @@ describe("RequestConverter.convertRequest -", function () {
         };
 
         var test = function () {
-            RequestConverter.convertRequest(dwaRequest);
-        }
+            RequestUtility.compose(dwaRequest);
+        };
 
         expect(test).to.throw(/request\.collection/);
 
@@ -1358,12 +1291,12 @@ describe("RequestConverter.convertRequest -", function () {
             id: null
         };
 
-        var result = RequestConverter.convertRequest(dwaRequest);
+        var result = RequestUtility.compose(dwaRequest);
         expect(result).to.deep.equal({ url: "cols", headers: {}, async: true });
 
         dwaRequest.id = "";
 
-        result = RequestConverter.convertRequest(dwaRequest);
+        result = RequestUtility.compose(dwaRequest);
         expect(result).to.deep.equal({ url: "cols", headers: {}, async: true });
     });
 
@@ -1374,8 +1307,8 @@ describe("RequestConverter.convertRequest -", function () {
         };
 
         var test = function () {
-            RequestConverter.convertRequest(dwaRequest);
-        }
+            RequestUtility.compose(dwaRequest);
+        };
 
         expect(test).to.throw(/request\.id/);
     });
@@ -1386,7 +1319,7 @@ describe("RequestConverter.convertRequest -", function () {
             id: mocks.data.testEntityId
         };
 
-        var result = RequestConverter.convertRequest(dwaRequest);
+        var result = RequestUtility.compose(dwaRequest);
         expect(result).to.deep.equal({ url: "cols(" + mocks.data.testEntityId + ")", headers: {}, async: true });
     });
 
@@ -1396,7 +1329,7 @@ describe("RequestConverter.convertRequest -", function () {
             id: '{' + mocks.data.testEntityId + '}'
         };
 
-        var result = RequestConverter.convertRequest(dwaRequest);
+        var result = RequestUtility.compose(dwaRequest);
         expect(result).to.deep.equal({ url: "cols(" + mocks.data.testEntityId + ")", headers: {}, async: true });
     });
 
@@ -1408,12 +1341,12 @@ describe("RequestConverter.convertRequest -", function () {
             returnRepresentation: true
         };
 
-        var result = RequestConverter.convertRequest(dwaRequest);
+        var result = RequestUtility.compose(dwaRequest);
         expect(result).to.deep.equal({ url: "cols(" + mocks.data.testEntityId + ")?$select=name", headers: { Prefer: DWA.Prefer.ReturnRepresentation }, async: true });
 
         dwaRequest.navigationProperty = "nav";
 
-        result = RequestConverter.convertRequest(dwaRequest);
+        result = RequestUtility.compose(dwaRequest);
         expect(result).to.deep.equal({ url: "cols(" + mocks.data.testEntityId + ")/nav?$select=name", headers: { Prefer: DWA.Prefer.ReturnRepresentation }, async: true });
     });
 
@@ -1423,17 +1356,17 @@ describe("RequestConverter.convertRequest -", function () {
             async: false
         };
 
-        var result = RequestConverter.convertRequest(dwaRequest);
+        var result = RequestUtility.compose(dwaRequest);
         expect(result).to.deep.equal({ url: "cols", headers: {}, async: false });
 
         dwaRequest.async = true;
 
-        result = RequestConverter.convertRequest(dwaRequest);
+        result = RequestUtility.compose(dwaRequest);
         expect(result).to.deep.equal({ url: "cols", headers: {}, async: true });
 
         delete dwaRequest.async;
 
-        result = RequestConverter.convertRequest(dwaRequest);
+        result = RequestUtility.compose(dwaRequest);
         expect(result).to.deep.equal({ url: "cols", headers: {}, async: true });
     });
 
@@ -1444,8 +1377,8 @@ describe("RequestConverter.convertRequest -", function () {
         };
 
         var test = function () {
-            RequestConverter.convertRequest(dwaRequest);
-        }
+            RequestUtility.compose(dwaRequest);
+        };
 
         expect(test).to.throw(/request\.async/);
     });

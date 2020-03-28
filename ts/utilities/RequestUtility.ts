@@ -24,19 +24,18 @@ export class RequestUtility {
      * @param {Object} [config] - DynamicsWebApi config
      * @returns {ConvertedRequest} Converted request
      */
-    static compose(request: DynamicsWebApi.InternalRequest, config: DynamicsWebApi.Config, functionName) {
-        var url = '';
-        var result;
+    static compose(request: DynamicsWebApi.InternalRequest, config: DynamicsWebApi.Config, functionName: string): DynamicsWebApi.ConvertedRequest {
+        var url = "";
         if (!request.url) {
             if (!request._isUnboundRequest && !request.collection) {
-                ErrorHelper.parameterCheck(request.collection, 'DynamicsWebApi.' + functionName, "request.collection");
+                ErrorHelper.parameterCheck(request.collection, `DynamicsWebApi.${functionName}`, "request.collection");
             }
             if (request.collection) {
-                ErrorHelper.stringParameterCheck(request.collection, 'DynamicsWebApi.' + functionName, "request.collection");
+                ErrorHelper.stringParameterCheck(request.collection, `DynamicsWebApi.${functionName}`, "request.collection");
                 url = request.collection;
 
                 if (request.contentId) {
-                    ErrorHelper.stringParameterCheck(request.contentId, 'DynamicsWebApi.' + functionName, 'request.contentId');
+                    ErrorHelper.stringParameterCheck(request.contentId, `DynamicsWebApi.${functionName}`, 'request.contentId');
                     if (request.contentId.startsWith('$')) {
                         url = `${request.contentId}/${url}`;
                     }
@@ -44,10 +43,10 @@ export class RequestUtility {
 
                 //add alternate key feature
                 if (request.key) {
-                    request.key = ErrorHelper.keyParameterCheck(request.key, 'DynamicsWebApi.' + functionName, "request.key");
+                    request.key = ErrorHelper.keyParameterCheck(request.key, `DynamicsWebApi.${functionName}`, "request.key");
                 }
                 else if (request.id) {
-                    request.key = ErrorHelper.guidParameterCheck(request.id, 'DynamicsWebApi.' + functionName, "request.id");
+                    request.key = ErrorHelper.guidParameterCheck(request.id, `DynamicsWebApi.${functionName}`, "request.id");
                 }
 
                 if (request.key) {
@@ -57,39 +56,35 @@ export class RequestUtility {
 
             if (request._additionalUrl) {
                 if (url) {
-                    url += '/';
+                    url += "/";
                 }
                 url += request._additionalUrl;
             }
 
-            result = RequestUtility.composeUrl(request, functionName, '&', config, url);
+            url = RequestUtility.composeUrl(request, functionName, config, "&", url);
 
             if (request.fetchXml) {
-                ErrorHelper.stringParameterCheck(request.fetchXml, 'DynamicsWebApi.' + functionName, "request.fetchXml");
-                result.url += "?fetchXml=" + encodeURIComponent(request.fetchXml);
+                ErrorHelper.stringParameterCheck(request.fetchXml, `DynamicsWebApi.${functionName}`, "request.fetchXml");
+                let join = url.indexOf("?") === -1 ? "?" : "&";
+                url += `${join}fetchXml=${encodeURIComponent(request.fetchXml)}`;
             }
-            else
-                if (result.query) {
-                    result.url += "?" + result.query;
-                }
         }
         else {
-            ErrorHelper.stringParameterCheck(request.url, 'DynamicsWebApi.' + functionName, "request.url");
-            url = request.url.replace(config.webApiUrl, '');
-            result = RequestUtility.composeUrl(request, functionName, '&', config, url);
+            ErrorHelper.stringParameterCheck(request.url, `DynamicsWebApi.${functionName}`, "request.url");
+            url = request.url.replace(config.webApiUrl, "");
+            url = RequestUtility.composeUrl(request, functionName, config, "&", url);
         }
 
+        let async = true;
+
         if (request.hasOwnProperty('async') && request.async != null) {
-            ErrorHelper.boolParameterCheck(request.async, 'DynamicsWebApi.' + functionName, "request.async");
-            result.async = request.async;
-        }
-        else {
-            result.async = true;
+            ErrorHelper.boolParameterCheck(request.async, `DynamicsWebApi.${functionName}`, "request.async");
+            async = request.async;
         }
 
         var headers = RequestUtility.composeHeaders(request, functionName, config);
 
-        return { url: result.url, headers: headers, async: result.async };
+        return { url: url, headers: headers, async: async };
     }
 
     /**
@@ -102,31 +97,32 @@ export class RequestUtility {
      * @param {Object} [config] - DynamicsWebApi config
      * @returns {ConvertedRequestOptions} Additional options in request
      */
-    static composeUrl(request: DynamicsWebApi.InternalRequest, functionName: string, joinSymbol: string, config?, url?: string) {
-        var headers = {};
-        var requestArray = [];
-        joinSymbol = joinSymbol != null ? joinSymbol : '&';
+    static composeUrl(request: DynamicsWebApi.InternalRequest, functionName: string, config: DynamicsWebApi.Config, joinSymbol?: string, url?: string): string {
+        var queryArray = [];
+
+        joinSymbol = joinSymbol || "&";
+        url = url || "";
 
         if (request) {
             if (request.navigationProperty) {
-                ErrorHelper.stringParameterCheck(request.navigationProperty, 'DynamicsWebApi.' + functionName, 'request.navigationProperty');
+                ErrorHelper.stringParameterCheck(request.navigationProperty, `DynamicsWebApi.${functionName}`, 'request.navigationProperty');
                 url += '/' + request.navigationProperty;
 
                 if (request.navigationPropertyKey) {
-                    var navigationKey = ErrorHelper.keyParameterCheck(request.navigationPropertyKey, 'DynamicsWebApi.' + functionName, 'request.navigationPropertyKey');
+                    var navigationKey = ErrorHelper.keyParameterCheck(request.navigationPropertyKey, `DynamicsWebApi.${functionName}`, 'request.navigationPropertyKey');
                     url += '(' + navigationKey + ')';
                 }
 
                 if (request.navigationProperty === 'Attributes') {
                     if (request.metadataAttributeType) {
-                        ErrorHelper.stringParameterCheck(request.metadataAttributeType, 'DynamicsWebApi.' + functionName, 'request.metadataAttributeType');
+                        ErrorHelper.stringParameterCheck(request.metadataAttributeType, `DynamicsWebApi.${functionName}`, 'request.metadataAttributeType');
                         url += '/' + request.metadataAttributeType;
                     }
                 }
             }
 
             if (request.select != null && request.select.length) {
-                ErrorHelper.arrayParameterCheck(request.select, 'DynamicsWebApi.' + functionName, 'request.select');
+                ErrorHelper.arrayParameterCheck(request.select, `DynamicsWebApi.${functionName}`, 'request.select');
 
                 if (functionName == 'retrieve' && request.select.length == 1 && request.select[0].endsWith('/$ref')) {
                     url += '/' + request.select[0];
@@ -143,13 +139,13 @@ export class RequestUtility {
 
                     //check if anything left in the array
                     if (request.select.length) {
-                        requestArray.push('$select=' + request.select.join(','));
+                        queryArray.push('$select=' + request.select.join(','));
                     }
                 }
             }
 
             if (request.filter) {
-                ErrorHelper.stringParameterCheck(request.filter, 'DynamicsWebApi.' + functionName, "request.filter");
+                ErrorHelper.stringParameterCheck(request.filter, `DynamicsWebApi.${functionName}`, "request.filter");
                 var removeBracketsFromGuidReg = /[^"']{([\w\d]{8}[-]?(?:[\w\d]{4}[-]?){3}[\w\d]{12})}(?:[^"']|$)/g;
                 var filterResult = request.filter;
 
@@ -164,76 +160,73 @@ export class RequestUtility {
                     filterResult = filterResult.replace(m[0], ' ' + m[1] + replacement);
                 }
 
-                requestArray.push("$filter=" + encodeURIComponent(filterResult));
+                queryArray.push("$filter=" + encodeURIComponent(filterResult));
             }
 
             if (request.savedQuery) {
-                requestArray.push("savedQuery=" + ErrorHelper.guidParameterCheck(request.savedQuery, 'DynamicsWebApi.' + functionName, "request.savedQuery"));
+                queryArray.push("savedQuery=" + ErrorHelper.guidParameterCheck(request.savedQuery, `DynamicsWebApi.${functionName}`, "request.savedQuery"));
             }
 
             if (request.userQuery) {
-                requestArray.push("userQuery=" + ErrorHelper.guidParameterCheck(request.userQuery, 'DynamicsWebApi.' + functionName, "request.userQuery"));
+                queryArray.push("userQuery=" + ErrorHelper.guidParameterCheck(request.userQuery, `DynamicsWebApi.${functionName}`, "request.userQuery"));
             }
 
             if (request.count) {
-                ErrorHelper.boolParameterCheck(request.count, 'DynamicsWebApi.' + functionName, "request.count");
-                requestArray.push("$count=" + request.count);
+                ErrorHelper.boolParameterCheck(request.count, `DynamicsWebApi.${functionName}`, "request.count");
+                queryArray.push("$count=" + request.count);
             }
 
             if (request.top && request.top > 0) {
-                ErrorHelper.numberParameterCheck(request.top, 'DynamicsWebApi.' + functionName, "request.top");
-                requestArray.push("$top=" + request.top);
+                ErrorHelper.numberParameterCheck(request.top, `DynamicsWebApi.${functionName}`, "request.top");
+                queryArray.push("$top=" + request.top);
             }
 
             if (request.orderBy != null && request.orderBy.length) {
-                ErrorHelper.arrayParameterCheck(request.orderBy, 'DynamicsWebApi.' + functionName, "request.orderBy");
-                requestArray.push("$orderby=" + request.orderBy.join(','));
-            }
-
-            if (request.ifmatch != null && request.ifnonematch != null) {
-                throw new Error('DynamicsWebApi.' + functionName + ". Either one of request.ifmatch or request.ifnonematch parameters should be used in a call, not both.");
+                ErrorHelper.arrayParameterCheck(request.orderBy, `DynamicsWebApi.${functionName}`, "request.orderBy");
+                queryArray.push("$orderby=" + request.orderBy.join(','));
             }
 
             if (request.entity) {
-                ErrorHelper.parameterCheck(request.entity, 'DynamicsWebApi.' + functionName, 'request.entity');
+                ErrorHelper.parameterCheck(request.entity, `DynamicsWebApi.${functionName}`, 'request.entity');
             }
 
             if (request.data) {
-                ErrorHelper.parameterCheck(request.data, 'DynamicsWebApi.' + functionName, 'request.data');
+                ErrorHelper.parameterCheck(request.data, `DynamicsWebApi.${functionName}`, 'request.data');
             }
 
             if (request.isBatch) {
-                ErrorHelper.boolParameterCheck(request.isBatch, 'DynamicsWebApi.' + functionName, 'request.isBatch');
+                ErrorHelper.boolParameterCheck(request.isBatch, `DynamicsWebApi.${functionName}`, 'request.isBatch');
             }
 
             if (request.expand && request.expand.length) {
-                ErrorHelper.stringOrArrayParameterCheck(request.expand, 'DynamicsWebApi.' + functionName, "request.expand");
+                ErrorHelper.stringOrArrayParameterCheck(request.expand, `DynamicsWebApi.${functionName}`, "request.expand");
                 if (typeof request.expand === 'string') {
-                    requestArray.push('$expand=' + request.expand);
+                    queryArray.push('$expand=' + request.expand);
                 }
                 else {
-                    var expandRequestArray = [];
+                    var expandQueryArray = [];
                     for (var i = 0; i < request.expand.length; i++) {
                         if (request.expand[i].property) {
-                            var expandConverted = RequestUtility.composeUrl(<DynamicsWebApi.InternalRequest>request.expand[i], functionName + " $expand", ";");
-                            var expandQuery = expandConverted.query;
-                            if (expandQuery && expandQuery.length) {
-                                expandQuery = "(" + expandQuery + ")";
+                            var expandConverted = RequestUtility.composeUrl(<DynamicsWebApi.InternalRequest>request.expand[i], `${functionName} $expand`, config, ";");
+                            if (expandConverted) {
+                                expandConverted = `(${expandConverted.substr(1)})`;
                             }
-                            expandRequestArray.push(request.expand[i].property + expandQuery);
+                            expandQueryArray.push(request.expand[i].property + expandConverted);
                         }
                     }
-                    if (expandRequestArray.length) {
-                        requestArray.push("$expand=" + expandRequestArray.join(","));
+                    if (expandQueryArray.length) {
+                        queryArray.push("$expand=" + expandQueryArray.join(","));
                     }
                 }
             }
         }
 
-        return { url: url, query: requestArray.join(joinSymbol), headers: headers };
+        return !queryArray.length
+            ? url
+            : url + "?" + queryArray.join(joinSymbol);
     }
 
-    static composeHeaders(request: DynamicsWebApi.InternalRequest, functionName: string, config: DynamicsWebApi.Config) {
+    static composeHeaders(request: DynamicsWebApi.InternalRequest, functionName: string, config: DynamicsWebApi.Config): any {
         var headers: any = {};
 
         var prefer = RequestUtility.composePreferHeader(request, functionName, config);
@@ -242,62 +235,67 @@ export class RequestUtility {
             headers['Prefer'] = prefer;
         }
 
+        if (request.ifmatch != null && request.ifnonematch != null) {
+            throw new Error(`DynamicsWebApi.${functionName}` + ". Either one of request.ifmatch or request.ifnonematch parameters should be used in a call, not both.");
+        }
+
         if (request.ifmatch) {
-            ErrorHelper.stringParameterCheck(request.ifmatch, 'DynamicsWebApi.' + functionName, "request.ifmatch");
+            ErrorHelper.stringParameterCheck(request.ifmatch, `DynamicsWebApi.${functionName}`, "request.ifmatch");
             headers['If-Match'] = request.ifmatch;
         }
 
         if (request.ifnonematch) {
-            ErrorHelper.stringParameterCheck(request.ifnonematch, 'DynamicsWebApi.' + functionName, "request.ifnonematch");
+            ErrorHelper.stringParameterCheck(request.ifnonematch, `DynamicsWebApi.${functionName}`, "request.ifnonematch");
             headers['If-None-Match'] = request.ifnonematch;
         }
 
         if (request.impersonate) {
-            ErrorHelper.stringParameterCheck(request.impersonate, 'DynamicsWebApi.' + functionName, "request.impersonate");
-            headers['MSCRMCallerID'] = ErrorHelper.guidParameterCheck(request.impersonate, 'DynamicsWebApi.' + functionName, "request.impersonate");
+            ErrorHelper.stringParameterCheck(request.impersonate, `DynamicsWebApi.${functionName}`, "request.impersonate");
+            headers['MSCRMCallerID'] = ErrorHelper.guidParameterCheck(request.impersonate, `DynamicsWebApi.${functionName}`, "request.impersonate");
         }
 
         if (request.token) {
-            ErrorHelper.stringParameterCheck(request.token, 'DynamicsWebApi.' + functionName, "request.token");
+            ErrorHelper.stringParameterCheck(request.token, `DynamicsWebApi.${functionName}`, "request.token");
             headers['Authorization'] = 'Bearer ' + request.token;
         }
 
         if (request.duplicateDetection) {
-            ErrorHelper.boolParameterCheck(request.duplicateDetection, 'DynamicsWebApi.' + functionName, 'request.duplicateDetection');
+            ErrorHelper.boolParameterCheck(request.duplicateDetection, `DynamicsWebApi.${functionName}`, 'request.duplicateDetection');
             headers['MSCRM.SuppressDuplicateDetection'] = 'false';
         }
 
         if (request.noCache) {
-            ErrorHelper.boolParameterCheck(request.noCache, 'DynamicsWebApi.' + functionName, 'request.noCache');
+            ErrorHelper.boolParameterCheck(request.noCache, `DynamicsWebApi.${functionName}`, 'request.noCache');
             headers['Cache-Control'] = 'no-cache';
         }
 
         if (request.mergeLabels) {
-            ErrorHelper.boolParameterCheck(request.mergeLabels, 'DynamicsWebApi.' + functionName, 'request.mergeLabels');
+            ErrorHelper.boolParameterCheck(request.mergeLabels, `DynamicsWebApi.${functionName}`, 'request.mergeLabels');
             headers['MSCRM.MergeLabels'] = 'true';
         }
 
         if (request.contentId) {
-            ErrorHelper.stringParameterCheck(request.contentId, 'DynamicsWebApi.' + functionName, 'request.contentId');
+            ErrorHelper.stringParameterCheck(request.contentId, `DynamicsWebApi.${functionName}`, 'request.contentId');
             if (!request.contentId.startsWith('$')) {
                 headers['Content-ID'] = request.contentId;
             }
         }
+
+        return headers;
     }
 
-    static composePreferHeader (request, functionName, config) {
+    static composePreferHeader(request: DynamicsWebApi.InternalRequest, functionName: string, config: DynamicsWebApi.Config) {
         var returnRepresentation = request.returnRepresentation;
         var includeAnnotations = request.includeAnnotations;
         var maxPageSize = request.maxPageSize;
         var trackChanges = request.trackChanges;
 
-        var prefer;
+        let prefer: string[];
 
         if (request.prefer && request.prefer.length) {
-            ErrorHelper.stringOrArrayParameterCheck(request.prefer, "DynamicsWebApi." + functionName, "request.prefer");
-            prefer = request.prefer;
-            if (typeof prefer === "string") {
-                prefer = prefer.split(',');
+            ErrorHelper.stringOrArrayParameterCheck(request.prefer, `DynamicsWebApi.${functionName}`, "request.prefer");
+            if (typeof request.prefer === "string") {
+                prefer = request.prefer.split(',');
             }
             for (var i in prefer) {
                 var item = prefer[i].trim();
@@ -308,7 +306,7 @@ export class RequestUtility {
                     includeAnnotations = item.replace('odata.include-annotations=', '').replace(/"/g, '');
                 }
                 else if (item.startsWith("odata.maxpagesize=")) {
-                    maxPageSize = item.replace('odata.maxpagesize=', '').replace(/"/g, '');
+                    maxPageSize = Number(item.replace('odata.maxpagesize=', '').replace(/"/g, '')) || 0;
                 }
                 else if (item.indexOf("odata.track-changes") > -1) {
                     trackChanges = true;
@@ -316,6 +314,7 @@ export class RequestUtility {
             }
         }
 
+        //clear array
         prefer = [];
 
         if (config) {
@@ -327,25 +326,25 @@ export class RequestUtility {
         }
 
         if (returnRepresentation) {
-            ErrorHelper.boolParameterCheck(returnRepresentation, "DynamicsWebApi." + functionName, "request.returnRepresentation");
+            ErrorHelper.boolParameterCheck(returnRepresentation, `DynamicsWebApi.${functionName}`, "request.returnRepresentation");
             prefer.push("return=representation");
         }
 
         if (includeAnnotations) {
-            ErrorHelper.stringParameterCheck(includeAnnotations, "DynamicsWebApi." + functionName, "request.includeAnnotations");
+            ErrorHelper.stringParameterCheck(includeAnnotations, `DynamicsWebApi.${functionName}`, "request.includeAnnotations");
             prefer.push('odata.include-annotations="' + includeAnnotations + '"');
         }
 
         if (maxPageSize && maxPageSize > 0) {
-            ErrorHelper.numberParameterCheck(maxPageSize, "DynamicsWebApi." + functionName, "request.maxPageSize");
+            ErrorHelper.numberParameterCheck(maxPageSize, `DynamicsWebApi.${functionName}`, "request.maxPageSize");
             prefer.push('odata.maxpagesize=' + maxPageSize);
         }
 
         if (trackChanges) {
-            ErrorHelper.boolParameterCheck(trackChanges, "DynamicsWebApi." + functionName, "request.trackChanges");
+            ErrorHelper.boolParameterCheck(trackChanges, `DynamicsWebApi.${functionName}`, "request.trackChanges");
             prefer.push('odata.track-changes');
         }
 
         return prefer.join(',');
     }
-};
+}

@@ -2,10 +2,10 @@
     status: number
 }
 
-function throwParameterError(functionName, parameterName, type) {
+function throwParameterError(functionName: string, parameterName: string, type: string) {
     throw new Error(type
-        ? functionName + " requires the " + parameterName + " parameter to be of type " + type
-        : functionName + " requires the " + parameterName + " parameter.");
+        ? `${functionName} requires the ${parameterName} parameter to be of type ${type}.`
+        : `${functionName} requires the ${parameterName} parameter.`);
 };
 
 export class ErrorHelper {
@@ -17,9 +17,7 @@ export class ErrorHelper {
         /// The XMLHttpRequest response that returned an error.
         ///</param>
         ///<returns>Error</returns>
-        throw new Error("Error: " +
-            req.status + ": " +
-            req.message);
+        throw new Error(`Error: ${req.status}: ${req.message}`);
     }
 
     static parameterCheck (parameter, functionName: string, parameterName: string, type?: string) {
@@ -32,12 +30,12 @@ export class ErrorHelper {
         ///<param name="message" type="String">
         /// The error message text to include when the error is thrown.
         ///</param>
-        if ((typeof parameter === "undefined") || parameter === null || parameter == "") {
+        if ((typeof parameter === "undefined") || parameter === null || parameter === "") {
             throwParameterError(functionName, parameterName, type);
         }
     }
 
-    static stringParameterCheck (parameter, functionName, parameterName) {
+    static stringParameterCheck(parameter, functionName: string, parameterName: string) {
         ///<summary>
         /// Private function used to check whether required parameters are null or undefined
         ///</summary>
@@ -47,12 +45,12 @@ export class ErrorHelper {
         ///<param name="message" type="String">
         /// The error message text to include when the error is thrown.
         ///</param>
-        if (typeof parameter != "string") {
+        if (typeof parameter !== "string") {
             throwParameterError(functionName, parameterName, "String");
         }
     }
 
-    static arrayParameterCheck (parameter, functionName, parameterName) {
+    static arrayParameterCheck(parameter, functionName: string, parameterName: string) {
         ///<summary>
         /// Private function used to check whether required parameters are null or undefined
         ///</summary>
@@ -67,13 +65,13 @@ export class ErrorHelper {
         }
     }
 
-    static stringOrArrayParameterCheck(parameter, functionName, parameterName) {
-        if (parameter.constructor !== Array && typeof parameter != "string") {
+    static stringOrArrayParameterCheck(parameter, functionName: string, parameterName: string) {
+        if (parameter.constructor !== Array && typeof parameter !== "string") {
             throwParameterError(functionName, parameterName, "String or Array");
         }
     }
 
-    static numberParameterCheck  (parameter, functionName, parameterName) {
+    static numberParameterCheck(parameter, functionName: string, parameterName: string) {
         ///<summary>
         /// Private function used to check whether required parameters are null or undefined
         ///</summary>
@@ -109,7 +107,7 @@ export class ErrorHelper {
         return <DynamicsWebApiError>error;
     }
 
-    static boolParameterCheck (parameter, functionName, parameterName) {
+    static boolParameterCheck (parameter, functionName: string, parameterName: string) {
         ///<summary>
         /// Private function used to check whether required parameters are null or undefined
         ///</summary>
@@ -124,7 +122,7 @@ export class ErrorHelper {
         }
     }
 
-    static guidParameterCheck (parameter, functionName, parameterName) {
+    static guidParameterCheck(parameter, functionName: string, parameterName: string): string {
         ///<summary>
         /// Private function used to check whether required parameter is a valid GUID
         ///</summary>
@@ -146,7 +144,7 @@ export class ErrorHelper {
         }
     }
 
-    static keyParameterCheck (parameter, functionName, parameterName) {
+    static keyParameterCheck(parameter, functionName: string, parameterName: string): string {
 
         try {
             ErrorHelper.stringParameterCheck(parameter, functionName, parameterName);
@@ -174,7 +172,7 @@ export class ErrorHelper {
         }
     }
 
-    static callbackParameterCheck (callbackParameter, functionName, parameterName) {
+    static callbackParameterCheck(callbackParameter, functionName: string, parameterName: string) {
         ///<summary>
         /// Private function used to check whether required callback parameters are functions
         ///</summary>
@@ -189,14 +187,14 @@ export class ErrorHelper {
         }
     }
 
-    static batchIncompatible (functionName, isBatch) {
+    static batchIncompatible (functionName: string, isBatch: boolean) {
         if (isBatch) {
             isBatch = false;
             throw new Error(functionName + " cannot be used in a BATCH request.");
         }
     }
 
-    static batchNotStarted (isBatch) {
+    static batchNotStarted (isBatch: boolean) {
         if (!isBatch) {
             throw new Error("Batch operation has not been started. Please call a DynamicsWebApi.startBatch() function prior to calling DynamicsWebApi.executeBatch() to perform a batch request correctly.");
         }
