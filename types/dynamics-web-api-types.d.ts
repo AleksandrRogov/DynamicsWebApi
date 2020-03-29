@@ -12,9 +12,11 @@
     }
 
     interface ConvertedRequest {
-        url?: string,
-        headers?: string,
-        async?: boolean
+        path?: string,
+        headers?: any,
+        async?: boolean,
+        method?: string,
+        data?: any
     }
 
     interface InternalRequest {
@@ -76,12 +78,12 @@
         top?: number;
         /**Sets Prefer header with value 'odata.track-changes' to request that a delta link be returned which can subsequently be used to retrieve entity changes. */
         trackChanges?: boolean;
-        url: string;
-        _isUnboundRequest: boolean;
-        _additionalUrl: string;
-        fetchXml: string;
-        isBatch: boolean;
-        data: any;
+        url?: string;
+        _isUnboundRequest?: boolean;
+        _additionalUrl?: string;
+        fetchXml?: string;
+        isBatch?: boolean;
+        data?: any;
     }
 
     interface WebApiRequest {

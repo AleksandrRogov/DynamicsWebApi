@@ -10,7 +10,6 @@ global.Xrm = {
     }
 };
 
-var { DWA } = require("../lib/dwa");
 var webApiUrl = "http://testorg.crm.dynamics.com/api/data/v8.2/";
 var webApiUrl81 = "http://testorg.crm.dynamics.com/api/data/v8.1/";
 var webApiUrl80 = "http://testorg.crm.dynamics.com/api/data/v8.0/";
@@ -147,9 +146,6 @@ var dataStubs = {
         'Content-Transfer-Encoding: binary\n\n' +
         'GET {0} HTTP/1.1\n' +
         'Accept: application/json\n' +
-        'OData-MaxVersion: 4.0\n' +
-        'OData-Version: 4.0\n' +
-        'Content-Type: application/json; charset=utf-8\n\n' +
         '--dwa_batch_XXX--',
     batchRetrieveMultipleCreateRetrieveMultiple:
         '--dwa_batch_XXX\n' +

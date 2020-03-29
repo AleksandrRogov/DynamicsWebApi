@@ -824,20 +824,20 @@ describe("RequestUtility.composeUrl -", function () {
         dwaRequest.returnRepresentation = true;
 
         result = RequestUtility.compose(dwaRequest, null, "");
-        expect(result).to.deep.equal({ url: "tests?$select=name,subject&$top=5&$orderby=order", headers: { Prefer: DWA.Prefer.ReturnRepresentation }, async: true });
+        expect(result).to.deep.equal({ path: "tests?$select=name,subject&$top=5&$orderby=order", headers: { Prefer: DWA.Prefer.ReturnRepresentation }, async: true });
 
         dwaRequest.top = 0;
         dwaRequest.count = true;
         dwaRequest.impersonate = mocks.data.testEntityId;
 
         result = RequestUtility.compose(dwaRequest, null, "");
-        expect(result).to.deep.equal({ url: "tests?$select=name,subject&$count=true&$orderby=order", headers: { Prefer: DWA.Prefer.ReturnRepresentation, MSCRMCallerID: mocks.data.testEntityId }, async: true });
+        expect(result).to.deep.equal({ path: "tests?$select=name,subject&$count=true&$orderby=order", headers: { Prefer: DWA.Prefer.ReturnRepresentation, MSCRMCallerID: mocks.data.testEntityId }, async: true });
 
         dwaRequest.impersonate = null;
         dwaRequest.navigationProperty = "nav";
 
         result = RequestUtility.compose(dwaRequest, null, "");
-        expect(result).to.deep.equal({ url: "tests/nav?$select=name,subject&$count=true&$orderby=order", headers: { Prefer: DWA.Prefer.ReturnRepresentation }, async: true });
+        expect(result).to.deep.equal({ path: "tests/nav?$select=name,subject&$count=true&$orderby=order", headers: { Prefer: DWA.Prefer.ReturnRepresentation }, async: true });
 
         dwaRequest.navigationProperty = null;
         dwaRequest.returnRepresentation = false;
@@ -845,7 +845,7 @@ describe("RequestUtility.composeUrl -", function () {
         dwaRequest.select[0] = "/nav";
 
         result = RequestUtility.compose(dwaRequest, null, "retrieve");
-        expect(result).to.deep.equal({ url: "tests/nav?$select=subject&$count=true&$orderby=order", headers: { Prefer: 'odata.include-annotations="*"' }, async: true });
+        expect(result).to.deep.equal({ path: "tests/nav?$select=subject&$count=true&$orderby=order", headers: { Prefer: 'odata.include-annotations="*"' }, async: true });
     });
 });
 
@@ -1246,7 +1246,7 @@ describe("RequestUtility.compose -", function () {
         };
 
         var result = RequestUtility.compose(dwaRequest);
-        expect(result).to.deep.equal({ url: "cols", headers: {}, async: true });
+        expect(result).to.deep.equal({ path: "cols", headers: {}, async: true });
     });
 
     it("collection - to lower case", function () {
@@ -1255,7 +1255,7 @@ describe("RequestUtility.compose -", function () {
         };
 
         var result = RequestUtility.compose(dwaRequest);
-        expect(result).to.deep.equal({ url: "Cols", headers: {}, async: true });
+        expect(result).to.deep.equal({ path: "Cols", headers: {}, async: true });
     });
 
     it("collection - to lower case exception", function () {
@@ -1264,7 +1264,7 @@ describe("RequestUtility.compose -", function () {
         };
 
         var result = RequestUtility.compose(dwaRequest);
-        expect(result).to.deep.equal({ url: "EntityDefinitions", headers: {}, async: true });
+        expect(result).to.deep.equal({ path: "EntityDefinitions", headers: {}, async: true });
     });
 
     it("collection empty - throw error", function () {
@@ -1292,12 +1292,12 @@ describe("RequestUtility.compose -", function () {
         };
 
         var result = RequestUtility.compose(dwaRequest);
-        expect(result).to.deep.equal({ url: "cols", headers: {}, async: true });
+        expect(result).to.deep.equal({ path: "cols", headers: {}, async: true });
 
         dwaRequest.id = "";
 
         result = RequestUtility.compose(dwaRequest);
-        expect(result).to.deep.equal({ url: "cols", headers: {}, async: true });
+        expect(result).to.deep.equal({ path: "cols", headers: {}, async: true });
     });
 
     it("collection, id - wrong format throw error", function () {
@@ -1320,7 +1320,7 @@ describe("RequestUtility.compose -", function () {
         };
 
         var result = RequestUtility.compose(dwaRequest);
-        expect(result).to.deep.equal({ url: "cols(" + mocks.data.testEntityId + ")", headers: {}, async: true });
+        expect(result).to.deep.equal({ path: "cols(" + mocks.data.testEntityId + ")", headers: {}, async: true });
     });
 
     it("collection, id in brackets {} converted to id without brackets", function () {
@@ -1330,7 +1330,7 @@ describe("RequestUtility.compose -", function () {
         };
 
         var result = RequestUtility.compose(dwaRequest);
-        expect(result).to.deep.equal({ url: "cols(" + mocks.data.testEntityId + ")", headers: {}, async: true });
+        expect(result).to.deep.equal({ path: "cols(" + mocks.data.testEntityId + ")", headers: {}, async: true });
     });
 
     it("full", function () {
@@ -1342,12 +1342,12 @@ describe("RequestUtility.compose -", function () {
         };
 
         var result = RequestUtility.compose(dwaRequest);
-        expect(result).to.deep.equal({ url: "cols(" + mocks.data.testEntityId + ")?$select=name", headers: { Prefer: DWA.Prefer.ReturnRepresentation }, async: true });
+        expect(result).to.deep.equal({ path: "cols(" + mocks.data.testEntityId + ")?$select=name", headers: { Prefer: DWA.Prefer.ReturnRepresentation }, async: true });
 
         dwaRequest.navigationProperty = "nav";
 
         result = RequestUtility.compose(dwaRequest);
-        expect(result).to.deep.equal({ url: "cols(" + mocks.data.testEntityId + ")/nav?$select=name", headers: { Prefer: DWA.Prefer.ReturnRepresentation }, async: true });
+        expect(result).to.deep.equal({ path: "cols(" + mocks.data.testEntityId + ")/nav?$select=name", headers: { Prefer: DWA.Prefer.ReturnRepresentation }, async: true });
     });
 
     it("async", function () {
@@ -1357,17 +1357,17 @@ describe("RequestUtility.compose -", function () {
         };
 
         var result = RequestUtility.compose(dwaRequest);
-        expect(result).to.deep.equal({ url: "cols", headers: {}, async: false });
+        expect(result).to.deep.equal({ path: "cols", headers: {}, async: false });
 
         dwaRequest.async = true;
 
         result = RequestUtility.compose(dwaRequest);
-        expect(result).to.deep.equal({ url: "cols", headers: {}, async: true });
+        expect(result).to.deep.equal({ path: "cols", headers: {}, async: true });
 
         delete dwaRequest.async;
 
         result = RequestUtility.compose(dwaRequest);
-        expect(result).to.deep.equal({ url: "cols", headers: {}, async: true });
+        expect(result).to.deep.equal({ path: "cols", headers: {}, async: true });
     });
 
     it("async - throw error", function () {

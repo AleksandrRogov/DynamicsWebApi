@@ -62,7 +62,6 @@
     <Compile Include="lib\requests\helpers\parseResponse.js">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="lib\utilities\BatchConverter.js" />
     <Compile Include="lib\polyfills\string-es6.js">
       <SubType>Code</SubType>
     </Compile>
@@ -107,7 +106,6 @@
     <Content Include=".travis.yml">
       <SubType>Code</SubType>
     </Content>
-    <Content Include="lib\utilities\buildPreferHeader.js" />
     <Content Include="package.json" />
     <Content Include="README.md" />
     <Content Include="tsconfig.json">
