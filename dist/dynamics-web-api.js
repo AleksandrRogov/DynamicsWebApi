@@ -1,4 +1,4 @@
-/*! dynamics-web-api v1.6.2 (c) 2020 Aleksandr Rogov */
+/*! dynamics-web-api v1.6.3 (c) 2020 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -215,9 +215,9 @@ var ErrorHelper = {
             ErrorHelper.stringParameterCheck(parameter, functionName, parameterName);
 
             //check if the param is a guid
-            var match = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(parameter);
+            var match = /^{?([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})}?$/i.exec(parameter);
             if (match) {
-                return match[0];
+                return match[1];
             }
 
             //check the alternate key
