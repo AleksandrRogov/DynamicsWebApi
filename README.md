@@ -14,6 +14,8 @@ If you feel that this project saved your time and you would like to support it, 
 
 Please check [suggestions and contributions](#contributions) section to learn more on how you can help to improve this project.
 
+**DynamicsWebApi v2 is coming!**
+
 **Important!** For some reason, npm was not removing `.git` folder from a published package, 
 even though [it should have done it by default](https://docs.npmjs.com/misc/developers#keeping-files-out-of-your-package), therefore
 `npm update dynamics-web-api` was not working properly. If you see an error during an update of the package, 
