@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.6.3 (c) 2020 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.6.4 (c) 2020 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -586,7 +586,12 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
 
         if (request.userQuery) {
             requestArray.push("userQuery=" + ErrorHelper.guidParameterCheck(request.userQuery, 'DynamicsWebApi.' + functionName, "request.userQuery"));
-        }
+		}
+
+		if (request.apply) {
+			ErrorHelper.stringParameterCheck(request.apply, 'DynamicsWebApi.' + functionName, "request.apply");
+			requestArray.push("$apply=" + request.apply);
+		}
 
         if (request.count) {
             ErrorHelper.boolParameterCheck(request.count, 'DynamicsWebApi.' + functionName, "request.count");
