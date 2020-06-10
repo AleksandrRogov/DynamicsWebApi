@@ -1,4 +1,4 @@
-﻿// Type definitions for dynamics-web-api v1.6.3
+﻿// Type definitions for dynamics-web-api v1.6.4
 // Project: https://github.com/AleksandrRogov/DynamicsWebApi/
 // Definitions by: Aleksandr Rogov https://github.com/AleksandrRogov/
 
@@ -447,15 +447,17 @@ declare class DynamicsWebApi {
 declare namespace DynamicsWebApi {
     interface Expand {
         /**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
-        select?: string[];
+        select?: string[]
         /**Use the $filter system query option to set criteria for which entities will be returned. */
-        filter?: string;
+        filter?: string
         /**Limit the number of results returned by using the $top system query option.Do not use $top with $count! */
         top?: number
         /**An Array(of Strings) representing the order in which items are returned using the $orderby system query option.Use the asc or desc suffix to specify ascending or descending order respectively.The default is ascending if the suffix isn't applied. */
         orderBy?: string[]
         /**A name of a single-valued navigation property which needs to be expanded. */
-        property?: string
+		property?: string
+		/**An Array of Expand Objects representing the $expand Query Option value to control which related records need to be returned. */
+		expand?: Expand[]
     }
 
     interface Request {
@@ -539,7 +541,7 @@ declare namespace DynamicsWebApi {
         contentId?: string;
     }
 
-    interface RetrieveRequest extends CRUDRequest {
+	interface RetrieveRequest extends CRUDRequest {
         /**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
         expand?: Expand[];
         /**Use the $filter system query option to set criteria for which entities will be returned. */
@@ -564,7 +566,9 @@ declare namespace DynamicsWebApi {
         userQuery?: string;
     }
 
-    interface RetrieveMultipleRequest extends Request {
+	interface RetrieveMultipleRequest extends Request {
+		/**Use the $apply to aggregate and group your data dynamically */
+		apply?: string
         /**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
         expand?: Expand[];
         /**Boolean that sets the $count system query option with a value of true to include a count of entities that match the filter criteria up to 5000(per page).Do not use $top with $count! */

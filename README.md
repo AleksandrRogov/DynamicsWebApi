@@ -15,6 +15,8 @@ If you feel that this project saved your time and you would like to support it, 
 Please check [suggestions and contributions](#contributions) section to learn more on how you can help to improve this project.
 
 **DynamicsWebApi v2 is coming!**
+There will be breaking changes between v1 and v2. One of them: v2 will not have simple requests, only the advanced ones, therefore I highly recommend using request objects for making requests.
+Also v2 will be written in TypeScript and include numerous optimizations. I am very excited to finally release the new version and I hope you too! Stay tuned!
 
 **Important!** For some reason, npm was not removing `.git` folder from a published package, 
 even though [it should have done it by default](https://docs.npmjs.com/misc/developers#keeping-files-out-of-your-package), therefore
@@ -234,6 +236,7 @@ an invalid property you will receive either an error saying that the request is 
 
 Property Name | Type | Operation(s) Supported | Description
 ------------ | ------------- | ------------- | -------------
+apply | string | `retrieveMultipleRequest`, `retrieveAllRequest` | `v1.6.4+` Sets the $apply system query option to aggregate and group your data dynamically. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/query-data-web-api#aggregate-and-grouping-results)
 async | Boolean | All | **Important! XHR requests only!** Indicates whether the requests should be made synchronously or asynchronously. Default value is `true` (asynchronously).
 collection | String | All | The name of the Entity Collection (or Entity Logical name in `v1.4.0+`).
 contentId | String | `createRequest`, `updateRequest`, `upsertRequest`, `deleteRequest` | `v1.5.6+` **BATCH REQUESTS ONLY!** Sets Content-ID header or references request in a Change Set. [More Info](https://www.odata.org/documentation/odata-version-3-0/batch-processing/)
@@ -268,17 +271,12 @@ while request.expand property is an Array of Expand Objects for Advanced operati
 
 Property Name | Type | Description
 ------------ | ------------- | -------------
+expand | Array | An array of Expand Objects (described below the table) representing the $expand OData System Query Option value to control which related records are also returned.
 filter | String | Use the $filter system query option to set criteria for which related entities will be returned.
 orderBy | Array | An Array (of Strings) representing the order in which related items are returned using the $orderby system query option. Use the asc or desc suffix to specify ascending or descending order respectively. The default is ascending if the suffix isn't applied.
 property | String | A name of a single-valued navigation property which needs to be expanded.
 select | Array | An Array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
 top | Number | Limit the number of results returned by using the $top system query option.
-
-The following seems to be fixed: ~~According to CRM developers ([here](http://stackoverflow.com/a/34742977/2042071) and [here](https://community.dynamics.com/crm/b/joegilldynamicscrm/archive/2016/03/23/web-api-querying-with-expand) 
-$expand does not work for retrieveMultiple requests which is claimed as a bug of CRM Web API.~~
-Unconfirmed: Multi-level expands are not implemented yet. This situation may be changed with the future updates in the platform. Please look for the news!
-
-For complex requests to Web API with multi-level expands use `executeFetchXml` function.
 
 Starting from version 1.2.8, all requests to Web API that have long URLs (more than 2000 characters) are automatically converted to a Batch Request.
 This feature is very convenient when you make a call with big Fetch XMLs. No special parameters needed to do a convertation.

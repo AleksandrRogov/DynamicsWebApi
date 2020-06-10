@@ -2791,7 +2791,45 @@ describe("promises -", function () {
             it("all requests have been made", function () {
                 expect(scope.isDone()).to.be.true;
             });
-        });
+		});
+
+		describe("$apply", function () {
+			var scope;
+			before(function () {
+				var response = mocks.responses.multipleResponse;
+				scope = nock(mocks.webApiUrl, {
+					reqheaders: {
+						Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.FormattedValue + '"'
+					}
+				})
+					.get(mocks.responses.collectionUrl + "?$apply=groupby((statuscode),aggregate(estimatedvalue with sum as total))")
+					.reply(response.status, response.responseText, response.responseHeaders);
+			});
+
+			after(function () {
+				nock.cleanAll();
+			});
+
+			it("returns a correct response", function (done) {
+				var dwaRequest = {
+					collection: "tests",
+					includeAnnotations: DWA.Prefer.Annotations.FormattedValue,
+					apply: "groupby((statuscode),aggregate(estimatedvalue with sum as total))"
+				};
+
+				dynamicsWebApiTest.retrieveMultipleRequest(dwaRequest)
+					.then(function (object) {
+						expect(object).to.deep.equal(mocks.responses.multiple());
+						done();
+					}).catch(function (object) {
+						done(object);
+					});
+			});
+
+			it("all requests have been made", function () {
+				expect(scope.isDone()).to.be.true;
+			});
+		});
     });
 
     describe("dynamicsWebApi.retrieveAllRequest -", function () {
