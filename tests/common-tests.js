@@ -1875,56 +1875,6 @@ describe('Request.makeRequest', function () {
 			expect(scope.isDone()).to.be.true;
 		});
 	});
-
-	describe('useEntityNames - Xrm.Internal', function () {
-		var scope;
-		before(function () {
-			var response = mocks.responses.response200;
-			var response2 = mocks.responses.responseEntityDefinitions;
-			scope = nock(mocks.webApiUrl)
-				.get('/tests(' + mocks.data.testEntityId + ')')
-				.reply(response.status, response.responseText, response.responseHeaders);
-		});
-
-		after(function () {
-			nock.cleanAll();
-			Request._clearEntityNames();
-			global.Xrm.Internal = null;
-		});
-
-		it("returns a correct response", function (done) {
-			global.Xrm.Internal = {
-				getEntitySetName: function (entityName) {
-					return entityName + 's';
-				}
-			};
-
-			var request = {
-				collection: 'test',
-				key: mocks.data.testEntityId
-			};
-			var config = {
-				webApiUrl: mocks.webApiUrl,
-				useEntityNames: true
-			};
-			Request.makeRequest('GET', request, 'any', config, null, function (object) {
-				var expectedO = {
-					status: 200,
-					headers: {},
-					data: mocks.data.testEntity
-				};
-				expect(object).to.deep.equal(expectedO);
-				done();
-			}, function (object) {
-				expect(object).to.be.undefined;
-				done();
-			});
-		});
-
-		it("all requests have been made", function () {
-			expect(scope.isDone()).to.be.true;
-		});
-	});
 });
 
 describe("Request.sendRequest", function () {
