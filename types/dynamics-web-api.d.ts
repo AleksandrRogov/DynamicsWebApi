@@ -1,4 +1,4 @@
-﻿// Type definitions for dynamics-web-api v1.6.4
+﻿// Type definitions for dynamics-web-api v1.6.5
 // Project: https://github.com/AleksandrRogov/DynamicsWebApi/
 // Definitions by: Aleksandr Rogov https://github.com/AleksandrRogov/
 
