@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.6.4 (c) 2020 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.6.5 (c) 2020 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -884,7 +884,10 @@ function stringifyData(data, config) {
 	return stringifiedData;
 }
 
-var convertToBatch = function (requestCollection, config) {
+var _batchRequestCollection = [];
+var _responseParseParams = [];
+
+var _convertToBatch = function (requestCollection, config) {
 	var batchBoundary = 'dwa_batch_' + Utility.generateUUID();
 
 	var batchBody = [];
@@ -892,11 +895,13 @@ var convertToBatch = function (requestCollection, config) {
 	var contentId = 100000;
 
 	for (var i = 0; i < requestCollection.length; i++) {
+		var rawRequest = requestCollection[i].request;
+
 		if (config.useEntityNames) {
-			requestCollection[i].request.collection = findCollectionName(requestCollection[i].request.collection) || requestCollection[i].request.collection;
+			rawRequest.collection = findCollectionName(rawRequest.collection) || rawRequest.collection;
 		}
 
-		var request = RequestConverter.convertRequest(requestCollection[i].request, "executeBatch", config);
+		var request = RequestConverter.convertRequest(rawRequest, "executeBatch", config);
 		var method = requestCollection[i].method;
 		var isGet = method === 'GET';
 
@@ -953,7 +958,7 @@ var convertToBatch = function (requestCollection, config) {
 			batchBody.push(key + ': ' + request.headers[key]);
 		}
 
-		var data = requestCollection[i].request.data || requestCollection[i].request.entity;
+		var data = rawRequest.data || rawRequest.entity;
 
 		if (!isGet && data) {
 			batchBody.push('\n' + stringifyData(data, config));
@@ -968,9 +973,6 @@ var convertToBatch = function (requestCollection, config) {
 
 	return { boundary: batchBoundary, body: batchBody.join('\n') };
 };
-
-var batchRequestCollection = [];
-var responseParseParams = [];
 
 /**
  * Sends a request to given URL with given parameters
@@ -992,28 +994,18 @@ function sendRequest(method, path, config, data, additionalHeaders, responsePara
 	responseParams = responseParams || {};
 
 	//add response parameters to parse
-	responseParseParams.push(responseParams);
+	_responseParseParams.push(responseParams);
 
 	//stringify passed data
 	var stringifiedData = stringifyData(data, config);
 
-	//if (isBatch) {
-	//	batchRequestCollection.push({
-	//		method: method, path: path, config: config, data: data, headers: additionalHeaders
-	//	});
-	//	return;
-	//}
-	//if (!isBatch)
-	//	stringifiedData = stringifyData(data, config);
-	//}
-
 	if (path === '$batch') {
-		var batchResult = convertToBatch(batchRequestCollection, config);
+		var batchResult = _convertToBatch(_batchRequestCollection, config);
 
 		stringifiedData = batchResult.body;
 
 		//clear an array of requests
-		batchRequestCollection.length = 0;
+		_batchRequestCollection.length = 0;
 
 		additionalHeaders = setStandardHeaders(additionalHeaders);
 		additionalHeaders['Content-Type'] = 'multipart/mixed;boundary=' + batchResult.boundary;
@@ -1081,7 +1073,7 @@ function sendRequest(method, path, config, data, additionalHeaders, responsePara
 			uri: config.webApiUrl + path,
 			data: stringifiedData,
 			additionalHeaders: additionalHeaders,
-			responseParams: responseParseParams,
+			responseParams: _responseParseParams,
 			successCallback: successCallback,
 			errorCallback: errorCallback,
 			isAsync: isAsync,
@@ -1098,20 +1090,8 @@ function sendRequest(method, path, config, data, additionalHeaders, responsePara
 	}
 }
 
-function _getEntityNames(entityName, config, successCallback, errorCallback) {
+function _getCollectionNames(entityName, config, successCallback, errorCallback) {
 
-	//var xrmUtility = Utility.getXrmUtility();
-
-	////try using Xrm.Utility.getEntityMetadata first (because D365 caches metadata)
-	//if (!Utility.isNull(xrmUtility) && typeof xrmUtility.getEntityMetadata === "function") {
-	//    xrmUtility.getEntityMetadata(entityName, []).then(function (response) {
-	//        if (!response)
-	//            successCallback(entityName);
-	//        else
-	//            successCallback(response.EntitySetName);
-	//    }, errorCallback);
-	//}
-	//else {
 	//make a web api call for Node.js apps
 	if (!Utility.isNull(_entityNames)) {
 		successCallback(findCollectionName(entityName) || entityName);
@@ -1148,7 +1128,7 @@ function _isEntityNameException(entityName) {
 	return exceptions.indexOf(entityName) > -1;
 }
 
-function _getCollectionName(entityName, config, successCallback, errorCallback) {
+function _checkCollectionName(entityName, config, successCallback, errorCallback) {
 
 	if (_isEntityNameException(entityName) || Utility.isNull(entityName)) {
 		successCallback(entityName);
@@ -1163,17 +1143,7 @@ function _getCollectionName(entityName, config, successCallback, errorCallback) 
 	}
 
 	try {
-		_getEntityNames(entityName, config, successCallback, errorCallback);
-
-
-		//var collectionName = findCollectionName(entityName);
-
-		//if (Utility.isNull(collectionName)) {
-		//	_getEntityNames(entityName, config, successCallback, errorCallback);
-		//}
-		//else {
-		//	successCallback(collectionName);
-		//}
+		_getCollectionNames(entityName, config, successCallback, errorCallback);
 	}
 	catch (error) {
 		errorCallback({ message: 'Unable to fetch Collection Names. Error: ' + error.message });
@@ -1181,23 +1151,22 @@ function _getCollectionName(entityName, config, successCallback, errorCallback) 
 }
 
 function makeRequest(method, request, functionName, config, responseParams, resolve, reject) {
-	var successCallback = function (collectionName) {
-		request.collection = collectionName;
-		var result = RequestConverter.convertRequest(request, functionName, config);
-		sendRequest(method, result.url, config, request.data || request.entity, result.headers, responseParams, resolve, reject, request.isBatch, result.async);
-	};
-
+	//no need to make a request to web api if it's a part of batch
 	if (request.isBatch) {
 		//add response parameters to parse
-		responseParseParams.push(responseParams || {});
+		_responseParseParams.push(responseParams || {});
 
-		batchRequestCollection.push({ method: method, request: request });
+		_batchRequestCollection.push({ method: method, request: request });
 
 		//check for errors
 		RequestConverter.convertRequest(request, functionName, config);
 	}
 	else {
-		_getCollectionName(request.collection, config, successCallback, reject);
+		_checkCollectionName(request.collection, config, function (collectionName) {
+			request.collection = collectionName;
+			var result = RequestConverter.convertRequest(request, functionName, config);
+			sendRequest(method, result.url, config, request.data || request.entity, result.headers, responseParams, resolve, reject, request.isBatch, result.async);
+		}, reject);
 	}
 }
 
