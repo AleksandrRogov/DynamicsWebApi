@@ -424,7 +424,7 @@ var Utility = {
      * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
      * @returns {string}
      */
-    buildFunctionParameters: __webpack_require__(13),
+    buildFunctionParameters: __webpack_require__(12),
 
     /**
      * Parses a paging cookie returned in response
@@ -433,7 +433,7 @@ var Utility = {
      * @param {number} currentPageNumber - A current page number. Fix empty paging-cookie for complex fetch xmls.
      * @returns {{cookie: "", number: 0, next: 1}}
      */
-    getFetchXmlPagingCookie: __webpack_require__(16),
+    getFetchXmlPagingCookie: __webpack_require__(15),
 
     /**
      * Converts a response to a reference object
@@ -441,7 +441,7 @@ var Utility = {
      * @param {Object} responseData - Response object
      * @returns {ReferenceObject}
      */
-    convertToReferenceObject: __webpack_require__(15),
+    convertToReferenceObject: __webpack_require__(14),
 
     /**
      * Checks whether the value is JS Null.
@@ -489,8 +489,7 @@ String.prototype.startsWith = function (searchString, position) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var Utility = __webpack_require__(2);
-var RequestConverter = __webpack_require__(12);
-var BatchConverter = __webpack_require__(11);
+var RequestConverter = __webpack_require__(11);
 
 var _entityNames;
 
@@ -502,93 +501,178 @@ var _entityNames;
  * @returns {string} - a collection name
  */
 function findCollectionName(entityName) {
-    var xrmInternal = Utility.getXrmInternal();
+	var xrmInternal = Utility.getXrmInternal();
 
-    if (!Utility.isNull(xrmInternal) && typeof xrmInternal.getEntitySetName === "function") {
-        return xrmInternal.getEntitySetName(entityName) || entityName;
-    }
+	if (!Utility.isNull(xrmInternal) && typeof xrmInternal.getEntitySetName === "function") {
+		return xrmInternal.getEntitySetName(entityName) || entityName;
+	}
 
-    var collectionName = null;
+	var collectionName = null;
 
-    if (!Utility.isNull(_entityNames)) {
-        collectionName = _entityNames[entityName];
-        if (Utility.isNull(collectionName)) {
-            for (var key in _entityNames) {
-                if (_entityNames[key] === entityName) {
-                    return entityName;
-                }
-            }
-        }
-    }
+	if (!Utility.isNull(_entityNames)) {
+		collectionName = _entityNames[entityName];
+		if (Utility.isNull(collectionName)) {
+			for (var key in _entityNames) {
+				if (_entityNames[key] === entityName) {
+					return entityName;
+				}
+			}
+		}
+	}
 
-    return collectionName;
+	return collectionName;
 }
 
 function setStandardHeaders(additionalHeaders) {
-    additionalHeaders["Accept"] = "application/json";
-    additionalHeaders["OData-MaxVersion"] = "4.0";
-    additionalHeaders["OData-Version"] = "4.0";
-    additionalHeaders['Content-Type'] = 'application/json; charset=utf-8';
+	additionalHeaders["Accept"] = "application/json";
+	additionalHeaders["OData-MaxVersion"] = "4.0";
+	additionalHeaders["OData-Version"] = "4.0";
+	additionalHeaders['Content-Type'] = 'application/json; charset=utf-8';
 
-    return additionalHeaders;
+	return additionalHeaders;
 }
 
 function stringifyData(data, config) {
-    var stringifiedData;
-    if (data) {
-        stringifiedData = JSON.stringify(data, function (key, value) {
-            /// <param name="key" type="String">Description</param>
-            if (key.endsWith('@odata.bind') || key.endsWith('@odata.id')) {
-                if (typeof value === 'string' && !value.startsWith('$')) {
-                    //remove brackets in guid
-                    if (/\(\{[\w\d-]+\}\)/g.test(value)) {
-                        value = value.replace(/(.+)\(\{([\w\d-]+)\}\)/g, '$1($2)');
-                    }
+	var stringifiedData;
+	if (data) {
+		stringifiedData = JSON.stringify(data, function (key, value) {
+			/// <param name="key" type="String">Description</param>
+			if (key.endsWith('@odata.bind') || key.endsWith('@odata.id')) {
+				if (typeof value === 'string' && !value.startsWith('$')) {
+					//remove brackets in guid
+					if (/\(\{[\w\d-]+\}\)/g.test(value)) {
+						value = value.replace(/(.+)\(\{([\w\d-]+)\}\)/g, '$1($2)');
+					}
 
-                    if (config.useEntityNames) {
-                        //replace entity name with collection name
-                        var regularExpression = /([\w_]+)(\([\d\w-]+\))$/;
-                        var valueParts = regularExpression.exec(value);
-                        if (valueParts.length > 2) {
-                            var collectionName = findCollectionName(valueParts[1]);
+					if (config.useEntityNames) {
+						//replace entity name with collection name
+						var regularExpression = /([\w_]+)(\([\d\w-]+\))$/;
+						var valueParts = regularExpression.exec(value);
+						if (valueParts.length > 2) {
+							var collectionName = findCollectionName(valueParts[1]);
 
-                            if (!Utility.isNull(collectionName)) {
-                                value = value.replace(regularExpression, collectionName + '$2');
-                            }
-                        }
-                    }
+							if (!Utility.isNull(collectionName)) {
+								value = value.replace(regularExpression, collectionName + '$2');
+							}
+						}
+					}
 
-                    if (!value.startsWith(config.webApiUrl)) {
-                        //add full web api url if it's not set
-                        if (key.endsWith('@odata.bind')) {
-                            if (!value.startsWith('/')) {
-                                value = '/' + value;
-                            }
-                        }
-                        else {
-                            value = config.webApiUrl + value.replace(/^\//, '');
-                        }
-                    }
-                }
-            }
-            else
-                if (key.startsWith('oData') ||
-                    key.endsWith('_Formatted') ||
-                    key.endsWith('_NavigationProperty') ||
-                    key.endsWith('_LogicalName')) {
-                    value = undefined;
-                }
+					if (!value.startsWith(config.webApiUrl)) {
+						//add full web api url if it's not set
+						if (key.endsWith('@odata.bind')) {
+							if (!value.startsWith('/')) {
+								value = '/' + value;
+							}
+						}
+						else {
+							value = config.webApiUrl + value.replace(/^\//, '');
+						}
+					}
+				}
+			}
+			else
+				if (key.startsWith('oData') ||
+					key.endsWith('_Formatted') ||
+					key.endsWith('_NavigationProperty') ||
+					key.endsWith('_LogicalName')) {
+					value = undefined;
+				}
 
-            return value;
-        });
+			return value;
+		});
 
-        stringifiedData = stringifiedData.replace(/[\u007F-\uFFFF]/g, function (chr) {
-            return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substr(-4);
-        });
-    }
+		stringifiedData = stringifiedData.replace(/[\u007F-\uFFFF]/g, function (chr) {
+			return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substr(-4);
+		});
+	}
 
-    return stringifiedData;
+	return stringifiedData;
 }
+
+var convertToBatch = function (requestCollection, config) {
+	var batchBoundary = 'dwa_batch_' + Utility.generateUUID();
+
+	var batchBody = [];
+	var currentChangeSet = null;
+	var contentId = 100000;
+
+	for (var i = 0; i < requestCollection.length; i++) {
+		if (config.useEntityNames) {
+			requestCollection[i].request.collection = findCollectionName(requestCollection[i].request.collection) || requestCollection[i].request.collection;
+		}
+
+		var request = RequestConverter.convertRequest(requestCollection[i].request, "executeBatch", config);
+		var method = requestCollection[i].method;
+		var isGet = method === 'GET';
+
+		if (isGet && currentChangeSet) {
+			//end current change set
+			batchBody.push('\n--' + currentChangeSet + '--');
+
+			currentChangeSet = null;
+			contentId = 100000;
+		}
+
+		if (!currentChangeSet) {
+			batchBody.push('\n--' + batchBoundary);
+
+			if (!isGet) {
+				currentChangeSet = 'changeset_' + Utility.generateUUID();
+				batchBody.push('Content-Type: multipart/mixed;boundary=' + currentChangeSet);
+			}
+		}
+
+		if (!isGet) {
+			batchBody.push('\n--' + currentChangeSet);
+		}
+
+		batchBody.push('Content-Type: application/http');
+		batchBody.push('Content-Transfer-Encoding: binary');
+
+		if (!isGet) {
+			var contentIdValue = request.headers.hasOwnProperty('Content-ID')
+				? request.headers['Content-ID']
+				: ++contentId;
+
+			batchBody.push('Content-ID: ' + contentIdValue);
+		}
+
+		if (!request.url.startsWith("$")) {
+			batchBody.push('\n' + method + ' ' + config.webApiUrl + request.url + ' HTTP/1.1');
+		}
+		else {
+			batchBody.push('\n' + method + ' ' + request.url + ' HTTP/1.1');
+		}
+
+		if (isGet) {
+			batchBody.push('Accept: application/json');
+		}
+		else {
+			batchBody.push('Content-Type: application/json');
+		}
+
+		for (var key in request.headers) {
+			if (key === 'Authorization' || key === 'Content-ID')
+				continue;
+
+			batchBody.push(key + ': ' + request.headers[key]);
+		}
+
+		var data = requestCollection[i].request.data || requestCollection[i].request.entity;
+
+		if (!isGet && data) {
+			batchBody.push('\n' + stringifyData(data, config));
+		}
+	}
+
+	if (currentChangeSet) {
+		batchBody.push('\n--' + currentChangeSet + '--');
+	}
+
+	batchBody.push('\n--' + batchBoundary + '--');
+
+	return { boundary: batchBoundary, body: batchBody.join('\n') };
+};
 
 var batchRequestCollection = [];
 var responseParseParams = [];
@@ -609,201 +693,223 @@ var responseParseParams = [];
  */
 function sendRequest(method, path, config, data, additionalHeaders, responseParams, successCallback, errorCallback, isBatch, isAsync) {
 
-    additionalHeaders = additionalHeaders || {};
-    responseParams = responseParams || {};
+	additionalHeaders = additionalHeaders || {};
+	responseParams = responseParams || {};
 
-    //add response parameters to parse
-    responseParseParams.push(responseParams);
+	//add response parameters to parse
+	responseParseParams.push(responseParams);
 
-    //stringify passed data
-    var stringifiedData = stringifyData(data, config);
+	//stringify passed data
+	var stringifiedData = stringifyData(data, config);
 
-    if (isBatch) {
-        batchRequestCollection.push({
-            method: method, path: path, config: config, data: stringifiedData, headers: additionalHeaders
-        });
-        return;
-    }
+	//if (isBatch) {
+	//	batchRequestCollection.push({
+	//		method: method, path: path, config: config, data: data, headers: additionalHeaders
+	//	});
+	//	return;
+	//}
+	//if (!isBatch)
+	//	stringifiedData = stringifyData(data, config);
+	//}
 
-    if (path === '$batch') {
-        var batchResult = BatchConverter.convertToBatch(batchRequestCollection);
+	if (path === '$batch') {
+		var batchResult = convertToBatch(batchRequestCollection, config);
 
-        stringifiedData = batchResult.body;
+		stringifiedData = batchResult.body;
 
-        //clear an array of requests
-        batchRequestCollection.length = 0;
+		//clear an array of requests
+		batchRequestCollection.length = 0;
 
-        additionalHeaders = setStandardHeaders(additionalHeaders);
-        additionalHeaders['Content-Type'] = 'multipart/mixed;boundary=' + batchResult.boundary;
-    }
-    else {
-        additionalHeaders = setStandardHeaders(additionalHeaders);
-    }
+		additionalHeaders = setStandardHeaders(additionalHeaders);
+		additionalHeaders['Content-Type'] = 'multipart/mixed;boundary=' + batchResult.boundary;
+	}
+	else {
+		additionalHeaders = setStandardHeaders(additionalHeaders);
+	}
 
-    responseParams.convertedToBatch = false;
+	responseParams.convertedToBatch = false;
 
-    //if the URL contains more characters than max possible limit, convert the request to a batch request
-    if (path.length > 2000) {
-        var batchBoundary = 'dwa_batch_' + Utility.generateUUID();
+	//if the URL contains more characters than max possible limit, convert the request to a batch request
+	if (path.length > 2000) {
+		var batchBoundary = 'dwa_batch_' + Utility.generateUUID();
 
-        var batchBody = [];
-        batchBody.push('--' + batchBoundary);
-        batchBody.push('Content-Type: application/http');
-        batchBody.push('Content-Transfer-Encoding: binary\n');
-        batchBody.push(method + ' ' + config.webApiUrl + path + ' HTTP/1.1');
+		var batchBody = [];
+		batchBody.push('--' + batchBoundary);
+		batchBody.push('Content-Type: application/http');
+		batchBody.push('Content-Transfer-Encoding: binary\n');
+		batchBody.push(method + ' ' + config.webApiUrl + path + ' HTTP/1.1');
 
-        for (var key in additionalHeaders) {
-            if (key === 'Authorization')
-                continue;
+		for (var key in additionalHeaders) {
+			if (key === 'Authorization')
+				continue;
 
-            batchBody.push(key + ': ' + additionalHeaders[key]);
+			batchBody.push(key + ': ' + additionalHeaders[key]);
 
-            //authorization header is an exception. bug #27
-            delete additionalHeaders[key];
-        }
+			//authorization header is an exception. bug #27
+			delete additionalHeaders[key];
+		}
 
-        batchBody.push('\n--' + batchBoundary + '--');
+		batchBody.push('\n--' + batchBoundary + '--');
 
-        stringifiedData = batchBody.join('\n');
+		stringifiedData = batchBody.join('\n');
 
-        additionalHeaders = setStandardHeaders(additionalHeaders);
-        additionalHeaders['Content-Type'] = 'multipart/mixed;boundary=' + batchBoundary;
-        path = '$batch';
-        method = 'POST';
+		additionalHeaders = setStandardHeaders(additionalHeaders);
+		additionalHeaders['Content-Type'] = 'multipart/mixed;boundary=' + batchBoundary;
+		path = '$batch';
+		method = 'POST';
 
-        responseParams.convertedToBatch = true;
-    }
+		responseParams.convertedToBatch = true;
+	}
 
-    if (config.impersonate && !additionalHeaders['MSCRMCallerID']) {
-        additionalHeaders['MSCRMCallerID'] = config.impersonate;
-    }
+	if (config.impersonate && !additionalHeaders['MSCRMCallerID']) {
+		additionalHeaders['MSCRMCallerID'] = config.impersonate;
+	}
 
-    var executeRequest;
+	var executeRequest;
 
-        executeRequest = __webpack_require__(10);
+		executeRequest = __webpack_require__(10);
 
 
-    var sendInternalRequest = function (token) {
-        if (token) {
-            if (!additionalHeaders) {
-                additionalHeaders = {};
-            }
-            additionalHeaders['Authorization'] = 'Bearer ' +
-                (token.hasOwnProperty('accessToken') ?
-                    token.accessToken :
-                    token);
-        }
+	var sendInternalRequest = function (token) {
+		if (token) {
+			if (!additionalHeaders) {
+				additionalHeaders = {};
+			}
+			additionalHeaders['Authorization'] = 'Bearer ' +
+				(token.hasOwnProperty('accessToken') ?
+					token.accessToken :
+					token);
+		}
 
-        executeRequest({
-            method: method,
-            uri: config.webApiUrl + path,
-            data: stringifiedData,
-            additionalHeaders: additionalHeaders,
-            responseParams: responseParseParams,
-            successCallback: successCallback,
-            errorCallback: errorCallback,
-            isAsync: isAsync,
-            timeout: config.timeout
-        });
-    };
+		executeRequest({
+			method: method,
+			uri: config.webApiUrl + path,
+			data: stringifiedData,
+			additionalHeaders: additionalHeaders,
+			responseParams: responseParseParams,
+			successCallback: successCallback,
+			errorCallback: errorCallback,
+			isAsync: isAsync,
+			timeout: config.timeout
+		});
+	};
 
-    //call a token refresh callback only if it is set and there is no "Authorization" header set yet
-    if (config.onTokenRefresh && (!additionalHeaders || (additionalHeaders && !additionalHeaders['Authorization']))) {
-        config.onTokenRefresh(sendInternalRequest);
-    }
-    else {
-        sendInternalRequest();
-    }
+	//call a token refresh callback only if it is set and there is no "Authorization" header set yet
+	if (config.onTokenRefresh && (!additionalHeaders || (additionalHeaders && !additionalHeaders['Authorization']))) {
+		config.onTokenRefresh(sendInternalRequest);
+	}
+	else {
+		sendInternalRequest();
+	}
 }
 
 function _getEntityNames(entityName, config, successCallback, errorCallback) {
 
-    var xrmUtility = Utility.getXrmUtility();
+	//var xrmUtility = Utility.getXrmUtility();
 
-    //try using Xrm.Utility.getEntityMetadata first (because D365 caches metadata)
-    if (!Utility.isNull(xrmUtility) && typeof xrmUtility.getEntityMetadata === "function") {
-        xrmUtility.getEntityMetadata(entityName, []).then(function (response) {
-            if (!response)
-                successCallback(entityName);
-            else
-                successCallback(response.EntitySetName);
-        }, errorCallback);
-    }
-    else {
-        //make a web api call for Node.js apps
-        var resolve = function (result) {
-            _entityNames = {};
-            for (var i = 0; i < result.data.value.length; i++) {
-                _entityNames[result.data.value[i].LogicalName] = result.data.value[i].EntitySetName;
-            }
+	////try using Xrm.Utility.getEntityMetadata first (because D365 caches metadata)
+	//if (!Utility.isNull(xrmUtility) && typeof xrmUtility.getEntityMetadata === "function") {
+	//    xrmUtility.getEntityMetadata(entityName, []).then(function (response) {
+	//        if (!response)
+	//            successCallback(entityName);
+	//        else
+	//            successCallback(response.EntitySetName);
+	//    }, errorCallback);
+	//}
+	//else {
+	//make a web api call for Node.js apps
+	if (!Utility.isNull(_entityNames)) {
+		successCallback(findCollectionName(entityName) || entityName);
+	}
+	else {
+		var resolve = function (result) {
+			_entityNames = {};
+			for (var i = 0; i < result.data.value.length; i++) {
+				_entityNames[result.data.value[i].LogicalName] = result.data.value[i].EntitySetName;
+			}
 
-            successCallback(findCollectionName(entityName));
-        };
+			successCallback(findCollectionName(entityName) || entityName);
+		};
 
-        var reject = function (error) {
-            errorCallback({ message: 'Unable to fetch EntityDefinitions. Error: ' + error.message });
-        };
+		var reject = function (error) {
+			errorCallback({ message: 'Unable to fetch EntityDefinitions. Error: ' + error.message });
+		};
 
-        var request = RequestConverter.convertRequest({
-            collection: 'EntityDefinitions',
-            select: ['EntitySetName', 'LogicalName'],
-            noCache: true
-        }, 'retrieveMultiple', config);
+		var request = RequestConverter.convertRequest({
+			collection: 'EntityDefinitions',
+			select: ['EntitySetName', 'LogicalName'],
+			noCache: true
+		}, 'retrieveMultiple', config);
 
-        sendRequest('GET', request.url, config, null, request.headers, null, resolve, reject, false, request.async);
-    }
+		sendRequest('GET', request.url, config, null, request.headers, null, resolve, reject, false, request.async);
+	}
 }
 
 function _isEntityNameException(entityName) {
-    var exceptions = [
-        'EntityDefinitions', '$metadata', 'RelationshipDefinitions',
-        'GlobalOptionSetDefinitions', 'ManagedPropertyDefinitions'];
+	var exceptions = [
+		'EntityDefinitions', '$metadata', 'RelationshipDefinitions',
+		'GlobalOptionSetDefinitions', 'ManagedPropertyDefinitions'];
 
-    return exceptions.indexOf(entityName) > -1;
+	return exceptions.indexOf(entityName) > -1;
 }
 
 function _getCollectionName(entityName, config, successCallback, errorCallback) {
 
-    if (_isEntityNameException(entityName) || Utility.isNull(entityName)) {
-        successCallback(entityName);
-        return;
-    }
+	if (_isEntityNameException(entityName) || Utility.isNull(entityName)) {
+		successCallback(entityName);
+		return;
+	}
 
-    entityName = entityName.toLowerCase();
+	entityName = entityName.toLowerCase();
 
-    if (!config.useEntityNames) {
-        successCallback(entityName);
-        return;
-    }
+	if (!config.useEntityNames) {
+		successCallback(entityName);
+		return;
+	}
 
-    try {
-        var collectionName = findCollectionName(entityName);
+	try {
+		_getEntityNames(entityName, config, successCallback, errorCallback);
 
-        if (Utility.isNull(collectionName)) {
-            _getEntityNames(entityName, config, successCallback, errorCallback);
-        }
-        else {
-            successCallback(collectionName);
-        }
-    }
-    catch (error) {
-        errorCallback({ message: 'Unable to fetch Collection Names. Error: ' + error.message });
-    }
+
+		//var collectionName = findCollectionName(entityName);
+
+		//if (Utility.isNull(collectionName)) {
+		//	_getEntityNames(entityName, config, successCallback, errorCallback);
+		//}
+		//else {
+		//	successCallback(collectionName);
+		//}
+	}
+	catch (error) {
+		errorCallback({ message: 'Unable to fetch Collection Names. Error: ' + error.message });
+	}
 }
 
 function makeRequest(method, request, functionName, config, responseParams, resolve, reject) {
-    var successCallback = function (collectionName) {
-        request.collection = collectionName;
-        var result = RequestConverter.convertRequest(request, functionName, config);
-        sendRequest(method, result.url, config, request.data || request.entity, result.headers, responseParams, resolve, reject, request.isBatch, result.async);
-    };
-    _getCollectionName(request.collection, config, successCallback, reject);
+	var successCallback = function (collectionName) {
+		request.collection = collectionName;
+		var result = RequestConverter.convertRequest(request, functionName, config);
+		sendRequest(method, result.url, config, request.data || request.entity, result.headers, responseParams, resolve, reject, request.isBatch, result.async);
+	};
+
+	if (request.isBatch) {
+		//add response parameters to parse
+		responseParseParams.push(responseParams || {});
+
+		batchRequestCollection.push({ method: method, request: request });
+
+		//check for errors
+		RequestConverter.convertRequest(request, functionName, config);
+	}
+	else {
+		_getCollectionName(request.collection, config, successCallback, reject);
+	}
 }
 
 module.exports = {
-    sendRequest: sendRequest,
-    makeRequest: makeRequest,
-    getCollectionName: findCollectionName,
+	sendRequest: sendRequest,
+	makeRequest: makeRequest,
+	getCollectionName: findCollectionName,
 
 };
 
@@ -2635,104 +2741,9 @@ module.exports = xhrRequest;
 /* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Utility = __webpack_require__(2);
-
-/**
- * 
- * @param {Array} requests - array of requests
- * @returns {any} batch request
- */
-var convertToBatch = function (requests) {
-    var batchBoundary = 'dwa_batch_' + Utility.generateUUID();
-
-    var batchBody = [];
-    var currentChangeSet = null;
-    var contentId = 100000;
-
-    for (var i = 0; i < requests.length; i++) {
-        var request = requests[i];
-        var isGet = request.method === 'GET';
-
-        if (isGet && currentChangeSet) {
-            //end current change set
-            batchBody.push('\n--' + currentChangeSet + '--');
-
-            currentChangeSet = null;
-            contentId = 100000;
-        }
-
-        if (!currentChangeSet) {
-            batchBody.push('\n--' + batchBoundary);
-
-            if (!isGet) {
-                currentChangeSet = 'changeset_' + Utility.generateUUID();
-                batchBody.push('Content-Type: multipart/mixed;boundary=' + currentChangeSet);
-            }
-        }
-
-        if (!isGet) {
-            batchBody.push('\n--' + currentChangeSet);
-        }
-
-        batchBody.push('Content-Type: application/http');
-        batchBody.push('Content-Transfer-Encoding: binary');
-
-        if (!isGet) {
-            var contentIdValue = request.headers.hasOwnProperty('Content-ID')
-                ? request.headers['Content-ID']
-                : ++contentId;
-
-            batchBody.push('Content-ID: ' + contentIdValue);
-        }
-
-        if (!request.path.startsWith("$")) {
-            batchBody.push('\n' + request.method + ' ' + request.config.webApiUrl + request.path + ' HTTP/1.1');
-        }
-        else {
-            batchBody.push('\n' + request.method + ' ' + request.path + ' HTTP/1.1');
-        }
-
-        if (isGet) {
-            batchBody.push('Accept: application/json');
-        }
-        else {
-            batchBody.push('Content-Type: application/json');
-        }
-
-        for (var key in request.headers) {
-            if (key === 'Authorization' || key === 'Content-ID')
-                continue;
-
-            batchBody.push(key + ': ' + request.headers[key]);
-        }
-
-        if (!isGet && request.data && request.data.length) {
-            batchBody.push('\n' + request.data);
-        }
-    }
-
-    if (currentChangeSet) {
-        batchBody.push('\n--' + currentChangeSet + '--');
-    }
-
-    batchBody.push('\n--' + batchBoundary + '--');
-
-    return { boundary: batchBoundary, body: batchBody.join('\n') };
-};
-
-var BatchConverter = {
-    convertToBatch: convertToBatch
-};
-
-module.exports = BatchConverter;
-
-/***/ }),
-/* 12 */
-/***/ (function(module, exports, __webpack_require__) {
-
 var DWA = __webpack_require__(1);
 var ErrorHelper = __webpack_require__(0);
-var buildPreferHeader = __webpack_require__(14);
+var buildPreferHeader = __webpack_require__(13);
 
 /**
  * @typedef {Object} ConvertedRequestOptions
@@ -3022,7 +3033,7 @@ var RequestConverter = {
 module.exports = RequestConverter;
 
 /***/ }),
-/* 13 */
+/* 12 */
 /***/ (function(module, exports) {
 
 /**
@@ -3069,7 +3080,7 @@ module.exports = function buildFunctionParameters(parameters) {
 };
 
 /***/ }),
-/* 14 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var DWA = __webpack_require__(1);
@@ -3147,7 +3158,7 @@ module.exports = function buildPreferHeader(request, functionName, config) {
 }
 
 /***/ }),
-/* 15 */
+/* 14 */
 /***/ (function(module, exports) {
 
 /**
@@ -3169,7 +3180,7 @@ module.exports = function convertToReferenceObject(responseData) {
 };
 
 /***/ }),
-/* 16 */
+/* 15 */
 /***/ (function(module, exports) {
 
 /**
