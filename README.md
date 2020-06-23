@@ -1133,7 +1133,7 @@ Currently, there are some limitations in DynamicsWebApi Batch Operations:
 
 * Operations that use pagination to recursively retrieve all records cannot be used in a 'batch mode'. These include: `retrieveAll`, `retrieveAllRequest`, `countAll`, `fetchAll`, `executeFetchXmlAll`.
 You will get an error saying that the operation is incompatible with a 'batch mode'.
-* The following limitation is for external applications (working outside D365 CE forms). `useEntityNames` may not work in a 'batch mode' if it is set to `true`. 
+* **Does not apply to `v.1.6.5+`**: The following limitation is for external applications (working outside D365 CE forms). `useEntityNames` may not work in a 'batch mode' if it is set to `true`. 
 To make sure that it works, please execute any operation before calling `dynamicsWebApi.startBatch()` so that it caches all entity names, for example: `dynamicsWebApi.count('account')`.
 
 There are also out of the box Web API limitations for batch operations:
@@ -2017,7 +2017,7 @@ the config option "formatted" will enable developers to retrieve all information
 - [X] TypeScript declaration files `d.ts` `Added in v.1.5.3`.
 - [X] Implement `Content-ID` header to reference a request in a Change Set in a batch operation `Added in v.1.5.6`.
 - [X] Change Tracking `Added in v.1.5.11`.
-- [ ] Upload DynamicsWebApi declaration files to DefinitelyTyped repository.
+- [ ] Refactoring and conversion to TypeScript - coming with `v.2.0`! Stay tuned!
 
 Many more features to come!
 
