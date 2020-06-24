@@ -10,7 +10,7 @@ var { RequestUtility } = require("../lib/utilities/RequestUtility");
 var { ErrorHelper } = require('../lib/helpers/ErrorHelper');
 var mocks = require("./stubs");
 var { dateReviver } = require('../lib/requests/helpers/dateReviver');
-var Request = require('../lib/requests/sendRequest');
+var { RequestClient } = require('../lib/requests/RequestClient');
 var { parseResponse } = require('../lib/requests/helpers/parseResponse');
 
 describe("Utility.", function () {
@@ -1604,7 +1604,7 @@ describe("dateReviver", function () {
 //    });
 //});
 
-describe('Request.makeRequest', function () {
+describe('RequestClient.makeRequest', function () {
     describe('useEntityNames', function () {
         var scope;
         before(function () {
@@ -1620,7 +1620,7 @@ describe('Request.makeRequest', function () {
 
         after(function () {
             nock.cleanAll();
-            Request._clearEntityNames();
+            RequestClient._clearEntityNames();
         });
 
         it("returns a correct response", function (done) {
@@ -1633,7 +1633,7 @@ describe('Request.makeRequest', function () {
                 webApiUrl: mocks.webApiUrl,
                 useEntityNames: true
             };
-            Request.makeRequest('GET', request, 'any', config, null, function (object) {
+            RequestClient.makeRequest('GET', request, 'any', config, null, function (object) {
                 var expectedO = {
                     status: 200,
                     headers: {},
@@ -1668,7 +1668,7 @@ describe('Request.makeRequest', function () {
 
         after(function () {
             nock.cleanAll();
-            Request._clearEntityNames();
+            RequestClient._clearEntityNames();
         });
 
         it("returns a correct response", function (done) {
@@ -1686,7 +1686,7 @@ describe('Request.makeRequest', function () {
                 done();
             };
 
-            Request.makeRequest('GET', request, 'any', config, null, function (object) {
+            RequestClient.makeRequest('GET', request, 'any', config, null, function (object) {
                 var expectedO = {
                     status: 200,
                     headers: {},
@@ -1699,7 +1699,7 @@ describe('Request.makeRequest', function () {
                     key: mocks.data.testEntityId
                 };
 
-                Request.makeRequest('GET', request2, 'any', config, null, function (object1) {
+                RequestClient.makeRequest('GET', request2, 'any', config, null, function (object1) {
                     var expectedO1 = {
                         status: 200,
                         headers: {},
@@ -1731,7 +1731,7 @@ describe('Request.makeRequest', function () {
 
         after(function () {
             nock.cleanAll();
-            Request._clearEntityNames();
+            RequestClient._clearEntityNames();
         });
 
         it("returns a correct response", function (done) {
@@ -1743,7 +1743,7 @@ describe('Request.makeRequest', function () {
                 webApiUrl: mocks.webApiUrl,
                 useEntityNames: true
             };
-            Request.makeRequest('GET', request, 'any', config, null, function (object) {
+            RequestClient.makeRequest('GET', request, 'any', config, null, function (object) {
                 var expectedO = {
                     status: 200,
                     headers: {},
@@ -1760,116 +1760,113 @@ describe('Request.makeRequest', function () {
         it("all requests have been made", function () {
             expect(scope.isDone()).to.be.true;
         });
-    });
+	});
 
-    describe('useEntityNames - Xrm.Internal', function () {
-        var scope;
-        before(function () {
-            var response = mocks.responses.response200;
-            var response2 = mocks.responses.responseEntityDefinitions;
-            scope = nock(mocks.webApiUrl)
-                .get('/tests(' + mocks.data.testEntityId + ')')
-                .reply(response.status, response.responseText, response.responseHeaders);
-        });
+	describe('useEntityNames - $batch', function () {
+		var scope;
+		before(function () {
+			var response = mocks.responses.response200;
+			var response2 = mocks.responses.responseEntityDefinitions;
+			scope = nock(mocks.webApiUrl)
+				.get('/EntityDefinitions?$select=EntitySetName,LogicalName')
+				.once()
+				.reply(response2.status, response2.responseText, response2.responseHeaders)
+				.post('/$batch(' + mocks.data.testEntityId + ')')
+				.reply(response.status, response.responseText, response.responseHeaders);
+		});
 
-        after(function () {
-            nock.cleanAll();
-            Request._clearEntityNames();
-            global.Xrm.Internal = null;
-        });
+		after(function () {
+			nock.cleanAll();
+			RequestClient._clearEntityNames();
+		});
 
-        it("returns a correct response", function (done) {
-            global.Xrm.Internal = {
-                getEntitySetName: function (entityName) {
-                    return entityName + 's';
-                }
-            };
+		it("returns a correct response", function (done) {
+			//{ webApiUrl: mocks.webApiUrl }
+			var request = {
+				collection: '$batch',
+				key: mocks.data.testEntityId
+			};
+			var config = {
+				webApiUrl: mocks.webApiUrl,
+				useEntityNames: true
+			};
+			RequestClient.makeRequest('POST', request, 'any', config, null, function (object) {
+				var expectedO = {
+					status: 200,
+					headers: {},
+					data: mocks.data.testEntity
+				};
+				expect(object).to.deep.equal(expectedO);
+				done();
+			}, function (object) {
+				expect(object).to.be.undefined;
+				done();
+			});
+		});
 
-            var request = {
-                collection: 'test',
-                key: mocks.data.testEntityId
-            };
-            var config = {
-                webApiUrl: mocks.webApiUrl,
-                useEntityNames: true
-            };
-            Request.makeRequest('GET', request, 'any', config, null, function (object) {
-                var expectedO = {
-                    status: 200,
-                    headers: {},
-                    data: mocks.data.testEntity
-                };
-                expect(object).to.deep.equal(expectedO);
-                done();
-            }, function (object) {
-                expect(object).to.be.undefined;
-                done();
-            });
-        });
+		it("all requests have been made", function () {
+			expect(scope.isDone()).to.be.true;
+		});
+	});
 
-        it("all requests have been made", function () {
-            expect(scope.isDone()).to.be.true;
-        });
-    });
+	describe("when url is long, request is converted to batch", function () {
+		var scope;
+		var url = 'test';
+		while (url.length < 2001) {
+			url += 'test';
+		};
+		var rBody = mocks.data.batch.replace('{0}', mocks.webApiUrl + url);
+		var rBodys = rBody.split('\n');
+		var checkBody = '';
+		for (var i = 0; i < rBodys.length; i++) {
+			checkBody += rBodys[i];
+		}
+
+		before(function () {
+			var response = mocks.responses.batch;
+			scope = nock(mocks.webApiUrl + '$batch')
+				.filteringRequestBody(function (body) {
+					body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
+					var bodys = body.split('\n');
+
+					var resultBody = '';
+					for (var i = 0; i < bodys.length; i++) {
+						resultBody += bodys[i];
+					}
+					return resultBody;
+				})
+				.post("", checkBody)
+				.reply(response.status, response.responseText, response.responseHeaders);
+		});
+
+		after(function () {
+			nock.cleanAll();
+		});
+
+		it("returns a correct response", function (done) {
+			RequestClient.makeRequest("GET", { collection: url }, "test", { webApiUrl: mocks.webApiUrl }, null, function (object) {
+				var multiple = mocks.responses.multiple();
+				//delete multiple.oDataContext;
+				var expectedO = {
+					status: 200,
+					headers: {},
+					data: multiple
+				};
+				expect(object).to.deep.equal(expectedO);
+				done();
+			}, function (object) {
+				expect(object).to.be.undefined;
+				done();
+			});
+		});
+
+		it("all requests have been made", function () {
+			expect(scope.isDone()).to.be.true;
+		});
+	});
 });
 
-describe("Request.sendRequest", function () {
-    describe("when url is long, request is converted to batch", function () {
-        var scope;
-        var url = 'test';
-        while (url.length < 2001) {
-            url += 'test';
-        };
-        var rBody = mocks.data.batch.replace('{0}', mocks.webApiUrl + url);
-        var rBodys = rBody.split('\n');
-        var checkBody = '';
-        for (var i = 0; i < rBodys.length; i++) {
-            checkBody += rBodys[i];
-        }
-
-        before(function () {
-            var response = mocks.responses.batch;
-            scope = nock(mocks.webApiUrl + '$batch')
-                .filteringRequestBody(function (body) {
-                    body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
-                    var bodys = body.split('\n');
-
-                    var resultBody = '';
-                    for (var i = 0; i < bodys.length; i++) {
-                        resultBody += bodys[i];
-                    }
-                    return resultBody;
-                })
-                .post("", checkBody)
-                .reply(response.status, response.responseText, response.responseHeaders);
-        });
-
-        after(function () {
-            nock.cleanAll();
-        });
-
-        it("returns a correct response", function (done) {
-            Request.sendRequest('GET', url, { webApiUrl: mocks.webApiUrl }, null, null, null, function (object) {
-                var multiple = mocks.responses.multiple();
-                //delete multiple.oDataContext;
-                var expectedO = {
-                    status: 200,
-                    headers: {},
-                    data: multiple
-                };
-                expect(object).to.deep.equal(expectedO);
-                done();
-            }, function (object) {
-                expect(object).to.be.undefined;
-                done();
-            });
-        });
-
-        it("all requests have been made", function () {
-            expect(scope.isDone()).to.be.true;
-        });
-    });
-
+describe("RequestClient.sendRequest", function () {
     describe("removes additional properties set by DynamicsWebApi", function () {
         var scope;
         var url = 'test';
@@ -1885,7 +1882,7 @@ describe("Request.sendRequest", function () {
         });
 
         it("returns a correct response", function (done) {
-            Request.sendRequest('PATCH', url, { webApiUrl: mocks.webApiUrl }, mocks.data.testEntityAdditionalAttributes, null, null, function (object) {
+            RequestClient.sendRequest('PATCH', url, { webApiUrl: mocks.webApiUrl }, mocks.data.testEntityAdditionalAttributes, null, null, function (object) {
                 var expectedO = {
                     status: mocks.responses.basicEmptyResponseSuccess.status,
                     headers: {},
@@ -1918,7 +1915,7 @@ describe("Request.sendRequest", function () {
         });
 
         it("returns a correct response", function (done) {
-            Request.sendRequest('POST', url, { webApiUrl: mocks.webApiUrl }, mocks.data.testEntityAdditionalAttributes, null, null, function (object) {
+            RequestClient.sendRequest('POST', url, { webApiUrl: mocks.webApiUrl }, mocks.data.testEntityAdditionalAttributes, null, null, function (object) {
                 expect(object).to.be.undefined;
                 done(object);
             }, function (object) {
@@ -1948,7 +1945,7 @@ describe("Request.sendRequest", function () {
         });
 
         it("returns a correct response", function (done) {
-            Request.sendRequest('POST', url, { webApiUrl: mocks.webApiUrl, timeout: 500 }, mocks.data.testEntityAdditionalAttributes, null, null, function (object) {
+            RequestClient.sendRequest('POST', url, { webApiUrl: mocks.webApiUrl, timeout: 500 }, mocks.data.testEntityAdditionalAttributes, null, null, function (object) {
                 expect(object).to.be.undefined;
                 done(object);
             }, function (error) {
@@ -1979,7 +1976,7 @@ describe("Request.sendRequest", function () {
         });
 
         it("returns a correct response", function (done) {
-            Request.sendRequest('POST', url, { webApiUrl: mocks.webApiUrl, timeout: 500 }, mocks.data.testEntityAdditionalAttributes, null, null, function (object) {
+            RequestClient.sendRequest('POST', url, { webApiUrl: mocks.webApiUrl, timeout: 500 }, mocks.data.testEntityAdditionalAttributes, null, null, function (object) {
                 expect(object).to.be.undefined;
                 done(object);
             }, function (error) {

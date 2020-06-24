@@ -17,11 +17,23 @@
         async?: boolean,
         method?: string,
         data?: any
-    }
+	}
+
+	interface BatchRequestPart {
+		method?: string,
+		request?: DynamicsWebApi.InternalRequest,
+	}
+
+	interface InternalBatchRequest {
+		body?: any,
+		headers?: any
+	}
 
     interface InternalRequest {
         /**XHR requests only! Indicates whether the requests should be made synchronously or asynchronously.Default value is 'true'(asynchronously). */
-        async?: boolean;
+		async?: boolean;
+		/**Sets the $apply system query option to aggregate and group your data dynamically. */
+		apply?: string;
         /**The name of the Entity Collection or Entity Logical name. */
         collection?: string;
         /**Impersonates the user.A String representing the GUID value for the Dynamics 365 system user id. */
@@ -51,7 +63,7 @@
         /**Sets Prefer header request with value "return=representation".Use this property to return just created or updated entity in a single request. */
         returnRepresentation?: boolean;
         /**Prefer header values */
-        prefer: string | string[];
+        prefer?: string | string[];
         /**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
         select?: string[];
         /**BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */

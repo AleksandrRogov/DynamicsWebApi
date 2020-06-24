@@ -72,6 +72,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="lib\requests\http.js" />
+    <Compile Include="lib\requests\RequestClient.js" />
     <Compile Include="lib\requests\xhr.js" />
     <Compile Include="lib\requests\sendRequest.js">
       <SubType>Code</SubType>
@@ -144,6 +145,7 @@
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="ts\requests\http.ts" />
+    <TypeScriptCompile Include="ts\requests\RequestClient.ts" />
     <TypeScriptCompile Include="ts\requests\xhr.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>

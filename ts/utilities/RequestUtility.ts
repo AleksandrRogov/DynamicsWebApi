@@ -170,7 +170,12 @@ export class RequestUtility {
 
             if (request.userQuery) {
                 queryArray.push("userQuery=" + ErrorHelper.guidParameterCheck(request.userQuery, `DynamicsWebApi.${functionName}`, "request.userQuery"));
-            }
+			}
+
+			if (request.apply) {
+				ErrorHelper.stringParameterCheck(request.apply, `DynamicsWebApi.${functionName}`, "request.apply");
+				queryArray.push("$apply=" + request.apply);
+			}
 
             if (request.count) {
                 ErrorHelper.boolParameterCheck(request.count, `DynamicsWebApi.${functionName}`, "request.count");
@@ -285,7 +290,7 @@ export class RequestUtility {
         return headers;
     }
 
-    static composePreferHeader(request: DynamicsWebApi.InternalRequest, functionName: string, config: DynamicsWebApi.Config) {
+    static composePreferHeader(request: DynamicsWebApi.InternalRequest, functionName: string, config: DynamicsWebApi.Config): any {
         var returnRepresentation = request.returnRepresentation;
         var includeAnnotations = request.includeAnnotations;
         var maxPageSize = request.maxPageSize;
@@ -349,15 +354,18 @@ export class RequestUtility {
         return prefer.join(",");
     }
 
-    static convertToBatch (requests: DynamicsWebApi.ConvertedRequest[], config: DynamicsWebApi.Config) {
+	static convertToBatch(requests: DynamicsWebApi.BatchRequestPart[], config: DynamicsWebApi.Config): DynamicsWebApi.InternalBatchRequest {
         var batchBoundary = `dwa_batch_${Utility.generateUUID()}`;
 
         var batchBody = [];
         var currentChangeSet = null;
         var contentId = 100000;
 
-        requests.forEach((request) => {
-            var isGet = request.method === "GET";
+		requests.forEach((internalBatchRequest) => {
+			const internalRequest = internalBatchRequest.request;
+			const isGet = internalBatchRequest.method === "GET";
+
+			var request = RequestUtility.compose(internalRequest, config, "executeBatch");
 
             if (isGet && currentChangeSet) {
                 //end current change set
@@ -392,10 +400,10 @@ export class RequestUtility {
             }
 
             if (!request.path.startsWith("$")) {
-                batchBody.push(`\n${request.method} ${config.webApiUrl}${request.path} HTTP/1.1`);
+				batchBody.push(`\n${internalBatchRequest.method} ${config.webApiUrl}${request.path} HTTP/1.1`);
             }
             else {
-                batchBody.push(`\n${request.method} ${request.path} HTTP/1.1`);
+				batchBody.push(`\n${internalBatchRequest.method} ${request.path} HTTP/1.1`);
             }
 
             if (isGet) {
@@ -410,10 +418,12 @@ export class RequestUtility {
                     continue;
 
                 batchBody.push(`${key}: ${request.headers[key]}`);
-            }
+			}
 
-            if (!isGet && request.data && request.data.length) {
-                batchBody.push(`\n${request.data}`);
+			const data = internalRequest.data || internalRequest.entity;
+
+			if (!isGet && data) {
+                batchBody.push(`\n${RequestUtility.stringifyData(data, config)}`);
             }
         });
 
@@ -427,9 +437,85 @@ export class RequestUtility {
         headers["Content-Type"] = `multipart/mixed;boundary=${batchBoundary}`;
 
         return { headers: headers, body: batchBody.join("\n") };
-    }
+	}
 
-    static setStandardHeaders(headers?) {
+	static entityNames: any = null
+
+	static findCollectionName(entityName: string): string {
+		var collectionName = null;
+
+		if (!Utility.isNull(RequestUtility.entityNames)) {
+			collectionName = RequestUtility.entityNames[entityName];
+			if (Utility.isNull(collectionName)) {
+				for (var key in RequestUtility.entityNames) {
+					if (RequestUtility.entityNames[key] === entityName) {
+						return entityName;
+					}
+				}
+			}
+		}
+
+		return collectionName;
+	}
+
+	static stringifyData (data: any, config: DynamicsWebApi.Config): string {
+		var stringifiedData;
+		if (data) {
+			stringifiedData = JSON.stringify(data, function (key, value) {
+				/// <param name="key" type="String">Description</param>
+				if (key.endsWith('@odata.bind') || key.endsWith('@odata.id')) {
+					if (typeof value === 'string' && !value.startsWith('$')) {
+						//remove brackets in guid
+						if (/\(\{[\w\d-]+\}\)/g.test(value)) {
+							value = value.replace(/(.+)\(\{([\w\d-]+)\}\)/g, '$1($2)');
+						}
+
+						if (config.useEntityNames) {
+							//replace entity name with collection name
+							var regularExpression = /([\w_]+)(\([\d\w-]+\))$/;
+							var valueParts = regularExpression.exec(value);
+							if (valueParts.length > 2) {
+								var collectionName = RequestUtility.findCollectionName(valueParts[1]);
+
+								if (!Utility.isNull(collectionName)) {
+									value = value.replace(regularExpression, collectionName + '$2');
+								}
+							}
+						}
+
+						if (!value.startsWith(config.webApiUrl)) {
+							//add full web api url if it's not set
+							if (key.endsWith('@odata.bind')) {
+								if (!value.startsWith('/')) {
+									value = '/' + value;
+								}
+							}
+							else {
+								value = config.webApiUrl + value.replace(/^\//, '');
+							}
+						}
+					}
+				}
+				else
+					if (key.startsWith('oData') ||
+						key.endsWith('_Formatted') ||
+						key.endsWith('_NavigationProperty') ||
+						key.endsWith('_LogicalName')) {
+						value = undefined;
+					}
+
+				return value;
+			});
+
+			stringifiedData = stringifiedData.replace(/[\u007F-\uFFFF]/g, function (chr) {
+				return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substr(-4);
+			});
+		}
+
+		return stringifiedData;
+	}
+
+    static setStandardHeaders(headers?: any): any {
         headers = headers || {};
         headers["Accept"] = "application/json";
         headers["OData-MaxVersion"] = "4.0";
