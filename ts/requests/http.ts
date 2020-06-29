@@ -10,7 +10,7 @@ import { parseResponse } from "./helpers/parseResponse";
  * Sends a request to given URL with given parameters
  *
  */
-function httpRequest(options: DynamicsWebApi.RequestOptions) {
+function httpRequest(options: DynamicsWebApi.Core.RequestOptions) {
     var method = options.method;
     var uri = options.uri;
     var data = options.data;

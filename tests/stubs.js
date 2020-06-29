@@ -21,7 +21,14 @@ var dataStubs = {
     testEntity: {
         name: "record",
         subject: "test"
-    },
+	},
+	testEntityWithExpand: {
+		name: "record",
+		subject: "test",
+		dwa_NavProperty: {
+			key: "key"
+		}
+	},
     testEntityDefinition: {
         name: "record",
         subject: "test",
@@ -39,7 +46,19 @@ var dataStubs = {
         key_Formatted: 'test',
         key_NavigationProperty: 'test',
         key_LogicalName: 'test'
-    },
+	},
+	testEntityAdditionalAttributesWithExpand: {
+		name: "record",
+		subject: "test",
+		oDataTest: 'test',
+		dwa_NavProperty: {
+			key: "key",
+			key_Formatted: "key"
+		},
+		key_Formatted: 'test',
+		key_NavigationProperty: 'test',
+		key_LogicalName: 'test'
+	},
     testEntityFormatted: {
         name: "record",
         subject: "test",
@@ -48,7 +67,20 @@ var dataStubs = {
         "option@OData.Community.Display.V1.FormattedValue": "formatted",
         "option@Microsoft.Dynamics.CRM.associatednavigationproperty": "formatted",
         "option@Microsoft.Dynamics.CRM.lookuplogicalname": "formatted"
-    },
+	},
+	testEntityFormattedWithExpand: {
+		name: "record",
+		subject: "test",
+		option: "value",
+		dwa_NavigationProperty: {
+			optionProp: "value",
+			"optionProp@OData.Community.Display.V1.FormattedValue": "formatted"
+		},
+		"@odata.context": "context",
+		"option@OData.Community.Display.V1.FormattedValue": "formatted",
+		"option@Microsoft.Dynamics.CRM.associatednavigationproperty": "formatted",
+		"option@Microsoft.Dynamics.CRM.lookuplogicalname": "formatted"
+	},
     testEntityFormattedAliased: {
         name: "record",
         subject: "test",
@@ -564,7 +596,11 @@ var responseStubs = {
     responseFormatted200: {
         status: 200,
         responseText: JSON.stringify(dataStubs.testEntityFormatted)
-    },
+	},
+	responseFormattedWithExpand200: {
+		status: 200,
+		responseText: JSON.stringify(dataStubs.testEntityFormattedWithExpand)
+	},
     responseFormattedAliased200: {
         status: 200,
         responseText: JSON.stringify(dataStubs.testEntityFormattedAliased)
@@ -969,7 +1005,16 @@ var responseStubs = {
         stub.option_NavigationProperty = stub["option@Microsoft.Dynamics.CRM.associatednavigationproperty"];
         stub.option_LogicalName = stub["option@Microsoft.Dynamics.CRM.lookuplogicalname"];
         return stub;
-    },
+	},
+	responseFormattedEntityWithExpand: function () {
+		var stub = dataStubs.testEntityFormattedWithExpand;
+		stub.oDataContext = stub["@odata.context"];
+		stub.dwa_NavigationProperty.optionProp_Formatted = stub.dwa_NavigationProperty["optionProp@OData.Community.Display.V1.FormattedValue"];
+		stub.option_Formatted = stub["option@OData.Community.Display.V1.FormattedValue"];
+		stub.option_NavigationProperty = stub["option@Microsoft.Dynamics.CRM.associatednavigationproperty"];
+		stub.option_LogicalName = stub["option@Microsoft.Dynamics.CRM.lookuplogicalname"];
+		return stub;
+	},
     responseFormattedAliasedEntity: function () {
         var stub = dataStubs.testEntityFormattedAliased;
         stub.oDataContext = stub["@odata.context"];

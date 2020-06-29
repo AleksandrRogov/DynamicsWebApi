@@ -21,7 +21,7 @@ export class RequestClient {
 	 * @param {boolean} [isBatch] - Indicates whether the request is a Batch request or not. Default: false
 	 * @param {boolean} [isAsync] - Indicates whether the request should be made synchronously or asynchronously.
 	 */
-	static sendRequest(method, path, config, data, additionalHeaders, responseParams, successCallback, errorCallback, isBatch, isAsync) {
+	static sendRequest(method: string, path: string, config: DynamicsWebApi.Config, data, additionalHeaders, responseParams, isAsync: boolean, successCallback: Function, errorCallback: Function): void {
 
 		additionalHeaders = additionalHeaders || {};
 		responseParams = responseParams || {};
@@ -65,15 +65,12 @@ export class RequestClient {
 		}
 		/* develblock:end */
 
-		var sendInternalRequest = function (token?: any) {
+		var sendInternalRequest = function (token?: any): void {
 			if (token) {
 				if (!additionalHeaders) {
 					additionalHeaders = {};
 				}
-				additionalHeaders["Authorization"] = "Bearer " +
-					(token.hasOwnProperty("accessToken") ?
-						token.accessToken :
-						token);
+				additionalHeaders["Authorization"] = "Bearer " + (token.hasOwnProperty("accessToken") ? token.accessToken : token);
 			}
 
 			executeRequest({
@@ -98,7 +95,7 @@ export class RequestClient {
 		}
 	}
 
-	private static _getCollectionNames(entityName, config, successCallback, errorCallback) {
+	private static _getCollectionNames(entityName: string, config: DynamicsWebApi.Config, successCallback: Function, errorCallback: Function): void {
 
 		if (!Utility.isNull(RequestUtility.entityNames)) {
 			successCallback(RequestUtility.findCollectionName(entityName) || entityName);
@@ -123,11 +120,11 @@ export class RequestClient {
 				noCache: true
 			}, config, 'retrieveMultiple');
 
-			RequestClient.sendRequest('GET', request.path, config, null, request.headers, null, resolve, reject, false, request.async);
+			RequestClient.sendRequest('GET', request.path, config, null, request.headers, null, request.async, resolve, reject);
 		}
 	}
 
-	private static _isEntityNameException(entityName) {
+	private static _isEntityNameException(entityName: string): boolean {
 		var exceptions = [
 			"EntityDefinitions", "$metadata", "RelationshipDefinitions",
 			"GlobalOptionSetDefinitions", "ManagedPropertyDefinitions"];
@@ -135,7 +132,7 @@ export class RequestClient {
 		return exceptions.indexOf(entityName) > -1;
 	}
 
-	private static _checkCollectionName(entityName, config, successCallback, errorCallback) {
+	private static _checkCollectionName(entityName: string, config: DynamicsWebApi.Config, successCallback: Function, errorCallback: Function): void {
 
 		if (RequestClient._isEntityNameException(entityName) || Utility.isNull(entityName)) {
 			successCallback(entityName);
@@ -157,7 +154,7 @@ export class RequestClient {
 		}
 	}
 
-	static makeRequest(method: string, request: DynamicsWebApi.InternalRequest, functionName: string, config: DynamicsWebApi.Config, responseParams: any, resolve: Function, reject: Function): void {
+	static makeRequest(method: string, request: DynamicsWebApi.Core.InternalRequest, functionName: string, config: DynamicsWebApi.Config, responseParams: any, resolve: Function, reject: Function): void {
 		responseParams = responseParams || {};
 
 		//no need to make a request to web api if it's a part of batch
@@ -173,20 +170,20 @@ export class RequestClient {
 		else {
 			RequestClient._checkCollectionName(request.collection, config, function (collectionName) {
 				request.collection = collectionName;
-				var result = RequestUtility.compose(request, config, functionName);
+				var convertedRequest = RequestUtility.compose(request, config, functionName);
 
 				responseParams.convertedToBatch = false;
 
-				if (result.path.length > 2000) {
+				if (convertedRequest.path.length > 2000) {
 					//if the URL contains more characters than max possible limit, convert the request to a batch request
 					RequestClient._batchRequestCollection.push({ method: method, request: request });
 
 					method = "POST";
-					result.path = "$batch";
+					convertedRequest.path = "$batch";
 					responseParams.convertedToBatch = true;
 				}
 
-				RequestClient.sendRequest(method, result.path, config, request.data || request.entity, result.headers, responseParams, resolve, reject, request.isBatch, result.async);
+				RequestClient.sendRequest(method, convertedRequest.path, config, request.data || request.entity, convertedRequest.headers, responseParams, request.async, resolve, reject);
 			}, reject);
 		}
 	}

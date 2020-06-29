@@ -207,31 +207,6 @@ describe("Utility.", function () {
             expect(result).to.be.eq("http://testorg.crm.dynamics.com");
         });
     });
-
-    describe("getXrmInternal", function () {
-        before(function () {
-            global.Xrm.Internal = "internal";
-        });
-
-        after(function () {
-            global.Xrm.Internal = undefined;
-
-        });
-
-        it("returns a correct string", function () {
-            var result = Utility.getXrmInternal();
-
-            expect(result).to.be.eq("internal");
-        });
-    });
-
-    describe("getXrmInternal - returns null if does not exist", function () {
-        it("returns a correct string", function () {
-            var result = Utility.getXrmInternal();
-
-            expect(result).to.be.undefined;
-        });
-    });
 });
 
 describe("RequestUtility.composeUrl -", function () {
@@ -1873,7 +1848,7 @@ describe("RequestClient.sendRequest", function () {
         before(function () {
             var response = mocks.responses.basicEmptyResponseSuccess;
             scope = nock(mocks.webApiUrl + 'test')
-                .patch("", mocks.data.testEntity)
+                .patch("", mocks.data.testEntityWithExpand)
                 .reply(response.status, response.responseText, response.responseHeaders);
         });
 
@@ -1882,7 +1857,7 @@ describe("RequestClient.sendRequest", function () {
         });
 
         it("returns a correct response", function (done) {
-            RequestClient.sendRequest('PATCH', url, { webApiUrl: mocks.webApiUrl }, mocks.data.testEntityAdditionalAttributes, null, null, function (object) {
+            RequestClient.sendRequest('PATCH', url, { webApiUrl: mocks.webApiUrl }, mocks.data.testEntityAdditionalAttributesWithExpand, null, null, true, function (object) {
                 var expectedO = {
                     status: mocks.responses.basicEmptyResponseSuccess.status,
                     headers: {},
@@ -1915,7 +1890,7 @@ describe("RequestClient.sendRequest", function () {
         });
 
         it("returns a correct response", function (done) {
-            RequestClient.sendRequest('POST', url, { webApiUrl: mocks.webApiUrl }, mocks.data.testEntityAdditionalAttributes, null, null, function (object) {
+            RequestClient.sendRequest('POST', url, { webApiUrl: mocks.webApiUrl }, mocks.data.testEntityAdditionalAttributes, null, null, true, function (object) {
                 expect(object).to.be.undefined;
                 done(object);
             }, function (object) {
@@ -1945,7 +1920,7 @@ describe("RequestClient.sendRequest", function () {
         });
 
         it("returns a correct response", function (done) {
-            RequestClient.sendRequest('POST', url, { webApiUrl: mocks.webApiUrl, timeout: 500 }, mocks.data.testEntityAdditionalAttributes, null, null, function (object) {
+            RequestClient.sendRequest('POST', url, { webApiUrl: mocks.webApiUrl, timeout: 500 }, mocks.data.testEntityAdditionalAttributes, null, null,true, function (object) {
                 expect(object).to.be.undefined;
                 done(object);
             }, function (error) {
@@ -1976,7 +1951,7 @@ describe("RequestClient.sendRequest", function () {
         });
 
         it("returns a correct response", function (done) {
-            RequestClient.sendRequest('POST', url, { webApiUrl: mocks.webApiUrl, timeout: 500 }, mocks.data.testEntityAdditionalAttributes, null, null, function (object) {
+            RequestClient.sendRequest('POST', url, { webApiUrl: mocks.webApiUrl, timeout: 500 }, mocks.data.testEntityAdditionalAttributes, null, null, true, function (object) {
                 expect(object).to.be.undefined;
                 done(object);
             }, function (error) {
@@ -1996,7 +1971,12 @@ describe("parseResponse", function () {
     it("parses formatted values", function () {
         var response = parseResponse(mocks.responses.responseFormatted200.responseText, [], [{}]);
         expect(response).to.be.deep.equal(mocks.responses.responseFormattedEntity());
-    });
+	});
+
+	it("parses formatted values with expand formatted values", function () {
+		var response = parseResponse(mocks.responses.responseFormattedWithExpand200.responseText, [], [{}]);
+		expect(response).to.be.deep.equal(mocks.responses.responseFormattedEntityWithExpand());
+	});
 
     it("parses formatted values - array", function () {
         var response = parseResponse(mocks.responses.multipleFormattedResponse.responseText, [], [{}]);

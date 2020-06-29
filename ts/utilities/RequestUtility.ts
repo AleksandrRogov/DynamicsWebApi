@@ -25,8 +25,8 @@ export class RequestUtility {
      * @param {Object} [config] - DynamicsWebApi config
      * @returns {ConvertedRequest} Converted request
      */
-    static compose(request: DynamicsWebApi.InternalRequest, config: DynamicsWebApi.Config, functionName: string): DynamicsWebApi.ConvertedRequest {
-        var path = "";
+	static compose(request: DynamicsWebApi.Core.InternalRequest, config: DynamicsWebApi.Config, functionName: string): DynamicsWebApi.Core.ConvertedRequest {
+        let path = "";
         if (!request.url) {
             if (!request._isUnboundRequest && !request.collection) {
                 ErrorHelper.parameterCheck(request.collection, `DynamicsWebApi.${functionName}`, "request.collection");
@@ -83,7 +83,7 @@ export class RequestUtility {
             async = request.async;
         }
 
-        var headers = RequestUtility.composeHeaders(request, functionName, config);
+        let headers = RequestUtility.composeHeaders(request, functionName, config);
 
         return { path: path, headers: headers, async: async };
     }
@@ -98,8 +98,8 @@ export class RequestUtility {
      * @param {Object} [config] - DynamicsWebApi config
      * @returns {ConvertedRequestOptions} Additional options in request
      */
-    static composeUrl(request: DynamicsWebApi.InternalRequest, functionName: string, config: DynamicsWebApi.Config, joinSymbol?: string, url?: string): string {
-        var queryArray = [];
+	static composeUrl(request: DynamicsWebApi.Core.InternalRequest, functionName: string, config: DynamicsWebApi.Config, joinSymbol?: string, url?: string): string {
+        let queryArray = [];
 
         joinSymbol = joinSymbol || "&";
         url = url || "";
@@ -110,7 +110,7 @@ export class RequestUtility {
                 url += "/" + request.navigationProperty;
 
                 if (request.navigationPropertyKey) {
-                    var navigationKey = ErrorHelper.keyParameterCheck(request.navigationPropertyKey, `DynamicsWebApi.${functionName}`, "request.navigationPropertyKey");
+                    let navigationKey = ErrorHelper.keyParameterCheck(request.navigationPropertyKey, `DynamicsWebApi.${functionName}`, "request.navigationPropertyKey");
                     url += "(" + navigationKey + ")";
                 }
 
@@ -147,17 +147,17 @@ export class RequestUtility {
 
             if (request.filter) {
                 ErrorHelper.stringParameterCheck(request.filter, `DynamicsWebApi.${functionName}`, "request.filter");
-                var removeBracketsFromGuidReg = /[^"']{([\w\d]{8}[-]?(?:[\w\d]{4}[-]?){3}[\w\d]{12})}(?:[^"']|$)/g;
-                var filterResult = request.filter;
+                let removeBracketsFromGuidReg = /[^"']{([\w\d]{8}[-]?(?:[\w\d]{4}[-]?){3}[\w\d]{12})}(?:[^"']|$)/g;
+                let filterResult = request.filter;
 
                 //fix bug 2018-06-11
-                var m: RegExpExecArray = null;
+                let m: RegExpExecArray = null;
                 while ((m = removeBracketsFromGuidReg.exec(filterResult)) !== null) {
                     if (m.index === removeBracketsFromGuidReg.lastIndex) {
                         removeBracketsFromGuidReg.lastIndex++;
                     }
 
-                    var replacement = m[0].endsWith(")") ? ")" : " ";
+                    let replacement = m[0].endsWith(")") ? ")" : " ";
                     filterResult = filterResult.replace(m[0], " " + m[1] + replacement);
                 }
 
@@ -210,10 +210,10 @@ export class RequestUtility {
                     queryArray.push("$expand=" + request.expand);
                 }
                 else {
-                    var expandQueryArray = [];
-                    for (var i = 0; i < request.expand.length; i++) {
+                    let expandQueryArray = [];
+                    for (let i = 0; i < request.expand.length; i++) {
                         if (request.expand[i].property) {
-                            var expandConverted = RequestUtility.composeUrl(<DynamicsWebApi.InternalRequest>request.expand[i], `${functionName} $expand`, config, ";");
+							let expandConverted = RequestUtility.composeUrl(<DynamicsWebApi.Core.InternalRequest>request.expand[i], `${functionName} $expand`, config, ";");
                             if (expandConverted) {
                                 expandConverted = `(${expandConverted.substr(1)})`;
                             }
@@ -232,10 +232,10 @@ export class RequestUtility {
             : url + "?" + queryArray.join(joinSymbol);
     }
 
-    static composeHeaders(request: DynamicsWebApi.InternalRequest, functionName: string, config: DynamicsWebApi.Config): any {
-        var headers: any = {};
+	static composeHeaders(request: DynamicsWebApi.Core.InternalRequest, functionName: string, config: DynamicsWebApi.Config): any {
+        let headers: any = {};
 
-        var prefer = RequestUtility.composePreferHeader(request, functionName, config);
+        let prefer = RequestUtility.composePreferHeader(request, functionName, config);
 
         if (prefer.length) {
             headers["Prefer"] = prefer;
@@ -290,11 +290,11 @@ export class RequestUtility {
         return headers;
     }
 
-    static composePreferHeader(request: DynamicsWebApi.InternalRequest, functionName: string, config: DynamicsWebApi.Config): any {
-        var returnRepresentation = request.returnRepresentation;
-        var includeAnnotations = request.includeAnnotations;
-        var maxPageSize = request.maxPageSize;
-        var trackChanges = request.trackChanges;
+	static composePreferHeader(request: DynamicsWebApi.Core.InternalRequest, functionName: string, config: DynamicsWebApi.Config): any {
+        let returnRepresentation = request.returnRepresentation;
+        let includeAnnotations = request.includeAnnotations;
+        let maxPageSize = request.maxPageSize;
+        let trackChanges = request.trackChanges;
 
         let prefer: string[];
 
@@ -303,8 +303,8 @@ export class RequestUtility {
             if (typeof request.prefer === "string") {
                 prefer = request.prefer.split(",");
             }
-            for (var i in prefer) {
-                var item = prefer[i].trim();
+            for (let i in prefer) {
+                let item = prefer[i].trim();
                 if (item === "return=representation") {
                     returnRepresentation = true;
                 }
@@ -354,18 +354,18 @@ export class RequestUtility {
         return prefer.join(",");
     }
 
-	static convertToBatch(requests: DynamicsWebApi.BatchRequestPart[], config: DynamicsWebApi.Config): DynamicsWebApi.InternalBatchRequest {
-        var batchBoundary = `dwa_batch_${Utility.generateUUID()}`;
+	static convertToBatch(requests: DynamicsWebApi.Core.BatchRequestPart[], config: DynamicsWebApi.Config): DynamicsWebApi.Core.InternalBatchRequest {
+        let batchBoundary = `dwa_batch_${Utility.generateUUID()}`;
 
-        var batchBody = [];
-        var currentChangeSet = null;
-        var contentId = 100000;
+        let batchBody = [];
+        let currentChangeSet = null;
+        let contentId = 100000;
 
 		requests.forEach((internalBatchRequest) => {
 			const internalRequest = internalBatchRequest.request;
 			const isGet = internalBatchRequest.method === "GET";
 
-			var request = RequestUtility.compose(internalRequest, config, "executeBatch");
+			let request = RequestUtility.compose(internalRequest, config, "executeBatch");
 
             if (isGet && currentChangeSet) {
                 //end current change set
@@ -392,7 +392,7 @@ export class RequestUtility {
             batchBody.push("Content-Transfer-Encoding: binary");
 
             if (!isGet) {
-                var contentIdValue = request.headers.hasOwnProperty("Content-ID")
+                let contentIdValue = request.headers.hasOwnProperty("Content-ID")
                     ? request.headers["Content-ID"]
                     : ++contentId;
 
@@ -413,7 +413,7 @@ export class RequestUtility {
                 batchBody.push("Content-Type: application/json");
             }
 
-            for (var key in request.headers) {
+            for (let key in request.headers) {
                 if (key === "Authorization" || key === "Content-ID")
                     continue;
 
@@ -442,12 +442,12 @@ export class RequestUtility {
 	static entityNames: any = null
 
 	static findCollectionName(entityName: string): string {
-		var collectionName = null;
+		let collectionName = null;
 
 		if (!Utility.isNull(RequestUtility.entityNames)) {
 			collectionName = RequestUtility.entityNames[entityName];
 			if (Utility.isNull(collectionName)) {
-				for (var key in RequestUtility.entityNames) {
+				for (let key in RequestUtility.entityNames) {
 					if (RequestUtility.entityNames[key] === entityName) {
 						return entityName;
 					}
@@ -459,7 +459,7 @@ export class RequestUtility {
 	}
 
 	static stringifyData (data: any, config: DynamicsWebApi.Config): string {
-		var stringifiedData;
+		let stringifiedData;
 		if (data) {
 			stringifiedData = JSON.stringify(data, function (key, value) {
 				/// <param name="key" type="String">Description</param>
@@ -472,10 +472,10 @@ export class RequestUtility {
 
 						if (config.useEntityNames) {
 							//replace entity name with collection name
-							var regularExpression = /([\w_]+)(\([\d\w-]+\))$/;
-							var valueParts = regularExpression.exec(value);
+							let regularExpression = /([\w_]+)(\([\d\w-]+\))$/;
+							let valueParts = regularExpression.exec(value);
 							if (valueParts.length > 2) {
-								var collectionName = RequestUtility.findCollectionName(valueParts[1]);
+								let collectionName = RequestUtility.findCollectionName(valueParts[1]);
 
 								if (!Utility.isNull(collectionName)) {
 									value = value.replace(regularExpression, collectionName + '$2');

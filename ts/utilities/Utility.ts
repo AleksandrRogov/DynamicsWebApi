@@ -1,17 +1,7 @@
-﻿declare let GetGlobalContext: any;
+﻿import { DynamicsWebApi } from "../../types/dynamics-web-api-types";
+
+declare let GetGlobalContext: any;
 declare let Xrm: any;
-
-export interface FetchXmlCookie {
-    cookie: string,
-    page: number,
-    nextPage: number
-}
-
-export interface ReferenceObject {
-    id: string,
-    collection: string,
-    oDataContext: string
-}
 
 export class Utility {
     /**
@@ -20,7 +10,7 @@ export class Utility {
      * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
      * @returns {string}
      */
-    static buildFunctionParameters(parameters): string {
+    static buildFunctionParameters(parameters?): string {
         if (parameters) {
             var parameterNames = Object.keys(parameters);
             var functionParameters = "";
@@ -64,7 +54,7 @@ export class Utility {
      * @param {number} currentPageNumber - A current page number. Fix empty paging-cookie for complex fetch xmls.
      * @returns {{cookie: "", number: 0, next: 1}}
      */
-    static getFetchXmlPagingCookie(pageCookies: string = "", currentPageNumber: number = 1): FetchXmlCookie {
+	static getFetchXmlPagingCookie(pageCookies: string = "", currentPageNumber: number = 1): DynamicsWebApi.Core.FetchXmlCookie {
         //get the page cokies
         pageCookies = unescape(unescape(pageCookies));
 
@@ -93,7 +83,7 @@ export class Utility {
      * @param {Object} responseData - Response object
      * @returns {ReferenceObject}
      */
-    static convertToReferenceObject(responseData): ReferenceObject {
+    static convertToReferenceObject(responseData): DynamicsWebApi.Core.ReferenceObject {
         var result = /\/(\w+)\(([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})/i.exec(responseData["@odata.id"]);
         return { id: result[2], collection: result[1], oDataContext: responseData["@odata.context"] };
     }
@@ -138,16 +128,11 @@ export class Utility {
         throw new Error('Xrm Context is not available. In most cases, it can be resolved by adding a reference to a ClientGlobalContext.js.aspx. Please refer to MSDN documentation for more details.');
     }
 
-    static getXrmInternal() {
-        //todo: Xrm.Internal namespace is not supported
-        return typeof Xrm !== "undefined" ? Xrm.Internal : null;
-    }
-
     static getXrmUtility() {
         return typeof Xrm !== "undefined" ? Xrm.Utility : null;
     }
 
-    static getClientUrl() {
+    static getClientUrl(): string {
         var context = Utility.getXrmContext();
 
         var clientUrl = context.getClientUrl();
@@ -158,7 +143,7 @@ export class Utility {
         return clientUrl;
     }
 
-    static initWebApiUrl(version): string {
+    static initWebApiUrl(version: string): string {
         return `${Utility.getClientUrl()}/api/data/v${version}/`;
     }
 }

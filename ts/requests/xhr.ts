@@ -11,7 +11,7 @@ import { parseResponseHeaders } from "./helpers/parseResponseHeaders";
  * Sends a request to given URL with given parameters
  *
  */
-function xhrRequest (options: DynamicsWebApi.RequestOptions) {
+function xhrRequest (options: DynamicsWebApi.Core.RequestOptions) {
     const method = options.method;
     const uri = options.uri;
     const data = options.data;
