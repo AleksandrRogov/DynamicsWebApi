@@ -2065,6 +2065,11 @@ describe("parseResponse", function () {
 		expect(response).to.be.deep.equal(mocks.responses.responseFormattedEntity());
 	});
 
+	it("parses formatted values - expand formatted values", function () {
+		var response = parseResponse(mocks.responses.responseFormattedWithExpand200.responseText, [], [{}]);
+		expect(response).to.be.deep.equal(mocks.responses.responseFormattedEntityWithExpand());
+	});
+
 	it("parses formatted values - array", function () {
 		var response = parseResponse(mocks.responses.multipleFormattedResponse.responseText, [], [{}]);
 		expect(response).to.be.deep.equal(mocks.responses.multipleFormatted());
