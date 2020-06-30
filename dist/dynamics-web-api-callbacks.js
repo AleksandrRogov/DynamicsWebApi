@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.6.5 (c) 2020 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.6.6 (c) 2020 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -2867,11 +2867,16 @@ function parseData(object, parseParams) {
     for (var i = 0; i < keys.length; i++) {
         var currentKey = keys[i];
 
-        if (object[currentKey] != null && object[currentKey].constructor === Array) {
-            for (var j = 0; j < object[currentKey].length; j++) {
-                object[currentKey][j] = parseData(object[currentKey][j]);
-            }
-        }
+		if (object[currentKey] != null) {
+			if (object[currentKey].constructor === Array) {
+				for (var j = 0; j < object[currentKey].length; j++) {
+					object[currentKey][j] = parseData(object[currentKey][j]);
+				}
+			}
+			else if (typeof (object[currentKey]) === "object") {
+				parseData(object[currentKey]);
+			}
+		}
 
         //parse formatted values
         var formattedKeyValue = getFormattedKeyValue(currentKey, object[currentKey]);
