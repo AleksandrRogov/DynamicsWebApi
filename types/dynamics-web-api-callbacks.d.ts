@@ -1,4 +1,4 @@
-﻿// Type definitions for dynamics-web-api-callbacks v1.6.6
+﻿// Type definitions for dynamics-web-api-callbacks v1.6.7
 // Project: https://github.com/AleksandrRogov/DynamicsWebApi
 // Definitions by: Aleksandr Rogov https://github.com/AleksandrRogov/
 
@@ -727,6 +727,8 @@ declare namespace DynamicsWebApi {
 		status?: number;
 		/**HTTP status text. Frequently empty */
 		statusText?: string;
+		/**HTTP Response headers */
+		headers?: any;
 		/**Details about an error */
 		innererror?: {
 			/**A message describing the error, this is frequently the same as the outer message */

@@ -1903,13 +1903,13 @@ describe("promises -", function () {
             before(function () {
                 var response = mocks.responses.upsertPreventCreateResponse;
 
-                scope = nock(mocks.webApiUrl, {
-                    reqheaders: {
-                        'If-Match': 'match'
-                    }
-                })
-                    .patch(mocks.responses.testEntityUrl, mocks.data.testEntity)
-                    .reply(response.status, response.responseText, response.responseHeaders)
+				scope = nock(mocks.webApiUrl, {
+					reqheaders: {
+						'If-Match': 'match'
+					}
+				})
+					.patch(mocks.responses.testEntityUrl, mocks.data.testEntity)
+					.reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -4944,11 +4944,19 @@ describe("promises -", function () {
                     .then(function (object) {
                         done(object);
                     }).catch(function (object) {
-                        expect(object.length).to.be.eq(1);
+						expect(object.length).to.be.eq(1);
 
-                        expect(object[0].error).to.deep.equal({
-                            "code": "0x0", "message": "error", "innererror": { "message": "error", "type": "Microsoft.Crm.CrmHttpException", "stacktrace": "stack" }
-                        });
+						console.log(object[0].headers);
+						console.log("--\r\n");
+						console.log({ "OData-Version": "4.0", "REQ_ID": "5fe339e5-c75e-4dad-9597-b257ebce666b", "Content-Type": "application/json; odata.metadata=minimal" });
+
+						expect(object[0].headers).to.deep.equal({
+							"OData-Version": "4.0", "REQ_ID": "5fe339e5-c75e-4dad-9597-b257ebce666b", "Content-Type": "application/json; odata.metadata=minimal" 
+						});
+
+						expect(object[0].error).to.deep.equal({
+							"code": "0x0", "message": "error", "innererror": { "message": "error", "type": "Microsoft.Crm.CrmHttpException", "stacktrace": "stack" }
+						});
 
                         expect(object[0].status).to.equal(400);
                         expect(object[0].statusMessage).to.equal("Bad Request");
