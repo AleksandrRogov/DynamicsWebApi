@@ -4946,12 +4946,8 @@ describe("promises -", function () {
                     }).catch(function (object) {
 						expect(object.length).to.be.eq(1);
 
-						console.log(object[0].headers);
-						console.log("--\r\n");
-						console.log({ "OData-Version": "4.0", "REQ_ID": "5fe339e5-c75e-4dad-9597-b257ebce666b", "Content-Type": "application/json; odata.metadata=minimal" });
-
 						expect(object[0].headers).to.deep.equal({
-							"OData-Version": "4.0", "REQ_ID": "5fe339e5-c75e-4dad-9597-b257ebce666b", "Content-Type": "application/json; odata.metadata=minimal" 
+							"odata-version": "4.0", "req_id": "5fe339e5-c75e-4dad-9597-b257ebce666b", "content-type": "application/json; odata.metadata=minimal" 
 						});
 
 						expect(object[0].error).to.deep.equal({
