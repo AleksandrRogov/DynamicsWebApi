@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.6.7 (c) 2020 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.6.8 (c) 2020 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -2932,13 +2932,15 @@ function parseBatchHeaders(text) {
 		line = readLine(text, ctx);
 		parts = responseHeaderRegex.exec(line);
 		if (parts !== null) {
-			headers[parts[1]] = parts[2];
+			headers[parts[1].toLowerCase()] = parts[2];
 		}
 		else {
 			// Whatever was found is not a header, so reset the context position.
 			ctx.position = pos;
 		}
 	} while (line && parts);
+
+	normalizeHeaders(headers);
 
 	return headers;
 }
@@ -2963,6 +2965,46 @@ function readTo(text, ctx, str) {
 	}
 
 	return text.substring(start, end);
+}
+
+function normalizeHeaders(headers) {
+	var keys = [];
+	for (var i = 0; i < headers.length; ++i) {
+		var key = normalizeHeader(headers[i]);
+		if (key.length > 0) {
+			keys.push(key);
+		}
+	}
+	return keys;
+}
+
+function normalizeHeader(header) {
+	var key = "";
+	var upperCase = false;
+	for (var i = 0; i < header.length; ++i) {
+		var letter = header[i];
+		if (letter === " " && key.length > 0) {
+			upperCase = true;
+			continue;
+		}
+		if (!isAlnum(letter)) {
+			continue;
+		}
+		if (key.length === 0 && isDigit(letter)) {
+			continue;
+		}
+		if (upperCase) {
+			upperCase = false;
+			key += letter.toUpperCase();
+		} else {
+			key += letter.toLowerCase();
+		}
+	}
+	return key;
+}
+
+function isDigit(char) {
+	return char >= "0" && char <= "9";
 }
 
 //partially taken from https://github.com/emiltholin/google-api-batch-utils
