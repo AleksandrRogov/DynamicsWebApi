@@ -1138,7 +1138,7 @@ To make sure that it works, please execute any operation before calling `dynamic
 
 There are also out of the box Web API limitations for batch operations:
 
-* Batch requests can contain up to 100 individual requests and cannot contain other batch requests.
+* Batch requests can contain up to 1000 individual requests and cannot contain other batch requests.
 * The `odata.continue-on-error` preference is not supported by the Web API. Any error that occurs in the batch will stop the processing of the remainder of the batch.
 
 You can find an official documentation that covers Web API batch requests here: [Execute batch operations using the Web API](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/webapi/execute-batch-operations-using-web-api).
