@@ -261,6 +261,7 @@ orderBy | Array | `retrieveMultipleRequest`, `retrieveAllRequest` | An Array (of
 returnRepresentation | Boolean | `createRequest`, `updateRequest`, `upsertRequest` | Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
 savedQuery | String | `retrieveRequest` | A String representing the GUID value of the saved query.
 select | Array | `retrieveRequest`, `retrieveMultipleRequest`, `retrieveAllRequest`, `updateRequest`, `upsertRequest` | An Array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
+timeout | Number | All | `v.1.6.10+` Sets a number of milliseconds before a request times out.
 token | String | All | Authorization Token. If set, onTokenRefresh will not be called.
 top | Number | `retrieveMultipleRequest`, `retrieveAllRequest` | Limit the number of results returned by using the $top system query option. Do not use $top with $count!
 trackChanges | Boolean | `retrieveMultipleRequest`, `retrieveAllRequest` | `v.1.5.11+` Sets Prefer header with value 'odata.track-changes' to request that a delta link be returned which can subsequently be used to retrieve entity changes. __Important!__ Change Tracking must be enabled for the entity. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/use-change-tracking-synchronize-data-external-systems#enable-change-tracking-for-an-entity)

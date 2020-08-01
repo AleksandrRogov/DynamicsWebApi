@@ -5089,7 +5089,75 @@ describe("callbacks -", function () {
             it("all requests have been made", function () {
                 expect(scope.isDone()).to.be.true;
             });
-        });
+		});
+
+		describe("impersonate uses the same url as original instance", function () {
+			var dynamicsWebApi82 = new DynamicsWebApiCallbacks({ webApiVersion: "8.2" });
+
+			var scope;
+			before(function () {
+				var response = mocks.responses.multipleResponse;
+				scope = nock(mocks.webApiUrl, {
+					reqheaders: {
+						MSCRMCallerID: mocks.data.testEntityId2
+					}
+				})
+					.get("/tests")
+					.reply(response.status, response.responseText, response.responseHeaders);
+			});
+
+			after(function () {
+				nock.cleanAll();
+			});
+
+			it("sends the request to the right end point and returns a response", function (done) {
+				dynamicsWebApi82.setConfig({ impersonate: mocks.data.testEntityId2 });
+				dynamicsWebApi82.retrieveMultipleRequest({ collection: "tests" }, function (object) {
+						expect(object).to.deep.equal(mocks.responses.multiple());
+						done();
+					}, function (object) {
+						done(object);
+					});
+			});
+
+			it("all requests have been made", function () {
+				expect(scope.isDone()).to.be.true;
+			});
+		});
+
+		describe("webApiVersion is overriden by the new config set", function () {
+			var dynamicsWebApi81 = new DynamicsWebApiCallbacks({ webApiVersion: "8.1" });
+
+			var scope;
+			before(function () {
+				var response = mocks.responses.multipleResponse;
+				scope = nock(mocks.webApiUrl, {
+					reqheaders: {
+						MSCRMCallerID: mocks.data.testEntityId2
+					}
+				})
+					.get("/tests")
+					.reply(response.status, response.responseText, response.responseHeaders);
+			});
+
+			after(function () {
+				nock.cleanAll();
+			});
+
+			it("sends the request to the right end point and returns a response", function (done) {
+				dynamicsWebApi81.setConfig({ webApiVersion: "8.2", impersonate: mocks.data.testEntityId2 });
+				dynamicsWebApi81.retrieveMultipleRequest({ collection: "tests" }, function (object) {
+						expect(object).to.deep.equal(mocks.responses.multiple());
+						done();
+					}, function (object) {
+						done(object);
+					});
+			});
+
+			it("all requests have been made", function () {
+				expect(scope.isDone()).to.be.true;
+			});
+		});
     });
 
     describe("dynamicsWebApi.initializeInstance -", function () {

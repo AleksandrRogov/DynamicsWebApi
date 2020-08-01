@@ -1,4 +1,4 @@
-﻿// Type definitions for dynamics-web-api v1.6.9
+﻿// Type definitions for dynamics-web-api v1.6.10
 // Project: https://github.com/AleksandrRogov/DynamicsWebApi/
 // Definitions by: Aleksandr Rogov https://github.com/AleksandrRogov/
 
@@ -471,6 +471,8 @@ declare namespace DynamicsWebApi {
 		noCache?: boolean;
 		/** Authorization Token. If set, onTokenRefresh will not be called. */
 		token?: string;
+		/**Sets a number of milliseconds before a request times out. */
+		timeout?: number;
 	}
 
 	interface CRUDRequest extends Request {

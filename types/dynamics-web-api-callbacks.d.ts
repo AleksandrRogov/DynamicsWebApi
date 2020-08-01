@@ -1,4 +1,4 @@
-﻿// Type definitions for dynamics-web-api-callbacks v1.6.9
+﻿// Type definitions for dynamics-web-api-callbacks v1.6.10
 // Project: https://github.com/AleksandrRogov/DynamicsWebApi
 // Definitions by: Aleksandr Rogov https://github.com/AleksandrRogov/
 
@@ -563,10 +563,12 @@ declare namespace DynamicsWebApi {
 		collection?: string;
 		/**Impersonates the user.A String representing the GUID value for the Dynamics 365 system user id. */
 		impersonate?: string;
-		/** If set to 'true', DynamicsWebApi adds a request header 'Cache-Control: no-cache'.Default value is 'false'. */
+		/**If set to 'true', DynamicsWebApi adds a request header 'Cache-Control: no-cache'.Default value is 'false'. */
 		noCache?: boolean;
-		/** Authorization Token. If set, onTokenRefresh will not be called. */
+		/**Authorization Token. If set, onTokenRefresh will not be called. */
 		token?: string;
+		/**Sets a number of milliseconds before a request times out */
+		timeout?: number;
 	}
 
 	interface CRUDRequest extends Request {

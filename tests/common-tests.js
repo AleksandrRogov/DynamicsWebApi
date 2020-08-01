@@ -1875,6 +1875,166 @@ describe('Request.makeRequest', function () {
 			expect(scope.isDone()).to.be.true;
 		});
 	});
+
+	describe("timeout - socket (request timeout)", function () {
+		var scope;
+		var url = 'test';
+		before(function () {
+			var response = mocks.responses.basicEmptyResponseSuccess;
+			scope = nock(mocks.webApiUrl + 'test')
+				.post("", mocks.data.testEntity)
+				.socketDelay(1000)
+				.reply(response.status, response.responseText, response.responseHeaders);
+		});
+
+		after(function () {
+			nock.cleanAll();
+		});
+
+		it("returns a correct response", function (done) {
+			var request = {
+				collection: url,
+				timeout: 500,
+				entity: mocks.data.testEntityAdditionalAttributes
+			};
+			var config = {
+				webApiUrl: mocks.webApiUrl
+			};
+
+			Request.makeRequest('POST', request, 'any', config, null, function (object) {
+				expect(object).to.be.undefined;
+				done(object);
+			}, function (error) {
+				expect(error.message).to.be.eq("socket hang up");
+				expect(error.code).to.be.eq("ECONNRESET");
+				done();
+			});
+		});
+
+		it("all requests have been made", function () {
+			expect(scope.isDone()).to.be.true;
+		});
+	});
+
+	describe("timeout - socket (config)", function () {
+		var scope;
+		var url = 'test';
+		before(function () {
+			var response = mocks.responses.basicEmptyResponseSuccess;
+			scope = nock(mocks.webApiUrl + 'test')
+				.post("", mocks.data.testEntity)
+				.socketDelay(1000)
+				.reply(response.status, response.responseText, response.responseHeaders);
+		});
+
+		after(function () {
+			nock.cleanAll();
+		});
+
+		it("returns a correct response", function (done) {
+			var request = {
+				collection: url,
+				entity: mocks.data.testEntityAdditionalAttributes
+			};
+			var config = {
+				timeout: 500,
+				webApiUrl: mocks.webApiUrl
+			};
+
+			Request.makeRequest('POST', request, 'any', config, null, function (object) {
+				expect(object).to.be.undefined;
+				done(object);
+			}, function (error) {
+				expect(error.message).to.be.eq("socket hang up");
+				expect(error.code).to.be.eq("ECONNRESET");
+				done();
+			});
+		});
+
+		it("all requests have been made", function () {
+			expect(scope.isDone()).to.be.true;
+		});
+	});
+
+	describe("timeout - connection delay (request timeout)", function () {
+		var scope;
+		var url = 'test';
+		before(function () {
+			var response = mocks.responses.basicEmptyResponseSuccess;
+			scope = nock(mocks.webApiUrl + 'test')
+				.post("", mocks.data.testEntity)
+				.delayConnection(1000)
+				.reply(response.status, response.responseText, response.responseHeaders);
+		});
+
+		after(function () {
+			nock.cleanAll();
+		});
+
+		it("returns a correct response", function (done) {
+			var request = {
+				collection: url,
+				timeout: 500,
+				entity: mocks.data.testEntityAdditionalAttributes
+			};
+			var config = {
+				webApiUrl: mocks.webApiUrl
+			};
+
+			Request.makeRequest('POST', request, 'any', config, null, function (object) {
+				expect(object).to.be.undefined;
+				done(object);
+			}, function (error) {
+				expect(error.message).to.be.eq("socket hang up");
+				expect(error.code).to.be.eq("ECONNRESET");
+				done();
+			});
+		});
+
+		it("all requests have been made", function () {
+			expect(scope.isDone()).to.be.true;
+		});
+	});
+
+	describe("timeout - connection delay (config)", function () {
+		var scope;
+		var url = 'test';
+		before(function () {
+			var response = mocks.responses.basicEmptyResponseSuccess;
+			scope = nock(mocks.webApiUrl + 'test')
+				.post("", mocks.data.testEntity)
+				.delayConnection(1000)
+				.reply(response.status, response.responseText, response.responseHeaders);
+		});
+
+		after(function () {
+			nock.cleanAll();
+		});
+
+		it("returns a correct response", function (done) {
+			var request = {
+				collection: url,
+				entity: mocks.data.testEntityAdditionalAttributes
+			};
+			var config = {
+				timeout: 500,
+				webApiUrl: mocks.webApiUrl
+			};
+
+			Request.makeRequest('POST', request, 'any', config, null, function (object) {
+				expect(object).to.be.undefined;
+				done(object);
+			}, function (error) {
+				expect(error.message).to.be.eq("socket hang up");
+				expect(error.code).to.be.eq("ECONNRESET");
+				done();
+			});
+		});
+
+		it("all requests have been made", function () {
+			expect(scope.isDone()).to.be.true;
+		});
+	});
 });
 
 describe("Request.sendRequest", function () {
@@ -1883,7 +2043,7 @@ describe("Request.sendRequest", function () {
 		var url = 'test';
 		while (url.length < 2001) {
 			url += 'test';
-		};
+		}
 		var rBody = mocks.data.batch.replace('{0}', mocks.webApiUrl + url);
 		var rBodys = rBody.split('\n');
 		var checkBody = '';
@@ -2012,14 +2172,14 @@ describe("Request.sendRequest", function () {
 		});
 
 		it("returns a correct response", function (done) {
-			Request.sendRequest('POST', url, { webApiUrl: mocks.webApiUrl, timeout: 500 }, mocks.data.testEntityAdditionalAttributes, null, null, function (object) {
+			Request.sendRequest('POST', url, { webApiUrl: mocks.webApiUrl }, mocks.data.testEntityAdditionalAttributes, null, null, function (object) {
 				expect(object).to.be.undefined;
 				done(object);
 			}, function (error) {
 				expect(error.message).to.be.eq("socket hang up");
 				expect(error.code).to.be.eq("ECONNRESET");
 				done();
-			});
+			}, null, null, 500);
 		});
 
 		it("all requests have been made", function () {
@@ -2043,14 +2203,14 @@ describe("Request.sendRequest", function () {
 		});
 
 		it("returns a correct response", function (done) {
-			Request.sendRequest('POST', url, { webApiUrl: mocks.webApiUrl, timeout: 500 }, mocks.data.testEntityAdditionalAttributes, null, null, function (object) {
+			Request.sendRequest('POST', url, { webApiUrl: mocks.webApiUrl }, mocks.data.testEntityAdditionalAttributes, null, null, function (object) {
 				expect(object).to.be.undefined;
 				done(object);
 			}, function (error) {
 				expect(error.message).to.be.eq("socket hang up");
 				expect(error.code).to.be.eq("ECONNRESET");
 				done();
-			});
+			}, null, null, 500);
 		});
 
 		it("all requests have been made", function () {
