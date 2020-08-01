@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.6.9 (c) 2020 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.6.10 (c) 2020 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -698,7 +698,11 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
 
         if (request.isBatch) {
             ErrorHelper.boolParameterCheck(request.isBatch, 'DynamicsWebApi.' + functionName, 'request.isBatch');
-        }
+		}
+
+		if (request.timeout) {
+			ErrorHelper.numberParameterCheck(request.timeout, "DynamicsWebApi." + functionName, "request.timeout");
+		}
 
         if (request.expand && request.expand.length) {
             ErrorHelper.stringOrArrayParameterCheck(request.expand, 'DynamicsWebApi.' + functionName, "request.expand");
@@ -1015,8 +1019,9 @@ var _convertToBatch = function (requestCollection, config) {
  * @param {Function} errorCallback - A callback called when a request failed.
  * @param {boolean} [isBatch] - Indicates whether the request is a Batch request or not. Default: false
  * @param {boolean} [isAsync] - Indicates whether the request should be made synchronously or asynchronously.
+ * @param {number} [timeout] - Indicates timeout.
  */
-function sendRequest(method, path, config, data, additionalHeaders, responseParams, successCallback, errorCallback, isBatch, isAsync) {
+function sendRequest(method, path, config, data, additionalHeaders, responseParams, successCallback, errorCallback, isBatch, isAsync, timeout) {
 
 	additionalHeaders = additionalHeaders || {};
 	responseParams = responseParams || {};
@@ -1105,7 +1110,7 @@ function sendRequest(method, path, config, data, additionalHeaders, responsePara
 			successCallback: successCallback,
 			errorCallback: errorCallback,
 			isAsync: isAsync,
-			timeout: config.timeout
+			timeout: timeout
 		});
 	};
 
@@ -1144,7 +1149,7 @@ function _getCollectionNames(entityName, config, successCallback, errorCallback)
 			noCache: true
 		}, 'retrieveMultiple', config);
 
-		sendRequest('GET', request.url, config, null, request.headers, null, resolve, reject, false, request.async);
+		sendRequest('GET', request.url, config, null, request.headers, null, resolve, reject, false, request.async, config.timeout);
 	}
 }
 
@@ -1193,7 +1198,7 @@ function makeRequest(method, request, functionName, config, responseParams, reso
 		_checkCollectionName(request.collection, config, function (collectionName) {
 			request.collection = collectionName;
 			var result = RequestConverter.convertRequest(request, functionName, config);
-			sendRequest(method, result.url, config, request.data || request.entity, result.headers, responseParams, resolve, reject, request.isBatch, result.async);
+			sendRequest(method, result.url, config, request.data || request.entity, result.headers, responseParams, resolve, reject, request.isBatch, result.async, request.timeout || config.timeout);
 		}, reject);
 	}
 }
@@ -1308,17 +1313,21 @@ function DynamicsWebApi(config) {
      */
     this.setConfig = function (config) {
 
-        if (config.webApiVersion) {
-            ErrorHelper.stringParameterCheck(config.webApiVersion, "DynamicsWebApi.setConfig", "config.webApiVersion");
-            _internalConfig.webApiVersion = config.webApiVersion;
-        }
+		var isVersionDiffer = (config.webApiVersion || _internalConfig.webApiVersion) !== _internalConfig.webApiVersion;
 
-        if (config.webApiUrl) {
-            ErrorHelper.stringParameterCheck(config.webApiUrl, "DynamicsWebApi.setConfig", "config.webApiUrl");
-            _internalConfig.webApiUrl = config.webApiUrl;
-        } else {
-            _internalConfig.webApiUrl = Utility.initWebApiUrl(_internalConfig.webApiVersion);
-        }
+		if (config.webApiVersion) {
+			ErrorHelper.stringParameterCheck(config.webApiVersion, "DynamicsWebApi.setConfig", "config.webApiVersion");
+			_internalConfig.webApiVersion = config.webApiVersion;
+		}
+
+		if (config.webApiUrl) {
+			ErrorHelper.stringParameterCheck(config.webApiUrl, "DynamicsWebApi.setConfig", "config.webApiUrl");
+			_internalConfig.webApiUrl = config.webApiUrl;
+		} else {
+			if (!_internalConfig.webApiUrl || isVersionDiffer) {
+				_internalConfig.webApiUrl = Utility.initWebApiUrl(_internalConfig.webApiVersion);
+			}
+		}
 
         if (config.impersonate) {
             _internalConfig.impersonate = ErrorHelper.guidParameterCheck(config.impersonate, "DynamicsWebApi.setConfig", "config.impersonate");

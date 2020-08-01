@@ -1,4 +1,4 @@
-/*! dynamics-web-api v1.6.9 (c) 2020 Aleksandr Rogov */
+/*! dynamics-web-api v1.6.10 (c) 2020 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -720,8 +720,9 @@ var _convertToBatch = function (requestCollection, config) {
  * @param {Function} errorCallback - A callback called when a request failed.
  * @param {boolean} [isBatch] - Indicates whether the request is a Batch request or not. Default: false
  * @param {boolean} [isAsync] - Indicates whether the request should be made synchronously or asynchronously.
+ * @param {number} [timeout] - Indicates timeout.
  */
-function sendRequest(method, path, config, data, additionalHeaders, responseParams, successCallback, errorCallback, isBatch, isAsync) {
+function sendRequest(method, path, config, data, additionalHeaders, responseParams, successCallback, errorCallback, isBatch, isAsync, timeout) {
 
 	additionalHeaders = additionalHeaders || {};
 	responseParams = responseParams || {};
@@ -810,7 +811,7 @@ function sendRequest(method, path, config, data, additionalHeaders, responsePara
 			successCallback: successCallback,
 			errorCallback: errorCallback,
 			isAsync: isAsync,
-			timeout: config.timeout
+			timeout: timeout
 		});
 	};
 
@@ -849,7 +850,7 @@ function _getCollectionNames(entityName, config, successCallback, errorCallback)
 			noCache: true
 		}, 'retrieveMultiple', config);
 
-		sendRequest('GET', request.url, config, null, request.headers, null, resolve, reject, false, request.async);
+		sendRequest('GET', request.url, config, null, request.headers, null, resolve, reject, false, request.async, config.timeout);
 	}
 }
 
@@ -898,7 +899,7 @@ function makeRequest(method, request, functionName, config, responseParams, reso
 		_checkCollectionName(request.collection, config, function (collectionName) {
 			request.collection = collectionName;
 			var result = RequestConverter.convertRequest(request, functionName, config);
-			sendRequest(method, result.url, config, request.data || request.entity, result.headers, responseParams, resolve, reject, request.isBatch, result.async);
+			sendRequest(method, result.url, config, request.data || request.entity, result.headers, responseParams, resolve, reject, request.isBatch, result.async, request.timeout || config.timeout);
 		}, reject);
 	}
 }
@@ -925,7 +926,7 @@ var Request = __webpack_require__(4);
 
 //string es6 polyfill
 if (!String.prototype.endsWith || !String.prototype.startsWith) {
-    __webpack_require__(3);
+	__webpack_require__(3);
 }
 
 
@@ -992,21 +993,21 @@ if (!String.prototype.endsWith || !String.prototype.startsWith) {
  */
 function DynamicsWebApi(config) {
 
-    var _internalConfig = {
-        webApiVersion: "8.0",
-        webApiUrl: null,
-        impersonate: null,
-        onTokenRefresh: null,
-        includeAnnotations: null,
-        maxPageSize: null,
-        returnRepresentation: null
-    };
+	var _internalConfig = {
+		webApiVersion: "8.0",
+		webApiUrl: null,
+		impersonate: null,
+		onTokenRefresh: null,
+		includeAnnotations: null,
+		maxPageSize: null,
+		returnRepresentation: null
+	};
 
-    var _isBatch = false;
+	var _isBatch = false;
 
-    if (!config) {
-        config = _internalConfig;
-    }
+	if (!config) {
+		config = _internalConfig;
+	}
 
     /**
      * Sets the configuration parameters for DynamicsWebApi helper.
@@ -1015,63 +1016,67 @@ function DynamicsWebApi(config) {
      * @example
        dynamicsWebApi.setConfig({ webApiVersion: '9.0' });
      */
-    this.setConfig = function (config) {
+	this.setConfig = function (config) {
 
-        if (config.webApiVersion) {
-            ErrorHelper.stringParameterCheck(config.webApiVersion, "DynamicsWebApi.setConfig", "config.webApiVersion");
-            _internalConfig.webApiVersion = config.webApiVersion;
-        }
+		var isVersionDiffer =  (config.webApiVersion || _internalConfig.webApiVersion) !== _internalConfig.webApiVersion;
 
-        if (config.webApiUrl) {
-            ErrorHelper.stringParameterCheck(config.webApiUrl, "DynamicsWebApi.setConfig", "config.webApiUrl");
-            _internalConfig.webApiUrl = config.webApiUrl;
-        } else {
-            _internalConfig.webApiUrl = Utility.initWebApiUrl(_internalConfig.webApiVersion);
-        }
+		if (config.webApiVersion) {
+			ErrorHelper.stringParameterCheck(config.webApiVersion, "DynamicsWebApi.setConfig", "config.webApiVersion");
+			_internalConfig.webApiVersion = config.webApiVersion;
+		}
 
-        if (config.impersonate) {
-            _internalConfig.impersonate = ErrorHelper.guidParameterCheck(config.impersonate, "DynamicsWebApi.setConfig", "config.impersonate");
-        }
+		if (config.webApiUrl) {
+			ErrorHelper.stringParameterCheck(config.webApiUrl, "DynamicsWebApi.setConfig", "config.webApiUrl");
+			_internalConfig.webApiUrl = config.webApiUrl;
+		} else {
+			if (!_internalConfig.webApiUrl || isVersionDiffer) {
+				_internalConfig.webApiUrl = Utility.initWebApiUrl(_internalConfig.webApiVersion);
+			}
+		}
 
-        if (config.onTokenRefresh) {
-            ErrorHelper.callbackParameterCheck(config.onTokenRefresh, "DynamicsWebApi.setConfig", "config.onTokenRefresh");
-            _internalConfig.onTokenRefresh = config.onTokenRefresh;
-        }
+		if (config.impersonate) {
+			_internalConfig.impersonate = ErrorHelper.guidParameterCheck(config.impersonate, "DynamicsWebApi.setConfig", "config.impersonate");
+		}
 
-        if (config.includeAnnotations) {
-            ErrorHelper.stringParameterCheck(config.includeAnnotations, "DynamicsWebApi.setConfig", "config.includeAnnotations");
-            _internalConfig.includeAnnotations = config.includeAnnotations;
-        }
+		if (config.onTokenRefresh) {
+			ErrorHelper.callbackParameterCheck(config.onTokenRefresh, "DynamicsWebApi.setConfig", "config.onTokenRefresh");
+			_internalConfig.onTokenRefresh = config.onTokenRefresh;
+		}
 
-        if (config.timeout) {
-            ErrorHelper.numberParameterCheck(config.timeout, "DynamicsWebApi.setConfig", "config.timeout");
-            _internalConfig.timeout = config.timeout;
-        }
+		if (config.includeAnnotations) {
+			ErrorHelper.stringParameterCheck(config.includeAnnotations, "DynamicsWebApi.setConfig", "config.includeAnnotations");
+			_internalConfig.includeAnnotations = config.includeAnnotations;
+		}
 
-        if (config.maxPageSize) {
-            ErrorHelper.numberParameterCheck(config.maxPageSize, "DynamicsWebApi.setConfig", "config.maxPageSize");
-            _internalConfig.maxPageSize = config.maxPageSize;
-        }
+		if (config.timeout) {
+			ErrorHelper.numberParameterCheck(config.timeout, "DynamicsWebApi.setConfig", "config.timeout");
+			_internalConfig.timeout = config.timeout;
+		}
 
-        if (config.returnRepresentation) {
-            ErrorHelper.boolParameterCheck(config.returnRepresentation, "DynamicsWebApi.setConfig", "config.returnRepresentation");
-            _internalConfig.returnRepresentation = config.returnRepresentation;
-        }
+		if (config.maxPageSize) {
+			ErrorHelper.numberParameterCheck(config.maxPageSize, "DynamicsWebApi.setConfig", "config.maxPageSize");
+			_internalConfig.maxPageSize = config.maxPageSize;
+		}
 
-        if (config.useEntityNames) {
-            ErrorHelper.boolParameterCheck(config.useEntityNames, 'DynamicsWebApi.setConfig', 'config.useEntityNames');
-            _internalConfig.useEntityNames = config.useEntityNames;
-        }
-    };
+		if (config.returnRepresentation) {
+			ErrorHelper.boolParameterCheck(config.returnRepresentation, "DynamicsWebApi.setConfig", "config.returnRepresentation");
+			_internalConfig.returnRepresentation = config.returnRepresentation;
+		}
 
-    this.setConfig(config);
+		if (config.useEntityNames) {
+			ErrorHelper.boolParameterCheck(config.useEntityNames, 'DynamicsWebApi.setConfig', 'config.useEntityNames');
+			_internalConfig.useEntityNames = config.useEntityNames;
+		}
+	};
 
-    var _makeRequest = function (method, request, functionName, responseParams) {
-        request.isBatch = _isBatch;
-        return new Promise(function (resolve, reject) {
-            Request.makeRequest(method, request, functionName, _internalConfig, responseParams, resolve, reject);
-        });
-    };
+	this.setConfig(config);
+
+	var _makeRequest = function (method, request, functionName, responseParams) {
+		request.isBatch = _isBatch;
+		return new Promise(function (resolve, reject) {
+			Request.makeRequest(method, request, functionName, _internalConfig, responseParams, resolve, reject);
+		});
+	};
 
     /**
      * Sends an asynchronous request to create a new record.
@@ -1096,14 +1101,14 @@ function DynamicsWebApi(config) {
         *}).catch(function (error) {
         *});
      */
-    this.createRequest = function (request) {
-        ErrorHelper.parameterCheck(request, 'DynamicsWebApi.create', 'request');
+	this.createRequest = function (request) {
+		ErrorHelper.parameterCheck(request, 'DynamicsWebApi.create', 'request');
 
-        return _makeRequest('POST', request, 'create')
-            .then(function (response) {
-                return response.data;
-            });
-    };
+		return _makeRequest('POST', request, 'create')
+			.then(function (response) {
+				return response.data;
+			});
+	};
 
     /**
      * Sends an asynchronous request to create a new record.
@@ -1125,27 +1130,27 @@ function DynamicsWebApi(config) {
         *}).catch(function (error) {
         *});
      */
-    this.create = function (object, collection, prefer, select) {
-        ErrorHelper.parameterCheck(object, "DynamicsWebApi.create", "object");
-        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.create", "collection");
+	this.create = function (object, collection, prefer, select) {
+		ErrorHelper.parameterCheck(object, "DynamicsWebApi.create", "object");
+		ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.create", "collection");
 
-        if (prefer) {
-            ErrorHelper.stringOrArrayParameterCheck(prefer, "DynamicsWebApi.create", "prefer");
-        }
+		if (prefer) {
+			ErrorHelper.stringOrArrayParameterCheck(prefer, "DynamicsWebApi.create", "prefer");
+		}
 
-        if (select) {
-            ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.create", "select");
-        }
+		if (select) {
+			ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.create", "select");
+		}
 
-        var request = {
-            collection: collection,
-            select: select,
-            prefer: prefer,
-            entity: object
-        };
+		var request = {
+			collection: collection,
+			select: select,
+			prefer: prefer,
+			entity: object
+		};
 
-        return this.createRequest(request);
-    };
+		return this.createRequest(request);
+	};
 
     /**
      * Sends an asynchronous request to retrieve a record.
@@ -1167,15 +1172,15 @@ function DynamicsWebApi(config) {
         *
         *});
      */
-    this.retrieveRequest = function (request) {
-        ErrorHelper.parameterCheck(request, 'DynamicsWebApi.retrieve', 'request');
+	this.retrieveRequest = function (request) {
+		ErrorHelper.parameterCheck(request, 'DynamicsWebApi.retrieve', 'request');
 
-        //copy locally
-        var isRef = request.select != null && request.select.length === 1 && request.select[0].endsWith("/$ref");
-        return _makeRequest('GET', request, 'retrieve', { isRef: isRef }).then(function (response) {
-            return response.data;
-        });
-    };
+		//copy locally
+		var isRef = request.select != null && request.select.length === 1 && request.select[0].endsWith("/$ref");
+		return _makeRequest('GET', request, 'retrieve', { isRef: isRef }).then(function (response) {
+			return response.data;
+		});
+	};
 
     /**
      * Sends an asynchronous request to retrieve a record.
@@ -1186,29 +1191,29 @@ function DynamicsWebApi(config) {
      * @param {string|Array} [expand] - A String or Array of Expand Objects representing the $expand Query Option value to control which related records need to be returned.
      * @returns {Promise} D365 Web Api result
      */
-    this.retrieve = function (key, collection, select, expand) {
+	this.retrieve = function (key, collection, select, expand) {
 
-        ErrorHelper.stringParameterCheck(key, "DynamicsWebApi.retrieve", "key");
-        key = ErrorHelper.keyParameterCheck(key, "DynamicsWebApi.retrieve", "key");
-        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.retrieve", "collection");
+		ErrorHelper.stringParameterCheck(key, "DynamicsWebApi.retrieve", "key");
+		key = ErrorHelper.keyParameterCheck(key, "DynamicsWebApi.retrieve", "key");
+		ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.retrieve", "collection");
 
-        if (select && select.length) {
-            ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.retrieve", "select");
-        }
+		if (select && select.length) {
+			ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.retrieve", "select");
+		}
 
-        if (expand && expand.length) {
-            ErrorHelper.stringOrArrayParameterCheck(expand, "DynamicsWebApi.retrieve", "expand");
-        }
+		if (expand && expand.length) {
+			ErrorHelper.stringOrArrayParameterCheck(expand, "DynamicsWebApi.retrieve", "expand");
+		}
 
-        var request = {
-            collection: collection,
-            key: key,
-            select: select,
-            expand: expand
-        };
+		var request = {
+			collection: collection,
+			key: key,
+			select: select,
+			expand: expand
+		};
 
-        return this.retrieveRequest(request);
-    };
+		return this.retrieveRequest(request);
+	};
 
     /**
      * Sends an asynchronous request to update a record.
@@ -1216,32 +1221,32 @@ function DynamicsWebApi(config) {
      * @param {DWARequest} request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api result
      */
-    this.updateRequest = function (request) {
+	this.updateRequest = function (request) {
 
-        ErrorHelper.parameterCheck(request, "DynamicsWebApi.update", "request");
+		ErrorHelper.parameterCheck(request, "DynamicsWebApi.update", "request");
 
-        if (request.ifmatch == null) {
-            request.ifmatch = '*'; //to prevent upsert
-        }
+		if (request.ifmatch == null) {
+			request.ifmatch = '*'; //to prevent upsert
+		}
 
-        //Metadata definitions, cannot be updated using "PATCH" method
-        var method = /EntityDefinitions|RelationshipDefinitions|GlobalOptionSetDefinitions/.test(request.collection)
-            ? 'PUT' : 'PATCH';
+		//Metadata definitions, cannot be updated using "PATCH" method
+		var method = /EntityDefinitions|RelationshipDefinitions|GlobalOptionSetDefinitions/.test(request.collection)
+			? 'PUT' : 'PATCH';
 
-        //copy locally
-        var ifmatch = request.ifmatch;
-        return _makeRequest(method, request, 'update', { valueIfEmpty: true })
-            .then(function (response) {
-                return response.data;
-            }).catch(function (error) {
-                if (ifmatch && error.status === 412) {
-                    //precondition failed - not updated
-                    return false;
-                }
-                //rethrow error otherwise
-                throw error;
-            });
-    };
+		//copy locally
+		var ifmatch = request.ifmatch;
+		return _makeRequest(method, request, 'update', { valueIfEmpty: true })
+			.then(function (response) {
+				return response.data;
+			}).catch(function (error) {
+				if (ifmatch && error.status === 412) {
+					//precondition failed - not updated
+					return false;
+				}
+				//rethrow error otherwise
+				throw error;
+			});
+	};
 
     /**
      * Sends an asynchronous request to update a record.
@@ -1253,31 +1258,31 @@ function DynamicsWebApi(config) {
      * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
      * @returns {Promise} D365 Web Api result
      */
-    this.update = function (key, collection, object, prefer, select) {
+	this.update = function (key, collection, object, prefer, select) {
 
-        ErrorHelper.stringParameterCheck(key, "DynamicsWebApi.update", "key");
-        key = ErrorHelper.keyParameterCheck(key, "DynamicsWebApi.update", "key");
-        ErrorHelper.parameterCheck(object, "DynamicsWebApi.update", "object");
-        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.update", "collection");
+		ErrorHelper.stringParameterCheck(key, "DynamicsWebApi.update", "key");
+		key = ErrorHelper.keyParameterCheck(key, "DynamicsWebApi.update", "key");
+		ErrorHelper.parameterCheck(object, "DynamicsWebApi.update", "object");
+		ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.update", "collection");
 
-        if (prefer) {
-            ErrorHelper.stringOrArrayParameterCheck(prefer, "DynamicsWebApi.update", "prefer");
-        }
+		if (prefer) {
+			ErrorHelper.stringOrArrayParameterCheck(prefer, "DynamicsWebApi.update", "prefer");
+		}
 
-        if (select) {
-            ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.update", "select");
-        }
+		if (select) {
+			ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.update", "select");
+		}
 
-        var request = {
-            collection: collection,
-            key: key,
-            select: select,
-            prefer: prefer,
-            entity: object
-        };
+		var request = {
+			collection: collection,
+			key: key,
+			select: select,
+			prefer: prefer,
+			entity: object
+		};
 
-        return this.updateRequest(request);
-    };
+		return this.updateRequest(request);
+	};
 
     /**
      * Sends an asynchronous request to update a single value in the record.
@@ -1289,38 +1294,38 @@ function DynamicsWebApi(config) {
      * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
      * @returns {Promise} D365 Web Api result
      */
-    this.updateSingleProperty = function (key, collection, keyValuePair, prefer, select) {
+	this.updateSingleProperty = function (key, collection, keyValuePair, prefer, select) {
 
-        ErrorHelper.stringParameterCheck(key, "DynamicsWebApi.updateSingleProperty", "key");
-        key = ErrorHelper.keyParameterCheck(key, "DynamicsWebApi.updateSingleProperty", "key");
-        ErrorHelper.parameterCheck(keyValuePair, "DynamicsWebApi.updateSingleProperty", "keyValuePair");
-        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.updateSingleProperty", "collection");
+		ErrorHelper.stringParameterCheck(key, "DynamicsWebApi.updateSingleProperty", "key");
+		key = ErrorHelper.keyParameterCheck(key, "DynamicsWebApi.updateSingleProperty", "key");
+		ErrorHelper.parameterCheck(keyValuePair, "DynamicsWebApi.updateSingleProperty", "keyValuePair");
+		ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.updateSingleProperty", "collection");
 
-        var field = Object.keys(keyValuePair)[0];
-        var fieldValue = keyValuePair[field];
+		var field = Object.keys(keyValuePair)[0];
+		var fieldValue = keyValuePair[field];
 
-        if (prefer) {
-            ErrorHelper.stringOrArrayParameterCheck(prefer, "DynamicsWebApi.updateSingleProperty", "prefer");
-        }
+		if (prefer) {
+			ErrorHelper.stringOrArrayParameterCheck(prefer, "DynamicsWebApi.updateSingleProperty", "prefer");
+		}
 
-        if (select) {
-            ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.updateSingleProperty", "select");
-        }
+		if (select) {
+			ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.updateSingleProperty", "select");
+		}
 
-        var request = {
-            collection: collection,
-            key: key,
-            select: select,
-            prefer: prefer,
-            navigationProperty: field,
-            data: { value: fieldValue }
-        };
+		var request = {
+			collection: collection,
+			key: key,
+			select: select,
+			prefer: prefer,
+			navigationProperty: field,
+			data: { value: fieldValue }
+		};
 
-        return _makeRequest('PUT', request, 'updateSingleProperty')
-            .then(function (response) {
-                return response.data;
-            });
-    };
+		return _makeRequest('PUT', request, 'updateSingleProperty')
+			.then(function (response) {
+				return response.data;
+			});
+	};
 
     /**
      * Sends an asynchronous request to delete a record.
@@ -1328,25 +1333,25 @@ function DynamicsWebApi(config) {
      * @param {DWARequest} request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api result
      */
-    this.deleteRequest = function (request) {
+	this.deleteRequest = function (request) {
 
-        ErrorHelper.parameterCheck(request, 'DynamicsWebApi.delete', 'request');
+		ErrorHelper.parameterCheck(request, 'DynamicsWebApi.delete', 'request');
 
-        //copy locally
-        var ifmatch = request.ifmatch;
-        return _makeRequest('DELETE', request, 'delete', { valueIfEmpty: true }).then(function (response) {
-            return response.data;
-        }).catch(function (error) {
-            if (ifmatch && error.status === 412) {
-                //precondition failed - not deleted
-                return false;
-            }
-            else {
-                //rethrow error otherwise
-                throw error;
-            }
-        });
-    };
+		//copy locally
+		var ifmatch = request.ifmatch;
+		return _makeRequest('DELETE', request, 'delete', { valueIfEmpty: true }).then(function (response) {
+			return response.data;
+		}).catch(function (error) {
+			if (ifmatch && error.status === 412) {
+				//precondition failed - not deleted
+				return false;
+			}
+			else {
+				//rethrow error otherwise
+				throw error;
+			}
+		});
+	};
 
     /**
      * Sends an asynchronous request to delete a record.
@@ -1356,22 +1361,22 @@ function DynamicsWebApi(config) {
      * @param {string} [propertyName] - The name of the property which needs to be emptied. Instead of removing a whole record only the specified property will be cleared.
      * @returns {Promise} D365 Web Api result
      */
-    this.deleteRecord = function (key, collection, propertyName) {
-        ErrorHelper.stringParameterCheck(collection, 'DynamicsWebApi.deleteRecord', 'collection');
+	this.deleteRecord = function (key, collection, propertyName) {
+		ErrorHelper.stringParameterCheck(collection, 'DynamicsWebApi.deleteRecord', 'collection');
 
-        if (propertyName != null)
-            ErrorHelper.stringParameterCheck(propertyName, 'DynamicsWebApi.deleteRecord', 'propertyName');
+		if (propertyName != null)
+			ErrorHelper.stringParameterCheck(propertyName, 'DynamicsWebApi.deleteRecord', 'propertyName');
 
-        var request = {
-            navigationProperty: propertyName,
-            collection: collection,
-            key: key
-        };
+		var request = {
+			navigationProperty: propertyName,
+			collection: collection,
+			key: key
+		};
 
-        return _makeRequest('DELETE', request, 'deleteRecord').then(function () {
-            return;
-        });
-    };
+		return _makeRequest('DELETE', request, 'deleteRecord').then(function () {
+			return;
+		});
+	};
 
     /**
      * Sends an asynchronous request to upsert a record.
@@ -1379,28 +1384,28 @@ function DynamicsWebApi(config) {
      * @param {DWARequest} request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api result
      */
-    this.upsertRequest = function (request) {
-        ErrorHelper.parameterCheck(request, "DynamicsWebApi.upsert", "request");
+	this.upsertRequest = function (request) {
+		ErrorHelper.parameterCheck(request, "DynamicsWebApi.upsert", "request");
 
-        //copy locally
-        var ifnonematch = request.ifnonematch;
-        var ifmatch = request.ifmatch;
-        return _makeRequest("PATCH", request, 'upsert')
-            .then(function (response) {
-                return response.data;
-            }).catch(function (error) {
-                if (ifnonematch && error.status === 412) {
-                    //if prevent update
-                    return;
-                }
-                else if (ifmatch && error.status === 404) {
-                    //if prevent create
-                    return;
-                }
-                //rethrow error otherwise
-                throw error;
-            });
-    };
+		//copy locally
+		var ifnonematch = request.ifnonematch;
+		var ifmatch = request.ifmatch;
+		return _makeRequest("PATCH", request, 'upsert')
+			.then(function (response) {
+				return response.data;
+			}).catch(function (error) {
+				if (ifnonematch && error.status === 412) {
+					//if prevent update
+					return;
+				}
+				else if (ifmatch && error.status === 404) {
+					//if prevent create
+					return;
+				}
+				//rethrow error otherwise
+				throw error;
+			});
+	};
 
     /**
      * Sends an asynchronous request to upsert a record.
@@ -1412,45 +1417,45 @@ function DynamicsWebApi(config) {
      * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
      * @returns {Promise} D365 Web Api result
      */
-    this.upsert = function (key, collection, object, prefer, select) {
+	this.upsert = function (key, collection, object, prefer, select) {
 
-        ErrorHelper.stringParameterCheck(key, "DynamicsWebApi.upsert", "key");
-        key = ErrorHelper.keyParameterCheck(key, "DynamicsWebApi.upsert", "key");
+		ErrorHelper.stringParameterCheck(key, "DynamicsWebApi.upsert", "key");
+		key = ErrorHelper.keyParameterCheck(key, "DynamicsWebApi.upsert", "key");
 
-        ErrorHelper.parameterCheck(object, "DynamicsWebApi.upsert", "object");
-        ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.upsert", "collection");
+		ErrorHelper.parameterCheck(object, "DynamicsWebApi.upsert", "object");
+		ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.upsert", "collection");
 
-        if (prefer) {
-            ErrorHelper.stringOrArrayParameterCheck(prefer, "DynamicsWebApi.upsert", "prefer");
-        }
+		if (prefer) {
+			ErrorHelper.stringOrArrayParameterCheck(prefer, "DynamicsWebApi.upsert", "prefer");
+		}
 
-        if (select) {
-            ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.upsert", "select");
-        }
+		if (select) {
+			ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.upsert", "select");
+		}
 
-        var request = {
-            collection: collection,
-            key: key,
-            select: select,
-            prefer: prefer,
-            entity: object
-        };
+		var request = {
+			collection: collection,
+			key: key,
+			select: select,
+			prefer: prefer,
+			entity: object
+		};
 
-        return this.upsertRequest(request);
-    };
+		return this.upsertRequest(request);
+	};
 
-    var retrieveMultipleRequest = function (request, nextPageLink) {
+	var retrieveMultipleRequest = function (request, nextPageLink) {
 
-        if (nextPageLink) {
-            ErrorHelper.stringParameterCheck(nextPageLink, 'DynamicsWebApi.retrieveMultiple', 'nextPageLink');
-            request.url = nextPageLink;
-        }
+		if (nextPageLink) {
+			ErrorHelper.stringParameterCheck(nextPageLink, 'DynamicsWebApi.retrieveMultiple', 'nextPageLink');
+			request.url = nextPageLink;
+		}
 
-        return _makeRequest("GET", request, 'retrieveMultiple')
-            .then(function (response) {
-                return response.data;
-            });
-    };
+		return _makeRequest("GET", request, 'retrieveMultiple')
+			.then(function (response) {
+				return response.data;
+			});
+	};
 
     /**
      * Sends an asynchronous request to retrieve records.
@@ -1459,30 +1464,30 @@ function DynamicsWebApi(config) {
      * @param {string} [nextPageLink] - Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
      * @returns {Promise} D365 Web Api result
      */
-    this.retrieveMultipleRequest = retrieveMultipleRequest;
+	this.retrieveMultipleRequest = retrieveMultipleRequest;
 
-    var _retrieveAllRequest = function (request, nextPageLink, records) {
-        records = records || [];
+	var _retrieveAllRequest = function (request, nextPageLink, records) {
+		records = records || [];
 
-        return retrieveMultipleRequest(request, nextPageLink).then(function (response) {
-            records = records.concat(response.value);
+		return retrieveMultipleRequest(request, nextPageLink).then(function (response) {
+			records = records.concat(response.value);
 
-            var pageLink = response.oDataNextLink;
+			var pageLink = response.oDataNextLink;
 
-            if (pageLink) {
-                return _retrieveAllRequest(request, pageLink, records);
-            }
+			if (pageLink) {
+				return _retrieveAllRequest(request, pageLink, records);
+			}
 
-            var result = { value: records };
+			var result = { value: records };
 
-            if (response.oDataDeltaLink) {
-                result["@odata.deltaLink"] = response.oDataDeltaLink;
-                result.oDataDeltaLink = response.oDataDeltaLink;
-            }
+			if (response.oDataDeltaLink) {
+				result["@odata.deltaLink"] = response.oDataDeltaLink;
+				result.oDataDeltaLink = response.oDataDeltaLink;
+			}
 
-            return result;
-        });
-    };
+			return result;
+		});
+	};
 
     /**
      * Sends an asynchronous request to retrieve all records.
@@ -1490,10 +1495,10 @@ function DynamicsWebApi(config) {
      * @param {DWARequest} request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api result
      */
-    this.retrieveAllRequest = function (request) {
-        ErrorHelper.batchIncompatible('DynamicsWebApi.retrieveAllRequest', _isBatch);
-        return _retrieveAllRequest(request);
-    };
+	this.retrieveAllRequest = function (request) {
+		ErrorHelper.batchIncompatible('DynamicsWebApi.retrieveAllRequest', _isBatch);
+		return _retrieveAllRequest(request);
+	};
 
     /**
      * Sends an asynchronous request to count records. IMPORTANT! The count value does not represent the total number of entities in the system. It is limited by the maximum number of entities that can be returned. Returns: Number
@@ -1502,25 +1507,25 @@ function DynamicsWebApi(config) {
      * @param {string} [filter] - Use the $filter system query option to set criteria for which entities will be returned.
      * @returns {Promise} D365 Web Api result
      */
-    this.count = function (collection, filter) {
-        var request = {
-            collection: collection
-        };
+	this.count = function (collection, filter) {
+		var request = {
+			collection: collection
+		};
 
-        if (filter == null || (filter != null && !filter.length)) {
-            request.navigationProperty = '$count';
-        }
-        else {
-            request.filter = filter;
-            request.count = true;
-        }
+		if (filter == null || (filter != null && !filter.length)) {
+			request.navigationProperty = '$count';
+		}
+		else {
+			request.filter = filter;
+			request.count = true;
+		}
 
-        //if filter has not been specified then simplify the request
-        return _makeRequest('GET', request, 'count', { toCount: request.count })
-            .then(function (response) {
-                return response.data;
-            });
-    };
+		//if filter has not been specified then simplify the request
+		return _makeRequest('GET', request, 'count', { toCount: request.count })
+			.then(function (response) {
+				return response.data;
+			});
+	};
 
     /**
      * Sends an asynchronous request to count records. Returns: Number
@@ -1530,19 +1535,19 @@ function DynamicsWebApi(config) {
      * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
      * @returns {Promise} D365 Web Api result
      */
-    this.countAll = function (collection, filter, select) {
-        ErrorHelper.batchIncompatible('DynamicsWebApi.countAll', _isBatch);
-        return _retrieveAllRequest({
-            collection: collection,
-            filter: filter,
-            select: select
-        })
-            .then(function (response) {
-                return response
-                    ? (response.value ? response.value.length : 0)
-                    : 0;
-            });
-    };
+	this.countAll = function (collection, filter, select) {
+		ErrorHelper.batchIncompatible('DynamicsWebApi.countAll', _isBatch);
+		return _retrieveAllRequest({
+			collection: collection,
+			filter: filter,
+			select: select
+		})
+			.then(function (response) {
+				return response
+					? (response.value ? response.value.length : 0)
+					: 0;
+			});
+	};
 
     /**
      * Sends an asynchronous request to retrieve records.
@@ -1553,13 +1558,13 @@ function DynamicsWebApi(config) {
      * @param {string} [nextPageLink] - Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
      * @returns {Promise} D365 Web Api result
      */
-    this.retrieveMultiple = function (collection, select, filter, nextPageLink) {
-        return this.retrieveMultipleRequest({
-            collection: collection,
-            select: select,
-            filter: filter
-        }, nextPageLink);
-    };
+	this.retrieveMultiple = function (collection, select, filter, nextPageLink) {
+		return this.retrieveMultipleRequest({
+			collection: collection,
+			select: select,
+			filter: filter
+		}, nextPageLink);
+	};
 
     /**
      * Sends an asynchronous request to retrieve all records.
@@ -1569,57 +1574,44 @@ function DynamicsWebApi(config) {
      * @param {string} [filter] - Use the $filter system query option to set criteria for which entities will be returned.
      * @returns {Promise} D365 Web Api result
      */
-    this.retrieveAll = function (collection, select, filter) {
-        ErrorHelper.batchIncompatible('DynamicsWebApi.retrieveAll', _isBatch);
-        return _retrieveAllRequest({
-            collection: collection,
-            select: select,
-            filter: filter
-        });
-    };
+	this.retrieveAll = function (collection, select, filter) {
+		ErrorHelper.batchIncompatible('DynamicsWebApi.retrieveAll', _isBatch);
+		return _retrieveAllRequest({
+			collection: collection,
+			select: select,
+			filter: filter
+		});
+	};
 
-    var executeFetchXml = function (collection, fetchXml, includeAnnotations, pageNumber, pagingCookie, impersonateUserId) {
+	var executeFetchXml = function (collection, fetchXml, includeAnnotations, pageNumber, pagingCookie, impersonateUserId) {
 
-        ErrorHelper.stringParameterCheck(fetchXml, "DynamicsWebApi.executeFetchXml", "fetchXml");
+		ErrorHelper.stringParameterCheck(fetchXml, "DynamicsWebApi.executeFetchXml", "fetchXml");
 
-        pageNumber = pageNumber || 1;
+		pageNumber = pageNumber || 1;
 
-        ErrorHelper.numberParameterCheck(pageNumber, "DynamicsWebApi.executeFetchXml", "pageNumber");
-        var replacementString = '$1 page="' + pageNumber + '"';
+		ErrorHelper.numberParameterCheck(pageNumber, "DynamicsWebApi.executeFetchXml", "pageNumber");
+		var replacementString = '$1 page="' + pageNumber + '"';
 
-        if (pagingCookie != null) {
-            ErrorHelper.stringParameterCheck(pagingCookie, "DynamicsWebApi.executeFetchXml", "pagingCookie");
-            replacementString += ' paging-cookie="' + pagingCookie + '"';
-        }
+		if (pagingCookie != null) {
+			ErrorHelper.stringParameterCheck(pagingCookie, "DynamicsWebApi.executeFetchXml", "pagingCookie");
+			replacementString += ' paging-cookie="' + pagingCookie + '"';
+		}
 
-        //add page number and paging cookie to fetch xml
-        fetchXml = fetchXml.replace(/^(<fetch)/, replacementString);
+		//add page number and paging cookie to fetch xml
+		fetchXml = fetchXml.replace(/^(<fetch)/, replacementString);
 
-        var request = {
-            collection: collection,
-            includeAnnotations: includeAnnotations,
-            impersonate: impersonateUserId,
-            fetchXml: fetchXml
-        };
+		var request = {
+			collection: collection,
+			includeAnnotations: includeAnnotations,
+			impersonate: impersonateUserId,
+			fetchXml: fetchXml
+		};
 
-        return _makeRequest("GET", request, 'executeFetchXml', { pageNumber: pageNumber })
-            .then(function (response) {
-                return response.data;
-            });
-    };
-
-    /**
-     * Sends an asynchronous request to execute FetchXml to retrieve records. Returns: DWA.Types.FetchXmlResponse
-     *
-     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-     * @param {string} fetchXml - FetchXML is a proprietary query language that provides capabilities to perform aggregation.
-     * @param {string} [includeAnnotations] - Use this parameter to include annotations to a result. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie
-     * @param {number} [pageNumber] - Page number.
-     * @param {string} [pagingCookie] - Paging cookie. For retrieving the first page, pagingCookie should be null.
-     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
-     * @returns {Promise} D365 Web Api result
-     */
-    this.fetch = executeFetchXml;
+		return _makeRequest("GET", request, 'executeFetchXml', { pageNumber: pageNumber })
+			.then(function (response) {
+				return response.data;
+			});
+	};
 
     /**
      * Sends an asynchronous request to execute FetchXml to retrieve records. Returns: DWA.Types.FetchXmlResponse
@@ -1632,26 +1624,39 @@ function DynamicsWebApi(config) {
      * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      * @returns {Promise} D365 Web Api result
      */
-    this.executeFetchXml = executeFetchXml;
+	this.fetch = executeFetchXml;
 
-    var _executeFetchXmlAll = function (collection, fetchXml, includeAnnotations, pageNumber, pagingCookie, impersonateUserId, records) {
-        records = records || [];
+    /**
+     * Sends an asynchronous request to execute FetchXml to retrieve records. Returns: DWA.Types.FetchXmlResponse
+     *
+     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
+     * @param {string} fetchXml - FetchXML is a proprietary query language that provides capabilities to perform aggregation.
+     * @param {string} [includeAnnotations] - Use this parameter to include annotations to a result. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie
+     * @param {number} [pageNumber] - Page number.
+     * @param {string} [pagingCookie] - Paging cookie. For retrieving the first page, pagingCookie should be null.
+     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+     * @returns {Promise} D365 Web Api result
+     */
+	this.executeFetchXml = executeFetchXml;
 
-        return executeFetchXml(collection, fetchXml, includeAnnotations, pageNumber, pagingCookie, impersonateUserId, records).then(function (response) {
-            records = records.concat(response.value);
+	var _executeFetchXmlAll = function (collection, fetchXml, includeAnnotations, pageNumber, pagingCookie, impersonateUserId, records) {
+		records = records || [];
 
-            if (response.PagingInfo) {
-                return _executeFetchXmlAll(collection, fetchXml, includeAnnotations, response.PagingInfo.nextPage, response.PagingInfo.cookie, impersonateUserId, records);
-            }
+		return executeFetchXml(collection, fetchXml, includeAnnotations, pageNumber, pagingCookie, impersonateUserId, records).then(function (response) {
+			records = records.concat(response.value);
 
-            return { value: records };
-        });
-    };
+			if (response.PagingInfo) {
+				return _executeFetchXmlAll(collection, fetchXml, includeAnnotations, response.PagingInfo.nextPage, response.PagingInfo.cookie, impersonateUserId, records);
+			}
 
-    var innerExecuteFetchXmlAll = function (collection, fetchXml, includeAnnotations, impersonateUserId) {
-        ErrorHelper.batchIncompatible('DynamicsWebApi.executeFetchXmlAll', _isBatch);
-        return _executeFetchXmlAll(collection, fetchXml, includeAnnotations, null, null, impersonateUserId);
-    };
+			return { value: records };
+		});
+	};
+
+	var innerExecuteFetchXmlAll = function (collection, fetchXml, includeAnnotations, impersonateUserId) {
+		ErrorHelper.batchIncompatible('DynamicsWebApi.executeFetchXmlAll', _isBatch);
+		return _executeFetchXmlAll(collection, fetchXml, includeAnnotations, null, null, impersonateUserId);
+	};
 
     /**
      * Sends an asynchronous request to execute FetchXml to retrieve all records.
@@ -1662,7 +1667,7 @@ function DynamicsWebApi(config) {
      * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      * @returns {Promise} D365 Web Api result
      */
-    this.fetchAll = innerExecuteFetchXmlAll;
+	this.fetchAll = innerExecuteFetchXmlAll;
 
     /**
      * Sends an asynchronous request to execute FetchXml to retrieve all records.
@@ -1673,7 +1678,7 @@ function DynamicsWebApi(config) {
      * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      * @returns {Promise} D365 Web Api result
      */
-    this.executeFetchXmlAll = innerExecuteFetchXmlAll;
+	this.executeFetchXmlAll = innerExecuteFetchXmlAll;
 
     /**
      * Associate for a collection-valued navigation property. (1:N or N:N)
@@ -1686,23 +1691,23 @@ function DynamicsWebApi(config) {
      * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      * @returns {Promise} D365 Web Api result
      */
-    this.associate = function (collection, primaryKey, relationshipName, relatedCollection, relatedKey, impersonateUserId) {
-        ErrorHelper.stringParameterCheck(relatedCollection, "DynamicsWebApi.associate", "relatedcollection");
-        ErrorHelper.stringParameterCheck(relationshipName, "DynamicsWebApi.associate", "relationshipName");
-        primaryKey = ErrorHelper.keyParameterCheck(primaryKey, "DynamicsWebApi.associate", "primaryKey");
-        relatedKey = ErrorHelper.keyParameterCheck(relatedKey, "DynamicsWebApi.associate", "relatedKey");
+	this.associate = function (collection, primaryKey, relationshipName, relatedCollection, relatedKey, impersonateUserId) {
+		ErrorHelper.stringParameterCheck(relatedCollection, "DynamicsWebApi.associate", "relatedcollection");
+		ErrorHelper.stringParameterCheck(relationshipName, "DynamicsWebApi.associate", "relationshipName");
+		primaryKey = ErrorHelper.keyParameterCheck(primaryKey, "DynamicsWebApi.associate", "primaryKey");
+		relatedKey = ErrorHelper.keyParameterCheck(relatedKey, "DynamicsWebApi.associate", "relatedKey");
 
-        var request = {
-            _additionalUrl: relationshipName + '/$ref',
-            collection: collection,
-            key: primaryKey,
-            impersonate: impersonateUserId,
-            data: { "@odata.id": relatedCollection + "(" + relatedKey + ")" }
-        };
+		var request = {
+			_additionalUrl: relationshipName + '/$ref',
+			collection: collection,
+			key: primaryKey,
+			impersonate: impersonateUserId,
+			data: { "@odata.id": relatedCollection + "(" + relatedKey + ")" }
+		};
 
-        return _makeRequest("POST", request, 'associate')
-            .then(function () { });
-    };
+		return _makeRequest("POST", request, 'associate')
+			.then(function () { });
+	};
 
     /**
      * Disassociate for a collection-valued navigation property.
@@ -1714,20 +1719,20 @@ function DynamicsWebApi(config) {
      * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      * @returns {Promise} D365 Web Api result
      */
-    this.disassociate = function (collection, primaryKey, relationshipName, relatedKey, impersonateUserId) {
-        ErrorHelper.stringParameterCheck(relationshipName, "DynamicsWebApi.disassociate", "relationshipName");
-        relatedKey = ErrorHelper.keyParameterCheck(relatedKey, "DynamicsWebApi.disassociate", "relatedId");
+	this.disassociate = function (collection, primaryKey, relationshipName, relatedKey, impersonateUserId) {
+		ErrorHelper.stringParameterCheck(relationshipName, "DynamicsWebApi.disassociate", "relationshipName");
+		relatedKey = ErrorHelper.keyParameterCheck(relatedKey, "DynamicsWebApi.disassociate", "relatedId");
 
-        var request = {
-            _additionalUrl: relationshipName + '(' + relatedKey + ')/$ref',
-            collection: collection,
-            key: primaryKey,
-            impersonate: impersonateUserId
-        };
+		var request = {
+			_additionalUrl: relationshipName + '(' + relatedKey + ')/$ref',
+			collection: collection,
+			key: primaryKey,
+			impersonate: impersonateUserId
+		};
 
-        return _makeRequest("DELETE", request, 'disassociate')
-            .then(function () { });
-    };
+		return _makeRequest("DELETE", request, 'disassociate')
+			.then(function () { });
+	};
 
     /**
      * Associate for a single-valued navigation property. (1:N)
@@ -1740,23 +1745,23 @@ function DynamicsWebApi(config) {
      * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      * @returns {Promise} D365 Web Api result
      */
-    this.associateSingleValued = function (collection, key, singleValuedNavigationPropertyName, relatedCollection, relatedKey, impersonateUserId) {
+	this.associateSingleValued = function (collection, key, singleValuedNavigationPropertyName, relatedCollection, relatedKey, impersonateUserId) {
 
-        relatedKey = ErrorHelper.keyParameterCheck(relatedKey, "DynamicsWebApi.associateSingleValued", "relatedKey");
-        ErrorHelper.stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.associateSingleValued", "singleValuedNavigationPropertyName");
-        ErrorHelper.stringParameterCheck(relatedCollection, "DynamicsWebApi.associateSingleValued", "relatedcollection");
+		relatedKey = ErrorHelper.keyParameterCheck(relatedKey, "DynamicsWebApi.associateSingleValued", "relatedKey");
+		ErrorHelper.stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.associateSingleValued", "singleValuedNavigationPropertyName");
+		ErrorHelper.stringParameterCheck(relatedCollection, "DynamicsWebApi.associateSingleValued", "relatedcollection");
 
-        var request = {
-            _additionalUrl: singleValuedNavigationPropertyName + '/$ref',
-            collection: collection,
-            key: key,
-            impersonate: impersonateUserId,
-            data: { "@odata.id": relatedCollection + "(" + relatedKey + ")" }
-        };
+		var request = {
+			_additionalUrl: singleValuedNavigationPropertyName + '/$ref',
+			collection: collection,
+			key: key,
+			impersonate: impersonateUserId,
+			data: { "@odata.id": relatedCollection + "(" + relatedKey + ")" }
+		};
 
-        return _makeRequest("PUT", request, 'associateSingleValued')
-            .then(function () { });
-    };
+		return _makeRequest("PUT", request, 'associateSingleValued')
+			.then(function () { });
+	};
 
     /**
      * Removes a reference to an entity for a single-valued navigation property. (1:N)
@@ -1767,20 +1772,20 @@ function DynamicsWebApi(config) {
      * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      * @returns {Promise} D365 Web Api result
      */
-    this.disassociateSingleValued = function (collection, key, singleValuedNavigationPropertyName, impersonateUserId) {
+	this.disassociateSingleValued = function (collection, key, singleValuedNavigationPropertyName, impersonateUserId) {
 
-        ErrorHelper.stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.disassociateSingleValued", "singleValuedNavigationPropertyName");
+		ErrorHelper.stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.disassociateSingleValued", "singleValuedNavigationPropertyName");
 
-        var request = {
-            _additionalUrl: singleValuedNavigationPropertyName + "/$ref",
-            key: key,
-            collection: collection,
-            impersonate: impersonateUserId
-        };
+		var request = {
+			_additionalUrl: singleValuedNavigationPropertyName + "/$ref",
+			key: key,
+			collection: collection,
+			impersonate: impersonateUserId
+		};
 
-        return _makeRequest("DELETE", request, 'disassociateSingleValued')
-            .then(function () { });
-    };
+		return _makeRequest("DELETE", request, 'disassociateSingleValued')
+			.then(function () { });
+	};
 
     /**
      * Executes an unbound function (not bound to a particular entity record)
@@ -1790,9 +1795,9 @@ function DynamicsWebApi(config) {
      * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      * @returns {Promise} D365 Web Api result
      */
-    this.executeUnboundFunction = function (functionName, parameters, impersonateUserId) {
-        return _executeFunction(functionName, parameters, null, null, impersonateUserId, true);
-    };
+	this.executeUnboundFunction = function (functionName, parameters, impersonateUserId) {
+		return _executeFunction(functionName, parameters, null, null, impersonateUserId, true);
+	};
 
     /**
      * Executes a bound function
@@ -1804,26 +1809,26 @@ function DynamicsWebApi(config) {
      * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      * @returns {Promise} D365 Web Api result
      */
-    this.executeBoundFunction = function (id, collection, functionName, parameters, impersonateUserId) {
-        return _executeFunction(functionName, parameters, collection, id, impersonateUserId);
-    };
+	this.executeBoundFunction = function (id, collection, functionName, parameters, impersonateUserId) {
+		return _executeFunction(functionName, parameters, collection, id, impersonateUserId);
+	};
 
-    var _executeFunction = function (functionName, parameters, collection, id, impersonateUserId, isUnbound) {
+	var _executeFunction = function (functionName, parameters, collection, id, impersonateUserId, isUnbound) {
 
-        ErrorHelper.stringParameterCheck(functionName, "DynamicsWebApi.executeFunction", "functionName");
+		ErrorHelper.stringParameterCheck(functionName, "DynamicsWebApi.executeFunction", "functionName");
 
-        var request = {
-            _additionalUrl: functionName + Utility.buildFunctionParameters(parameters),
-            _unboundRequest: isUnbound,
-            key: id,
-            collection: collection,
-            impersonate: impersonateUserId
-        };
+		var request = {
+			_additionalUrl: functionName + Utility.buildFunctionParameters(parameters),
+			_unboundRequest: isUnbound,
+			key: id,
+			collection: collection,
+			impersonate: impersonateUserId
+		};
 
-        return _makeRequest("GET", request, 'executeFunction').then(function (response) {
-            return response.data;
-        });
-    };
+		return _makeRequest("GET", request, 'executeFunction').then(function (response) {
+			return response.data;
+		});
+	};
 
     /**
      * Executes an unbound Web API action (not bound to a particular entity record)
@@ -1833,9 +1838,9 @@ function DynamicsWebApi(config) {
      * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      * @returns {Promise} D365 Web Api result
      */
-    this.executeUnboundAction = function (actionName, requestObject, impersonateUserId) {
-        return _executeAction(actionName, requestObject, null, null, impersonateUserId, true);
-    };
+	this.executeUnboundAction = function (actionName, requestObject, impersonateUserId) {
+		return _executeAction(actionName, requestObject, null, null, impersonateUserId, true);
+	};
 
     /**
      * Executes a bound Web API action (bound to a particular entity record)
@@ -1847,30 +1852,30 @@ function DynamicsWebApi(config) {
      * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      * @returns {Promise | Function} D365 Web Api result
      */
-    this.executeBoundAction = function (id, collection, actionName, requestObject, impersonateUserId) {
-        return _executeAction(actionName, requestObject, collection, id, impersonateUserId);
-    };
+	this.executeBoundAction = function (id, collection, actionName, requestObject, impersonateUserId) {
+		return _executeAction(actionName, requestObject, collection, id, impersonateUserId);
+	};
 
-    var _executeAction = function (actionName, requestObject, collection, id, impersonateUserId, isUnbound) {
+	var _executeAction = function (actionName, requestObject, collection, id, impersonateUserId, isUnbound) {
 
-        ErrorHelper.stringParameterCheck(actionName, "DynamicsWebApi.executeAction", "actionName");
+		ErrorHelper.stringParameterCheck(actionName, "DynamicsWebApi.executeAction", "actionName");
 
-        var request = {
-            _additionalUrl: actionName,
-            _unboundRequest: isUnbound,
-            collection: collection,
-            key: id,
-            impersonate: impersonateUserId,
-            data: requestObject
-        };
+		var request = {
+			_additionalUrl: actionName,
+			_unboundRequest: isUnbound,
+			collection: collection,
+			key: id,
+			impersonate: impersonateUserId,
+			data: requestObject
+		};
 
-        var onSuccess = function (response) {
-            return response.data;
-        };
+		var onSuccess = function (response) {
+			return response.data;
+		};
 
 
-        return _makeRequest("POST", request, 'executeAction').then(onSuccess);
-    };
+		return _makeRequest("POST", request, 'executeAction').then(onSuccess);
+	};
 
     /**
      * Sends an asynchronous request to create an entity definition.
@@ -1878,16 +1883,16 @@ function DynamicsWebApi(config) {
      * @param {string} entityDefinition - Entity Definition.
      * @returns {Promise} D365 Web Api result
      */
-    this.createEntity = function (entityDefinition) {
+	this.createEntity = function (entityDefinition) {
 
-        ErrorHelper.parameterCheck(entityDefinition, 'DynamicsWebApi.createEntity', 'entityDefinition');
+		ErrorHelper.parameterCheck(entityDefinition, 'DynamicsWebApi.createEntity', 'entityDefinition');
 
-        var request = {
-            collection: 'EntityDefinitions',
-            entity: entityDefinition
-        };
-        return this.createRequest(request);
-    };
+		var request = {
+			collection: 'EntityDefinitions',
+			entity: entityDefinition
+		};
+		return this.createRequest(request);
+	};
 
     /**
      * Sends an asynchronous request to update an entity definition.
@@ -1896,19 +1901,19 @@ function DynamicsWebApi(config) {
      * @param {boolean} [mergeLabels] - Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false.
      * @returns {Promise} D365 Web Api result
      */
-    this.updateEntity = function (entityDefinition, mergeLabels) {
+	this.updateEntity = function (entityDefinition, mergeLabels) {
 
-        ErrorHelper.parameterCheck(entityDefinition, 'DynamicsWebApi.updateEntity', 'entityDefinition');
-        ErrorHelper.guidParameterCheck(entityDefinition.MetadataId, 'DynamicsWebApi.updateEntity', 'entityDefinition.MetadataId');
+		ErrorHelper.parameterCheck(entityDefinition, 'DynamicsWebApi.updateEntity', 'entityDefinition');
+		ErrorHelper.guidParameterCheck(entityDefinition.MetadataId, 'DynamicsWebApi.updateEntity', 'entityDefinition.MetadataId');
 
-        var request = {
-            collection: 'EntityDefinitions',
-            mergeLabels: mergeLabels,
-            key: entityDefinition.MetadataId,
-            entity: entityDefinition
-        };
-        return this.updateRequest(request);
-    };
+		var request = {
+			collection: 'EntityDefinitions',
+			mergeLabels: mergeLabels,
+			key: entityDefinition.MetadataId,
+			entity: entityDefinition
+		};
+		return this.updateRequest(request);
+	};
 
     /**
      * Sends an asynchronous request to retrieve a specific entity definition.
@@ -1918,19 +1923,19 @@ function DynamicsWebApi(config) {
      * @param {string|Array} [expand] - A String or Array of Expand Objects representing the $expand Query Option value to control which related records need to be returned.
     * @returns {Promise} D365 Web Api result
      */
-    this.retrieveEntity = function (entityKey, select, expand) {
+	this.retrieveEntity = function (entityKey, select, expand) {
 
-        ErrorHelper.keyParameterCheck(entityKey, 'DynamicsWebApi.retrieveEntity', 'entityKey');
+		ErrorHelper.keyParameterCheck(entityKey, 'DynamicsWebApi.retrieveEntity', 'entityKey');
 
-        var request = {
-            collection: 'EntityDefinitions',
-            key: entityKey,
-            select: select,
-            expand: expand
-        };
+		var request = {
+			collection: 'EntityDefinitions',
+			key: entityKey,
+			select: select,
+			expand: expand
+		};
 
-        return this.retrieveRequest(request);
-    };
+		return this.retrieveRequest(request);
+	};
 
     /**
      * Sends an asynchronous request to retrieve entity definitions.
@@ -1939,15 +1944,15 @@ function DynamicsWebApi(config) {
      * @param {string} [filter] - Use the $filter system query option to set criteria for which entity definitions will be returned.
      * @returns {Promise} D365 Web Api result
      */
-    this.retrieveEntities = function (select, filter) {
-        var request = {
-            collection: 'EntityDefinitions',
-            select: select,
-            filter: filter
-        };
+	this.retrieveEntities = function (select, filter) {
+		var request = {
+			collection: 'EntityDefinitions',
+			select: select,
+			filter: filter
+		};
 
-        return this.retrieveRequest(request);
-    };
+		return this.retrieveRequest(request);
+	};
 
     /**
      * Sends an asynchronous request to create an attribute.
@@ -1956,19 +1961,19 @@ function DynamicsWebApi(config) {
      * @param {Object} attributeDefinition - Object that describes the attribute.
      * @returns {Promise} D365 Web Api result
      */
-    this.createAttribute = function (entityKey, attributeDefinition) {
-        ErrorHelper.keyParameterCheck(entityKey, 'DynamicsWebApi.createAttribute', 'entityKey');
-        ErrorHelper.parameterCheck(attributeDefinition, 'DynamicsWebApi.createAttribute', 'attributeDefinition');
+	this.createAttribute = function (entityKey, attributeDefinition) {
+		ErrorHelper.keyParameterCheck(entityKey, 'DynamicsWebApi.createAttribute', 'entityKey');
+		ErrorHelper.parameterCheck(attributeDefinition, 'DynamicsWebApi.createAttribute', 'attributeDefinition');
 
-        var request = {
-            collection: 'EntityDefinitions',
-            key: entityKey,
-            entity: attributeDefinition,
-            navigationProperty: 'Attributes'
-        };
+		var request = {
+			collection: 'EntityDefinitions',
+			key: entityKey,
+			entity: attributeDefinition,
+			navigationProperty: 'Attributes'
+		};
 
-        return this.createRequest(request);
-    };
+		return this.createRequest(request);
+	};
 
     /**
      * Sends an asynchronous request to update an attribute.
@@ -1979,27 +1984,27 @@ function DynamicsWebApi(config) {
      * @param {boolean} [mergeLabels] - Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false.
      * @returns {Promise} D365 Web Api result
      */
-    this.updateAttribute = function (entityKey, attributeDefinition, attributeType, mergeLabels) {
-        ErrorHelper.keyParameterCheck(entityKey, 'DynamicsWebApi.updateAttribute', 'entityKey');
-        ErrorHelper.parameterCheck(attributeDefinition, 'DynamicsWebApi.updateAttribute', 'attributeDefinition');
-        ErrorHelper.guidParameterCheck(attributeDefinition.MetadataId, 'DynamicsWebApi.updateAttribute', 'attributeDefinition.MetadataId');
+	this.updateAttribute = function (entityKey, attributeDefinition, attributeType, mergeLabels) {
+		ErrorHelper.keyParameterCheck(entityKey, 'DynamicsWebApi.updateAttribute', 'entityKey');
+		ErrorHelper.parameterCheck(attributeDefinition, 'DynamicsWebApi.updateAttribute', 'attributeDefinition');
+		ErrorHelper.guidParameterCheck(attributeDefinition.MetadataId, 'DynamicsWebApi.updateAttribute', 'attributeDefinition.MetadataId');
 
-        if (attributeType) {
-            ErrorHelper.stringParameterCheck(attributeType, 'DynamicsWebApi.updateAttribute', 'attributeType');
-        }
+		if (attributeType) {
+			ErrorHelper.stringParameterCheck(attributeType, 'DynamicsWebApi.updateAttribute', 'attributeType');
+		}
 
-        var request = {
-            collection: 'EntityDefinitions',
-            key: entityKey,
-            entity: attributeDefinition,
-            navigationProperty: 'Attributes',
-            navigationPropertyKey: attributeDefinition.MetadataId,
-            mergeLabels: mergeLabels,
-            metadataAttributeType: attributeType
-        };
+		var request = {
+			collection: 'EntityDefinitions',
+			key: entityKey,
+			entity: attributeDefinition,
+			navigationProperty: 'Attributes',
+			navigationPropertyKey: attributeDefinition.MetadataId,
+			mergeLabels: mergeLabels,
+			metadataAttributeType: attributeType
+		};
 
-        return this.updateRequest(request);
-    };
+		return this.updateRequest(request);
+	};
 
     /**
      * Sends an asynchronous request to retrieve attribute metadata for a specified entity definition.
@@ -2011,26 +2016,26 @@ function DynamicsWebApi(config) {
      * @param {string|Array} [expand] - A String or Array of Expand Objects representing the $expand Query Option value to control which related records need to be returned.
      * @returns {Promise} D365 Web Api result
      */
-    this.retrieveAttributes = function (entityKey, attributeType, select, filter, expand) {
+	this.retrieveAttributes = function (entityKey, attributeType, select, filter, expand) {
 
-        ErrorHelper.keyParameterCheck(entityKey, 'DynamicsWebApi.retrieveAttributes', 'entityKey');
+		ErrorHelper.keyParameterCheck(entityKey, 'DynamicsWebApi.retrieveAttributes', 'entityKey');
 
-        if (attributeType) {
-            ErrorHelper.stringParameterCheck(attributeType, 'DynamicsWebApi.retrieveAttributes', 'attributeType');
-        }
+		if (attributeType) {
+			ErrorHelper.stringParameterCheck(attributeType, 'DynamicsWebApi.retrieveAttributes', 'attributeType');
+		}
 
-        var request = {
-            collection: 'EntityDefinitions',
-            key: entityKey,
-            navigationProperty: 'Attributes',
-            select: select,
-            filter: filter,
-            expand: expand,
-            metadataAttributeType: attributeType
-        };
+		var request = {
+			collection: 'EntityDefinitions',
+			key: entityKey,
+			navigationProperty: 'Attributes',
+			select: select,
+			filter: filter,
+			expand: expand,
+			metadataAttributeType: attributeType
+		};
 
-        return this.retrieveRequest(request);
-    };
+		return this.retrieveRequest(request);
+	};
 
     /**
      * Sends an asynchronous request to retrieve a specific attribute metadata for a specified entity definition.
@@ -2042,27 +2047,27 @@ function DynamicsWebApi(config) {
      * @param {string|Array} [expand] - A String or Array of Expand Objects representing the $expand Query Option value to control which related records need to be returned.
      * @returns {Promise} D365 Web Api result
      */
-    this.retrieveAttribute = function (entityKey, attributeKey, attributeType, select, expand) {
+	this.retrieveAttribute = function (entityKey, attributeKey, attributeType, select, expand) {
 
-        ErrorHelper.keyParameterCheck(entityKey, 'DynamicsWebApi.retrieveAttribute', 'entityKey');
-        ErrorHelper.keyParameterCheck(attributeKey, 'DynamicsWebApi.retrieveAttribute', 'attributeKey');
+		ErrorHelper.keyParameterCheck(entityKey, 'DynamicsWebApi.retrieveAttribute', 'entityKey');
+		ErrorHelper.keyParameterCheck(attributeKey, 'DynamicsWebApi.retrieveAttribute', 'attributeKey');
 
-        if (attributeType) {
-            ErrorHelper.stringParameterCheck(attributeType, 'DynamicsWebApi.retrieveAttribute', 'attributeType');
-        }
+		if (attributeType) {
+			ErrorHelper.stringParameterCheck(attributeType, 'DynamicsWebApi.retrieveAttribute', 'attributeType');
+		}
 
-        var request = {
-            collection: 'EntityDefinitions',
-            key: entityKey,
-            navigationProperty: 'Attributes',
-            select: select,
-            expand: expand,
-            metadataAttributeType: attributeType,
-            navigationPropertyKey: attributeKey
-        };
+		var request = {
+			collection: 'EntityDefinitions',
+			key: entityKey,
+			navigationProperty: 'Attributes',
+			select: select,
+			expand: expand,
+			metadataAttributeType: attributeType,
+			navigationPropertyKey: attributeKey
+		};
 
-        return this.retrieveRequest(request);
-    };
+		return this.retrieveRequest(request);
+	};
 
     /**
      * Sends an asynchronous request to create a relationship definition.
@@ -2070,16 +2075,16 @@ function DynamicsWebApi(config) {
      * @param {string} relationshipDefinition - Relationship Definition.
      * @returns {Promise} D365 Web Api result
      */
-    this.createRelationship = function (relationshipDefinition) {
+	this.createRelationship = function (relationshipDefinition) {
 
-        ErrorHelper.parameterCheck(relationshipDefinition, 'DynamicsWebApi.createRelationship', 'relationshipDefinition');
+		ErrorHelper.parameterCheck(relationshipDefinition, 'DynamicsWebApi.createRelationship', 'relationshipDefinition');
 
-        var request = {
-            collection: 'RelationshipDefinitions',
-            entity: relationshipDefinition
-        };
-        return this.createRequest(request);
-    };
+		var request = {
+			collection: 'RelationshipDefinitions',
+			entity: relationshipDefinition
+		};
+		return this.createRequest(request);
+	};
 
     /**
      * Sends an asynchronous request to update a relationship definition.
@@ -2089,21 +2094,21 @@ function DynamicsWebApi(config) {
      * @param {boolean} [mergeLabels] - Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false.
      * @returns {Promise} D365 Web Api result
      */
-    this.updateRelationship = function (relationshipDefinition, relationshipType, mergeLabels) {
+	this.updateRelationship = function (relationshipDefinition, relationshipType, mergeLabels) {
 
-        ErrorHelper.parameterCheck(relationshipDefinition, 'DynamicsWebApi.updateRelationship', 'relationshipDefinition');
-        ErrorHelper.guidParameterCheck(relationshipDefinition.MetadataId, 'DynamicsWebApi.updateRelationship', 'relationshipDefinition.MetadataId');
+		ErrorHelper.parameterCheck(relationshipDefinition, 'DynamicsWebApi.updateRelationship', 'relationshipDefinition');
+		ErrorHelper.guidParameterCheck(relationshipDefinition.MetadataId, 'DynamicsWebApi.updateRelationship', 'relationshipDefinition.MetadataId');
 
-        var request = {
-            collection: 'RelationshipDefinitions',
-            mergeLabels: mergeLabels,
-            key: relationshipDefinition.MetadataId,
-            entity: relationshipDefinition,
-            navigationProperty: relationshipType
-        };
+		var request = {
+			collection: 'RelationshipDefinitions',
+			mergeLabels: mergeLabels,
+			key: relationshipDefinition.MetadataId,
+			entity: relationshipDefinition,
+			navigationProperty: relationshipType
+		};
 
-        return this.updateRequest(request);
-    };
+		return this.updateRequest(request);
+	};
 
     /**
      * Sends an asynchronous request to delete a relationship definition.
@@ -2111,16 +2116,16 @@ function DynamicsWebApi(config) {
      * @param {string} metadataId - A String representing the GUID value.
      * @returns {Promise} D365 Web Api result
      */
-    this.deleteRelationship = function (metadataId) {
-        ErrorHelper.keyParameterCheck(metadataId, 'DynamicsWebApi.deleteRelationship', 'metadataId');
+	this.deleteRelationship = function (metadataId) {
+		ErrorHelper.keyParameterCheck(metadataId, 'DynamicsWebApi.deleteRelationship', 'metadataId');
 
-        var request = {
-            collection: 'RelationshipDefinitions',
-            key: metadataId
-        };
+		var request = {
+			collection: 'RelationshipDefinitions',
+			key: metadataId
+		};
 
-        return this.deleteRequest(request);
-    };
+		return this.deleteRequest(request);
+	};
 
     /**
      * Sends an asynchronous request to retrieve relationship definitions.
@@ -2130,17 +2135,17 @@ function DynamicsWebApi(config) {
      * @param {string} [filter] - Use the $filter system query option to set criteria for which relationships will be returned.
      * @returns {Promise} D365 Web Api result
      */
-    this.retrieveRelationships = function (relationshipType, select, filter) {
+	this.retrieveRelationships = function (relationshipType, select, filter) {
 
-        var request = {
-            collection: 'RelationshipDefinitions',
-            navigationProperty: relationshipType,
-            select: select,
-            filter: filter
-        };
+		var request = {
+			collection: 'RelationshipDefinitions',
+			navigationProperty: relationshipType,
+			select: select,
+			filter: filter
+		};
 
-        return this.retrieveMultipleRequest(request);
-    };
+		return this.retrieveMultipleRequest(request);
+	};
 
     /**
      * Sends an asynchronous request to retrieve a specific relationship definition.
@@ -2150,19 +2155,19 @@ function DynamicsWebApi(config) {
      * @param {Array} [select] - Use the $select system query option to limit the properties returned.
      * @returns {Promise} D365 Web Api result
      */
-    this.retrieveRelationship = function (metadataId, relationshipType, select) {
+	this.retrieveRelationship = function (metadataId, relationshipType, select) {
 
-        ErrorHelper.keyParameterCheck(metadataId, 'DynamicsWebApi.retrieveRelationship', 'metadataId');
+		ErrorHelper.keyParameterCheck(metadataId, 'DynamicsWebApi.retrieveRelationship', 'metadataId');
 
-        var request = {
-            collection: 'RelationshipDefinitions',
-            navigationProperty: relationshipType,
-            key: metadataId,
-            select: select
-        };
+		var request = {
+			collection: 'RelationshipDefinitions',
+			navigationProperty: relationshipType,
+			key: metadataId,
+			select: select
+		};
 
-        return this.retrieveRequest(request);
-    };
+		return this.retrieveRequest(request);
+	};
 
     /**
      * Sends an asynchronous request to create a Global Option Set definition
@@ -2170,17 +2175,17 @@ function DynamicsWebApi(config) {
      * @param {string} globalOptionSetDefinition - Global Option Set Definition.
      * @returns {Promise} D365 Web Api result
      */
-    this.createGlobalOptionSet = function (globalOptionSetDefinition) {
+	this.createGlobalOptionSet = function (globalOptionSetDefinition) {
 
-        ErrorHelper.parameterCheck(globalOptionSetDefinition, 'DynamicsWebApi.createGlobalOptionSet', 'globalOptionSetDefinition');
+		ErrorHelper.parameterCheck(globalOptionSetDefinition, 'DynamicsWebApi.createGlobalOptionSet', 'globalOptionSetDefinition');
 
-        var request = {
-            collection: 'GlobalOptionSetDefinitions',
-            entity: globalOptionSetDefinition
-        };
+		var request = {
+			collection: 'GlobalOptionSetDefinitions',
+			entity: globalOptionSetDefinition
+		};
 
-        return this.createRequest(request);
-    };
+		return this.createRequest(request);
+	};
 
     /**
      * Sends an asynchronous request to update a Global Option Set.
@@ -2189,19 +2194,19 @@ function DynamicsWebApi(config) {
      * @param {boolean} [mergeLabels] - Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false.
      * @returns {Promise} D365 Web Api result
      */
-    this.updateGlobalOptionSet = function (globalOptionSetDefinition, mergeLabels) {
+	this.updateGlobalOptionSet = function (globalOptionSetDefinition, mergeLabels) {
 
-        ErrorHelper.parameterCheck(globalOptionSetDefinition, 'DynamicsWebApi.updateGlobalOptionSet', 'globalOptionSetDefinition');
-        ErrorHelper.guidParameterCheck(globalOptionSetDefinition.MetadataId, 'DynamicsWebApi.updateGlobalOptionSet', 'globalOptionSetDefinition.MetadataId');
+		ErrorHelper.parameterCheck(globalOptionSetDefinition, 'DynamicsWebApi.updateGlobalOptionSet', 'globalOptionSetDefinition');
+		ErrorHelper.guidParameterCheck(globalOptionSetDefinition.MetadataId, 'DynamicsWebApi.updateGlobalOptionSet', 'globalOptionSetDefinition.MetadataId');
 
-        var request = {
-            collection: 'GlobalOptionSetDefinitions',
-            mergeLabels: mergeLabels,
-            key: globalOptionSetDefinition.MetadataId,
-            entity: globalOptionSetDefinition
-        };
-        return this.updateRequest(request);
-    };
+		var request = {
+			collection: 'GlobalOptionSetDefinitions',
+			mergeLabels: mergeLabels,
+			key: globalOptionSetDefinition.MetadataId,
+			entity: globalOptionSetDefinition
+		};
+		return this.updateRequest(request);
+	};
 
     /**
      * Sends an asynchronous request to delete a Global Option Set.
@@ -2209,16 +2214,16 @@ function DynamicsWebApi(config) {
      * @param {string} globalOptionSetKey - A String representing the GUID value or Alternate Key (such as Name).
      * @returns {Promise} D365 Web Api result
      */
-    this.deleteGlobalOptionSet = function (globalOptionSetKey) {
-        ErrorHelper.keyParameterCheck(globalOptionSetKey, 'DynamicsWebApi.deleteGlobalOptionSet', 'globalOptionSetKey');
+	this.deleteGlobalOptionSet = function (globalOptionSetKey) {
+		ErrorHelper.keyParameterCheck(globalOptionSetKey, 'DynamicsWebApi.deleteGlobalOptionSet', 'globalOptionSetKey');
 
-        var request = {
-            collection: 'GlobalOptionSetDefinitions',
-            key: globalOptionSetKey
-        };
+		var request = {
+			collection: 'GlobalOptionSetDefinitions',
+			key: globalOptionSetKey
+		};
 
-        return this.deleteRequest(request);
-    };
+		return this.deleteRequest(request);
+	};
 
     /**
      * Sends an asynchronous request to retrieve Global Option Set definitions.
@@ -2228,18 +2233,18 @@ function DynamicsWebApi(config) {
      * @param {Array} [select] - Use the $select system query option to limit the properties returned
      * @returns {Promise} D365 Web Api result
      */
-    this.retrieveGlobalOptionSet = function (globalOptionSetKey, castType, select) {
-        ErrorHelper.keyParameterCheck(globalOptionSetKey, 'DynamicsWebApi.retrieveGlobalOptionSet', 'globalOptionSetKey');
+	this.retrieveGlobalOptionSet = function (globalOptionSetKey, castType, select) {
+		ErrorHelper.keyParameterCheck(globalOptionSetKey, 'DynamicsWebApi.retrieveGlobalOptionSet', 'globalOptionSetKey');
 
-        var request = {
-            collection: 'GlobalOptionSetDefinitions',
-            key: globalOptionSetKey,
-            navigationProperty: castType,
-            select: select
-        };
+		var request = {
+			collection: 'GlobalOptionSetDefinitions',
+			key: globalOptionSetKey,
+			navigationProperty: castType,
+			select: select
+		};
 
-        return this.retrieveRequest(request);
-    };
+		return this.retrieveRequest(request);
+	};
 
     /**
      * Sends an asynchronous request to retrieve Global Option Set definitions.
@@ -2248,38 +2253,38 @@ function DynamicsWebApi(config) {
      * @param {Array} [select] - Use the $select system query option to limit the properties returned
      * @returns {Promise} D365 Web Api result
      */
-    this.retrieveGlobalOptionSets = function (castType, select) {
+	this.retrieveGlobalOptionSets = function (castType, select) {
 
-        var request = {
-            collection: 'GlobalOptionSetDefinitions',
-            navigationProperty: castType,
-            select: select
-        };
+		var request = {
+			collection: 'GlobalOptionSetDefinitions',
+			navigationProperty: castType,
+			select: select
+		};
 
-        return this.retrieveMultipleRequest(request);
-    };
+		return this.retrieveMultipleRequest(request);
+	};
 
     /**
      * Starts a batch request.
      * 
      */
-    this.startBatch = function () {
-        _isBatch = true;
-    };
+	this.startBatch = function () {
+		_isBatch = true;
+	};
 
     /**
      * Executes a batch request. Please call DynamicsWebApi.startBatch() first to start a batch request.
      * @returns {Promise} D365 Web Api result
      */
-    this.executeBatch = function () {
-        ErrorHelper.batchNotStarted(_isBatch);
+	this.executeBatch = function () {
+		ErrorHelper.batchNotStarted(_isBatch);
 
-        _isBatch = false;
-        return _makeRequest('POST', { collection: '$batch' }, 'executeBatch')
-            .then(function (response) {
-                return response.data;
-            });
-    };
+		_isBatch = false;
+		return _makeRequest('POST', { collection: '$batch' }, 'executeBatch')
+			.then(function (response) {
+				return response.data;
+			});
+	};
 
     /**
      * Creates a new instance of DynamicsWebApi
@@ -2287,13 +2292,13 @@ function DynamicsWebApi(config) {
      * @param {DWAConfig} [config] - configuration object.
      * @returns {DynamicsWebApi} The new instance of a DynamicsWebApi
      */
-    this.initializeInstance = function (config) {
-        if (!config) {
-            config = _internalConfig;
-        }
+	this.initializeInstance = function (config) {
+		if (!config) {
+			config = _internalConfig;
+		}
 
-        return new DynamicsWebApi(config);
-    };
+		return new DynamicsWebApi(config);
+	};
 }
 
 /**
@@ -2308,7 +2313,7 @@ DynamicsWebApi.prototype.utility = {
      * @param {string} entityName - entity name
      * @returns {string} a collection name
      */
-    getCollectionName: Request.getCollectionName
+	getCollectionName: Request.getCollectionName
 };
 
 /**
@@ -3024,7 +3029,11 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
 
         if (request.isBatch) {
             ErrorHelper.boolParameterCheck(request.isBatch, 'DynamicsWebApi.' + functionName, 'request.isBatch');
-        }
+		}
+
+		if (request.timeout) {
+			ErrorHelper.numberParameterCheck(request.timeout, "DynamicsWebApi." + functionName, "request.timeout");
+		}
 
         if (request.expand && request.expand.length) {
             ErrorHelper.stringOrArrayParameterCheck(request.expand, 'DynamicsWebApi.' + functionName, "request.expand");
