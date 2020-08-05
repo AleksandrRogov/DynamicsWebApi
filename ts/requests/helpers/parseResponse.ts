@@ -138,8 +138,6 @@ function parseBatchHeaders(text: string) : any {
 		}
 	} while (line && parts);
 
-	normalizeHeaders(headers);
-
 	return headers;
 }
 
@@ -163,50 +161,6 @@ function readTo(text: string, ctx: any, str: string): string {
 	}
 
 	return text.substring(start, end);
-}
-
-function normalizeHeaders(headers: any): string[] {
-	let keys = [];
-	for (var i = 0; i < headers.length; ++i) {
-		var key = normalizeHeader(headers[i]);
-		if (key.length > 0) {
-			keys.push(key);
-		}
-	}
-	return keys;
-}
-
-function normalizeHeader(header: any): string {
-	var key = "";
-	var upperCase = false;
-	for (var i = 0; i < header.length; ++i) {
-		var letter = header[i];
-		if (letter === " " && key.length > 0) {
-			upperCase = true;
-			continue;
-		}
-		if (!isAlnum(letter)) {
-			continue;
-		}
-		if (key.length === 0 && isDigit(letter)) {
-			continue;
-		}
-		if (upperCase) {
-			upperCase = false;
-			key += letter.toUpperCase();
-		} else {
-			key += letter.toLowerCase();
-		}
-	}
-	return key;
-}
-
-function isDigit(char: string): boolean {
-	return char >= "0" && char <= "9";
-}
-
-function isAlnum(char: string): boolean {
-	return char >= "A" && char <= "Z" || char >= "a" && char <= "z" || isDigit(char);
 }
 
 //partially taken from https://github.com/emiltholin/google-api-batch-utils

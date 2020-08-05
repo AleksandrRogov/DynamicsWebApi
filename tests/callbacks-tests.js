@@ -4984,111 +4984,111 @@ describe("callbacks -", function () {
         });
     });
 
-    describe("dynamicsWebApi.setConfig -", function () {
+	describe("dynamicsWebApi.setConfig -", function () {
 
-        describe("webApiVersion and impersonate", function () {
-            var dynamicsWebApi81 = new DynamicsWebApiCallbacks();
-            dynamicsWebApi81.setConfig({ webApiVersion: "8.1", impersonate: mocks.data.testEntityId2 });
+		describe("webApiVersion and impersonate", function () {
+			var dynamicsWebApi81 = new DynamicsWebApiCallbacks();
+			dynamicsWebApi81.setConfig({ webApiVersion: "8.1", impersonate: mocks.data.testEntityId2 });
 
-            var scope;
-            before(function () {
-                var response = mocks.responses.createReturnId;
-                scope = nock(mocks.webApiUrl81, {
-                    reqheaders: {
-                        MSCRMCallerID: mocks.data.testEntityId2
-                    }
-                })
-                    .post("/tests", mocks.data.testEntity)
-                    .reply(response.status, response.responseText, response.responseHeaders);
-            });
+			var scope;
+			before(function () {
+				var response = mocks.responses.createReturnId;
+				scope = nock(mocks.webApiUrl81, {
+					reqheaders: {
+						MSCRMCallerID: mocks.data.testEntityId2
+					}
+				})
+					.post("/tests", mocks.data.testEntity)
+					.reply(response.status, response.responseText, response.responseHeaders);
+			});
 
-            after(function () {
-                nock.cleanAll();
-            });
+			after(function () {
+				nock.cleanAll();
+			});
 
-            it("it makes a correct request and returns a correct response", function (done) {
-                dynamicsWebApi81.create(mocks.data.testEntity, "tests", function (object) {
-                    expect(object).to.equal(mocks.data.testEntityId);
-                    done();
-                }, function (object) {
-                    expect(object).to.be.undefined;
-                    done();
-                });
-            });
+			it("it makes a correct request and returns a correct response", function (done) {
+				dynamicsWebApi81.create(mocks.data.testEntity, "tests", function (object) {
+					expect(object).to.equal(mocks.data.testEntityId);
+					done();
+				}, function (object) {
+					expect(object).to.be.undefined;
+					done();
+				});
+			});
 
-            it("all requests have been made", function () {
-                expect(scope.isDone()).to.be.true;
-            });
-        });
+			it("all requests have been made", function () {
+				expect(scope.isDone()).to.be.true;
+			});
+		});
 
-        describe("impersonate overriden with a request.impersonate", function () {
-            var dynamicsWebApi81 = new DynamicsWebApiCallbacks();
+		describe("impersonate overriden with a request.impersonate", function () {
+			var dynamicsWebApi81 = new DynamicsWebApiCallbacks();
 
-            var scope;
-            before(function () {
-                var response = mocks.responses.multipleResponse;
-                scope = nock(mocks.webApiUrl81, {
-                    reqheaders: {
-                        MSCRMCallerID: mocks.data.testEntityId3
-                    }
-                })
-                    .get("/tests")
-                    .reply(response.status, response.responseText, response.responseHeaders);
-            });
+			var scope;
+			before(function () {
+				var response = mocks.responses.multipleResponse;
+				scope = nock(mocks.webApiUrl81, {
+					reqheaders: {
+						MSCRMCallerID: mocks.data.testEntityId3
+					}
+				})
+					.get("/tests")
+					.reply(response.status, response.responseText, response.responseHeaders);
+			});
 
-            after(function () {
-                nock.cleanAll();
-            });
+			after(function () {
+				nock.cleanAll();
+			});
 
-            it("sends the request to the right end point with a correct MSCRMCallerID header", function (done) {
-                dynamicsWebApi81.setConfig({ webApiVersion: "8.1", impersonate: mocks.data.testEntityId2 });
-                dynamicsWebApi81.retrieveMultipleRequest({ collection: "tests", impersonate: mocks.data.testEntityId3 }, function (object) {
-                    expect(object).to.deep.equal(mocks.responses.multiple());
-                    done();
-                }, function (object) {
-                    expect(object).to.be.undefined;
-                    done();
-                });
-            });
+			it("sends the request to the right end point with a correct MSCRMCallerID header", function (done) {
+				dynamicsWebApi81.setConfig({ webApiVersion: "8.1", impersonate: mocks.data.testEntityId2 });
+				dynamicsWebApi81.retrieveMultipleRequest({ collection: "tests", impersonate: mocks.data.testEntityId3 }, function (object) {
+					expect(object).to.deep.equal(mocks.responses.multiple());
+					done();
+				}, function (object) {
+					expect(object).to.be.undefined;
+					done();
+				});
+			});
 
-            it("all requests have been made", function () {
-                expect(scope.isDone()).to.be.true;
-            });
-        });
+			it("all requests have been made", function () {
+				expect(scope.isDone()).to.be.true;
+			});
+		});
 
-        describe("webApiVersion is overriden by url set in setConfig", function () {
-            var dynamicsWebApi81 = new DynamicsWebApiCallbacks({ webApiVersion: "8.1", impersonate: mocks.data.testEntityId2 });
+		describe("webApiVersion is overriden by url set in setConfig", function () {
+			var dynamicsWebApi81 = new DynamicsWebApiCallbacks({ webApiVersion: "8.1", impersonate: mocks.data.testEntityId2 });
 
-            var scope;
-            before(function () {
-                var response = mocks.responses.multipleResponse;
-                scope = nock(mocks.webApiUrl, {
-                    reqheaders: {
-                        MSCRMCallerID: mocks.data.testEntityId2
-                    }
-                })
-                    .get("/tests")
-                    .reply(response.status, response.responseText, response.responseHeaders);
-            });
+			var scope;
+			before(function () {
+				var response = mocks.responses.multipleResponse;
+				scope = nock(mocks.webApiUrl, {
+					reqheaders: {
+						MSCRMCallerID: mocks.data.testEntityId2
+					}
+				})
+					.get("/tests")
+					.reply(response.status, response.responseText, response.responseHeaders);
+			});
 
-            after(function () {
-                nock.cleanAll();
-            });
+			after(function () {
+				nock.cleanAll();
+			});
 
-            it("sends the request to the right end point and returns a response", function (done) {
-                dynamicsWebApi81.setConfig({ webApiUrl: mocks.webApiUrl });
-                dynamicsWebApi81.retrieveMultipleRequest({ collection: "tests" }, function (object) {
-                    expect(object).to.deep.equal(mocks.responses.multiple());
-                    done();
-                }, function (object) {
-                    expect(object).to.be.undefined;
-                    done();
-                });
-            });
+			it("sends the request to the right end point and returns a response", function (done) {
+				dynamicsWebApi81.setConfig({ webApiUrl: mocks.webApiUrl });
+				dynamicsWebApi81.retrieveMultipleRequest({ collection: "tests" }, function (object) {
+					expect(object).to.deep.equal(mocks.responses.multiple());
+					done();
+				}, function (object) {
+					expect(object).to.be.undefined;
+					done();
+				});
+			});
 
-            it("all requests have been made", function () {
-                expect(scope.isDone()).to.be.true;
-            });
+			it("all requests have been made", function () {
+				expect(scope.isDone()).to.be.true;
+			});
 		});
 
 		describe("impersonate uses the same url as original instance", function () {
@@ -5157,6 +5157,7 @@ describe("callbacks -", function () {
 			it("all requests have been made", function () {
 				expect(scope.isDone()).to.be.true;
 			});
+		});
     });
 
     describe("dynamicsWebApi.initializeInstance -", function () {
