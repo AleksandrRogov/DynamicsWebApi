@@ -1784,12 +1784,172 @@ describe('RequestClient.makeRequest', function () {
 		});
 	});
 
+	describe("timeout - socket (request timeout)", function () {
+		var scope;
+		var url = 'test';
+		before(function () {
+			var response = mocks.responses.basicEmptyResponseSuccess;
+			scope = nock(mocks.webApiUrl + 'test')
+				.post("", mocks.data.testEntity)
+				.socketDelay(1000)
+				.reply(response.status, response.responseText, response.responseHeaders);
+		});
+
+		after(function () {
+			nock.cleanAll();
+		});
+
+		it("returns a correct response", function (done) {
+			var request = {
+				collection: url,
+				timeout: 500,
+				entity: mocks.data.testEntityAdditionalAttributes
+			};
+			var config = {
+				webApiUrl: mocks.webApiUrl
+			};
+
+			RequestClient.makeRequest('POST', request, 'any', config, null, function (object) {
+				expect(object).to.be.undefined;
+				done(object);
+			}, function (error) {
+				expect(error.message).to.be.eq("socket hang up");
+				expect(error.code).to.be.eq("ECONNRESET");
+				done();
+			});
+		});
+
+		it("all requests have been made", function () {
+			expect(scope.isDone()).to.be.true;
+		});
+	});
+
+	describe("timeout - socket (config)", function () {
+		var scope;
+		var url = 'test';
+		before(function () {
+			var response = mocks.responses.basicEmptyResponseSuccess;
+			scope = nock(mocks.webApiUrl + 'test')
+				.post("", mocks.data.testEntity)
+				.socketDelay(1000)
+				.reply(response.status, response.responseText, response.responseHeaders);
+		});
+
+		after(function () {
+			nock.cleanAll();
+		});
+
+		it("returns a correct response", function (done) {
+			var request = {
+				collection: url,
+				entity: mocks.data.testEntityAdditionalAttributes
+			};
+			var config = {
+				timeout: 500,
+				webApiUrl: mocks.webApiUrl
+			};
+
+			RequestClient.makeRequest('POST', request, 'any', config, null, function (object) {
+				expect(object).to.be.undefined;
+				done(object);
+			}, function (error) {
+				expect(error.message).to.be.eq("socket hang up");
+				expect(error.code).to.be.eq("ECONNRESET");
+				done();
+			});
+		});
+
+		it("all requests have been made", function () {
+			expect(scope.isDone()).to.be.true;
+		});
+	});
+
+	describe("timeout - connection delay (request timeout)", function () {
+		var scope;
+		var url = 'test';
+		before(function () {
+			var response = mocks.responses.basicEmptyResponseSuccess;
+			scope = nock(mocks.webApiUrl + 'test')
+				.post("", mocks.data.testEntity)
+				.delayConnection(1000)
+				.reply(response.status, response.responseText, response.responseHeaders);
+		});
+
+		after(function () {
+			nock.cleanAll();
+		});
+
+		it("returns a correct response", function (done) {
+			var request = {
+				collection: url,
+				timeout: 500,
+				entity: mocks.data.testEntityAdditionalAttributes
+			};
+			var config = {
+				webApiUrl: mocks.webApiUrl
+			};
+
+			RequestClient.makeRequest('POST', request, 'any', config, null, function (object) {
+				expect(object).to.be.undefined;
+				done(object);
+			}, function (error) {
+				expect(error.message).to.be.eq("socket hang up");
+				expect(error.code).to.be.eq("ECONNRESET");
+				done();
+			});
+		});
+
+		it("all requests have been made", function () {
+			expect(scope.isDone()).to.be.true;
+		});
+	});
+
+	describe("timeout - connection delay (config)", function () {
+		var scope;
+		var url = 'test';
+		before(function () {
+			var response = mocks.responses.basicEmptyResponseSuccess;
+			scope = nock(mocks.webApiUrl + 'test')
+				.post("", mocks.data.testEntity)
+				.delayConnection(1000)
+				.reply(response.status, response.responseText, response.responseHeaders);
+		});
+
+		after(function () {
+			nock.cleanAll();
+		});
+
+		it("returns a correct response", function (done) {
+			var request = {
+				collection: url,
+				entity: mocks.data.testEntityAdditionalAttributes
+			};
+			var config = {
+				timeout: 500,
+				webApiUrl: mocks.webApiUrl
+			};
+
+			RequestClient.makeRequest('POST', request, 'any', config, null, function (object) {
+				expect(object).to.be.undefined;
+				done(object);
+			}, function (error) {
+				expect(error.message).to.be.eq("socket hang up");
+				expect(error.code).to.be.eq("ECONNRESET");
+				done();
+			});
+		});
+
+		it("all requests have been made", function () {
+			expect(scope.isDone()).to.be.true;
+		});
+	});
+
 	describe("when url is long, request is converted to batch", function () {
 		var scope;
 		var url = 'test';
 		while (url.length < 2001) {
 			url += 'test';
-		};
+		}
 		var rBody = mocks.data.batch.replace('{0}', mocks.webApiUrl + url);
 		var rBodys = rBody.split('\n');
 		var checkBody = '';
@@ -1857,7 +2017,7 @@ describe("RequestClient.sendRequest", function () {
         });
 
         it("returns a correct response", function (done) {
-            RequestClient.sendRequest('PATCH', url, { webApiUrl: mocks.webApiUrl }, mocks.data.testEntityAdditionalAttributesWithExpand, null, null, true, function (object) {
+            RequestClient.sendRequest('PATCH', url, { webApiUrl: mocks.webApiUrl }, mocks.data.testEntityAdditionalAttributesWithExpand, null, null, true, null, function (object) {
                 var expectedO = {
                     status: mocks.responses.basicEmptyResponseSuccess.status,
                     headers: {},
@@ -1890,7 +2050,7 @@ describe("RequestClient.sendRequest", function () {
         });
 
         it("returns a correct response", function (done) {
-            RequestClient.sendRequest('POST', url, { webApiUrl: mocks.webApiUrl }, mocks.data.testEntityAdditionalAttributes, null, null, true, function (object) {
+            RequestClient.sendRequest('POST', url, { webApiUrl: mocks.webApiUrl }, mocks.data.testEntityAdditionalAttributes, null, null, true, null, function (object) {
                 expect(object).to.be.undefined;
                 done(object);
             }, function (object) {
@@ -1920,7 +2080,7 @@ describe("RequestClient.sendRequest", function () {
         });
 
         it("returns a correct response", function (done) {
-            RequestClient.sendRequest('POST', url, { webApiUrl: mocks.webApiUrl, timeout: 500 }, mocks.data.testEntityAdditionalAttributes, null, null,true, function (object) {
+            RequestClient.sendRequest('POST', url, { webApiUrl: mocks.webApiUrl }, mocks.data.testEntityAdditionalAttributes, null, null, true, 500, function (object) {
                 expect(object).to.be.undefined;
                 done(object);
             }, function (error) {
@@ -1951,7 +2111,7 @@ describe("RequestClient.sendRequest", function () {
         });
 
         it("returns a correct response", function (done) {
-            RequestClient.sendRequest('POST', url, { webApiUrl: mocks.webApiUrl, timeout: 500 }, mocks.data.testEntityAdditionalAttributes, null, null, true, function (object) {
+            RequestClient.sendRequest('POST', url, { webApiUrl: mocks.webApiUrl }, mocks.data.testEntityAdditionalAttributes, null, null, true, 500, function (object) {
                 expect(object).to.be.undefined;
                 done(object);
             }, function (error) {

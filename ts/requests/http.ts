@@ -11,22 +11,22 @@ import { parseResponse } from "./helpers/parseResponse";
  *
  */
 function httpRequest(options: DynamicsWebApi.Core.RequestOptions) {
-    var method = options.method;
-    var uri = options.uri;
-    var data = options.data;
-    var additionalHeaders = options.additionalHeaders;
-    var responseParams = options.responseParams;
-    var successCallback = options.successCallback;
-    var errorCallback = options.errorCallback;
-    var timeout = options.timeout;
+    const method = options.method;
+	const uri = options.uri;
+	const data = options.data;
+	const additionalHeaders = options.additionalHeaders;
+	const responseParams = options.responseParams;
+	const successCallback = options.successCallback;
+	const errorCallback = options.errorCallback;
+	const timeout = options.timeout;
 
     var headers: http.OutgoingHttpHeaders = {};
 
     if (data) {
-        headers["Content-Type"] = additionalHeaders['Content-Type'];
+        headers["Content-Type"] = additionalHeaders["Content-Type"];
         headers["Content-Length"] = data.length;
 
-        delete additionalHeaders['Content-Type'];
+        delete additionalHeaders["Content-Type"];
     }
 
     //set additional headers
@@ -35,8 +35,8 @@ function httpRequest(options: DynamicsWebApi.Core.RequestOptions) {
     }
 
     var parsedUrl = url.parse(uri);
-    var protocol = parsedUrl.protocol.replace(':', '');
-    var protocolInterface = protocol === 'http' ? http : https;
+    var protocol = parsedUrl.protocol.replace(":", "");
+    var protocolInterface = protocol === "http" ? http : https;
 
     var internalOptions: http.RequestOptions = {
         hostname: parsedUrl.hostname,
@@ -49,7 +49,7 @@ function httpRequest(options: DynamicsWebApi.Core.RequestOptions) {
 
     if (process.env[`${protocol}_proxy`]) {
         /*
-         * Proxied requests don't work with Node's https module so use http to
+         * Proxied requests don"t work with Node"s https module so use http to
          * talk to the proxy server regardless of the endpoint protocol. This
          * is unsuitable for environments where requests are expected to be
          * using end-to-end TLS.
@@ -68,20 +68,20 @@ function httpRequest(options: DynamicsWebApi.Core.RequestOptions) {
     }
 
     var request = protocolInterface.request(internalOptions, function (res) {
-        var rawData = '';
-        res.setEncoding('utf8');
-        res.on('data', function (chunk) {
+        let rawData = "";
+        res.setEncoding("utf8");
+        res.on("data", function (chunk) {
             rawData += chunk;
         });
-        res.on('end', function () {
+        res.on("end", function () {
             switch (res.statusCode) {
                 case 200: // Success with content returned in response body.
                 case 201: // Success with content returned in response body.
                 case 204: // Success with no content returned in response body.
                 case 304: {// Success with Not Modified
-                    var responseData = parseResponse(rawData, res.headers, responseParams);
+                    let responseData = parseResponse(rawData, res.headers, responseParams);
 
-                    var response = {
+                    let response = {
                         data: responseData,
                         headers: res.headers,
                         status: res.statusCode
@@ -91,7 +91,7 @@ function httpRequest(options: DynamicsWebApi.Core.RequestOptions) {
                     break;
                 }
                 default: // All other statuses are error cases.
-                    var crmError;
+                    let crmError;
                     try {
                         var errorParsed = parseResponse(rawData, res.headers, responseParams);
 
@@ -100,7 +100,7 @@ function httpRequest(options: DynamicsWebApi.Core.RequestOptions) {
                             break;
                         }
 
-                        crmError = errorParsed.hasOwnProperty('error') && errorParsed.error
+                        crmError = errorParsed.hasOwnProperty("error") && errorParsed.error
                             ? errorParsed.error
                             : { message: errorParsed.Message };
                     } catch (e) {
@@ -112,7 +112,7 @@ function httpRequest(options: DynamicsWebApi.Core.RequestOptions) {
                         }
                     }
 
-                    errorCallback(ErrorHelper.handleHttpError(crmError, { status: res.statusCode, statusText: "", statusMessage: res.statusMessage }));
+                    errorCallback(ErrorHelper.handleHttpError(crmError, { status: res.statusCode, statusText: "", statusMessage: res.statusMessage, headers: res.headers }));
                     break;
             }
 
@@ -126,7 +126,7 @@ function httpRequest(options: DynamicsWebApi.Core.RequestOptions) {
         });
     }
 
-    request.on('error', function (error) {
+    request.on("error", function (error) {
         responseParams.length = 0;
         errorCallback(error);
     });

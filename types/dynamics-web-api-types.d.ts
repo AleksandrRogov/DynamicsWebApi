@@ -99,6 +99,7 @@
 			fetchXml?: string;
 			isBatch?: boolean;
 			data?: any;
+			timeout?: number;
 		}
 
 		interface FetchXmlCookie {

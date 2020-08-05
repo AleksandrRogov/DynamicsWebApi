@@ -1,4 +1,4 @@
-﻿// Type definitions for dynamics-web-api-callbacks v1.6.5
+﻿// Type definitions for dynamics-web-api-callbacks v1.6.10
 // Project: https://github.com/AleksandrRogov/DynamicsWebApi
 // Definitions by: Aleksandr Rogov https://github.com/AleksandrRogov/
 
@@ -40,7 +40,7 @@ declare class DynamicsWebApi {
         *}, function (error) {
         *});
      */
-	createRequest(request: DynamicsWebApi.CreateRequest, successCallback?: Function, errorCallback?: Function): void;
+	createRequest<T = any>(request: DynamicsWebApi.CreateRequest, successCallback?: (result: T) => void, errorCallback?: (error: DynamicsWebApi.RequestError) => void): void;
     /**
      * Sends an asynchronous request to create a new record.
      *
@@ -62,7 +62,7 @@ declare class DynamicsWebApi {
         *}, function (error) {
         *});
      */
-	create(object: Object, collection: string, successCallback?: Function, errorCallback?: Function, prefer?: string | string[], select?: string[]): void;
+	create<T = any>(object: Object, collection: string, successCallback?: (result: T) => void, errorCallback?: (error: DynamicsWebApi.RequestError) => void, prefer?: string | string[], select?: string[]): void;
     /**
      * Sends an asynchronous request to update a record.
      *
@@ -70,7 +70,7 @@ declare class DynamicsWebApi {
      * @param successCallback - The function that will be passed through and be called by a successful response.
      * @param errorCallback - The function that will be passed through and be called by a failed response.
      */
-	updateRequest(request: DynamicsWebApi.UpdateRequest, successCallback?: Function, errorCallback?: Function): void;
+	updateRequest<T = any>(request: DynamicsWebApi.UpdateRequest, successCallback?: (result: T) => void, errorCallback?: (error: DynamicsWebApi.RequestError) => void): void;
     /**
      * Sends an asynchronous request to update a record.
      *
@@ -82,7 +82,7 @@ declare class DynamicsWebApi {
      * @param prefer - If set to "return=representation" the function will return an updated object
      * @param select - An Array representing the $select Query Option to control which attributes will be returned.
      */
-	update(key: string, collection: string, object: Object, successCallback?: Function, errorCallback?: Function, prefer?: string | string[], select?: string[]): void;
+	update<T = any>(key: string, collection: string, object: Object, successCallback?: (result: T) => void, errorCallback?: (error: DynamicsWebApi.RequestError) => void, prefer?: string | string[], select?: string[]): void;
     /**
      * Sends an asynchronous request to update a single value in the record.
      *
@@ -94,7 +94,7 @@ declare class DynamicsWebApi {
      * @param prefer - If set to "return=representation" the function will return an updated object
      * @param select - An Array representing the $select Query Option to control which attributes will be returned.
      */
-	updateSingleProperty(key: string, collection: string, keyValuePair: Object, successCallback?: Function, errorCallback?: Function, prefer?: string | string[], select?: string[]): void;
+	updateSingleProperty(key: string, collection: string, keyValuePair: Object, successCallback?: Function, errorCallback?: (error: DynamicsWebApi.RequestError) => void, prefer?: string | string[], select?: string[]): void;
     /**
      * Sends an asynchronous request to delete a record.
      *
@@ -102,7 +102,7 @@ declare class DynamicsWebApi {
      * @param successCallback - The function that will be passed through and be called by a successful response.
      * @param errorCallback - The function that will be passed through and be called by a failed response.
      */
-	deleteRequest(request: DynamicsWebApi.DeleteRequest, successCallback?: Function, errorCallback?: Function): void;
+	deleteRequest(request: DynamicsWebApi.DeleteRequest, successCallback?: Function, errorCallback?: (error: DynamicsWebApi.RequestError) => void): void;
     /**
      * Sends an asynchronous request to delete a record.
      *
@@ -112,7 +112,7 @@ declare class DynamicsWebApi {
      * @param errorCallback - The function that will be passed through and be called by a failed response.
      * @param propertyName - The name of the property which needs to be emptied. Instead of removing a whole record only the specified property will be cleared.
      */
-	deleteRecord(key: string, collection: string, successCallback?: Function, errorCallback?: Function, propertyName?: string): void;
+	deleteRecord(key: string, collection: string, successCallback?: Function, errorCallback?: (error: DynamicsWebApi.RequestError) => void, propertyName?: string): void;
     /**
      * Sends an asynchronous request to retrieve a record.
      *
@@ -120,7 +120,7 @@ declare class DynamicsWebApi {
      * @param successCallback - The function that will be passed through and be called by a successful response.
      * @param errorCallback - The function that will be passed through and be called by a failed response.
      */
-	retrieveRequest(request: DynamicsWebApi.RetrieveRequest, successCallback?: Function, errorCallback?: Function): void;
+	retrieveRequest<T = any>(request: DynamicsWebApi.RetrieveRequest, successCallback?: (result: T) => void, errorCallback?: (error: DynamicsWebApi.RequestError) => void): void;
     /**
      * Sends an asynchronous request to retrieve a record.
      *
@@ -131,7 +131,7 @@ declare class DynamicsWebApi {
      * @param select - An Array representing the $select Query Option to control which attributes will be returned.
      * @param expand - A String or Array of Expand Objects representing the $expand Query Option value to control which related records need to be returned.
      */
-	retrieve(key: string, collection: string, successCallback?: Function, errorCallback?: Function, select?: string[], expand?: DynamicsWebApi.Expand[]): void;
+	retrieve<T = any>(key: string, collection: string, successCallback?: (result: T) => void, errorCallback?: (error: DynamicsWebApi.RequestError) => void, select?: string[], expand?: DynamicsWebApi.Expand[]): void;
     /**
      * Sends an asynchronous request to upsert a record.
      *
@@ -139,7 +139,7 @@ declare class DynamicsWebApi {
      * @param successCallback - The function that will be passed through and be called by a successful response.
      * @param errorCallback - The function that will be passed through and be called by a failed response.
      */
-	upsertRequest(request: DynamicsWebApi.UpsertRequest, successCallback?: Function, errorCallback?: Function): void;
+	upsertRequest<T = any>(request: DynamicsWebApi.UpsertRequest, successCallback?: (result: T) => void, errorCallback?: (error: DynamicsWebApi.RequestError) => void): void;
     /**
      * Sends an asynchronous request to upsert a record.
      *
@@ -151,7 +151,7 @@ declare class DynamicsWebApi {
      * @param prefer - If set to "return=representation" the function will return an updated object
      * @param select - An Array representing the $select Query Option to control which attributes will be returned.
      */
-	upsert(key: string, collection: string, object: Object, successCallback?: Function, errorCallback?: Function, prefer?: string | string[], select?: string[]): void;
+	upsert<T = any>(key: string, collection: string, object: Object, successCallback?: (result: T) => void, errorCallback?: (error: DynamicsWebApi.RequestError) => void, prefer?: string | string[], select?: string[]): void;
     /**
      * Sends an asynchronous request to count records. IMPORTANT! The count value does not represent the total number of entities in the system. It is limited by the maximum number of entities that can be returned. Returns: Number
      *
@@ -160,7 +160,7 @@ declare class DynamicsWebApi {
      * @param errorCallback - The function that will be passed through and be called by a failed response.
      * @param filter - Use the $filter system query option to set criteria for which entities will be returned.
      */
-	count(collection: string, successCallback?: Function, errorCallback?: Function, filter?: string): void;
+	count(collection: string, successCallback?: (result: number) => void, errorCallback?: (error: DynamicsWebApi.RequestError) => void, filter?: string): void;
     /**
      * Sends an asynchronous request to count records. Returns: Number
      *
@@ -170,7 +170,7 @@ declare class DynamicsWebApi {
      * @param filter - Use the $filter system query option to set criteria for which entities will be returned.
      * @param select - An Array representing the $select Query Option to control which attributes will be returned.
      */
-	countAll(collection: string, successCallback: Function, errorCallback: Function, filter?: string, select?: string[]): void;
+	countAll(collection: string, successCallback: (result: number) => void, errorCallback?: (error: DynamicsWebApi.RequestError) => void, filter?: string, select?: string[]): void;
     /**
      * Sends an asynchronous request to retrieve records.
      *
@@ -181,7 +181,7 @@ declare class DynamicsWebApi {
      * @param filter - Use the $filter system query option to set criteria for which entities will be returned.
      * @param oDataLink - Use this parameter to pass @odata.nextLink or @odata.deltaLink to return a necessary response. Pass null to retrieveMultipleOptions.
      */
-	retrieveMultiple(collection: string, successCallback?: Function, errorCallback?: Function, select?: string[], filter?: string, oDataLink?: string): void;
+	retrieveMultiple<T = any>(collection: string, successCallback?: (result: DynamicsWebApi.RetrieveMultipleResponse<T>) => void, errorCallback?: (error: DynamicsWebApi.RequestError) => void, select?: string[], filter?: string, oDataLink?: string): void;
     /**
     * Sends an asynchronous request to retrieve all records.
     *
@@ -191,7 +191,7 @@ declare class DynamicsWebApi {
     * @param select - Use the $select system query option to limit the properties returned.
     * @param filter - Use the $filter system query option to set criteria for which entities will be returned.
     */
-	retrieveAll(collection: string, successCallback: Function, errorCallback: Function, select?: string[], filter?: string): void;
+	retrieveAll<T = any>(collection: string, successCallback: (result: DynamicsWebApi.AllResponse<T>) => void, errorCallback: (error: DynamicsWebApi.RequestError) => void, select?: string[], filter?: string): void;
     /**
      * Sends an asynchronous request to retrieve records.
      *
@@ -200,7 +200,7 @@ declare class DynamicsWebApi {
      * @param errorCallback - The function that will be passed through and be called by a failed response.
      * @param oDataLink - Use this parameter to pass @odata.nextLink or @odata.deltaLink to return a necessary response. Pass null to retrieveMultipleOptions.
      */
-	retrieveMultipleRequest(request: DynamicsWebApi.RetrieveMultipleRequest, successCallback?: Function, errorCallback?: Function, oDataLink?: string): void;
+	retrieveMultipleRequest<T = any>(request: DynamicsWebApi.RetrieveMultipleRequest, successCallback?: (result: DynamicsWebApi.RetrieveMultipleResponse<T>) => void, errorCallback?: (error: DynamicsWebApi.RequestError) => void, oDataLink?: string): void;
     /**
      * Sends an asynchronous request to retrieve all records.
      *
@@ -208,7 +208,7 @@ declare class DynamicsWebApi {
      * @param successCallback - The function that will be passed through and be called by a successful response.
      * @param errorCallback - The function that will be passed through and be called by a failed response.
      */
-	retrieveAllRequest(request: DynamicsWebApi.RetrieveMultipleRequest, successCallback: Function, errorCallback: Function): void;
+	retrieveAllRequest<T = any>(request: DynamicsWebApi.RetrieveMultipleRequest, successCallback: (result: DynamicsWebApi.AllResponse<T>) => void, errorCallback: (error: DynamicsWebApi.RequestError) => void): void;
     /**
      * Sends an asynchronous request to count records. Returns: DWA.Types.FetchXmlResponse
      *
@@ -221,7 +221,7 @@ declare class DynamicsWebApi {
      * @param pagingCookie - Paging cookie. For retrieving the first page, pagingCookie should be null.
      * @param impersonateUserId - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
-	executeFetchXml(collection: string, fetchXml: string, successCallback?: Function, errorCallback?: Function, includeAnnotations?: string, pageNumber?: number, pagingCookie?: string, impersonateUserId?: string): void;
+	executeFetchXml<T = any>(collection: string, fetchXml: string, successCallback?: (result: DynamicsWebApi.FetchXmlResponse<T>) => void, errorCallback?: (error: DynamicsWebApi.RequestError) => void, includeAnnotations?: string, pageNumber?: number, pagingCookie?: string, impersonateUserId?: string): void;
     /**
      * Sends an asynchronous request to count records. Returns: DWA.Types.FetchXmlResponse
      *
@@ -234,7 +234,7 @@ declare class DynamicsWebApi {
      * @param pagingCookie - Paging cookie. For retrieving the first page, pagingCookie should be null.
      * @param impersonateUserId - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
-	fetch(collection: string, fetchXml: string, successCallback?: Function, errorCallback?: Function, includeAnnotations?: string, pageNumber?: number, pagingCookie?: string, impersonateUserId?: string): void;
+	fetch<T = any>(collection: string, fetchXml: string, successCallback?: (result: DynamicsWebApi.FetchXmlResponse<T>) => void, errorCallback?: (error: DynamicsWebApi.RequestError) => void, includeAnnotations?: string, pageNumber?: number, pagingCookie?: string, impersonateUserId?: string): void;
     /**
      * Sends an asynchronous request to execute FetchXml to retrieve all records.
      *
@@ -245,7 +245,7 @@ declare class DynamicsWebApi {
      * @param includeAnnotations - Use this parameter to include annotations to a result. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie
      * @param impersonateUserId - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
-	executeFetchXmlAll(collection: string, fetchXml: string, successCallback: Function, errorCallback: Function, includeAnnotations?: string, impersonateUserId?: string): void;
+	executeFetchXmlAll<T = any>(collection: string, fetchXml: string, successCallback: (result: DynamicsWebApi.MultipleResponse<T>) => void, errorCallback: (error: DynamicsWebApi.RequestError) => void, includeAnnotations?: string, impersonateUserId?: string): void;
     /**
      * Sends an asynchronous request to execute FetchXml to retrieve all records.
      *
@@ -256,7 +256,7 @@ declare class DynamicsWebApi {
      * @param includeAnnotations - Use this parameter to include annotations to a result. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie
      * @param impersonateUserId - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
-	fetchAll(collection: string, fetchXml: string, successCallback: Function, errorCallback: Function, includeAnnotations?: string, impersonateUserId?: string): void;
+	fetchAll<T = any>(collection: string, fetchXml: string, successCallback: (result: DynamicsWebApi.MultipleResponse<T>) => void, errorCallback: (error: DynamicsWebApi.RequestError) => void, includeAnnotations?: string, impersonateUserId?: string): void;
     /**
      * Associate for a collection-valued navigation property. (1:N or N:N)
      *
@@ -269,7 +269,7 @@ declare class DynamicsWebApi {
      * @param errorCallback - The function that will be passed through and be called by a failed response.
      * @param impersonateUserId - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
-	associate(collection: string, primaryKey: string, relationshipName: string, relatedCollection: string, relatedKey: string, successCallback?: Function, errorCallback?: Function, impersonateUserId?: string): void;
+	associate(collection: string, primaryKey: string, relationshipName: string, relatedCollection: string, relatedKey: string, successCallback?: Function, errorCallback?: (error: DynamicsWebApi.RequestError) => void, impersonateUserId?: string): void;
     /**
      * Disassociate for a collection-valued navigation property.
      *
@@ -281,7 +281,7 @@ declare class DynamicsWebApi {
      * @param errorCallback - The function that will be passed through and be called by a failed response.
      * @param impersonateUserId - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
-	disassociate(collection: string, primaryKey: string, relationshipName: string, relatedKey: string, successCallback?: Function, errorCallback?: Function, impersonateUserId?: string): void;
+	disassociate(collection: string, primaryKey: string, relationshipName: string, relatedKey: string, successCallback?: Function, errorCallback?: (error: DynamicsWebApi.RequestError) => void, impersonateUserId?: string): void;
     /**
     * Associate for a single-valued navigation property. (1:N)
     *
@@ -294,7 +294,7 @@ declare class DynamicsWebApi {
     * @param errorCallback - The function that will be passed through and be called by a failed response.
     * @param impersonateUserId - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
     */
-	associateSingleValued(collection: string, key: string, singleValuedNavigationPropertyName: string, relatedCollection: string, relatedKey: string, successCallback?: Function, errorCallback?: Function, impersonateUserId?: string): void;
+	associateSingleValued(collection: string, key: string, singleValuedNavigationPropertyName: string, relatedCollection: string, relatedKey: string, successCallback?: Function, errorCallback?: (error: DynamicsWebApi.RequestError) => void, impersonateUserId?: string): void;
     /**
      * Removes a reference to an entity for a single-valued navigation property. (1:N)
      *
@@ -305,7 +305,7 @@ declare class DynamicsWebApi {
      * @param errorCallback - The function that will be passed through and be called by a failed response.
      * @param impersonateUserId - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
-	disassociateSingleValued(collection: string, key: string, singleValuedNavigationPropertyName: string, successCallback?: Function, errorCallback?: Function, impersonateUserId?: string): void;
+	disassociateSingleValued(collection: string, key: string, singleValuedNavigationPropertyName: string, successCallback?: Function, errorCallback?: (error: DynamicsWebApi.RequestError) => void, impersonateUserId?: string): void;
     /**
      * Executes an unbound function (not bound to a particular entity record)
      *
@@ -315,7 +315,7 @@ declare class DynamicsWebApi {
      * @param parameters - Function's input parameters. Example: { param1: "test", param2: 3 }.
      * @param impersonateUserId - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
-	executeUnboundFunction(functionName: string, successCallback?: Function, errorCallback?: Function, parameters?: Object, impersonateUserId?: string): void;
+	executeUnboundFunction<T = any>(functionName: string, successCallback?: (result: T) => void, errorCallback?: (error: DynamicsWebApi.RequestError) => void, parameters?: Object, impersonateUserId?: string): void;
     /**
      * Executes a bound function
      *
@@ -327,7 +327,7 @@ declare class DynamicsWebApi {
      * @param parameters - Function's input parameters. Example: { param1: "test", param2: 3 }.
      * @param impersonateUserId - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
-	executeBoundFunction(id: string, collection: string, functionName: string, successCallback?: Function, errorCallback?: Function, parameters?: Object, impersonateUserId?: string): void;
+	executeBoundFunction<T = any>(id: string, collection: string, functionName: string, successCallback?: (result: T) => void, errorCallback?: (error: DynamicsWebApi.RequestError) => void, parameters?: Object, impersonateUserId?: string): void;
     /**
      * Executes an unbound Web API action (not bound to a particular entity record)
      *
@@ -337,7 +337,7 @@ declare class DynamicsWebApi {
      * @param errorCallback - The function that will be passed through and be called by a failed response.
      * @param impersonateUserId - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
-	executeUnboundAction(actionName: string, requestObject: Object, successCallback?: Function, errorCallback?: Function, impersonateUserId?: string): void;
+	executeUnboundAction<T = any>(actionName: string, requestObject: Object, successCallback?: (result: T) => void, errorCallback?: (error: DynamicsWebApi.RequestError) => void, impersonateUserId?: string): void;
     /**
      * Executes a bound Web API action (bound to a particular entity record)
      *
@@ -349,7 +349,7 @@ declare class DynamicsWebApi {
      * @param errorCallback - The function that will be passed through and be called by a failed response.
      * @param impersonateUserId - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
-	executeBoundAction(id: string, collection: string, actionName: string, requestObject: Object, successCallback?: Function, errorCallback?: Function, impersonateUserId?: string): void;
+	executeBoundAction<T = any>(id: string, collection: string, actionName: string, requestObject: Object, successCallback?: (result: T) => void, errorCallback?: (error: DynamicsWebApi.RequestError) => void, impersonateUserId?: string): void;
     /**
      * Sends an asynchronous request to create an entity definition.
      *
@@ -357,7 +357,7 @@ declare class DynamicsWebApi {
      * @param successCallback - The function that will be passed through and be called by a successful response.
      * @param errorCallback - The function that will be passed through and be called by a failed response.
      */
-	createEntity(entityDefinition: Object, successCallback?: Function, errorCallback?: Function): void;
+	createEntity<T = any>(entityDefinition: Object, successCallback?: (result: T) => void, errorCallback?: (error: DynamicsWebApi.RequestError) => void): void;
     /**
      * Sends an asynchronous request to update an entity definition.
      *
@@ -366,7 +366,7 @@ declare class DynamicsWebApi {
      * @param errorCallback - The function that will be passed through and be called by a failed response.
      * @param mergeLabels - Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false.
      */
-	updateEntity(entityDefinition: Object, successCallback?: Function, errorCallback?: Function, mergeLabels?: boolean): void;
+	updateEntity<T = any>(entityDefinition: Object, successCallback?: (result: T) => void, errorCallback?: (error: DynamicsWebApi.RequestError) => void, mergeLabels?: boolean): void;
     /**
      * Sends an asynchronous request to retrieve a specific entity definition.
      *
@@ -376,7 +376,7 @@ declare class DynamicsWebApi {
      * @param select - Use the $select system query option to limit the properties returned.
      * @param expand - A String or Array of Expand Objects representing the $expand Query Option value to control which related records need to be returned.
      */
-	retrieveEntity(entityKey: string, successCallback?: Function, errorCallback?: Function, select?: string[], expand?: DynamicsWebApi.Expand[]): void;
+	retrieveEntity<T = any>(entityKey: string, successCallback?: (result: T) => void, errorCallback?: (error: DynamicsWebApi.RequestError) => void, select?: string[], expand?: DynamicsWebApi.Expand[]): void;
     /**
      * Sends an asynchronous request to retrieve entity definitions.
      *
@@ -385,7 +385,7 @@ declare class DynamicsWebApi {
      * @param select - Use the $select system query option to limit the properties returned.
      * @param filter - Use the $filter system query option to set criteria for which entity definitions will be returned.
      */
-	retrieveEntities(successCallback?: Function, errorCallback?: Function, select?: string[], filter?: string): void;
+	retrieveEntities<T = any>(successCallback?: (result: DynamicsWebApi.RetrieveMultipleResponse<T>) => void, errorCallback?: (error: DynamicsWebApi.RequestError) => void, select?: string[], filter?: string): void;
     /**
      * Sends an asynchronous request to create an attribute.
      *
@@ -394,7 +394,7 @@ declare class DynamicsWebApi {
      * @param successCallback - The function that will be passed through and be called by a successful response.
      * @param errorCallback - The function that will be passed through and be called by a failed response.
      */
-	createAttribute(entityKey: string, attributeDefinition: Object, successCallback?: Function, errorCallback?: Function): void;
+	createAttribute<T = any>(entityKey: string, attributeDefinition: Object, successCallback?: (result: T) => void, errorCallback?: (error: DynamicsWebApi.RequestError) => void): void;
     /**
      * Sends an asynchronous request to update an attribute.
      *
@@ -405,7 +405,7 @@ declare class DynamicsWebApi {
      * @param attributeType - Use this parameter to cast the Attribute to a specific type.
      * @param mergeLabels - Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false.
      */
-	updateAttribute(entityKey: string, attributeDefinition: Object, successCallback?: Function, errorCallback?: Function, attributeType?: string, mergeLabels?: boolean): void;
+	updateAttribute<T = any>(entityKey: string, attributeDefinition: Object, successCallback?: (result: T) => void, errorCallback?: (error: DynamicsWebApi.RequestError) => void, attributeType?: string, mergeLabels?: boolean): void;
     /**
      * Sends an asynchronous request to retrieve attribute metadata for a specified entity definition.
      *
@@ -417,7 +417,7 @@ declare class DynamicsWebApi {
      * @param filter - Use the $filter system query option to set criteria for which attribute definitions will be returned.
      * @param expand - A String or Array of Expand Objects representing the $expand Query Option value to control which related records need to be returned.
      */
-	retrieveAttributes(entityKey: string, successCallback?: Function, errorCallback?: Function, attributeType?: string, select?: string[], filter?: string, expand?: DynamicsWebApi.Expand[]): void;
+	retrieveAttributes<T = any>(entityKey: string, successCallback?: (result: DynamicsWebApi.RetrieveMultipleResponse<T>) => void, errorCallback?: (error: DynamicsWebApi.RequestError) => void, attributeType?: string, select?: string[], filter?: string, expand?: DynamicsWebApi.Expand[]): void;
     /**
      * Sends an asynchronous request to retrieve a specific attribute metadata for a specified entity definition.
      *
@@ -429,7 +429,7 @@ declare class DynamicsWebApi {
      * @param select - Use the $select system query option to limit the properties returned.
      * @param expand - A String or Array of Expand Objects representing the $expand Query Option value to control which related records need to be returned.
      */
-	retrieveAttribute(entityKey: string, attributeKey: string, successCallback?: Function, errorCallback?: Function, attributeType?: string, select?: string[], expand?: DynamicsWebApi.Expand[]): void;
+	retrieveAttribute<T = any>(entityKey: string, attributeKey: string, successCallback?: (result: T) => void, errorCallback?: (error: DynamicsWebApi.RequestError) => void, attributeType?: string, select?: string[], expand?: DynamicsWebApi.Expand[]): void;
     /**
      * Sends an asynchronous request to create a relationship definition.
      *
@@ -437,7 +437,7 @@ declare class DynamicsWebApi {
      * @param successCallback - The function that will be passed through and be called by a successful response.
      * @param errorCallback - The function that will be passed through and be called by a failed response.
      */
-	createRelationship(relationshipDefinition: Object, successCallback?: Function, errorCallback?: Function): void;
+	createRelationship<T = any>(relationshipDefinition: Object, successCallback?: (result: T) => void, errorCallback?: (error: DynamicsWebApi.RequestError) => void): void;
     /**
      * Sends an asynchronous request to update a relationship definition.
      *
@@ -447,7 +447,7 @@ declare class DynamicsWebApi {
      * @param relationshipType - Use this parameter to cast the Relationship to a specific type.
      * @param mergeLabels - Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false.
      */
-	updateRelationship(relationshipDefinition: Object, successCallback?: Function, errorCallback?: Function, relationshipType?: string, mergeLabels?: boolean): void;
+	updateRelationship<T = any>(relationshipDefinition: Object, successCallback?: (result: T) => void, errorCallback?: (error: DynamicsWebApi.RequestError) => void, relationshipType?: string, mergeLabels?: boolean): void;
     /**
      * Sends an asynchronous request to delete a relationship definition.
      *
@@ -455,7 +455,7 @@ declare class DynamicsWebApi {
      * @param successCallback - The function that will be passed through and be called by a successful response.
      * @param errorCallback - The function that will be passed through and be called by a failed response.
      */
-	deleteRelationship(metadataId: string, successCallback?: Function, errorCallback?: Function): void;
+	deleteRelationship(metadataId: string, successCallback?: Function, errorCallback?: (error: DynamicsWebApi.RequestError) => void): void;
     /**
      * Sends an asynchronous request to retrieve relationship definitions.
      *
@@ -465,7 +465,7 @@ declare class DynamicsWebApi {
      * @param select - Use the $select system query option to limit the properties returned.
      * @param filter - Use the $filter system query option to set criteria for which relationships will be returned.
      */
-	retrieveRelationships(successCallback?: Function, errorCallback?: Function, relationshipType?: string, select?: string[], filter?: string): void;
+	retrieveRelationships<T = any>(successCallback?: (result: DynamicsWebApi.RetrieveMultipleResponse<T>) => void, errorCallback?: (error: DynamicsWebApi.RequestError) => void, relationshipType?: string, select?: string[], filter?: string): void;
     /**
      * Sends an asynchronous request to retrieve a specific relationship definition.
      *
@@ -475,7 +475,7 @@ declare class DynamicsWebApi {
      * @param relationshipType - Use this parameter to cast a Relationship to a specific type: 1:M or M:M.
      * @param select - Use the $select system query option to limit the properties returned.
      */
-	retrieveRelationship(metadataId: string, successCallback?: Function, errorCallback?: Function, relationshipType?: string, select?: string[]): void;
+	retrieveRelationship<T = any>(metadataId: string, successCallback?: (result: T) => void, errorCallback?: (error: DynamicsWebApi.RequestError) => void, relationshipType?: string, select?: string[]): void;
     /**
      * Sends an asynchronous request to create a Global Option Set definition
      *
@@ -483,7 +483,7 @@ declare class DynamicsWebApi {
      * @param successCallback - The function that will be passed through and be called by a successful response.
      * @param errorCallback - The function that will be passed through and be called by a failed response.
      */
-	createGlobalOptionSet(globalOptionSetDefinition: Object, successCallback?: Function, errorCallback?: Function): void;
+	createGlobalOptionSet<T = any>(globalOptionSetDefinition: Object, successCallback?: (result: T) => void, errorCallback?: (error: DynamicsWebApi.RequestError) => void): void;
     /**
      * Sends an asynchronous request to update a Global Option Set.
      *
@@ -492,7 +492,7 @@ declare class DynamicsWebApi {
      * @param errorCallback - The function that will be passed through and be called by a failed response.
      * @param mergeLabels - Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false.
      */
-	updateGlobalOptionSet(globalOptionSetDefinition: Object, successCallback?: Function, errorCallback?: Function, mergeLabels?: boolean): void;
+	updateGlobalOptionSet<T = any>(globalOptionSetDefinition: Object, successCallback?: (result: T) => void, errorCallback?: (error: DynamicsWebApi.RequestError) => void, mergeLabels?: boolean): void;
     /**
      * Sends an asynchronous request to delete a Global Option Set.
      *
@@ -500,7 +500,7 @@ declare class DynamicsWebApi {
      * @param successCallback - The function that will be passed through and be called by a successful response.
      * @param errorCallback - The function that will be passed through and be called by a failed response.
      */
-	deleteGlobalOptionSet(globalOptionSetKey: string, successCallback?: Function, errorCallback?: Function): void;
+	deleteGlobalOptionSet(globalOptionSetKey: string, successCallback?: Function, errorCallback?: (error: DynamicsWebApi.RequestError) => void): void;
     /**
      * Sends an asynchronous request to retrieve Global Option Set definitions.
      *
@@ -510,7 +510,7 @@ declare class DynamicsWebApi {
      * @param castType - Use this parameter to cast a Global Option Set to a specific type.
      * @param select - Use the $select system query option to limit the properties returned
      */
-	retrieveGlobalOptionSet(globalOptionSetKey: string, successCallback?: Function, errorCallback?: Function, castType?: string, select?: string[]): void;
+	retrieveGlobalOptionSet<T = any>(globalOptionSetKey: string, successCallback?: (result: T) => void, errorCallback?: (error: DynamicsWebApi.RequestError) => void, castType?: string, select?: string[]): void;
     /**
      * Sends an asynchronous request to retrieve Global Option Set definitions.
      *
@@ -519,7 +519,7 @@ declare class DynamicsWebApi {
      * @param castType - Use this parameter to cast a Global Option Set to a specific type.
      * @param select - Use the $select system query option to limit the properties returned
      */
-	retrieveGlobalOptionSets(successCallback?: Function, errorCallback?: Function, castType?: string, select?: string[]): void;
+	retrieveGlobalOptionSets<T = any>(successCallback?: (result: DynamicsWebApi.RetrieveMultipleResponse<T>) => void, errorCallback?: (error: DynamicsWebApi.RequestError) => void, castType?: string, select?: string[]): void;
     /**
      * Starts a batch request.
      *
@@ -563,10 +563,12 @@ declare namespace DynamicsWebApi {
 		collection?: string;
 		/**Impersonates the user.A String representing the GUID value for the Dynamics 365 system user id. */
 		impersonate?: string;
-		/** If set to 'true', DynamicsWebApi adds a request header 'Cache-Control: no-cache'.Default value is 'false'. */
+		/**If set to 'true', DynamicsWebApi adds a request header 'Cache-Control: no-cache'.Default value is 'false'. */
 		noCache?: boolean;
-		/** Authorization Token. If set, onTokenRefresh will not be called. */
+		/**Authorization Token. If set, onTokenRefresh will not be called. */
 		token?: string;
+		/**Sets a number of milliseconds before a request times out */
+		timeout?: number;
 	}
 
 	interface CRUDRequest extends Request {
@@ -727,6 +729,8 @@ declare namespace DynamicsWebApi {
 		status?: number;
 		/**HTTP status text. Frequently empty */
 		statusText?: string;
+		/**HTTP Response headers */
+		headers?: any;
 		/**Details about an error */
 		innererror?: {
 			/**A message describing the error, this is frequently the same as the outer message */
@@ -735,6 +739,33 @@ declare namespace DynamicsWebApi {
 			type?: string;
 			/**Details from the server about where the error occurred */
 			stacktrace?: string;
+		}
+	}
+
+	interface MultipleResponse<T = any> {
+		/**Multiple respone entities */
+		value?: T[]
+	}
+
+	interface AllResponse<T> extends MultipleResponse<T> {
+		/**@odata.deltaLink value */
+		oDataDeltaLink?: string
+	}
+
+	interface RetrieveMultipleResponse<T> extends MultipleResponse<T> {
+		/**@odata.nextLink value */
+		oDataNextLink?: string,
+		/**@odata.deltaLink value */
+		oDataDeltaLink?: string
+	}
+
+	interface FetchXmlResponse<T> extends MultipleResponse<T> {
+		/**Paging information */
+		PagingInfo?: {
+			/**Number of the next page */
+			nextPage?: number,
+			/**Next page cookie */
+			cookie?: string
 		}
 	}
 }

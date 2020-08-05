@@ -102,7 +102,7 @@ describe("xhr -", function() {
             });
 
             it("returns the correct response", function () {
-                expect(responseObject).to.deep.equal({ message: "message", status: 404, statusText: "Not Found" });
+				expect(responseObject).to.deep.equal({ message: "message", status: 404, statusText: "Not Found", headers: { dummy: "header" } });
             });
         });
 
@@ -150,7 +150,7 @@ describe("xhr -", function() {
             });
 
             it("returns the correct response", function () {
-                expect(responseObject).to.deep.equal({ message: "Unexpected Error", status: 404, statusText: "Not Found" });
+				expect(responseObject).to.deep.equal({ message: "Unexpected Error", status: 404, statusText: "Not Found", headers: { dummy: "header" } });
             });
         });
 
@@ -879,7 +879,7 @@ describe("xhr -", function() {
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).to.deep.equal({ message: "Network Error", status: 0, statusText: "" });
+			expect(responseObject).to.deep.equal({ message: "Network Error", status: 0, statusText: "", headers: {} });
         });
     });
 
@@ -928,7 +928,7 @@ describe("xhr -", function() {
         });
 
         it("returns the correct response", function () {
-            expect(responseObject).to.deep.equal({ message: "Request Timed Out", status: 0, statusText: "" });
+			expect(responseObject).to.deep.equal({ message: "Request Timed Out", status: 0, statusText: "", headers: {} });
         });
     });
 });

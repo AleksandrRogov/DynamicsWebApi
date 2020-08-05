@@ -202,7 +202,11 @@ export class RequestUtility {
 
             if (request.isBatch) {
                 ErrorHelper.boolParameterCheck(request.isBatch, `DynamicsWebApi.${functionName}`, "request.isBatch");
-            }
+			}
+
+			if (request.timeout) {
+				ErrorHelper.numberParameterCheck(request.timeout, `DynamicsWebApi.${functionName}`, "request.timeout");
+			}
 
             if (request.expand && request.expand.length) {
                 ErrorHelper.stringOrArrayParameterCheck(request.expand, `DynamicsWebApi.${functionName}`, "request.expand");

@@ -36,8 +36,8 @@ function xhrRequest (options: DynamicsWebApi.Core.RequestOptions) {
                 case 201: // Success with content returned in response body.
                 case 204: // Success with no content returned in response body.
                 case 304: {// Success with Not Modified
-                    var responseHeaders = parseResponseHeaders(request.getAllResponseHeaders());
-                    var responseData = parseResponse(request.responseText, responseHeaders, responseParams);
+					let responseHeaders = parseResponseHeaders(request.getAllResponseHeaders());
+                    let responseData = parseResponse(request.responseText, responseHeaders, responseParams);
 
                     var response = {
                         data: responseData,
@@ -50,8 +50,9 @@ function xhrRequest (options: DynamicsWebApi.Core.RequestOptions) {
                 }
                 default: // All other statuses are error cases.
                     var error;
-                    try {
-                        var errorParsed = parseResponse(request.responseText, parseResponseHeaders(request.getAllResponseHeaders()), responseParams);
+					try {
+						var headers = parseResponseHeaders(request.getAllResponseHeaders());
+                        let errorParsed = parseResponse(request.responseText, parseResponseHeaders(request.getAllResponseHeaders()), responseParams);
 
                         if (Array.isArray(errorParsed)) {
                             errorCallback(errorParsed);
@@ -70,7 +71,8 @@ function xhrRequest (options: DynamicsWebApi.Core.RequestOptions) {
 
                     errorCallback(ErrorHelper.handleHttpError(error, {
                         status: request.status,
-                        statusText: request.statusText
+						statusText: request.statusText,
+						headers: headers
                     }));
 
                     break;
@@ -85,21 +87,25 @@ function xhrRequest (options: DynamicsWebApi.Core.RequestOptions) {
         request.timeout = options.timeout;
     }
 
-    request.onerror = function () {
+	request.onerror = function () {
+		let headers = parseResponseHeaders(request.getAllResponseHeaders());
         errorCallback(ErrorHelper.handleHttpError({
             status: request.status,
             statusText: request.statusText,
-            message: request.responseText || "Network Error"
+			message: request.responseText || "Network Error",
+			headers: headers
         }));
         responseParams.length = 0;
         request = null;
     };
 
     request.ontimeout = function () {
-        errorCallback(ErrorHelper.handleHttpError({
+		let headers = parseResponseHeaders(request.getAllResponseHeaders());
+		errorCallback(ErrorHelper.handleHttpError({
             status: request.status,
             statusText: request.statusText,
-            message: request.responseText || "Request Timed Out"
+			message: request.responseText || "Request Timed Out",
+			headers: headers
         }));
         responseParams.length = 0;
         request = null;

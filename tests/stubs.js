@@ -712,7 +712,7 @@ var responseStubs = {
             'HTTP/1.1 400 Bad Request\r\n' +
             'OData-Version: 4.0\r\n' +
             'REQ_ID: 5fe339e5-c75e-4dad-9597-b257ebce666b\r\n' +
-            'OData-Version: 4.0\r\n' +
+			'Content-Type: application/json; odata.metadata=minimal\r\n' +
             '\r\n' +
             '{"error":{"code":"0x0","message":"error","innererror":{"message":"error","type":"Microsoft.Crm.CrmHttpException","stacktrace":"stack"}}}\r\n' +
             '--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n' +
@@ -987,7 +987,8 @@ var responseStubs = {
         }
     },
     upsertPreventCreateResponse: {
-        status: 404,
+		status: 404,
+		responseHeaders: { dummy: "header" },
         responseText: JSON.stringify({
             error: { message: "message" }
         })

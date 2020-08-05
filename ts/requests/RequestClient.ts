@@ -21,7 +21,7 @@ export class RequestClient {
 	 * @param {boolean} [isBatch] - Indicates whether the request is a Batch request or not. Default: false
 	 * @param {boolean} [isAsync] - Indicates whether the request should be made synchronously or asynchronously.
 	 */
-	static sendRequest(method: string, path: string, config: DynamicsWebApi.Config, data, additionalHeaders, responseParams, isAsync: boolean, successCallback: Function, errorCallback: Function): void {
+	static sendRequest(method: string, path: string, config: DynamicsWebApi.Config, data, additionalHeaders, responseParams, isAsync: boolean, timeout: number, successCallback: Function, errorCallback: Function): void {
 
 		additionalHeaders = additionalHeaders || {};
 		responseParams = responseParams || {};
@@ -82,7 +82,7 @@ export class RequestClient {
 				successCallback: successCallback,
 				errorCallback: errorCallback,
 				isAsync: isAsync,
-				timeout: config.timeout
+				timeout: timeout
 			});
 		};
 
@@ -120,7 +120,7 @@ export class RequestClient {
 				noCache: true
 			}, config, 'retrieveMultiple');
 
-			RequestClient.sendRequest('GET', request.path, config, null, request.headers, null, request.async, resolve, reject);
+			RequestClient.sendRequest('GET', request.path, config, null, request.headers, null, request.async, config.timeout, resolve, reject);
 		}
 	}
 
@@ -162,7 +162,7 @@ export class RequestClient {
 			//add response parameters to parse
 			RequestClient._responseParseParams.push(responseParams);
 
-			RequestClient._batchRequestCollection.push({ method: method, request: request });
+			RequestClient._batchRequestCollection.push({ method: method, request: Utility.copyObject(request) });
 
 			//check for errors
 			RequestUtility.compose(request, config, functionName);
@@ -176,14 +176,14 @@ export class RequestClient {
 
 				if (convertedRequest.path.length > 2000) {
 					//if the URL contains more characters than max possible limit, convert the request to a batch request
-					RequestClient._batchRequestCollection.push({ method: method, request: request });
+					RequestClient._batchRequestCollection.push({ method: method, request: Utility.copyObject(request) });
 
 					method = "POST";
 					convertedRequest.path = "$batch";
 					responseParams.convertedToBatch = true;
 				}
 
-				RequestClient.sendRequest(method, convertedRequest.path, config, request.data || request.entity, convertedRequest.headers, responseParams, request.async, resolve, reject);
+				RequestClient.sendRequest(method, convertedRequest.path, config, request.data || request.entity, convertedRequest.headers, responseParams, request.async, request.timeout || config.timeout, resolve, reject);
 			}, reject);
 		}
 	}

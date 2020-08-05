@@ -261,6 +261,7 @@ orderBy | Array | `retrieveMultipleRequest`, `retrieveAllRequest` | An Array (of
 returnRepresentation | Boolean | `createRequest`, `updateRequest`, `upsertRequest` | Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
 savedQuery | String | `retrieveRequest` | A String representing the GUID value of the saved query.
 select | Array | `retrieveRequest`, `retrieveMultipleRequest`, `retrieveAllRequest`, `updateRequest`, `upsertRequest` | An Array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
+timeout | Number | All | `v.1.6.10+` Sets a number of milliseconds before a request times out.
 token | String | All | Authorization Token. If set, onTokenRefresh will not be called.
 top | Number | `retrieveMultipleRequest`, `retrieveAllRequest` | Limit the number of results returned by using the $top system query option. Do not use $top with $count!
 trackChanges | Boolean | `retrieveMultipleRequest`, `retrieveAllRequest` | `v.1.5.11+` Sets Prefer header with value 'odata.track-changes' to request that a delta link be returned which can subsequently be used to retrieve entity changes. __Important!__ Change Tracking must be enabled for the entity. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/use-change-tracking-synchronize-data-external-systems#enable-change-tracking-for-an-entity)
@@ -1138,7 +1139,7 @@ To make sure that it works, please execute any operation before calling `dynamic
 
 There are also out of the box Web API limitations for batch operations:
 
-* Batch requests can contain up to 100 individual requests and cannot contain other batch requests.
+* Batch requests can contain up to 1000 individual requests and cannot contain other batch requests.
 * The `odata.continue-on-error` preference is not supported by the Web API. Any error that occurs in the batch will stop the processing of the remainder of the batch.
 
 You can find an official documentation that covers Web API batch requests here: [Execute batch operations using the Web API](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/webapi/execute-batch-operations-using-web-api).

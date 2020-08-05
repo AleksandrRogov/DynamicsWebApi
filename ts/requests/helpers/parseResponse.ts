@@ -10,32 +10,32 @@ import { dateReviver } from "./dateReviver";
 
 function getFormattedKeyValue(keyName: string, value: any): any[] {
 	var newKey = null;
-	if (keyName.indexOf('@') !== -1) {
-		var format = keyName.split('@');
+	if (keyName.indexOf("@") !== -1) {
+		var format = keyName.split("@");
 		switch (format[1]) {
-			case 'odata.context':
-				newKey = 'oDataContext';
+			case "odata.context":
+				newKey = "oDataContext";
 				break;
-			case 'odata.count':
-				newKey = 'oDataCount';
+			case "odata.count":
+				newKey = "oDataCount";
 				value = value != null
 					? parseInt(value)
 					: 0;
 				break;
-			case 'odata.nextLink':
-				newKey = 'oDataNextLink';
+			case "odata.nextLink":
+				newKey = "oDataNextLink";
 				break;
-			case 'odata.deltaLink':
-				newKey = 'oDataDeltaLink';
+			case "odata.deltaLink":
+				newKey = "oDataDeltaLink";
 				break;
 			case DWA.Prefer.Annotations.FormattedValue:
-				newKey = format[0] + '_Formatted';
+				newKey = format[0] + "_Formatted";
 				break;
 			case DWA.Prefer.Annotations.AssociatedNavigationProperty:
-				newKey = format[0] + '_NavigationProperty';
+				newKey = format[0] + "_NavigationProperty";
 				break;
 			case DWA.Prefer.Annotations.LookupLogicalName:
-				newKey = format[0] + '_LogicalName';
+				newKey = format[0] + "_LogicalName";
 				break;
 		}
 	}
@@ -115,6 +115,100 @@ function parseData(object: any, parseParams?: any): any {
 	return object;
 }
 
+const responseHeaderRegex = /^([^()<>@,;:\\"\/[\]?={} \t]+)\s?:\s?(.*)/;
+
+//partially taken from http://olingo.apache.org/doc/javascript/apidoc/batch.js.html
+function parseBatchHeaders(text: string) : any {
+	var headers = {};
+	var parts;
+	var line;
+	var ctx = { position: 0 };
+	var pos;
+
+	do {
+		pos = ctx.position;
+		line = readLine(text, ctx);
+		parts = responseHeaderRegex.exec(line);
+		if (parts !== null) {
+			headers[parts[1].toLowerCase()] = parts[2];
+		}
+		else {
+			// Whatever was found is not a header, so reset the context position.
+			ctx.position = pos;
+		}
+	} while (line && parts);
+
+	normalizeHeaders(headers);
+
+	return headers;
+}
+
+//partially taken from http://olingo.apache.org/doc/javascript/apidoc/batch.js.html
+function readLine(text: string, ctx: any): string {
+	return readTo(text, ctx, "\r\n");
+}
+
+//partially taken from http://olingo.apache.org/doc/javascript/apidoc/batch.js.html
+function readTo(text: string, ctx: any, str: string): string {
+	var start = ctx.position || 0;
+	var end = text.length;
+	if (str) {
+		end = text.indexOf(str, start);
+		if (end === -1) {
+			return null;
+		}
+		ctx.position = end + str.length;
+	} else {
+		ctx.position = end;
+	}
+
+	return text.substring(start, end);
+}
+
+function normalizeHeaders(headers: any): string[] {
+	let keys = [];
+	for (var i = 0; i < headers.length; ++i) {
+		var key = normalizeHeader(headers[i]);
+		if (key.length > 0) {
+			keys.push(key);
+		}
+	}
+	return keys;
+}
+
+function normalizeHeader(header: any): string {
+	var key = "";
+	var upperCase = false;
+	for (var i = 0; i < header.length; ++i) {
+		var letter = header[i];
+		if (letter === " " && key.length > 0) {
+			upperCase = true;
+			continue;
+		}
+		if (!isAlnum(letter)) {
+			continue;
+		}
+		if (key.length === 0 && isDigit(letter)) {
+			continue;
+		}
+		if (upperCase) {
+			upperCase = false;
+			key += letter.toUpperCase();
+		} else {
+			key += letter.toLowerCase();
+		}
+	}
+	return key;
+}
+
+function isDigit(char: string): boolean {
+	return char >= "0" && char <= "9";
+}
+
+function isAlnum(char: string): boolean {
+	return char >= "A" && char <= "Z" || char >= "a" && char <= "z" || isDigit(char);
+}
+
 //partially taken from https://github.com/emiltholin/google-api-batch-utils
 /**
  *
@@ -183,10 +277,13 @@ function parseBatchResponse(response: string, parseParams: any, requestNumber: n
 				var parsedResponse = parseData(JSON.parse(responseData, dateReviver), parseParams[requestNumber]);
 
 				if (httpStatus >= 400) {
+					let responseHeaders = parseBatchHeaders(batchResponse.substring(batchResponse.indexOf(httpStatusReg[0]) + httpStatusReg[0].length + 1, batchResponse.indexOf("{")));
+
 					result.push(ErrorHelper.handleHttpError(parsedResponse, {
 						status: httpStatus,
 						statusText: httpStatusMessage,
-						statusMessage: httpStatusMessage
+						statusMessage: httpStatusMessage,
+						headers: responseHeaders
 					}));
 				}
 				else {
@@ -211,7 +308,7 @@ function parseBatchResponse(response: string, parseParams: any, requestNumber: n
 export function parseResponse(response: string, responseHeaders: any, parseParams: any[]) {
 	var parseResult = undefined;
 	if (response.length) {
-		if (response.indexOf('--batchresponse_') > -1) {
+		if (response.indexOf("--batchresponse_") > -1) {
 			var batch = parseBatchResponse(response, parseParams);
 
 			parseResult = parseParams.length === 1 && parseParams[0].convertedToBatch
@@ -223,14 +320,14 @@ export function parseResponse(response: string, responseHeaders: any, parseParam
 		}
 	}
 	else {
-		if (parseParams.length && parseParams[0].hasOwnProperty('valueIfEmpty')) {
+		if (parseParams.length && parseParams[0].hasOwnProperty("valueIfEmpty")) {
 			parseResult = parseParams[0].valueIfEmpty;
 		}
 		else
-			if (responseHeaders['OData-EntityId'] || responseHeaders['odata-entityid']) {
-				var entityUrl = responseHeaders['OData-EntityId']
-					? responseHeaders['OData-EntityId']
-					: responseHeaders['odata-entityid'];
+			if (responseHeaders["OData-EntityId"] || responseHeaders["odata-entityid"]) {
+				var entityUrl = responseHeaders["OData-EntityId"]
+					? responseHeaders["OData-EntityId"]
+					: responseHeaders["odata-entityid"];
 
 				var guidResult = /([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})\)$/i.exec(entityUrl);
 

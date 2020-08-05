@@ -145,5 +145,31 @@ export class Utility {
 
     static initWebApiUrl(version: string): string {
         return `${Utility.getClientUrl()}/api/data/v${version}/`;
-    }
+	}
+
+	private static isObject(obj: any) : boolean {
+		const type = typeof obj;
+		return type === 'object' && !!obj;
+	}
+
+	static copyObject(src: any): any {
+		let target = {};
+		for (var prop in src) {
+			if (src.hasOwnProperty(prop)) {
+				// if the value is a nested object, recursively copy all its properties
+				if (Utility.isObject(src[prop])) {
+					if (!Array.isArray(src[prop])) {
+						target[prop] = Utility.copyObject(src[prop]);
+					}
+					else {
+						target[prop] = src[prop].slice();
+					}
+
+				} else {
+					target[prop] = src[prop];
+				}
+			}
+		}
+		return target;
+	}
 }
