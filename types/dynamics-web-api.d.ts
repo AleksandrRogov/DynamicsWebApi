@@ -434,7 +434,7 @@ declare class DynamicsWebApi {
     /**
      * Executes a batch request. Please call DynamicsWebApi.startBatch() first to start a batch request.
      */
-	executeBatch(): Promise<any[]>;
+	executeBatch(request?: Request): Promise<any[]>;
     /**
      * Creates a new instance of DynamicsWebApi
      *
