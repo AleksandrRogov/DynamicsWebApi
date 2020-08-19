@@ -1,4 +1,4 @@
-/*! dynamics-web-api v1.6.10 (c) 2020 Aleksandr Rogov */
+/*! dynamics-web-api v1.6.11 (c) 2020 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -2274,13 +2274,20 @@ function DynamicsWebApi(config) {
 
     /**
      * Executes a batch request. Please call DynamicsWebApi.startBatch() first to start a batch request.
+	 * @param request
      * @returns {Promise} D365 Web Api result
      */
-	this.executeBatch = function () {
+	this.executeBatch = function (request) {
+
+		request = request || {};
+
+		ErrorHelper.parameterCheck(request, 'DynamicsWebApi.executeBatch', 'request');
 		ErrorHelper.batchNotStarted(_isBatch);
 
+		request.collection = '$batch';
+
 		_isBatch = false;
-		return _makeRequest('POST', { collection: '$batch' }, 'executeBatch')
+		return _makeRequest('POST', request, 'executeBatch')
 			.then(function (response) {
 				return response.data;
 			});

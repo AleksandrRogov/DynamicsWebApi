@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.6.10 (c) 2020 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.6.11 (c) 2020 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -2745,13 +2745,18 @@ function DynamicsWebApi(config) {
 
     /**
      * Executes a batch request. Please call DynamicsWebApi.startBatch() first to start a batch request.
+     * @param request
      * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
      * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
      */
-    this.executeBatch = function (successCallback, errorCallback) {
+    this.executeBatch = function (successCallback, errorCallback, request) {
+
+        request = request || {};
+
         ErrorHelper.batchNotStarted(_isBatch);
         ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.executeBatch", "successCallback");
         ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.executeBatch", "errorCallback");
+        ErrorHelper.parameterCheck(request, "DynamicsWebApi.executeBatch", "request");
 
         _isBatch = false;
 
@@ -2759,7 +2764,9 @@ function DynamicsWebApi(config) {
             successCallback(response.data);
         };
 
-        _makeRequest('POST', { collection: '$batch' }, 'executeBatch', onSuccess, errorCallback);
+        request.collection = '$batch';
+
+        _makeRequest('POST', request, 'executeBatch', onSuccess, errorCallback);
     };
 
     /**
