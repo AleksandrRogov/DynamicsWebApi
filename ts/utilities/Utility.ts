@@ -1,7 +1,74 @@
-﻿import { DynamicsWebApi } from "../../types/dynamics-web-api-types";
+﻿import { Core } from "../types";
 
 declare let GetGlobalContext: any;
 declare let Xrm: any;
+
+const INITIAL_TIME = Date.now();
+let prevNow = 0;
+
+/**
+ * Cross platform compatible partial performance implementation
+ */
+//partially taken from https://github.com/getsentry/sentry-javascript/blob/master/packages/utils/src/misc.ts
+interface CrossPlatformPerformance {
+	/**
+	 * Returns the current timestamp in ms
+	 */
+	now(): number;
+	timeOrigin: number;
+}
+
+const performanceFallback: CrossPlatformPerformance = {
+	now(): number {
+		let now = Date.now() - INITIAL_TIME;
+		if (now < prevNow) {
+			now = prevNow;
+		}
+		prevNow = now;
+		return now;
+	},
+	timeOrigin: INITIAL_TIME
+};
+
+function isNodeEnv(): boolean {
+	// tslint:disable:strict-type-predicates
+	return Object.prototype.toString.call(typeof process !== "undefined" ? process : 0) === "[object process]";
+}
+
+function getGlobalObject<T>(): T {
+	return (isNodeEnv()
+		? global
+		: typeof window !== "undefined"
+			? window
+			: typeof self !== "undefined"
+				? self
+				: {}) as T;
+}
+
+function getPerformance(): CrossPlatformPerformance {
+	if (isNodeEnv()) {
+		try {
+			const perfHooks = require("perf_hooks");
+			return perfHooks.performance;
+		} catch (_) {
+			return performanceFallback;
+		}
+	}
+
+	let window = getGlobalObject<Window>();
+
+	if (window.performance) {
+		// Polyfill for performance.timeOrigin.
+		// tslint:disable-next-line:strict-type-predicates
+		if (typeof window.performance.timeOrigin === "undefined") {
+			// @ts-ignore
+			// tslint:disable-next-line:deprecation
+			window.performance.timeOrigin = (window.performance.timing && window.performance.timing.navigationStart) || INITIAL_TIME;
+		}
+	}
+
+	return window.performance || performanceFallback
+}
 
 export class Utility {
     /**
@@ -10,7 +77,7 @@ export class Utility {
      * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
      * @returns {string}
      */
-    static buildFunctionParameters(parameters?): string {
+    static buildFunctionParameters(parameters?: any): string {
         if (parameters) {
             var parameterNames = Object.keys(parameters);
             var functionParameters = "";
@@ -54,7 +121,7 @@ export class Utility {
      * @param {number} currentPageNumber - A current page number. Fix empty paging-cookie for complex fetch xmls.
      * @returns {{cookie: "", number: 0, next: 1}}
      */
-	static getFetchXmlPagingCookie(pageCookies: string = "", currentPageNumber: number = 1): DynamicsWebApi.Core.FetchXmlCookie {
+	static getFetchXmlPagingCookie(pageCookies: string = "", currentPageNumber: number = 1): Core.FetchXmlCookie {
         //get the page cokies
         pageCookies = unescape(unescape(pageCookies));
 
@@ -75,7 +142,9 @@ export class Utility {
                 nextPage: currentPageNumber + 1
             };
         }
-    }
+	}
+
+	static isNodeEnv = isNodeEnv;
 
     /**
      * Converts a response to a reference object
@@ -83,7 +152,7 @@ export class Utility {
      * @param {Object} responseData - Response object
      * @returns {ReferenceObject}
      */
-    static convertToReferenceObject(responseData): DynamicsWebApi.Core.ReferenceObject {
+    static convertToReferenceObject(responseData: any): Core.ReferenceObject {
         var result = /\/(\w+)\(([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})/i.exec(responseData["@odata.id"]);
         return { id: result[2], collection: result[1], oDataContext: responseData["@odata.context"] };
     }
@@ -93,13 +162,16 @@ export class Utility {
      * @param {Object} value
      * @returns {boolean}
      */
-    static isNull(value): boolean {
+    static isNull(value: any): boolean {
         return typeof value === "undefined" || value == null;
     }
 
     static generateUUID(): string { // Public Domain/MIT
-        var d = new Date().getTime();
-        if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
+		var d = new Date().getTime();
+
+		const performance = getPerformance();
+
+		if (performance && typeof performance.now === 'function') {
             d += performance.now(); //use high-precision timer if available
         }
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -109,7 +181,7 @@ export class Utility {
         });
     }
 
-    static getXrmContext() {
+    static getXrmContext(): any {
         if (typeof GetGlobalContext !== 'undefined') {
             return GetGlobalContext();
         }
@@ -128,7 +200,7 @@ export class Utility {
         throw new Error('Xrm Context is not available. In most cases, it can be resolved by adding a reference to a ClientGlobalContext.js.aspx. Please refer to MSDN documentation for more details.');
     }
 
-    static getXrmUtility() {
+    static getXrmUtility(): any {
         return typeof Xrm !== "undefined" ? Xrm.Utility : null;
     }
 
@@ -147,12 +219,12 @@ export class Utility {
         return `${Utility.getClientUrl()}/api/data/v${version}/`;
 	}
 
-	private static isObject(obj: any) : boolean {
+	static isObject(obj: any) : boolean {
 		const type = typeof obj;
 		return type === 'object' && !!obj;
 	}
 
-	static copyObject(src: any): any {
+	static copyObject<T = any>(src: any): T {
 		let target = {};
 		for (var prop in src) {
 			if (src.hasOwnProperty(prop)) {
@@ -170,6 +242,6 @@ export class Utility {
 				}
 			}
 		}
-		return target;
+		return <T>target;
 	}
 }

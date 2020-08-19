@@ -1,18 +1,23 @@
 {
-  "compilerOptions": {
-    "noImplicitAny": false,
-    "module": "commonjs",
-    "noEmitOnError": true,
-    "removeComments": false,
-    "sourceMap": false,
-    "target": "es6",
-    "allowJs": false,
-    "outDir": "lib"
-  },
+	"compilerOptions": {
+		"noImplicitAny": false,
+		"module": "commonjs",
+		//"esModuleInterop": true,
+		"noEmitOnError": true,
+		"removeComments": false,
+		"sourceMap": false,
+		"target": "es6",
+		"allowJs": false,
+		"outDir": "lib",
+		"lib": ["ES6", "DOM"],
+		"declaration": true,
+		"declarationMap": true
+		//"strict": true
+	},
   "compileOnSave": true,
   "include": ["./ts/**/*"],
   "exclude": [
     "node_modules",
-    "types"
+    "typesold"
   ]
 }

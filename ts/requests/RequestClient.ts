@@ -1,10 +1,11 @@
 import { Utility } from "../utilities/Utility";
 import { RequestUtility } from "../utilities/RequestUtility";
-import { DynamicsWebApi } from "../../types/dynamics-web-api-types";
+import { DynamicsWebApi } from "../../ts/dynamics-web-api";
+import { Core } from "../../ts/types";
 
 export class RequestClient {
 
-	private static _batchRequestCollection = [];
+	private static _batchRequestCollection: Core.InternalRequest[] = [];
 	private static _responseParseParams = [];
 
 	/**
@@ -21,36 +22,38 @@ export class RequestClient {
 	 * @param {boolean} [isBatch] - Indicates whether the request is a Batch request or not. Default: false
 	 * @param {boolean} [isAsync] - Indicates whether the request should be made synchronously or asynchronously.
 	 */
-	static sendRequest(method: string, path: string, config: DynamicsWebApi.Config, data, additionalHeaders, responseParams, isAsync: boolean, timeout: number, successCallback: Function, errorCallback: Function): void {
+	static sendRequest(request: Core.InternalRequest, config: DynamicsWebApi.Config, successCallback: Function, errorCallback: Function): void {
 
-		additionalHeaders = additionalHeaders || {};
-		responseParams = responseParams || {};
+		request.headers = request.headers || {};
+		request.responseParameters = request.responseParameters || {};
 
 		//add response parameters to parse
-		RequestClient._responseParseParams.push(responseParams);
+		RequestClient._responseParseParams.push(request.responseParameters);
 
 		//stringify passed data
 		var stringifiedData = null;
 
 		var batchResult;
+		let isBatchConverted = request.responseParameters != null && request.responseParameters.convertedToBatch;
 
-		if (path === "$batch") {
+		if (request.path === "$batch" && !isBatchConverted) {
 			batchResult = RequestUtility.convertToBatch(RequestClient._batchRequestCollection, config);
 
 			stringifiedData = batchResult.body;
-			additionalHeaders = batchResult.headers;
+			request.headers = batchResult.headers;
 
 			//clear an array of requests
 			RequestClient._batchRequestCollection.length = 0;
-
 		}
 		else {
-			stringifiedData = RequestUtility.stringifyData(data, config);
-			additionalHeaders = RequestUtility.setStandardHeaders(additionalHeaders);
+			stringifiedData = !isBatchConverted ? RequestUtility.stringifyData(request.data, config) : request.data;
+
+			if (!isBatchConverted)
+				request.headers = RequestUtility.setStandardHeaders(request.headers);
 		}
 
-		if (config.impersonate && !additionalHeaders["MSCRMCallerID"]) {
-			additionalHeaders["MSCRMCallerID"] = config.impersonate;
+		if (config.impersonate && !request.headers["MSCRMCallerID"]) {
+			request.headers["MSCRMCallerID"] = config.impersonate;
 		}
 
 		var executeRequest;
@@ -67,27 +70,27 @@ export class RequestClient {
 
 		var sendInternalRequest = function (token?: any): void {
 			if (token) {
-				if (!additionalHeaders) {
-					additionalHeaders = {};
+				if (!request.headers) {
+					request.headers = {};
 				}
-				additionalHeaders["Authorization"] = "Bearer " + (token.hasOwnProperty("accessToken") ? token.accessToken : token);
+				request.headers["Authorization"] = "Bearer " + (token.hasOwnProperty("accessToken") ? token.accessToken : token);
 			}
 
 			executeRequest({
-				method: method,
-				uri: config.webApiUrl + path,
+				method: request.method,
+				uri: config.webApiUrl + request.path,
 				data: stringifiedData,
-				additionalHeaders: additionalHeaders,
+				additionalHeaders: request.headers,
 				responseParams: RequestClient._responseParseParams,
 				successCallback: successCallback,
 				errorCallback: errorCallback,
-				isAsync: isAsync,
-				timeout: timeout
+				isAsync: request.async,
+				timeout: request.timeout || config.timeout
 			});
 		};
 
 		//call a token refresh callback only if it is set and there is no "Authorization" header set yet
-		if (config.onTokenRefresh && (!additionalHeaders || (additionalHeaders && !additionalHeaders["Authorization"]))) {
+		if (config.onTokenRefresh && (!request.headers || (request.headers && !request.headers["Authorization"]))) {
 			config.onTokenRefresh(sendInternalRequest);
 		}
 		else {
@@ -95,7 +98,7 @@ export class RequestClient {
 		}
 	}
 
-	private static _getCollectionNames(entityName: string, config: DynamicsWebApi.Config, successCallback: Function, errorCallback: Function): void {
+	private static _getCollectionNames(entityName: string, config: DynamicsWebApi.Config, successCallback: (collection: string) => void, errorCallback: Function): void {
 
 		if (!Utility.isNull(RequestUtility.entityNames)) {
 			successCallback(RequestUtility.findCollectionName(entityName) || entityName);
@@ -111,16 +114,18 @@ export class RequestClient {
 			};
 
 			var reject = function (error) {
-				errorCallback({ message: 'Unable to fetch EntityDefinitions. Error: ' + error.message });
+				errorCallback({ message: "Unable to fetch EntityDefinitions. Error: " + error.message });
 			};
 
-			var request = RequestUtility.compose({
-				collection: 'EntityDefinitions',
-				select: ['EntitySetName', 'LogicalName'],
-				noCache: true
-			}, config, 'retrieveMultiple');
+			let request = RequestUtility.compose({
+				method: "GET",
+				collection: "EntityDefinitions",
+				select: ["EntitySetName", "LogicalName"],
+				noCache: true,
+				functionName: "retrieveMultiple"
+			}, config);
 
-			RequestClient.sendRequest('GET', request.path, config, null, request.headers, null, request.async, config.timeout, resolve, reject);
+			RequestClient.sendRequest(request, config, resolve, reject);
 		}
 	}
 
@@ -132,7 +137,7 @@ export class RequestClient {
 		return exceptions.indexOf(entityName) > -1;
 	}
 
-	private static _checkCollectionName(entityName: string, config: DynamicsWebApi.Config, successCallback: Function, errorCallback: Function): void {
+	private static _checkCollectionName(entityName: string, config: DynamicsWebApi.Config, successCallback: (collection: string) => void, errorCallback: Function): void {
 
 		if (RequestClient._isEntityNameException(entityName) || Utility.isNull(entityName)) {
 			successCallback(entityName);
@@ -154,36 +159,38 @@ export class RequestClient {
 		}
 	}
 
-	static makeRequest(method: string, request: DynamicsWebApi.Core.InternalRequest, functionName: string, config: DynamicsWebApi.Config, responseParams: any, resolve: Function, reject: Function): void {
-		responseParams = responseParams || {};
+	static makeRequest(request: Core.InternalRequest, config: DynamicsWebApi.Config, resolve: Function, reject: Function): void {
+		request.responseParameters = request.responseParameters || {};
 
 		//no need to make a request to web api if it's a part of batch
 		if (request.isBatch) {
+			request = RequestUtility.compose(request, config);
+
 			//add response parameters to parse
-			RequestClient._responseParseParams.push(responseParams);
+			RequestClient._responseParseParams.push(request.responseParameters);
 
-			RequestClient._batchRequestCollection.push({ method: method, request: Utility.copyObject(request) });
-
-			//check for errors
-			RequestUtility.compose(request, config, functionName);
+			RequestClient._batchRequestCollection.push(request);
 		}
 		else {
-			RequestClient._checkCollectionName(request.collection, config, function (collectionName) {
+			RequestClient._checkCollectionName(request.collection, config, collectionName => {
 				request.collection = collectionName;
-				var convertedRequest = RequestUtility.compose(request, config, functionName);
 
-				responseParams.convertedToBatch = false;
+				request = RequestUtility.compose(request, config);
 
-				if (convertedRequest.path.length > 2000) {
-					//if the URL contains more characters than max possible limit, convert the request to a batch request
-					RequestClient._batchRequestCollection.push({ method: method, request: Utility.copyObject(request) });
+				request.responseParameters.convertedToBatch = false;
 
-					method = "POST";
-					convertedRequest.path = "$batch";
-					responseParams.convertedToBatch = true;
+				//if the URL contains more characters than max possible limit, convert the request to a batch request
+				if (request.path.length > 2000) {
+					let batchRequest = RequestUtility.convertToBatch([request], config);
+
+					request.method = "POST";
+					request.path = "$batch";
+					request.data = batchRequest.body;
+					request.headers = batchRequest.headers;
+					request.responseParameters.convertedToBatch = true;
 				}
 
-				RequestClient.sendRequest(method, convertedRequest.path, config, request.data || request.entity, convertedRequest.headers, responseParams, request.async, request.timeout || config.timeout, resolve, reject);
+				RequestClient.sendRequest(request, config, resolve, reject);
 			}, reject);
 		}
 	}

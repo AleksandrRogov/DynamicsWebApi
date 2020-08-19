@@ -5,11 +5,11 @@ var sinon = require('sinon');
 
 var mocks = require("./stubs");
 var { DWA } = require("../lib/dwa");
-var DynamicsWebApi = require("../lib/dynamics-web-api");
+var { DynamicsWebApi } = require("../lib/dynamics-web-api");
 var dynamicsWebApiTest = new DynamicsWebApi({ webApiVersion: "8.2" });
 
 describe("xhr -", function() {
-    describe("dynamicsWebApi.create -", function() {
+    describe("dynamicsWebApi.createRequest -", function() {
         describe("basic", function() {
             var responseObject;
             before(function(done) {
@@ -20,7 +20,7 @@ describe("xhr -", function() {
                     requests.push(xhr);
                 };
 
-                dynamicsWebApiTest.create(mocks.data.testEntity, "tests").then(function(object) {
+				dynamicsWebApiTest.createRequest({ data: mocks.data.testEntity, collection: "tests" }).then(function(object) {
                     responseObject = object;
                     done();
                 }).catch(function(object) {
@@ -68,7 +68,7 @@ describe("xhr -", function() {
                     requests.push(xhr);
                 };
 
-                dynamicsWebApiTest.create(mocks.data.testEntity, "tests").then(function (object) {
+				dynamicsWebApiTest.createRequest({ data: mocks.data.testEntity, collection: "tests" }).then(function (object) {
                     responseObject = object;
                     done();
                 }).catch(function (object) {
@@ -116,7 +116,7 @@ describe("xhr -", function() {
                     requests.push(xhr);
                 };
 
-                dynamicsWebApiTest.create(mocks.data.testEntity, "tests").then(function (object) {
+				dynamicsWebApiTest.createRequest({ data: mocks.data.testEntity, collection: "tests" }).then(function (object) {
                     responseObject = object;
                     done();
                 }).catch(function (object) {
@@ -164,7 +164,7 @@ describe("xhr -", function() {
                     requests.push(xhr);
                 };
 
-                dynamicsWebApiTest.create(mocks.data.testEntity, "tests").then(function (object) {
+				dynamicsWebApiTest.createRequest({ data: mocks.data.testEntity, collection: "tests" }).then(function (object) {
                     responseObject = object;
                     done();
                 }).catch(function (object) {
@@ -228,8 +228,8 @@ describe("xhr -", function() {
 
                 dynamicsWebApiTest.startBatch();
 
-                dynamicsWebApiTest.update(mocks.data.testEntityId2, 'records', { firstname: "Test", lastname: "Batch!" });
-                dynamicsWebApiTest.deleteRecord(mocks.data.testEntityId2, 'records', 'firstname');
+				dynamicsWebApiTest.updateRequest({ key: mocks.data.testEntityId2, collection: 'records', data: { firstname: "Test", lastname: "Batch!" } });
+				dynamicsWebApiTest.deleteRequest({ key: mocks.data.testEntityId2, collection: 'records', navigationProperty: 'firstname' });
 
                 dynamicsWebApiTest.executeBatch()
                     .then(function (object) {
@@ -302,7 +302,7 @@ describe("xhr -", function() {
             };
 
             dynamicsWebApiTest
-                .create(mocks.data.testEntity, "tests", DWA.Prefer.ReturnRepresentation)
+				.createRequest({ data: mocks.data.testEntity, collection: "tests", returnRepresentation: true })
                 .then(function(object) {
                     responseObject = object;
                     done();
@@ -346,7 +346,7 @@ describe("xhr -", function() {
             var dwaRequest = {
                 id: mocks.data.testEntityId,
                 collection: "tests",
-                entity: mocks.data.testEntity
+                data: mocks.data.testEntity
             };
 
             var responseObject;
@@ -570,7 +570,7 @@ describe("xhr -", function() {
         });
     });
 
-    describe("dynamicsWebApi.retrieveMultiple -", function() {
+    describe("dynamicsWebApi.retrieveMultipleRequest -", function() {
 
         describe("basic", function() {
             var responseObject;
@@ -582,7 +582,7 @@ describe("xhr -", function() {
                     requests.push(xhr);
                 };
 
-                dynamicsWebApiTest.retrieveMultiple("tests")
+				dynamicsWebApiTest.retrieveMultipleRequest({ collection: "tests" })
                     .then(function(object) {
                         responseObject = object;
                         done();
@@ -636,7 +636,7 @@ describe("xhr -", function() {
                     requests.push(xhr);
                 };
 
-                dynamicsWebApiTest.retrieveMultiple("tests", ["fullname"])
+				dynamicsWebApiTest.retrieveMultipleRequest({ collection: "tests", select: ["fullname"] })
                     .then(function(object) {
                         responseObject = object;
                     }).catch(function(object) {
@@ -646,7 +646,7 @@ describe("xhr -", function() {
                 var response = mocks.responses.multipleResponse;
                 this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
 
-                dynamicsWebApiTest.retrieveMultiple("tests", ["fullname", "subject"])
+				dynamicsWebApiTest.retrieveMultipleRequest({ collection: "tests", select: ["fullname", "subject"] })
                     .then(function(object) {
                         responseObject2 = object;
                         done();
@@ -706,7 +706,7 @@ describe("xhr -", function() {
                     requests.push(xhr);
                 };
 
-                dynamicsWebApiTest.retrieveMultiple("tests", null, "name eq 'name'")
+				dynamicsWebApiTest.retrieveMultipleRequest({ collection: "tests", filter: "name eq 'name'" })
                     .then(function(object) {
                         responseObject = object;
                     }).catch(function(object) {
@@ -716,7 +716,7 @@ describe("xhr -", function() {
                 var response = mocks.responses.multipleResponse;
                 this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
 
-                dynamicsWebApiTest.retrieveMultiple("tests", ["fullname"], "name eq 'name'")
+				dynamicsWebApiTest.retrieveMultipleRequest({ collection: "tests", select: ["fullname"], filter: "name eq 'name'"})
                     .then(function(object) {
                         responseObject2 = object;
                         done();
@@ -774,9 +774,11 @@ describe("xhr -", function() {
 
                 global.XMLHttpRequest.onCreate = function(xhr) {
                     requests.push(xhr);
-                };
+				};
 
-                dynamicsWebApiTest.retrieveMultiple("tests")
+				let dwaRequest = { collection: "tests" };
+
+				dynamicsWebApiTest.retrieveMultipleRequest(dwaRequest)
                     .then(function(object) {
                         responseObject = object;
                     }).catch(function(object) {
@@ -786,7 +788,7 @@ describe("xhr -", function() {
                 var response = mocks.responses.multipleWithLinkResponse;
                 this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
 
-                dynamicsWebApiTest.retrieveMultiple(null, null, null, mocks.responses.multipleWithLink().oDataNextLink)
+				dynamicsWebApiTest.retrieveMultipleRequest(dwaRequest, mocks.responses.multipleWithLink().oDataNextLink)
                     .then(function(object) {
                         responseObject2 = object;
                         done();
@@ -838,15 +840,15 @@ describe("xhr -", function() {
 
     describe("request error", function () {
         var responseObject;
-        before(function (done) {
-            global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-            var requests = this.requests = [];
+		before(function (done) {
+			global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+			var requests = this.requests = [];
 
-            global.XMLHttpRequest.onCreate = function (xhr) {
-                requests.push(xhr);
-            };
+			global.XMLHttpRequest.onCreate = function (xhr) {
+				requests.push(xhr);
+			};
 
-            dynamicsWebApiTest.create(mocks.data.testEntity, "tests").then(function (object) {
+			dynamicsWebApiTest.createRequest({ data: mocks.data.testEntity, collection: "tests" }).then(function (object) {
                 responseObject = object;
                 done();
             }).catch(function (object) {
@@ -895,7 +897,7 @@ describe("xhr -", function() {
 
             var dynamicsWebApiTimeout = new DynamicsWebApi({ webApiVersion: "8.2", timeout: 100 });
 
-            dynamicsWebApiTimeout.create(mocks.data.testEntity, "tests").then(function (object) {
+			dynamicsWebApiTimeout.createRequest({ data: mocks.data.testEntity, collection: "tests" }).then(function (object) {
                 responseObject = object;
                 done();
             }).catch(function (object) {

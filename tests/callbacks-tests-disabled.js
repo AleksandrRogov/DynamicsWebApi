@@ -1717,7 +1717,7 @@ describe("callbacks -", function () {
                 var dwaRequest = {
                     id: mocks.data.testEntityId,
                     collection: "tests",
-                    entity: mocks.data.testEntity
+                    data: mocks.data.testEntity
                 };
 
                 dynamicsWebApiTest.updateRequest(dwaRequest, function (object) {
@@ -1758,7 +1758,7 @@ describe("callbacks -", function () {
                 var dwaRequest = {
                     id: mocks.data.testEntityId,
                     collection: "tests",
-                    entity: mocks.data.testEntity,
+                    data: mocks.data.testEntity,
                     returnRepresentation: true
                 };
 
@@ -1775,7 +1775,7 @@ describe("callbacks -", function () {
                 var dwaRequest = {
                     id: mocks.data.testEntityId,
                     collection: "tests",
-                    entity: mocks.data.testEntity,
+                    data: mocks.data.testEntity,
                     returnRepresentation: true,
                     select: ["fullname", "subject"]
                 };
@@ -1816,7 +1816,7 @@ describe("callbacks -", function () {
                 var dwaRequest = {
                     id: mocks.data.testEntityId,
                     collection: "tests",
-                    entity: mocks.data.testEntity,
+                    data: mocks.data.testEntity,
                     ifmatch: "match"
                 };
 
@@ -1857,7 +1857,7 @@ describe("callbacks -", function () {
                 var dwaRequest = {
                     id: mocks.data.testEntityId,
                     collection: "tests",
-                    entity: mocks.data.testEntity,
+                    data: mocks.data.testEntity,
                     ifmatch: "match"
                 };
 
@@ -1898,7 +1898,7 @@ describe("callbacks -", function () {
                 var dwaRequest = {
                     id: mocks.data.testEntityId,
                     collection: "tests",
-                    entity: mocks.data.testEntity,
+                    data: mocks.data.testEntity,
                     ifmatch: "match"
                 };
 
@@ -1924,7 +1924,7 @@ describe("callbacks -", function () {
             var dwaRequest = {
                 id: mocks.data.testEntityId,
                 collection: "tests",
-                entity: mocks.data.testEntity
+                data: mocks.data.testEntity
             };
 
             var scope;
@@ -1993,7 +1993,7 @@ describe("callbacks -", function () {
                 var dwaRequest = {
                     id: mocks.data.testEntityId,
                     collection: "tests",
-                    entity: mocks.data.testEntity,
+                    data: mocks.data.testEntity,
                     returnRepresentation: true
                 };
 
@@ -2010,7 +2010,7 @@ describe("callbacks -", function () {
                 var dwaRequest = {
                     id: mocks.data.testEntityId,
                     collection: "tests",
-                    entity: mocks.data.testEntity,
+                    data: mocks.data.testEntity,
                     returnRepresentation: true,
                     select: ["name"]
                 };
@@ -2033,7 +2033,7 @@ describe("callbacks -", function () {
             var dwaRequest = {
                 id: mocks.data.testEntityId,
                 collection: "tests",
-                entity: mocks.data.testEntity,
+                data: mocks.data.testEntity,
                 returnRepresentation: true,
                 ifmatch: '*'
             };
@@ -2103,7 +2103,7 @@ describe("callbacks -", function () {
             var dwaRequest = {
                 id: mocks.data.testEntityId,
                 collection: "tests",
-                entity: mocks.data.testEntity,
+                data: mocks.data.testEntity,
                 returnRepresentation: true,
                 ifnonematch: '*'
             };
@@ -4889,7 +4889,7 @@ describe("callbacks -", function () {
                 var dwaRequest = {
                     id: mocks.data.testEntityId,
                     collection: "tests",
-                    entity: mocks.data.testEntity,
+                    data: mocks.data.testEntity,
                     returnRepresentation: false
                 };
 

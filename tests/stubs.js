@@ -1066,10 +1066,10 @@ var responseStubs = {
 };
 
 module.exports = {
-    Xrm: Xrm,
-    data: dataStubs,
-    responses: responseStubs,
-    webApiUrl: webApiUrl,
-    webApiUrl81: webApiUrl81,
-    webApiUrl80: webApiUrl80
-}
+	Xrm: Xrm,
+	data: dataStubs,
+	responses: responseStubs,
+	webApiUrl: webApiUrl,
+	webApiUrl81: webApiUrl81,
+	webApiUrl80: webApiUrl80
+};

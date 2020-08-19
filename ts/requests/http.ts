@@ -1,8 +1,7 @@
-﻿//var http = require('http');
-import * as http from "http";
+﻿import * as http from "http";
 import * as https from "https";
 import * as url from "url";
-import { DynamicsWebApi } from "../../types/dynamics-web-api-types";
+import { Core } from "../types";
 import { ErrorHelper } from "./../helpers/ErrorHelper";
 import { parseResponse } from "./helpers/parseResponse";
 
@@ -10,7 +9,7 @@ import { parseResponse } from "./helpers/parseResponse";
  * Sends a request to given URL with given parameters
  *
  */
-function httpRequest(options: DynamicsWebApi.Core.RequestOptions) {
+function httpRequest(options: Core.RequestOptions) {
     const method = options.method;
 	const uri = options.uri;
 	const data = options.data;

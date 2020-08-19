@@ -1,17 +1,13 @@
-﻿import { DynamicsWebApi } from "../../types/dynamics-web-api-types";
+﻿import { Core } from "../types";
 import { ErrorHelper } from "./../helpers/ErrorHelper";
 import { parseResponse } from "./helpers/parseResponse";
 import { parseResponseHeaders } from "./helpers/parseResponseHeaders";
-
-//if (!Array.isArray) {
-//    require("../polyfills/Array-es6");
-//}
 
 /**
  * Sends a request to given URL with given parameters
  *
  */
-function xhrRequest (options: DynamicsWebApi.Core.RequestOptions) {
+function xhrRequest (options: Core.RequestOptions) {
     const method = options.method;
     const uri = options.uri;
     const data = options.data;

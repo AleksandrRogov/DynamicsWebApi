@@ -5,12 +5,12 @@ var sinon = require('sinon');
 
 var mocks = require("./stubs");
 var { DWA } = require("../lib/dwa");
-var DynamicsWebApi = require("../lib/dynamics-web-api");
+var { DynamicsWebApi } = require("../lib/dynamics-web-api");
 
 var dynamicsWebApiTest = new DynamicsWebApi({ webApiVersion: "8.2" });
 
 describe("promises -", function () {
-    describe("dynamicsWebApi.create -", function () {
+    describe("dynamicsWebApi.createRequest -", function () {
         describe("basic", function () {
             var scope;
             before(function () {
@@ -25,7 +25,7 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApiTest.create(mocks.data.testEntity, "tests")
+				dynamicsWebApiTest.createRequest({ data: mocks.data.testEntity, collection: "tests" })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.testEntityId);
                         done();
@@ -58,7 +58,7 @@ describe("promises -", function () {
 
             it("returns a correct response", function (done) {
                 dynamicsWebApiTest
-                    .create(mocks.data.testEntity, "tests", DWA.Prefer.ReturnRepresentation)
+					.createRequest({ data: mocks.data.testEntity, collection: "tests", returnRepresentation: true })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
@@ -91,7 +91,7 @@ describe("promises -", function () {
 
             it("returns a correct response", function (done) {
                 dynamicsWebApiTest
-                    .create(mocks.data.testEntity, "tests", DWA.Prefer.ReturnRepresentation, ['name'])
+					.createRequest({ data: mocks.data.testEntity, collection: "tests", returnRepresentation: true, select: ['name'] })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
@@ -106,7 +106,7 @@ describe("promises -", function () {
         });
     });
 
-    describe("dynamicsWebApi.update -", function () {
+    describe("dynamicsWebApi.updateRequest -", function () {
 
         describe("basic", function () {
             var scope;
@@ -126,7 +126,7 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApiTest.update(mocks.data.testEntityId, "tests", mocks.data.testEntity)
+				dynamicsWebApiTest.updateRequest({ key: mocks.data.testEntityId, collection: "tests", data: mocks.data.testEntity })
                     .then(function (object) {
                         expect(object).to.be.true;
                         done();
@@ -160,7 +160,7 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApiTest.update(mocks.data.testEntityId, "tests", mocks.data.testEntity, DWA.Prefer.ReturnRepresentation)
+				dynamicsWebApiTest.updateRequest({ key: mocks.data.testEntityId, collection: "tests", data: mocks.data.testEntity, returnRepresentation: true })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.updatedEntity);
                         done();
@@ -196,7 +196,7 @@ describe("promises -", function () {
 
             it("[fullname] returns a correct response", function (done) {
                 dynamicsWebApiTest
-                    .update(mocks.data.testEntityId, "tests", mocks.data.testEntity, DWA.Prefer.ReturnRepresentation, ["fullname"])
+					.updateRequest({ key: mocks.data.testEntityId, collection: "tests", data: mocks.data.testEntity, returnRepresentation: true, select: ["fullname"] })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.updatedEntity);
                         done();
@@ -207,7 +207,7 @@ describe("promises -", function () {
 
             it("[fullname, subject] returns a correct response", function (done) {
                 dynamicsWebApiTest
-                    .update(mocks.data.testEntityId, "tests", mocks.data.testEntity, DWA.Prefer.ReturnRepresentation, ["fullname", "subject"])
+					.updateRequest({ key: mocks.data.testEntityId, collection: "tests", data: mocks.data.testEntity, returnRepresentation: true, select: ["fullname", "subject"] })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.updatedEntity);
                         done();
@@ -322,7 +322,7 @@ describe("promises -", function () {
         });
     });
 
-    describe("dynamicsWebApi.upsert -", function () {
+    describe("dynamicsWebApi.upsertRequest -", function () {
 
         describe("basic & update an existing entity", function () {
             var scope;
@@ -338,7 +338,7 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApiTest.upsert(mocks.data.testEntityId, "tests", mocks.data.testEntity)
+				dynamicsWebApiTest.upsertRequest({ key: mocks.data.testEntityId, collection: "tests", data: mocks.data.testEntity })
                     .then(function (object) {
                         done(object);
                     }).catch(function (object) {
@@ -365,7 +365,7 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApiTest.upsert(mocks.data.testEntityId, "tests", mocks.data.testEntity)
+				dynamicsWebApiTest.upsertRequest({ key: mocks.data.testEntityId, collection: "tests", data: mocks.data.testEntity })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.testEntityId);
                         done();
@@ -397,7 +397,7 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApiTest.upsert(mocks.data.testEntityId, "tests", mocks.data.testEntity, DWA.Prefer.ReturnRepresentation)
+				dynamicsWebApiTest.upsertRequest({ key: mocks.data.testEntityId, collection: "tests", data: mocks.data.testEntity, returnRepresentation: true })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.updatedEntity);
                         done();
@@ -429,7 +429,7 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApiTest.upsert(mocks.data.testEntityId, "tests", mocks.data.testEntity, DWA.Prefer.ReturnRepresentation)
+				dynamicsWebApiTest.upsertRequest({ key: mocks.data.testEntityId, collection: "tests", data: mocks.data.testEntity, returnRepresentation: true })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
@@ -464,7 +464,7 @@ describe("promises -", function () {
 
             it("[fullname] returns a correct response", function (done) {
                 dynamicsWebApiTest
-                    .upsert(mocks.data.testEntityId, "tests", mocks.data.testEntity, DWA.Prefer.ReturnRepresentation, ["fullname"])
+					.upsertRequest({ key: mocks.data.testEntityId, collection: "tests", data: mocks.data.testEntity, returnRepresentation: true, select: ["fullname"] })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.updatedEntity);
                         done();
@@ -475,7 +475,7 @@ describe("promises -", function () {
 
             it("[fullname, subject] returns a correct response", function (done) {
                 dynamicsWebApiTest
-                    .upsert(mocks.data.testEntityId, "tests", mocks.data.testEntity, DWA.Prefer.ReturnRepresentation, ["fullname", "subject"])
+					.upsertRequest({ key: mocks.data.testEntityId, collection: "tests", data: mocks.data.testEntity, returnRepresentation: true, select: ["fullname", "subject"] })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.updatedEntity);
                         done();
@@ -510,7 +510,7 @@ describe("promises -", function () {
 
             it("[fullname] returns a correct response", function (done) {
                 dynamicsWebApiTest
-                    .upsert(mocks.data.testEntityId, "tests", mocks.data.testEntity, DWA.Prefer.ReturnRepresentation, ["fullname"])
+					.upsertRequest({ key: mocks.data.testEntityId, collection: "tests", data: mocks.data.testEntity, returnRepresentation: true, select: ["fullname"] })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
@@ -521,7 +521,7 @@ describe("promises -", function () {
 
             it("[fullname, subject] returns a correct response", function (done) {
                 dynamicsWebApiTest
-                    .upsert(mocks.data.testEntityId, "tests", mocks.data.testEntity, DWA.Prefer.ReturnRepresentation, ["fullname", "subject"])
+					.upsertRequest({ key: mocks.data.testEntityId, collection: "tests", data: mocks.data.testEntity, returnRepresentation: true, select: ["fullname", "subject"] })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
@@ -536,7 +536,7 @@ describe("promises -", function () {
         });
     });
 
-    describe("dynamicsWebApi.deleteRecord -", function () {
+    describe("dynamicsWebApi.deleteRequest -", function () {
 
         describe("basic", function () {
             var scope;
@@ -552,7 +552,7 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApiTest.deleteRecord(mocks.data.testEntityId, "tests")
+				dynamicsWebApiTest.deleteRequest({ key: mocks.data.testEntityId, collection: "tests" })
                     .then(function (object) {
                         done(object);
                     }).catch(function (object) {
@@ -579,7 +579,7 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApiTest.deleteRecord(mocks.data.testEntityId, "tests", "fullname")
+				dynamicsWebApiTest.deleteRequest({ key: mocks.data.testEntityId, collection: "tests", navigationProperty: "fullname" })
                     .then(function (object) {
                         done(object);
                     }).catch(function (object) {
@@ -593,7 +593,7 @@ describe("promises -", function () {
         });
     });
 
-    describe("dynamicsWebApi.retrieve -", function () {
+    describe("dynamicsWebApi.retrieveRequest -", function () {
 
         describe("basic", function () {
             var scope;
@@ -609,7 +609,7 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApiTest.retrieve(mocks.data.testEntityId, "tests")
+				dynamicsWebApiTest.retrieveRequest({ key: mocks.data.testEntityId, collection: "tests" })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
@@ -637,7 +637,7 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApiTest.retrieve("alternateKey='keyValue'", "tests")
+				dynamicsWebApiTest.retrieveRequest({ key: "alternateKey='keyValue'", collection: "tests" })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
@@ -667,7 +667,7 @@ describe("promises -", function () {
             });
 
             it("[fullname] returns a correct response", function (done) {
-                dynamicsWebApiTest.retrieve(mocks.data.testEntityId, "tests", ["fullname"])
+				dynamicsWebApiTest.retrieveRequest({ key: mocks.data.testEntityId, collection: "tests", select: ["fullname"] })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
@@ -677,7 +677,7 @@ describe("promises -", function () {
             });
 
             it("[fullname, subject] returns a correct response", function (done) {
-                dynamicsWebApiTest.retrieve(mocks.data.testEntityId, "tests", ["fullname", "subject"])
+				dynamicsWebApiTest.retrieveRequest({ key: mocks.data.testEntityId, collection: "tests", select: ["fullname", "subject"] })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
@@ -709,7 +709,7 @@ describe("promises -", function () {
             });
 
             it("[/reference] returns a correct response", function (done) {
-                dynamicsWebApiTest.retrieve(mocks.data.testEntityId, "tests", ["/reference"])
+				dynamicsWebApiTest.retrieveRequest({ key: mocks.data.testEntityId, collection: "tests", select: ["/reference"] })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
@@ -719,7 +719,7 @@ describe("promises -", function () {
             });
 
             it("[/reference, fullname] returns a correct response", function (done) {
-                dynamicsWebApiTest.retrieve(mocks.data.testEntityId, "tests", ["/reference", "fullname"])
+				dynamicsWebApiTest.retrieveRequest({ key: mocks.data.testEntityId, collection: "tests", select: ["/reference", "fullname"] })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
@@ -729,7 +729,7 @@ describe("promises -", function () {
             });
 
             it("[/reference, fullname, subject] returns a correct response", function (done) {
-                dynamicsWebApiTest.retrieve(mocks.data.testEntityId, "tests", ["/reference", "fullname", "subject"])
+				dynamicsWebApiTest.retrieveRequest({ key: mocks.data.testEntityId, collection: "tests", select: ["/reference", "fullname", "subject"] })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
@@ -757,7 +757,7 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApiTest.retrieve(mocks.data.testEntityId, "tests", ["reference/$ref"])
+				dynamicsWebApiTest.retrieveRequest({ key: mocks.data.testEntityId, collection: "tests", select: ["reference/$ref"] })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.referenceResponseConverted);
                         done();
@@ -785,7 +785,7 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApiTest.retrieve(mocks.data.testEntityId, "tests", null, "reference(something)")
+				dynamicsWebApiTest.retrieveRequest({ key: mocks.data.testEntityId, collection: "tests", expand: [{ navigationProperty: "reference(something)" }] })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
@@ -815,7 +815,7 @@ describe("promises -", function () {
             });
 
             it("[fullname] returns a correct response", function (done) {
-                dynamicsWebApiTest.retrieve(mocks.data.testEntityId, "tests", ["fullname"], "reference(something)")
+				dynamicsWebApiTest.retrieveRequest({ key: mocks.data.testEntityId, collection: "tests", select: ["fullname"], expand: [{ navigationProperty: "reference(something)" }] })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
@@ -825,7 +825,7 @@ describe("promises -", function () {
             });
 
             it("[fullname,subject] returns a correct response", function (done) {
-                dynamicsWebApiTest.retrieve(mocks.data.testEntityId, "tests", ["fullname", "subject"], "reference(something)")
+				dynamicsWebApiTest.retrieveRequest({ key: mocks.data.testEntityId, collection: "tests", select: ["fullname", "subject"], expand: [{ navigationProperty: "reference(something)" }] })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
@@ -857,7 +857,7 @@ describe("promises -", function () {
             });
 
             it("[/reference] returns a correct response", function (done) {
-                dynamicsWebApiTest.retrieve(mocks.data.testEntityId, "tests", ["/reference"], "reference(something)")
+				dynamicsWebApiTest.retrieveRequest({ key: mocks.data.testEntityId, collection: "tests", select: ["/reference"], expand: [{ navigationProperty: "reference(something)" }] })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
@@ -867,7 +867,7 @@ describe("promises -", function () {
             });
 
             it("[/reference, fullname] returns a correct response", function (done) {
-                dynamicsWebApiTest.retrieve(mocks.data.testEntityId, "tests", ["/reference", "fullname"], "reference(something)")
+				dynamicsWebApiTest.retrieveRequest({ key: mocks.data.testEntityId, collection: "tests", select: ["/reference", "fullname"], expand: [{ navigationProperty: "reference(something)" }] })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
@@ -877,7 +877,7 @@ describe("promises -", function () {
             });
 
             it("[/reference, fullname, subject] returns a correct response", function (done) {
-                dynamicsWebApiTest.retrieve(mocks.data.testEntityId, "tests", ["/reference", "fullname", "subject"], "reference(something)")
+				dynamicsWebApiTest.retrieveRequest({ key: mocks.data.testEntityId, collection: "tests", select: ["/reference", "fullname", "subject"], expand: [{ navigationProperty: "reference(something)" }] })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
@@ -1629,13 +1629,13 @@ describe("promises -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
-                scope = nock(mocks.webApiUrl, {
-                    reqheaders: {
-                        MSCRMCallerID: mocks.data.testEntityId2
-                    }
-                })
-                    .post("/FUN", mocks.responses.actionRequestModified)
-                    .reply(response.status, response.responseText, response.responseHeaders)
+				scope = nock(mocks.webApiUrl, {
+					reqheaders: {
+						MSCRMCallerID: mocks.data.testEntityId2
+					}
+				})
+					.post("/FUN", mocks.responses.actionRequestModified)
+					.reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -1688,13 +1688,13 @@ describe("promises -", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.response200;
-                scope = nock(mocks.webApiUrl, {
-                    reqheaders: {
-                        MSCRMCallerID: mocks.data.testEntityId2
-                    }
-                })
-                    .post(mocks.responses.testEntityUrl + "/FUN", mocks.responses.actionRequestModified)
-                    .reply(response.status, response.responseText, response.responseHeaders)
+				scope = nock(mocks.webApiUrl, {
+					reqheaders: {
+						MSCRMCallerID: mocks.data.testEntityId2
+					}
+				})
+					.post(mocks.responses.testEntityUrl + "/FUN", mocks.responses.actionRequestModified)
+					.reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -1739,7 +1739,7 @@ describe("promises -", function () {
                 var dwaRequest = {
                     id: mocks.data.testEntityId,
                     collection: "tests",
-                    entity: mocks.data.testEntity
+                    data: mocks.data.testEntity
                 };
 
                 dynamicsWebApiTest.updateRequest(dwaRequest)
@@ -1780,7 +1780,7 @@ describe("promises -", function () {
                 var dwaRequest = {
                     id: mocks.data.testEntityId,
                     collection: "tests",
-                    entity: mocks.data.testEntity,
+                    data: mocks.data.testEntity,
                     returnRepresentation: true
                 };
 
@@ -1797,7 +1797,7 @@ describe("promises -", function () {
                 var dwaRequest = {
                     id: mocks.data.testEntityId,
                     collection: "tests",
-                    entity: mocks.data.testEntity,
+                    data: mocks.data.testEntity,
                     returnRepresentation: true,
                     select: ["fullname", "subject"]
                 };
@@ -1821,13 +1821,13 @@ describe("promises -", function () {
             before(function () {
                 var response = mocks.responses.basicEmptyResponseSuccess;
 
-                scope = nock(mocks.webApiUrl, {
-                    reqheaders: {
-                        'If-Match': 'match'
-                    }
-                })
-                    .patch(mocks.responses.testEntityUrl, mocks.data.testEntity)
-                    .reply(response.status, response.responseText, response.responseHeaders)
+				scope = nock(mocks.webApiUrl, {
+					reqheaders: {
+						'If-Match': 'match'
+					}
+				})
+					.patch(mocks.responses.testEntityUrl, mocks.data.testEntity)
+					.reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -1838,7 +1838,7 @@ describe("promises -", function () {
                 var dwaRequest = {
                     id: mocks.data.testEntityId,
                     collection: "tests",
-                    entity: mocks.data.testEntity,
+                    data: mocks.data.testEntity,
                     ifmatch: "match"
                 };
 
@@ -1862,13 +1862,13 @@ describe("promises -", function () {
             before(function () {
                 var response = mocks.responses.upsertPreventUpdateResponse;
 
-                scope = nock(mocks.webApiUrl, {
-                    reqheaders: {
-                        'If-Match': 'match'
-                    }
-                })
-                    .patch(mocks.responses.testEntityUrl, mocks.data.testEntity)
-                    .reply(response.status, response.responseText, response.responseHeaders)
+				scope = nock(mocks.webApiUrl, {
+					reqheaders: {
+						'If-Match': 'match'
+					}
+				})
+					.patch(mocks.responses.testEntityUrl, mocks.data.testEntity)
+					.reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -1879,7 +1879,7 @@ describe("promises -", function () {
                 var dwaRequest = {
                     id: mocks.data.testEntityId,
                     collection: "tests",
-                    entity: mocks.data.testEntity,
+                    data: mocks.data.testEntity,
                     ifmatch: "match"
                 };
 
@@ -1903,13 +1903,13 @@ describe("promises -", function () {
             before(function () {
                 var response = mocks.responses.upsertPreventCreateResponse;
 
-                scope = nock(mocks.webApiUrl, {
-                    reqheaders: {
-                        'If-Match': 'match'
-                    }
-                })
-                    .patch(mocks.responses.testEntityUrl, mocks.data.testEntity)
-                    .reply(response.status, response.responseText, response.responseHeaders)
+				scope = nock(mocks.webApiUrl, {
+					reqheaders: {
+						'If-Match': 'match'
+					}
+				})
+					.patch(mocks.responses.testEntityUrl, mocks.data.testEntity)
+					.reply(response.status, response.responseText, response.responseHeaders);
             });
 
             after(function () {
@@ -1920,7 +1920,7 @@ describe("promises -", function () {
                 var dwaRequest = {
                     id: mocks.data.testEntityId,
                     collection: "tests",
-                    entity: mocks.data.testEntity,
+                    data: mocks.data.testEntity,
                     ifmatch: "match"
                 };
 
@@ -1946,7 +1946,7 @@ describe("promises -", function () {
             var dwaRequest = {
                 id: mocks.data.testEntityId,
                 collection: "tests",
-                entity: mocks.data.testEntity
+                data: mocks.data.testEntity
             };
 
             var scope;
@@ -2014,7 +2014,7 @@ describe("promises -", function () {
                 var dwaRequest = {
                     id: mocks.data.testEntityId,
                     collection: "tests",
-                    entity: mocks.data.testEntity,
+                    data: mocks.data.testEntity,
                     returnRepresentation: true
                 };
 
@@ -2031,7 +2031,7 @@ describe("promises -", function () {
                 var dwaRequest = {
                     id: mocks.data.testEntityId,
                     collection: "tests",
-                    entity: mocks.data.testEntity,
+                    data: mocks.data.testEntity,
                     returnRepresentation: true,
                     select: ["name"]
                 };
@@ -2054,7 +2054,7 @@ describe("promises -", function () {
             var dwaRequest = {
                 id: mocks.data.testEntityId,
                 collection: "tests",
-                entity: mocks.data.testEntity,
+                data: mocks.data.testEntity,
                 returnRepresentation: true,
                 ifmatch: '*'
             };
@@ -2120,13 +2120,13 @@ describe("promises -", function () {
         });
 
         describe("If-None-Match: '*' (Prevent Update)", function () {
-            var dwaRequest = {
-                id: mocks.data.testEntityId,
-                collection: "tests",
-                entity: mocks.data.testEntity,
-                returnRepresentation: true,
-                ifnonematch: '*'
-            }
+			var dwaRequest = {
+				id: mocks.data.testEntityId,
+				collection: "tests",
+				data: mocks.data.testEntity,
+				returnRepresentation: true,
+				ifnonematch: '*'
+			};
             var scope;
             before(function () {
                 var response = mocks.responses.upsertPreventUpdateResponse;
@@ -2316,268 +2316,117 @@ describe("promises -", function () {
         });
     });
 
-    describe("dynamicsWebApi.retrieveMultiple -", function () {
+	describe("dynamicsWebApi.retrieveMultipleRequest -", function () {
 
-        describe("basic", function () {
-            var scope;
-            before(function () {
-                var response = mocks.responses.multipleResponse;
-                scope = nock(mocks.webApiUrl)
-                    .get(mocks.responses.collectionUrl)
-                    .reply(response.status, response.responseText, response.responseHeaders);
-            });
+		describe("basic", function () {
+			var scope;
+			before(function () {
+				var response = mocks.responses.multipleResponse;
+				scope = nock(mocks.webApiUrl)
+					.get(mocks.responses.collectionUrl)
+					.reply(response.status, response.responseText, response.responseHeaders);
+			});
 
-            after(function () {
-                nock.cleanAll();
-            });
+			after(function () {
+				nock.cleanAll();
+			});
 
-            it("returns a correct response", function (done) {
-                dynamicsWebApiTest.retrieveMultiple("tests")
-                    .then(function (object) {
-                        expect(object).to.deep.equal(mocks.responses.multiple());
-                        done();
-                    }).catch(function (object) {
-                        done(object);
-                    });
-            });
+			it("returns a correct response", function (done) {
+				dynamicsWebApiTest.retrieveMultipleRequest({ collection: "tests" })
+					.then(function (object) {
+						expect(object).to.deep.equal(mocks.responses.multiple());
+						done();
+					}).catch(function (object) {
+						done(object);
+					});
+			});
 
-            it("all requests have been made", function () {
-                expect(scope.isDone()).to.be.true;
-            });
-        });
+			it("all requests have been made", function () {
+				expect(scope.isDone()).to.be.true;
+			});
+		});
 
-        describe("select", function () {
-            var scope;
-            before(function () {
-                var response = mocks.responses.multipleResponse;
-                scope = nock(mocks.webApiUrl)
-                    .get(mocks.responses.collectionUrl + "?$select=fullname")
-                    .reply(response.status, response.responseText, response.responseHeaders)
-                    .get(mocks.responses.collectionUrl + "?$select=fullname,subject")
-                    .reply(response.status, response.responseText, response.responseHeaders);
-            });
+		describe("select", function () {
+			var scope;
+			before(function () {
+				var response = mocks.responses.multipleResponse;
+				scope = nock(mocks.webApiUrl)
+					.get(mocks.responses.collectionUrl + "?$select=fullname")
+					.reply(response.status, response.responseText, response.responseHeaders)
+					.get(mocks.responses.collectionUrl + "?$select=fullname,subject")
+					.reply(response.status, response.responseText, response.responseHeaders);
+			});
 
-            after(function () {
-                nock.cleanAll();
-            });
+			after(function () {
+				nock.cleanAll();
+			});
 
-            it("[fullname] returns a correct response", function (done) {
-                dynamicsWebApiTest.retrieveMultiple("tests", ["fullname"])
-                    .then(function (object) {
-                        expect(object).to.deep.equal(mocks.responses.multiple());
-                        done();
-                    }).catch(function (object) {
-                        done(object);
-                    });
-            });
+			it("[fullname] returns a correct response", function (done) {
+				dynamicsWebApiTest.retrieveMultipleRequest({ collection: "tests", select: ["fullname"] })
+					.then(function (object) {
+						expect(object).to.deep.equal(mocks.responses.multiple());
+						done();
+					}).catch(function (object) {
+						done(object);
+					});
+			});
 
-            it("[fullname, subject] returns a correct response", function (done) {
-                dynamicsWebApiTest.retrieveMultiple("tests", ["fullname", "subject"])
-                    .then(function (object) {
-                        expect(object).to.deep.equal(mocks.responses.multiple());
-                        done();
-                    }).catch(function (object) {
-                        done(object);
-                    });
-            });
+			it("[fullname, subject] returns a correct response", function (done) {
+				dynamicsWebApiTest.retrieveMultipleRequest({ collection: "tests", select: ["fullname", "subject"] })
+					.then(function (object) {
+						expect(object).to.deep.equal(mocks.responses.multiple());
+						done();
+					}).catch(function (object) {
+						done(object);
+					});
+			});
 
-            it("all requests have been made", function () {
-                expect(scope.isDone()).to.be.true;
-            });
-        });
+			it("all requests have been made", function () {
+				expect(scope.isDone()).to.be.true;
+			});
+		});
 
-        describe("filter", function () {
-            var scope;
-            before(function () {
-                var response = mocks.responses.multipleResponse;
-                scope = nock(mocks.webApiUrl)
-                    .get(mocks.responses.collectionUrl + "?$filter=name%20eq%20%27name%27")
-                    .reply(response.status, response.responseText, response.responseHeaders)
-                    .get(mocks.responses.collectionUrl + "?$select=fullname&$filter=name%20eq%20%27name%27")
-                    .reply(response.status, response.responseText, response.responseHeaders);
-            });
+		describe("filter", function () {
+			var scope;
+			before(function () {
+				var response = mocks.responses.multipleResponse;
+				scope = nock(mocks.webApiUrl)
+					.get(mocks.responses.collectionUrl + "?$filter=name%20eq%20%27name%27")
+					.reply(response.status, response.responseText, response.responseHeaders)
+					.get(mocks.responses.collectionUrl + "?$select=fullname&$filter=name%20eq%20%27name%27")
+					.reply(response.status, response.responseText, response.responseHeaders);
+			});
 
-            after(function () {
-                nock.cleanAll();
-            });
+			after(function () {
+				nock.cleanAll();
+			});
 
-            it("returns a correct response", function (done) {
-                dynamicsWebApiTest.retrieveMultiple("tests", null, "name eq 'name'")
-                    .then(function (object) {
-                        expect(object).to.deep.equal(mocks.responses.multiple());
-                        done();
-                    }).catch(function (object) {
-                        done(object);
-                    });
-            });
+			it("returns a correct response", function (done) {
+				dynamicsWebApiTest.retrieveMultipleRequest({ collection: "tests", filter: "name eq 'name'" })
+					.then(function (object) {
+						expect(object).to.deep.equal(mocks.responses.multiple());
+						done();
+					}).catch(function (object) {
+						done(object);
+					});
+			});
 
-            it("(+select) returns a correct response", function (done) {
-                dynamicsWebApiTest.retrieveMultiple("tests", ["fullname"], "name eq 'name'")
-                    .then(function (object) {
-                        expect(object).to.deep.equal(mocks.responses.multiple());
-                        done();
-                    }).catch(function (object) {
-                        done(object);
-                    });
-            });
+			it("(+select) returns a correct response", function (done) {
+				dynamicsWebApiTest.retrieveMultipleRequest({ collection: "tests", select: ["fullname"], filter: "name eq 'name'" })
+					.then(function (object) {
+						expect(object).to.deep.equal(mocks.responses.multiple());
+						done();
+					}).catch(function (object) {
+						done(object);
+					});
+			});
 
-            it("all requests have been made", function () {
-                expect(scope.isDone()).to.be.true;
-            });
-        });
+			it("all requests have been made", function () {
+				expect(scope.isDone()).to.be.true;
+			});
+		});
 
-        describe("returns next page link", function () {
-            var scope;
-            before(function () {
-                var response = mocks.responses.multipleWithLinkResponse;
-                scope = nock(mocks.webApiUrl)
-                    .get(mocks.responses.collectionUrl)
-                    .reply(response.status, response.responseText, response.responseHeaders);
-            });
-
-            after(function () {
-                nock.cleanAll();
-            });
-
-            it("returns a correct response", function (done) {
-                dynamicsWebApiTest.retrieveMultiple("tests")
-                    .then(function (object) {
-                        expect(object).to.deep.equal(mocks.responses.multipleWithLink());
-                        done();
-                    }).catch(function (object) {
-                        done(object);
-                    });
-            });
-
-            it("all requests have been made", function () {
-                expect(scope.isDone()).to.be.true;
-            });
-        });
-
-        describe("goes by next page link", function () {
-            var scope;
-            before(function () {
-                var response = mocks.responses.multipleResponse;
-
-                var linkQuery = mocks.responses.multipleWithLink().oDataNextLink.split('?');
-                var link = linkQuery[0].split('/');
-                var getLink = `/${link.pop()}?${linkQuery[1]}`;
-                link = link.join('/');
-
-                scope = nock(link)
-                    .get(getLink)
-                    .reply(response.status, response.responseText, response.responseHeaders);
-            });
-
-            after(function () {
-                nock.cleanAll();
-            });
-
-            it("returns a correct response", function (done) {
-                dynamicsWebApiTest.retrieveMultiple(null, null, null, mocks.responses.multipleWithLink().oDataNextLink)
-                    .then(function (object) {
-                        expect(object).to.deep.equal(mocks.responses.multiple());
-                        done();
-                    }).catch(function (object) {
-                        done(object);
-                    });
-            });
-
-            it("all requests have been made", function () {
-                expect(scope.isDone()).to.be.true;
-            });
-        });
-    });
-
-    describe("dynamicsWebApi.retrieveAll -", function () {
-
-        describe("multiple pages", function () {
-            var scope;
-            var scope2;
-            before(function () {
-                var response = mocks.responses.multipleWithLinkResponse;
-                var response2 = mocks.responses.multipleResponse;
-                var linkQuery = mocks.responses.multipleWithLink().oDataNextLink.split('?');
-                var link = linkQuery[0].split('/');
-                var getLink = `/${link.pop()}?${linkQuery[1]}`;
-
-                scope = nock(mocks.webApiUrl)
-                    .get(mocks.responses.collectionUrl + "?$select=name")
-                    .reply(response.status, response.responseText, response.responseHeaders);
-                scope2 = nock(link.join('/'))
-                    .get(getLink)
-                    .reply(response2.status, response2.responseText, response2.responseHeaders);
-            });
-
-            after(function () {
-                nock.cleanAll();
-            });
-
-            it("returns a correct response", function (done) {
-                dynamicsWebApiTest.retrieveAll("tests", ["name"])
-                    .then(function (object) {
-                        var multipleResponse = mocks.responses.multiple();
-                        var checkResponse = { value: multipleResponse.value.concat(multipleResponse.value) };
-                        expect(object).to.deep.equal(checkResponse);
-                        done();
-                    }).catch(function (object) {
-                        done(object);
-                    });
-            });
-
-            it("all requests have been made", function () {
-                expect(scope.isDone()).to.be.true;
-                expect(scope2.isDone()).to.be.true;
-            });
-        });
-
-        describe("multiple pages - delta link", function () {
-            var scope;
-            var scope2;
-            before(function () {
-                var response = mocks.responses.multipleWithLinkResponse;
-                var response2 = mocks.responses.multipleWithDeltaLinkResponse;
-                var linkQuery = mocks.responses.multipleWithLink().oDataNextLink.split('?');
-                var link = linkQuery[0].split('/');
-                var getLink = `/${link.pop()}?${linkQuery[1]}`;
-
-                scope = nock(mocks.webApiUrl)
-                    .get(mocks.responses.collectionUrl + "?$select=name")
-                    .reply(response.status, response.responseText, response.responseHeaders);
-                scope2 = nock(link.join('/'))
-                    .get(getLink)
-                    .reply(response2.status, response2.responseText, response2.responseHeaders);
-            });
-
-            after(function () {
-                nock.cleanAll();
-            });
-
-            it("returns a correct response", function (done) {
-                dynamicsWebApiTest.retrieveAll("tests", ["name"])
-                    .then(function (object) {
-                        var multipleResponse = mocks.responses.multiple();
-                        var checkResponse = { value: multipleResponse.value.concat(multipleResponse.value) };
-                        checkResponse["@odata.deltaLink"] = mocks.responses.multipleWithDeltaLink()["@odata.deltaLink"];
-                        checkResponse.oDataDeltaLink = mocks.responses.multipleWithDeltaLink()["@odata.deltaLink"];
-
-                        expect(object).to.deep.equal(checkResponse);
-                        done();
-                    }).catch(function (object) {
-                        done(object);
-                    });
-            });
-
-            it("all requests have been made", function () {
-                expect(scope.isDone()).to.be.true;
-                expect(scope2.isDone()).to.be.true;
-            });
-        });
-    });
-
-    describe("dynamicsWebApi.retrieveMultipleRequest -", function () {
-
-        describe("basic", function () {
+        describe("includeAnnotations", function () {
             var scope;
             before(function () {
                 var response = mocks.responses.multipleResponse;
@@ -2924,7 +2773,50 @@ describe("promises -", function () {
                 expect(scope.isDone()).to.be.true;
                 expect(scope2.isDone()).to.be.true;
             });
-        });
+		});
+
+		describe("multiple pages - delta link", function () {
+			var scope;
+			var scope2;
+			before(function () {
+				var response = mocks.responses.multipleWithLinkResponse;
+				var response2 = mocks.responses.multipleWithDeltaLinkResponse;
+				var linkQuery = mocks.responses.multipleWithLink().oDataNextLink.split('?');
+				var link = linkQuery[0].split('/');
+				var getLink = `/${link.pop()}?${linkQuery[1]}`;
+
+				scope = nock(mocks.webApiUrl)
+					.get(mocks.responses.collectionUrl + "?$select=name")
+					.reply(response.status, response.responseText, response.responseHeaders);
+				scope2 = nock(link.join('/'))
+					.get(getLink)
+					.reply(response2.status, response2.responseText, response2.responseHeaders);
+			});
+
+			after(function () {
+				nock.cleanAll();
+			});
+
+			it("returns a correct response", function (done) {
+				dynamicsWebApiTest.retrieveAllRequest({ collection: "tests", select: ["name"] })
+					.then(function (object) {
+						var multipleResponse = mocks.responses.multiple();
+						var checkResponse = { value: multipleResponse.value.concat(multipleResponse.value) };
+						checkResponse["@odata.deltaLink"] = mocks.responses.multipleWithDeltaLink()["@odata.deltaLink"];
+						checkResponse.oDataDeltaLink = mocks.responses.multipleWithDeltaLink()["@odata.deltaLink"];
+
+						expect(object).to.deep.equal(checkResponse);
+						done();
+					}).catch(function (object) {
+						done(object);
+					});
+			});
+
+			it("all requests have been made", function () {
+				expect(scope.isDone()).to.be.true;
+				expect(scope2.isDone()).to.be.true;
+			});
+		});
     });
 
     describe("dynamicsWebApi.deleteRequest -", function () {
@@ -4512,9 +4404,9 @@ describe("promises -", function () {
             it("returns a correct response", function (done) {
                 dynamicsWebApiTest.startBatch();
 
-                dynamicsWebApiTest.retrieveMultiple('tests');
-                dynamicsWebApiTest.create({ firstname: "Test", lastname: "Batch!" }, 'records');
-                dynamicsWebApiTest.retrieveMultiple('morerecords');
+				dynamicsWebApiTest.retrieveMultipleRequest({ collection: 'tests' });
+				dynamicsWebApiTest.createRequest({ data: { firstname: "Test", lastname: "Batch!" }, collection: 'records' });
+				dynamicsWebApiTest.retrieveMultipleRequest({ collection: 'morerecords' });
 
                 dynamicsWebApiTest.executeBatch()
                     .then(function (object) {
@@ -4568,9 +4460,9 @@ describe("promises -", function () {
             it("returns a correct response", function (done) {
                 dynamicsWebApiTest.startBatch();
 
-                dynamicsWebApiTest.retrieveMultiple('tests');
-                dynamicsWebApiTest.update(mocks.data.testEntityId2, 'records', { firstname: "Test", lastname: "Batch!" });
-                dynamicsWebApiTest.retrieveMultiple('morerecords');
+				dynamicsWebApiTest.retrieveMultipleRequest({ collection: 'tests' });
+				dynamicsWebApiTest.updateRequest({ key: mocks.data.testEntityId2, collection: 'records', data: { firstname: "Test", lastname: "Batch!" } });
+				dynamicsWebApiTest.retrieveMultipleRequest({ collection: 'morerecords' });
 
                 dynamicsWebApiTest.executeBatch()
                     .then(function (object) {
@@ -4624,9 +4516,9 @@ describe("promises -", function () {
             it("returns a correct response", function (done) {
                 dynamicsWebApiTest.startBatch();
 
-                dynamicsWebApiTest.retrieveMultiple('tests');
-                dynamicsWebApiTest.deleteRecord(mocks.data.testEntityId2, 'records');
-                dynamicsWebApiTest.retrieveMultiple('morerecords');
+				dynamicsWebApiTest.retrieveMultipleRequest({ collection: 'tests' });
+				dynamicsWebApiTest.deleteRequest({ key: mocks.data.testEntityId2, collection: 'records' });
+				dynamicsWebApiTest.retrieveMultipleRequest({ collection: 'morerecords' });
 
                 dynamicsWebApiTest.executeBatch()
                     .then(function (object) {
@@ -4680,9 +4572,9 @@ describe("promises -", function () {
             it("returns a correct response", function (done) {
                 dynamicsWebApiTest.startBatch();
 
-                dynamicsWebApiTest.retrieveMultiple('tests');
+				dynamicsWebApiTest.retrieveMultipleRequest({ collection: 'tests' });
                 dynamicsWebApiTest.count('records');
-                dynamicsWebApiTest.retrieveMultiple('morerecords');
+				dynamicsWebApiTest.retrieveMultipleRequest({ collection: 'morerecords' });
 
                 dynamicsWebApiTest.executeBatch()
                     .then(function (object) {
@@ -4736,9 +4628,9 @@ describe("promises -", function () {
             it("returns a correct response", function (done) {
                 dynamicsWebApiTest.startBatch();
 
-                dynamicsWebApiTest.retrieveMultiple('tests');
+				dynamicsWebApiTest.retrieveMultipleRequest({ collection: 'tests' });
                 dynamicsWebApiTest.retrieveMultipleRequest({ collection: 'records', count: true, filter: 'statecode eq 0' });
-                dynamicsWebApiTest.retrieveMultiple('morerecords');
+				dynamicsWebApiTest.retrieveMultipleRequest({ collection: 'morerecords' });
 
                 dynamicsWebApiTest.executeBatch()
                     .then(function (object) {
@@ -4792,9 +4684,9 @@ describe("promises -", function () {
             it("returns a correct response", function (done) {
                 dynamicsWebApiTest.startBatch();
 
-                dynamicsWebApiTest.retrieveMultiple('tests');
+				dynamicsWebApiTest.retrieveMultipleRequest({ collection: 'tests' });
                 dynamicsWebApiTest.count('records', 'statecode eq 0');
-                dynamicsWebApiTest.retrieveMultiple('morerecords');
+				dynamicsWebApiTest.retrieveMultipleRequest({ collection: 'morerecords' });
 
                 dynamicsWebApiTest.executeBatch()
                     .then(function (object) {
@@ -4823,14 +4715,6 @@ describe("promises -", function () {
                 expect(function () {
                     dynamicsWebApiTest.countAll('records');
                 }).to.throw("DynamicsWebApi.countAll cannot be used in a BATCH request.");
-            });
-
-            it("retrieveAll", function () {
-                dynamicsWebApiTest.startBatch();
-
-                expect(function () {
-                    dynamicsWebApiTest.retrieveAll('records');
-                }).to.throw("DynamicsWebApi.retrieveAll cannot be used in a BATCH request.");
             });
 
             it("retrieveAllRequest", function () {
@@ -4883,8 +4767,8 @@ describe("promises -", function () {
             it("returns a correct response", function (done) {
                 dynamicsWebApiTest.startBatch();
 
-                dynamicsWebApiTest.update(mocks.data.testEntityId2, 'records', { firstname: "Test", lastname: "Batch!" });
-                dynamicsWebApiTest.deleteRecord(mocks.data.testEntityId2, 'records', 'firstname');
+				dynamicsWebApiTest.updateRequest({ key: mocks.data.testEntityId2, collection: 'records', data: { firstname: "Test", lastname: "Batch!" } });
+				dynamicsWebApiTest.deleteRequest({ key: mocks.data.testEntityId2, collection: 'records', navigationProperty: 'firstname' });
 
                 dynamicsWebApiTest.executeBatch()
                     .then(function (object) {
@@ -4937,8 +4821,8 @@ describe("promises -", function () {
             it("returns a correct response", function (done) {
                 dynamicsWebApiTest.startBatch();
 
-                dynamicsWebApiTest.update(mocks.data.testEntityId2, 'records', { firstname: "Test", lastname: "Batch!" });
-                dynamicsWebApiTest.deleteRecord(mocks.data.testEntityId2, 'records', 'firstname');
+				dynamicsWebApiTest.updateRequest({ key: mocks.data.testEntityId2, collection: 'records', data: { firstname: "Test", lastname: "Batch!" } });
+				dynamicsWebApiTest.deleteRequest({ key: mocks.data.testEntityId2, collection: 'records', navigationProperty: 'firstname' });
 
                 dynamicsWebApiTest.executeBatch()
                     .then(function (object) {
@@ -5000,8 +4884,8 @@ describe("promises -", function () {
             it("returns a correct response", function (done) {
                 dynamicsWebApiTest.startBatch();
 
-                dynamicsWebApiTest.createRequest({ collection: 'records', entity: { firstname: "Test", lastname: "Batch!" }, contentId: '1' });
-                dynamicsWebApiTest.createRequest({ collection: 'test_property', entity: { firstname: "Test1", lastname: "Batch!" }, contentId: '$1' });
+                dynamicsWebApiTest.createRequest({ collection: 'records', data: { firstname: "Test", lastname: "Batch!" }, contentId: '1' });
+                dynamicsWebApiTest.createRequest({ collection: 'test_property', data: { firstname: "Test1", lastname: "Batch!" }, contentId: '$1' });
 
                 dynamicsWebApiTest.executeBatch()
                     .then(function (object) {
@@ -5054,8 +4938,8 @@ describe("promises -", function () {
             it("returns a correct response", function (done) {
                 dynamicsWebApiTest.startBatch();
 
-                dynamicsWebApiTest.createRequest({ collection: 'records', entity: { firstname: "Test", lastname: "Batch!" }, contentId: '1' });
-                dynamicsWebApiTest.createRequest({ collection: 'tests', entity: { firstname: "Test1", lastname: "Batch!", "prop@odata.bind": "$1" } });
+                dynamicsWebApiTest.createRequest({ collection: 'records', data: { firstname: "Test", lastname: "Batch!" }, contentId: '1' });
+                dynamicsWebApiTest.createRequest({ collection: 'tests', data: { firstname: "Test1", lastname: "Batch!", "prop@odata.bind": "$1" } });
 
                 dynamicsWebApiTest.executeBatch()
                     .then(function (object) {
@@ -5108,9 +4992,9 @@ describe("promises -", function () {
             it("returns a correct response", function (done) {
                 dynamicsWebApiTest.startBatch();
 
-                dynamicsWebApiTest.upsert("key='key1'", "records", { firstname: "Test", lastname: "Batch!" });
-                dynamicsWebApiTest.upsert("key='key2'", "records", { firstname: "Test", lastname: "Batch!" });
-                dynamicsWebApiTest.upsert("key='key3'", "records", { firstname: "Test", lastname: "Batch!" });
+				dynamicsWebApiTest.upsertRequest({ key: "key='key1'", collection: "records", data: { firstname: "Test", lastname: "Batch!" } });
+				dynamicsWebApiTest.upsertRequest({ key: "key='key2'", collection: "records", data: { firstname: "Test", lastname: "Batch!" } });
+				dynamicsWebApiTest.upsertRequest({ key: "key='key3'", collection: "records", data: { firstname: "Test", lastname: "Batch!" } });
 
                 dynamicsWebApiTest.executeBatch()
                     .then(function (object) {
@@ -5149,7 +5033,7 @@ describe("promises -", function () {
             });
 
             it("it makes a correct request and returns a correct response", function (done) {
-                dynamicsWebApi80.create(mocks.data.testEntity, "tests")
+				dynamicsWebApi80.createRequest({ data: mocks.data.testEntity, collection: "tests" })
                     .then(function (object) {
                         expect(object).to.equal(mocks.data.testEntityId);
                         done();
@@ -5182,7 +5066,7 @@ describe("promises -", function () {
             });
 
             it("it makes a correct request and returns a correct response", function (done) {
-                dynamicsWebApi80.create(mocks.data.testEntity, "tests")
+				dynamicsWebApi80.createRequest({ data: mocks.data.testEntity, collection: "tests" })
                     .then(function (object) {
                         expect(object).to.equal(mocks.data.testEntityId);
                         done();
@@ -5395,7 +5279,7 @@ describe("promises -", function () {
             });
 
             it("it makes a correct request and returns a correct response", function (done) {
-                dynamicsWebApi82.retrieve(mocks.data.testEntityId, "tests")
+				dynamicsWebApi82.retrieveRequest({ key: mocks.data.testEntityId, collection: "tests" })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
@@ -5468,7 +5352,7 @@ describe("promises -", function () {
 
             it("returns a correct response", function (done) {
                 dynamicsWebApi82
-                    .create(mocks.data.testEntity, "tests")
+					.createRequest({ data: mocks.data.testEntity, collection: "tests" })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
@@ -5514,7 +5398,7 @@ describe("promises -", function () {
                 var dwaRequest = {
                     id: mocks.data.testEntityId,
                     collection: "tests",
-                    entity: mocks.data.testEntity,
+                    data: mocks.data.testEntity,
                     returnRepresentation: false
                 };
 
@@ -5555,7 +5439,7 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApi82.retrieveMultiple("tests")
+				dynamicsWebApi82.retrieveMultipleRequest({ collection: 'tests' })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.responses.multiple());
                         done();
@@ -5633,7 +5517,7 @@ describe("promises -", function () {
             });
 
             it("it makes a correct request and returns a correct response", function (done) {
-                dynamicsWebApi81.create(mocks.data.testEntity, "tests")
+				dynamicsWebApi81.createRequest({ data: mocks.data.testEntity, collection: "tests" })
                     .then(function (object) {
                         expect(object).to.equal(mocks.data.testEntityId);
                         done();
@@ -5812,7 +5696,7 @@ describe("promises -", function () {
 
             it("sends the request to the right end point", function (done) {
                 var dynamicsWebApiCopy = dynamicsWebApi81.initializeInstance();
-                dynamicsWebApiCopy.create(mocks.data.testEntity, "tests")
+				dynamicsWebApiCopy.createRequest({ data: mocks.data.testEntity, collection: "tests" })
                     .then(function (object) {
                         expect(object).to.equal(mocks.data.testEntityId);
                         done();

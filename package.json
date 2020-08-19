@@ -1,55 +1,55 @@
 {
-  "name": "dynamics-web-api",
-  "version": "1.5.14",
-  "description": "DynamicsWebApi is a Microsoft Dynamics CRM Web API helper library",
-  "keywords": [
-    "crm",
-    "web-api",
-    "helper",
-    "dynamics-crm",
-    "dynamics-365",
-    "dynamics-crm-webapi",
-    "dynamics-crm-online"
-  ],
-  "main": "lib/dynamics-web-api.js",
-  "types": "types/dynamics-web-api.d.ts",
-  "author": {
-    "name": "Aleksandr Rogov"
-  },
-  "devDependencies": {
-    "chai": "^3.5.0",
-    "coveralls": "^2.13.3",
-    "gulp": "^3.9.1",
-    "istanbul": "^0.4.5",
-    "mocha": "^3.5.3",
-    "mocha-lcov-reporter": "^1.3.0",
-    "nock": "^11.4.0",
-    "rimraf": "^2.6.2",
-    "sinon": "^1.17.7",
-    "webpack": "^2.7.0",
-    "webpack-strip-block": "^0.1.1"
-  },
-  "dependencies": {
-    "@types/node": "^12.12.7",
-    "@types/xrm": "^9.0.17"
-  },
-  "license": "MIT",
-  "scripts": {
-    "test": "mocha tests/*-tests.js",
-    "test-coverage": "rimraf coverage && istanbul cover node_modules/mocha/bin/_mocha tests/*-tests.js",
-    "build": "rimraf dist && rimraf coverage && webpack",
-    "release-patch": "npm version patch -m \"Release v%s\"",
-    "release-minor": "npm version minor -m \"Release v%s\"",
-    "preversion": "npm test",
-    "version": "npm run build && git add -A dist",
-    "postversion": "git push && git push --tags",
-    "coveralls": "npm run test-coverage -- --report lcovonly && cat ./coverage/lcov.info | coveralls"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/AleksandrRogov/DynamicsWebApi.git"
-  },
-  "browser": {
-    "./lib/requests/http.js": "./lib/requests/xhr.js"
-  }
+	"name": "dynamics-web-api",
+	"version": "1.9.0",
+	"description": "DynamicsWebApi is a Microsoft Dynamics CRM Web API helper library",
+	"keywords": [
+		"crm",
+		"web-api",
+		"helper",
+		"dynamics-crm",
+		"dynamics-365",
+		"dynamics-crm-webapi",
+		"dynamics-crm-online"
+	],
+	"main": "lib/dynamics-web-api.js",
+	"types": "lib/dynamics-web-api.d.ts",
+	"author": {
+		"name": "Aleksandr Rogov"
+	},
+	"devDependencies": {
+		"chai": "^3.5.0",
+		"coveralls": "^2.13.3",
+		"gulp": "^3.9.1",
+		"istanbul": "^0.4.5",
+		"mocha": "^3.5.3",
+		"mocha-lcov-reporter": "^1.3.0",
+		"nock": "^11.4.0",
+		"rimraf": "^2.6.2",
+		"sinon": "^1.17.7",
+		"webpack": "^2.7.0",
+		"webpack-strip-block": "^0.1.1"
+	},
+	"dependencies": {
+		"@types/node": "^12.12.7",
+		"@types/xrm": "^9.0.17"
+	},
+	"license": "MIT",
+	"scripts": {
+		"test": "mocha tests/*-tests.js",
+		"test-coverage": "rimraf coverage && istanbul cover node_modules/mocha/bin/_mocha tests/*-tests.js",
+		"build": "rimraf dist && rimraf coverage && webpack",
+		"release-patch": "npm version patch -m \"Release v%s\"",
+		"release-minor": "npm version minor -m \"Release v%s\"",
+		"preversion": "npm test",
+		"version": "npm run build && git add -A dist",
+		"postversion": "git push && git push --tags",
+		"coveralls": "npm run test-coverage -- --report lcovonly && cat ./coverage/lcov.info | coveralls"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/AleksandrRogov/DynamicsWebApi.git"
+	},
+	"browser": {
+		"./lib/requests/http.js": "./lib/requests/xhr.js"
+	}
 }

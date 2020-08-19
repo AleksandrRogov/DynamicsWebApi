@@ -142,12 +142,12 @@ function parseBatchHeaders(text: string) : any {
 }
 
 //partially taken from http://olingo.apache.org/doc/javascript/apidoc/batch.js.html
-function readLine(text: string, ctx: any): string {
+function readLine(text: string, ctx: { position: number }): string {
 	return readTo(text, ctx, "\r\n");
 }
 
 //partially taken from http://olingo.apache.org/doc/javascript/apidoc/batch.js.html
-function readTo(text: string, ctx: any, str: string): string {
+function readTo(text: string, ctx: { position: number }, str: string): string {
 	var start = ctx.position || 0;
 	var end = text.length;
 	if (str) {

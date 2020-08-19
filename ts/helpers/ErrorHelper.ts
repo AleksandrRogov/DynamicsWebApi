@@ -2,14 +2,14 @@
     status: number
 }
 
-function throwParameterError(functionName: string, parameterName: string, type: string) {
+function throwParameterError(functionName: string, parameterName: string, type: string): void {
     throw new Error(type
         ? `${functionName} requires the ${parameterName} parameter to be of type ${type}.`
         : `${functionName} requires the ${parameterName} parameter.`);
 };
 
 export class ErrorHelper {
-    static handleErrorResponse (req) {
+    static handleErrorResponse (req): void {
         ///<summary>
         /// Private function return an Error object to the errorCallback
         ///</summary>
@@ -20,7 +20,7 @@ export class ErrorHelper {
         throw new Error(`Error: ${req.status}: ${req.message}`);
     }
 
-    static parameterCheck (parameter, functionName: string, parameterName: string, type?: string) {
+    static parameterCheck (parameter, functionName: string, parameterName: string, type?: string): void {
         ///<summary>
         /// Private function used to check whether required parameters are null or undefined
         ///</summary>
@@ -35,7 +35,7 @@ export class ErrorHelper {
         }
     }
 
-    static stringParameterCheck(parameter, functionName: string, parameterName: string) {
+    static stringParameterCheck(parameter, functionName: string, parameterName: string): void {
         ///<summary>
         /// Private function used to check whether required parameters are null or undefined
         ///</summary>
@@ -50,7 +50,7 @@ export class ErrorHelper {
         }
     }
 
-    static arrayParameterCheck(parameter, functionName: string, parameterName: string) {
+    static arrayParameterCheck(parameter, functionName: string, parameterName: string): void {
         ///<summary>
         /// Private function used to check whether required parameters are null or undefined
         ///</summary>
@@ -65,13 +65,13 @@ export class ErrorHelper {
         }
     }
 
-    static stringOrArrayParameterCheck(parameter, functionName: string, parameterName: string) {
+	static stringOrArrayParameterCheck(parameter, functionName: string, parameterName: string): void {
         if (parameter.constructor !== Array && typeof parameter !== "string") {
             throwParameterError(functionName, parameterName, "String or Array");
         }
     }
 
-    static numberParameterCheck(parameter, functionName: string, parameterName: string) {
+	static numberParameterCheck(parameter, functionName: string, parameterName: string): void {
         ///<summary>
         /// Private function used to check whether required parameters are null or undefined
         ///</summary>
@@ -107,7 +107,7 @@ export class ErrorHelper {
         return <DynamicsWebApiError>error;
     }
 
-    static boolParameterCheck (parameter, functionName: string, parameterName: string) {
+	static boolParameterCheck(parameter, functionName: string, parameterName: string): void {
         ///<summary>
         /// Private function used to check whether required parameters are null or undefined
         ///</summary>
@@ -172,7 +172,7 @@ export class ErrorHelper {
         }
     }
 
-    static callbackParameterCheck(callbackParameter, functionName: string, parameterName: string) {
+	static callbackParameterCheck(callbackParameter, functionName: string, parameterName: string): void {
         ///<summary>
         /// Private function used to check whether required callback parameters are functions
         ///</summary>
@@ -187,16 +187,16 @@ export class ErrorHelper {
         }
     }
 
-    static batchIncompatible (functionName: string, isBatch: boolean) {
+	static batchIncompatible(functionName: string, isBatch: boolean): void{
         if (isBatch) {
             isBatch = false;
             throw new Error(functionName + " cannot be used in a BATCH request.");
         }
     }
 
-    static batchNotStarted (isBatch: boolean) {
+	static batchNotStarted(isBatch: boolean): void {
         if (!isBatch) {
             throw new Error("Batch operation has not been started. Please call a DynamicsWebApi.startBatch() function prior to calling DynamicsWebApi.executeBatch() to perform a batch request correctly.");
         }
     }
-};
+}
