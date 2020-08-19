@@ -529,8 +529,9 @@ declare class DynamicsWebApi {
      * Executes a batch request. Please call DynamicsWebApi.startBatch() first to start a batch request.
      * @param successCallback - The function that will be passed through and be called by a successful response.
      * @param errorCallback - The function that will be passed through and be called by a failed response.
+     * @param request
      */
-	executeBatch(successCallback: Function, errorCallback: Function): void;
+	executeBatch(successCallback: Function, errorCallback: Function, request?: Request): void;
     /**
      * Creates a new instance of DynamicsWebApi
      *
