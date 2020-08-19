@@ -1,4 +1,4 @@
-﻿// Type definitions for dynamics-web-api-callbacks v1.6.10
+﻿// Type definitions for dynamics-web-api-callbacks v1.6.11
 // Project: https://github.com/AleksandrRogov/DynamicsWebApi
 // Definitions by: Aleksandr Rogov https://github.com/AleksandrRogov/
 
@@ -642,8 +642,6 @@ declare namespace DynamicsWebApi {
 	interface RetrieveRequest extends CRUDRequest {
 		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
 		expand?: Expand[];
-		/**Use the $filter system query option to set criteria for which entities will be returned. */
-		filter?: string;
 		/**Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests.*/
 		ifmatch?: string;
 		/**Sets If-None-Match header value that enables to use conditional retrieval in applicable requests. */
