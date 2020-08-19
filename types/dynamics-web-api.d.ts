@@ -434,7 +434,7 @@ declare class DynamicsWebApi {
     /**
      * Executes a batch request. Please call DynamicsWebApi.startBatch() first to start a batch request.
      */
-	executeBatch(request?: Request): Promise<any[]>;
+	executeBatch(request?: DynamicsWebApi.RequestBase): Promise<any[]>;
     /**
      * Creates a new instance of DynamicsWebApi
      *
@@ -460,11 +460,9 @@ declare namespace DynamicsWebApi {
 		expand?: Expand[]
 	}
 
-	interface Request {
+	interface RequestBase {
 		/**XHR requests only! Indicates whether the requests should be made synchronously or asynchronously.Default value is 'true'(asynchronously). */
 		async?: boolean;
-		/**The name of the Entity Collection or Entity Logical name. */
-		collection?: string;
 		/**Impersonates the user.A String representing the GUID value for the Dynamics 365 system user id. */
 		impersonate?: string;
 		/** If set to 'true', DynamicsWebApi adds a request header 'Cache-Control: no-cache'.Default value is 'false'. */
@@ -473,6 +471,11 @@ declare namespace DynamicsWebApi {
 		token?: string;
 		/**Sets a number of milliseconds before a request times out. */
 		timeout?: number;
+	}
+
+	interface Request extends RequestBase {
+		/**The name of the Entity Collection or Entity Logical name. */
+		collection?: string;
 	}
 
 	interface CRUDRequest extends Request {
