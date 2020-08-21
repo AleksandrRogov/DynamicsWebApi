@@ -851,7 +851,7 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApiTest.count("tests")
+				dynamicsWebApiTest.count({ collection: "tests" })
                     .then(function (object) {
                         expect(object).to.deep.equal(parseInt(mocks.responses.countBasic.responseText));
                         done();
@@ -879,7 +879,7 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApiTest.count("tests", "name eq 'name'")
+				dynamicsWebApiTest.count({ collection: "tests", filter: "name eq 'name'" })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.multipleWithCount["@odata.count"]);
                         done();
@@ -910,7 +910,7 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApiTest.countAll("tests", "name eq 'name'")
+				dynamicsWebApiTest.countAll({ collection: "tests", filter: "name eq 'name'" })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.multipleWithCount["@odata.count"]);
                         done();
@@ -941,7 +941,7 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApiTest.fetch("tests", mocks.data.fetchXmls.fetchXml)
+				dynamicsWebApiTest.fetch({ collection: "tests", fetchXml: mocks.data.fetchXmls.fetchXml })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.fetchXmls.fetchXmlResultPage1Cookie);
                         done();
@@ -970,7 +970,7 @@ describe("promises -", function () {
 
             it("returns a correct response", function (done) {
                 var pagingInfo = mocks.data.fetchXmls.fetchXmlResultPage1Cookie.PagingInfo;
-                dynamicsWebApiTest.fetch("tests", mocks.data.fetchXmls.fetchXml, null, pagingInfo.nextPage, pagingInfo.cookie)
+				dynamicsWebApiTest.fetch({ collection: "tests", fetchXml: mocks.data.fetchXmls.fetchXml, pageNumber: pagingInfo.nextPage, pagingCookie: pagingInfo.cookie })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.fetchXmls.fetchXmlResultPage2Cookie);
                         done();
@@ -998,7 +998,7 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApiTest.fetch("tests", mocks.data.fetchXmls.fetchXml)
+				dynamicsWebApiTest.fetch({ collection: "tests", fetchXml: mocks.data.fetchXmls.fetchXml })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.fetchXmls.fetchXmlResultPage1);
                         done();
@@ -1031,7 +1031,7 @@ describe("promises -", function () {
 
             it("returns a correct response", function (done) {
                 var pagingInfo = mocks.data.fetchXmls.fetchXmlResultPage1Cookie.PagingInfo;
-                dynamicsWebApiTest.fetch("tests", mocks.data.fetchXmls.fetchXml, DWA.Prefer.Annotations.FormattedValue, pagingInfo.nextPage, pagingInfo.cookie)
+				dynamicsWebApiTest.fetch({ collection: "tests", fetchXml: mocks.data.fetchXmls.fetchXml, includeAnnotations: DWA.Prefer.Annotations.FormattedValue, pageNumber: pagingInfo.nextPage, pagingCookie: pagingInfo.cookie })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.fetchXmls.fetchXmlResultPage2Cookie);
                         done();
@@ -1065,7 +1065,7 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApiTest.fetchAll("tests", mocks.data.fetchXmls.fetchXml)
+				dynamicsWebApiTest.fetchAll({ collection: "tests", fetchXml: mocks.data.fetchXmls.fetchXml })
                     .then(function (object) {
                         var checkResponse = mocks.data.fetchXmls.fetchXmlResultPage1Cookie.value;
                         checkResponse = checkResponse.concat(mocks.data.fetchXmls.fetchXmlResultPage2Cookie.value);
@@ -1100,7 +1100,7 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApiTest.associate("tests", mocks.data.testEntityId, "tests_records", "records", mocks.data.testEntityId2)
+				dynamicsWebApiTest.associate({ collection: "tests", primaryKey: mocks.data.testEntityId, relationshipName: "tests_records", relatedCollection: "records", relatedKey: mocks.data.testEntityId2 })
                     .then(function (object) {
                         done(object);
                     }).catch(function (object) {
@@ -1135,7 +1135,13 @@ describe("promises -", function () {
 
             it("returns a correct response", function (done) {
                 var dynamicsWebApiE = dynamicsWebApiTest.initializeInstance({ webApiVersion: "8.2", useEntityNames: true });
-                dynamicsWebApiE.associate("test", mocks.data.testEntityId, "tests_records", "record", mocks.data.testEntityId2)
+				dynamicsWebApiE.associate({
+					collection: "test",
+					primaryKey: mocks.data.testEntityId,
+					relationshipName: "tests_records",
+					relatedCollection: "record",
+					relatedKey: mocks.data.testEntityId2
+				})
                     .then(function (object) {
                         expect(object).to.be.undefined;
                         var colName = dynamicsWebApiE.utility.getCollectionName('test');
@@ -1171,7 +1177,14 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApiTest.associate("tests", mocks.data.testEntityId, "tests_records", "records", mocks.data.testEntityId2, mocks.data.testEntityId3)
+				dynamicsWebApiTest.associate({
+					collection: "tests",
+					primaryKey: mocks.data.testEntityId,
+					relationshipName: "tests_records",
+					relatedCollection: "records",
+					relatedKey: mocks.data.testEntityId2,
+					impersonate: mocks.data.testEntityId3
+				})
                     .then(function (object) {
                         done(object);
                     }).catch(function (object) {
@@ -1201,7 +1214,12 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApiTest.disassociate("tests", mocks.data.testEntityId, "tests_records", mocks.data.testEntityId2)
+				dynamicsWebApiTest.disassociate({
+					collection: "tests",
+					primaryKey: mocks.data.testEntityId,
+					relationshipName: "tests_records",
+					relatedKey: mocks.data.testEntityId2
+				})
                     .then(function (object) {
                         done(object);
                     }).catch(function (object) {
@@ -1232,7 +1250,13 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApiTest.disassociate("tests", mocks.data.testEntityId, "tests_records", mocks.data.testEntityId2, mocks.data.testEntityId3)
+				dynamicsWebApiTest.disassociate({
+					collection: "tests",
+					primaryKey: mocks.data.testEntityId,
+					relationshipName: "tests_records",
+					relatedKey: mocks.data.testEntityId2,
+					impersonate: mocks.data.testEntityId3
+				})
                     .then(function (object) {
                         done(object);
                     }).catch(function (object) {
@@ -1264,7 +1288,13 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApiTest.associateSingleValued("tests", mocks.data.testEntityId, "tests_records", "records", mocks.data.testEntityId2)
+				dynamicsWebApiTest.associateSingleValued({
+					collection: "tests",
+					primaryKey: mocks.data.testEntityId,
+					navigationProperty: "tests_records",
+					relatedCollection: "records",
+					relatedKey: mocks.data.testEntityId2
+				})
                     .then(function (object) {
                         done(object);
                     }).catch(function (object) {
@@ -1297,7 +1327,14 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApiTest.associateSingleValued("tests", mocks.data.testEntityId, "tests_records", "records", mocks.data.testEntityId2, mocks.data.testEntityId3)
+				dynamicsWebApiTest.associateSingleValued({
+					collection: "tests",
+					primaryKey: mocks.data.testEntityId,
+					navigationProperty: "tests_records",
+					relatedCollection: "records",
+					relatedKey: mocks.data.testEntityId2,
+					impersonate: mocks.data.testEntityId3
+				})
                     .then(function (object) {
                         done(object);
                     }).catch(function (object) {
@@ -1327,7 +1364,7 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApiTest.disassociateSingleValued("tests", mocks.data.testEntityId, "tests_records")
+				dynamicsWebApiTest.disassociateSingleValued({ collection: "tests", primaryKey: mocks.data.testEntityId, navigationProperty: "tests_records" })
                     .then(function (object) {
                         done(object);
                     }).catch(function (object) {
@@ -1354,7 +1391,7 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApiTest.disassociateSingleValued("tests", mocks.data.testEntityId, "tests_records", mocks.data.testEntityId3)
+				dynamicsWebApiTest.disassociateSingleValued({ collection: "tests", primaryKey: mocks.data.testEntityId, navigationProperty: "tests_records", impersonate: mocks.data.testEntityId3 })
                     .then(function (object) {
                         done(object);
                     }).catch(function (object) {
@@ -4544,7 +4581,7 @@ describe("promises -", function () {
                 dynamicsWebApiTest.startBatch();
 
 				dynamicsWebApiTest.retrieveMultipleRequest({ collection: 'tests' });
-                dynamicsWebApiTest.count('records');
+				dynamicsWebApiTest.count({ collection: 'records' });
 				dynamicsWebApiTest.retrieveMultipleRequest({ collection: 'morerecords' });
 
                 dynamicsWebApiTest.executeBatch()
@@ -4656,7 +4693,7 @@ describe("promises -", function () {
                 dynamicsWebApiTest.startBatch();
 
 				dynamicsWebApiTest.retrieveMultipleRequest({ collection: 'tests' });
-                dynamicsWebApiTest.count('records', 'statecode eq 0');
+				dynamicsWebApiTest.count({ collection: 'records', filter: 'statecode eq 0' });
 				dynamicsWebApiTest.retrieveMultipleRequest({ collection: 'morerecords' });
 
                 dynamicsWebApiTest.executeBatch()
@@ -4684,7 +4721,7 @@ describe("promises -", function () {
                 dynamicsWebApiTest.startBatch();
 
                 expect(function () {
-                    dynamicsWebApiTest.countAll('records');
+					dynamicsWebApiTest.countAll({ collection: 'records' });
                 }).to.throw("DynamicsWebApi.countAll cannot be used in a BATCH request.");
             });
 
@@ -4700,7 +4737,7 @@ describe("promises -", function () {
                 dynamicsWebApiTest.startBatch();
 
                 expect(function () {
-                    dynamicsWebApiTest.fetchAll('collection', 'any');
+					dynamicsWebApiTest.fetchAll({ collection: 'collection', fetchXml: 'any' });
                 }).to.throw("DynamicsWebApi.fetchAll cannot be used in a BATCH request.");
             });
         });

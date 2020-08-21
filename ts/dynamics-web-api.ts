@@ -551,30 +551,27 @@ export class DynamicsWebApi {
 	/**
 	 * Sends an asynchronous request to count records. IMPORTANT! The count value does not represent the total number of entities in the system. It is limited by the maximum number of entities that can be returned. Returns: Number
 	 *
-	 * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-	 * @param {string} [filter] - Use the $filter system query option to set criteria for which entities will be returned.
+	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	count = (collection: string, filter?: string): Promise<number> => {
+	count = (request: DynamicsWebApi.CountRequest): Promise<number> => {
+		ErrorHelper.parameterCheck(request, "DynamicsWebApi.count", "request");
 
-		var request: Core.InternalRequest = {
-			collection: collection,
-			functionName: "count",
-			method: "GET"
-		};
+		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		internalRequest.method = "GET";
+		internalRequest.functionName = "count";
 
-		if (filter == null || (filter != null && !filter.length)) {
-			request.navigationProperty = '$count';
+		if (internalRequest.filter == null || (internalRequest.filter != null && !internalRequest.filter.length)) {
+			internalRequest.navigationProperty = '$count';
 		}
 		else {
-			request.filter = filter;
-			request.count = true;
+			internalRequest.count = true;
 		}
 
-		request.responseParameters = { toCount: request.count };
+		internalRequest.responseParameters = { toCount: internalRequest.count };
 
 		//if filter has not been specified then simplify the request
-		return this._makeRequest(request)
+		return this._makeRequest(internalRequest)
 			.then(function (response) {
 				return response.data;
 			});
@@ -582,20 +579,14 @@ export class DynamicsWebApi {
 
 	/**
 	 * Sends an asynchronous request to count records. Returns: Number
-	 *
-	 * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-	 * @param {string} [filter] - Use the $filter system query option to set criteria for which entities will be returned.
-	 * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
+	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	countAll = (collection: string, filter?: string, select?: string[]): Promise<number> => {
+	countAll = (request: DynamicsWebApi.CountAllRequest): Promise<number> => {
 		ErrorHelper.batchIncompatible('DynamicsWebApi.countAll', this._isBatch);
+		ErrorHelper.parameterCheck(request, "DynamicsWebApi.countAll", "request");
 
-		return this._retrieveAllRequest({
-			collection: collection,
-			filter: filter,
-			select: select
-		})
+		return this._retrieveAllRequest(request)
 			.then(function (response) {
 				return response
 					? (response.value ? response.value.length : 0)
@@ -604,135 +595,61 @@ export class DynamicsWebApi {
 	};
 
 	/**
-	 * Sends an asynchronous request to retrieve records.
+	 * Sends an asynchronous request to execute FetchXml to retrieve records. Returns: DWA.Types.FetchXmlResponse
 	 *
-	 * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-	 * @param {Array} [select] - Use the $select system query option to limit the properties returned.
-	 * @param {string} [filter] - Use the $filter system query option to set criteria for which entities will be returned.
-	 * @param {string} [nextPageLink] - Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
+	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	//retrieveMultiple = (collection, select, filter, nextPageLink) => {
-	//	return this.retrieveMultipleRequest({
-	//		collection: collection,
-	//		select: select,
-	//		filter: filter
-	//	}, nextPageLink);
-	//};
+	fetch = <T = any>(request: DynamicsWebApi.FetchXmlRequest): Promise<DynamicsWebApi.FetchXmlResponse<T>> => {
+		ErrorHelper.parameterCheck(request, "DynamicsWebApi.fetch", "request");
 
-	/**
-	 * Sends an asynchronous request to retrieve all records.
-	 *
-	 * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-	 * @param {Array} [select] - Use the $select system query option to limit the properties returned.
-	 * @param {string} [filter] - Use the $filter system query option to set criteria for which entities will be returned.
-	 * @returns {Promise} D365 Web Api result
-	 */
-	//this.retrieveAll = function (collection, select, filter) {
-	//	ErrorHelper.batchIncompatible('DynamicsWebApi.retrieveAll', _isBatch);
-	//	return _retrieveAllRequest({
-	//		collection: collection,
-	//		select: select,
-	//		filter: filter
-	//	});
-	//};
+		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		internalRequest.method = "GET";
+		internalRequest.functionName = "fetch";
 
-	fetch = <T>(collection: string, fetchXml: string, includeAnnotations?: string, pageNumber?: number, pagingCookie?: string, impersonateUserId?: string): Promise<DynamicsWebApi.FetchXmlResponse<T>> => {
+		ErrorHelper.stringParameterCheck(internalRequest.fetchXml, "DynamicsWebApi.fetch", "request.fetchXml");
 
-		ErrorHelper.stringParameterCheck(fetchXml, "DynamicsWebApi.executeFetchXml", "fetchXml");
+		internalRequest.pageNumber = internalRequest.pageNumber || 1;
 
-		pageNumber = pageNumber || 1;
+		ErrorHelper.numberParameterCheck(internalRequest.pageNumber, "DynamicsWebApi.fetch", "request.pageNumber");
+		let replacementString = `$1 page="${internalRequest.pageNumber}"`;
 
-		ErrorHelper.numberParameterCheck(pageNumber, "DynamicsWebApi.executeFetchXml", "pageNumber");
-		var replacementString = '$1 page="' + pageNumber + '"';
-
-		if (pagingCookie != null) {
-			ErrorHelper.stringParameterCheck(pagingCookie, "DynamicsWebApi.executeFetchXml", "pagingCookie");
-			replacementString += ' paging-cookie="' + pagingCookie + '"';
+		if (internalRequest.pagingCookie != null) {
+			ErrorHelper.stringParameterCheck(internalRequest.pagingCookie, "DynamicsWebApi.fetch", "request.pagingCookie");
+			replacementString += ` paging-cookie="${internalRequest.pagingCookie}"`;
 		}
 
 		//add page number and paging cookie to fetch xml
-		fetchXml = fetchXml.replace(/^(<fetch)/, replacementString);
+		internalRequest.fetchXml = internalRequest.fetchXml.replace(/^(<fetch)/, replacementString);
 
-		var request: Core.InternalRequest = {
-			collection: collection,
-			includeAnnotations: includeAnnotations,
-			impersonate: impersonateUserId,
-			fetchXml: fetchXml,
-			method: "GET",
-			functionName: "fetch",
-			responseParameters: { pageNumber: pageNumber }
-		};
+		internalRequest.responseParameters = { pageNumber: internalRequest.pageNumber };
 
-		return this._makeRequest(request)
+		return this._makeRequest(internalRequest)
 			.then(function (response) {
 				return response.data;
 			});
 	};
 
 	/**
-	 * Sends an asynchronous request to execute FetchXml to retrieve records. Returns: DWA.Types.FetchXmlResponse
-	 *
-	 * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-	 * @param {string} fetchXml - FetchXML is a proprietary query language that provides capabilities to perform aggregation.
-	 * @param {string} [includeAnnotations] - Use this parameter to include annotations to a result. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie
-	 * @param {number} [pageNumber] - Page number.
-	 * @param {string} [pagingCookie] - Paging cookie. For retrieving the first page, pagingCookie should be null.
-	 * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
-	 * @returns {Promise} D365 Web Api result
-	 */
-	//fetch = this.executeFetchXml;
-
-	/**
-	 * Sends an asynchronous request to execute FetchXml to retrieve records. Returns: DWA.Types.FetchXmlResponse
-	 *
-	 * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-	 * @param {string} fetchXml - FetchXML is a proprietary query language that provides capabilities to perform aggregation.
-	 * @param {string} [includeAnnotations] - Use this parameter to include annotations to a result. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie
-	 * @param {number} [pageNumber] - Page number.
-	 * @param {string} [pagingCookie] - Paging cookie. For retrieving the first page, pagingCookie should be null.
-	 * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
-	 * @returns {Promise} D365 Web Api result
-	 */
-	//this.executeFetchXml = executeFetchXml;
-
-	//private innerExecuteFetchXmlAll = (collection, fetchXml, includeAnnotations, impersonateUserId) => {
-	//	let _executeFetchXmlAll = (collection, fetchXml, includeAnnotations, pageNumber, pagingCookie, impersonateUserId, records?) => {
-	//		records = records || [];
-
-	//		return this.executeFetchXml(collection, fetchXml, includeAnnotations, pageNumber, pagingCookie, impersonateUserId).then(function (response) {
-	//			records = records.concat(response.value);
-
-	//			if (response.PagingInfo) {
-	//				return this._executeFetchXmlAll(collection, fetchXml, includeAnnotations, response.PagingInfo.nextPage, response.PagingInfo.cookie, impersonateUserId, records);
-	//			}
-
-	//			return { value: records };
-	//		});
-	//	}
-
-	//	ErrorHelper.batchIncompatible('DynamicsWebApi.executeFetchXmlAll', this._isBatch);
-	//	return _executeFetchXmlAll(collection, fetchXml, includeAnnotations, null, null, impersonateUserId);
-	//};
-
-	/**
 	 * Sends an asynchronous request to execute FetchXml to retrieve all records.
 	 *
-	 * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-	 * @param {string} fetchXml - FetchXML is a proprietary query language that provides capabilities to perform aggregation.
-	 * @param {string} [includeAnnotations] - Use this parameter to include annotations to a result. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie
-	 * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	fetchAll = (collection, fetchXml, includeAnnotations, impersonateUserId) => {
-		let _executeFetchXmlAll = (collection, fetchXml, includeAnnotations, pageNumber, pagingCookie, impersonateUserId, records?) => {
+	fetchAll = <T = any>(request: DynamicsWebApi.FetchAllRequest): Promise<DynamicsWebApi.FetchXmlResponse<T>> => {
+		ErrorHelper.parameterCheck(request, "DynamicsWebApi.fetchAll", "request");
+
+		let _executeFetchXmlAll = (request: DynamicsWebApi.FetchXmlRequest, records?: any[]): Promise<DynamicsWebApi.FetchXmlResponse<T>> => {
 			records = records || [];
 
-			return this.fetch(collection, fetchXml, includeAnnotations, pageNumber, pagingCookie, impersonateUserId).then(function (response) {
+			return this.fetch(request).then(function (response) {
 				records = records.concat(response.value);
 
 				if (response.PagingInfo) {
-					return _executeFetchXmlAll(collection, fetchXml, includeAnnotations, response.PagingInfo.nextPage, response.PagingInfo.cookie, impersonateUserId, records);
+					request.pageNumber = response.PagingInfo.nextPage;
+					request.pagingCookie = response.PagingInfo.cookie;
+
+					return _executeFetchXmlAll(request, records);
 				}
 
 				return { value: records };
@@ -740,133 +657,98 @@ export class DynamicsWebApi {
 		}
 
 		ErrorHelper.batchIncompatible('DynamicsWebApi.fetchAll', this._isBatch);
-		return _executeFetchXmlAll(collection, fetchXml, includeAnnotations, null, null, impersonateUserId);
+		return _executeFetchXmlAll(request);
 	};
-
-	///**
-	// * Sends an asynchronous request to execute FetchXml to retrieve all records.
-	// *
-	// * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-	// * @param {string} fetchXml - FetchXML is a proprietary query language that provides capabilities to perform aggregation.
-	// * @param {string} [includeAnnotations] - Use this parameter to include annotations to a result. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie
-	// * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
-	// * @returns {Promise} D365 Web Api result
-	// */
-	//executeFetchXmlAll = this.innerExecuteFetchXmlAll;
 
 	/**
 	 * Associate for a collection-valued navigation property. (1:N or N:N)
 	 *
-	 * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-	 * @param {string} primaryKey - Primary entity record id.
-	 * @param {string} relationshipName - Relationship name.
-	 * @param {string} relatedCollection - Related name of the Entity Collection or Entity Logical name.
-	 * @param {string} relatedKey - Related entity record id.
-	 * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	associate = (collection: string, primaryKey: string, relationshipName: string, relatedCollection: string, relatedKey: string, impersonateUserId?: string): Promise<any> => {
-		ErrorHelper.stringParameterCheck(relatedCollection, "DynamicsWebApi.associate", "relatedcollection");
-		ErrorHelper.stringParameterCheck(relationshipName, "DynamicsWebApi.associate", "relationshipName");
-		primaryKey = ErrorHelper.keyParameterCheck(primaryKey, "DynamicsWebApi.associate", "primaryKey");
-		relatedKey = ErrorHelper.keyParameterCheck(relatedKey, "DynamicsWebApi.associate", "relatedKey");
+	associate = (request: DynamicsWebApi.AssociateRequest): Promise<void> => {
+		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		internalRequest.method = "POST";
+		internalRequest.functionName = "associate";
 
-		var request: Core.InternalRequest = {
-			_additionalUrl: relationshipName + '/$ref',
-			collection: collection,
-			key: primaryKey,
-			impersonate: impersonateUserId,
-			data: { "@odata.id": relatedCollection + "(" + relatedKey + ")" },
-			method: "POST",
-			functionName: "associate"
-		};
+		ErrorHelper.stringParameterCheck(request.relatedCollection, "DynamicsWebApi.associate", "request.relatedcollection");
+		ErrorHelper.stringParameterCheck(request.relationshipName, "DynamicsWebApi.associate", "request.relationshipName");
+		let primaryKey = ErrorHelper.keyParameterCheck(request.primaryKey, "DynamicsWebApi.associate", "request.primaryKey");
+		let relatedKey = ErrorHelper.keyParameterCheck(request.relatedKey, "DynamicsWebApi.associate", "request.relatedKey");
 
-		return this._makeRequest(request)
-			.then(function () { });
+		internalRequest.navigationProperty = request.relationshipName + '/$ref';
+		internalRequest.key = primaryKey;
+		internalRequest.data = { "@odata.id": `${request.relatedCollection}(${relatedKey})` };
+
+		return this._makeRequest(internalRequest)
+			.then(() => { return; });
 	};
 
 	/**
 	 * Disassociate for a collection-valued navigation property.
 	 *
-	 * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-	 * @param {string} primaryKey - Primary entity record id.
-	 * @param {string} relationshipName - Relationship name.
-	 * @param {string} relatedKey - Related entity record id.
-	 * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	disassociate = (collection: string, primaryKey: string, relationshipName: string, relatedKey: string, impersonateUserId?: string): Promise<any> => {
-		ErrorHelper.stringParameterCheck(relationshipName, "DynamicsWebApi.disassociate", "relationshipName");
-		relatedKey = ErrorHelper.keyParameterCheck(relatedKey, "DynamicsWebApi.disassociate", "relatedId");
+	disassociate = (request: DynamicsWebApi.DisassociateRequest): Promise<void> => {
+		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		internalRequest.method = "DELETE";
+		internalRequest.functionName = "disassociate";
 
-		var request: Core.InternalRequest = {
-			_additionalUrl: relationshipName + '(' + relatedKey + ')/$ref',
-			collection: collection,
-			key: primaryKey,
-			impersonate: impersonateUserId,
-			method: "DELETE",
-			functionName: "disassociate"
-		};
+		ErrorHelper.stringParameterCheck(request.relationshipName, "DynamicsWebApi.disassociate", "request.relationshipName");
+		let primaryKey = ErrorHelper.keyParameterCheck(request.primaryKey, "DynamicsWebApi.disassociate", "request.primaryKey");
+		let relatedKey = ErrorHelper.keyParameterCheck(request.relatedKey, "DynamicsWebApi.disassociate", "request.relatedId");
 
-		return this._makeRequest(request)
-			.then(function () { });
+		internalRequest.key = primaryKey;
+		internalRequest.navigationProperty = `${request.relationshipName}(${relatedKey})/$ref`;
+
+		return this._makeRequest(internalRequest)
+			.then(() => { return; });
 	};
 
 	/**
 	 * Associate for a single-valued navigation property. (1:N)
 	 *
-	 * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-	 * @param {string} key - Entity record Id that contains an attribute.
-	 * @param {string} singleValuedNavigationPropertyName - Single-valued navigation property name (usually it's a Schema Name of the lookup attribute).
-	 * @param {string} relatedCollection - Related collection name that the lookup (attribute) points to.
-	 * @param {string} relatedKey - Related entity record id that needs to be associated.
-	 * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	associateSingleValued = (collection: string, key: string, singleValuedNavigationPropertyName: string, relatedCollection: string, relatedKey: string, impersonateUserId?: string): Promise<any> => {
+	associateSingleValued = (request: DynamicsWebApi.AssociateSingleValuedRequest): Promise<void> => {
+		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		internalRequest.method = "PUT";
+		internalRequest.functionName = "associateSingleValued";
 
-		relatedKey = ErrorHelper.keyParameterCheck(relatedKey, "DynamicsWebApi.associateSingleValued", "relatedKey");
-		ErrorHelper.stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.associateSingleValued", "singleValuedNavigationPropertyName");
-		ErrorHelper.stringParameterCheck(relatedCollection, "DynamicsWebApi.associateSingleValued", "relatedcollection");
+		let primaryKey = ErrorHelper.keyParameterCheck(request.primaryKey, "DynamicsWebApi.associateSingleValued", "request.primaryKey");
+		let relatedKey = ErrorHelper.keyParameterCheck(request.relatedKey, "DynamicsWebApi.associateSingleValued", "request.relatedKey");
+		ErrorHelper.stringParameterCheck(request.navigationProperty, "DynamicsWebApi.associateSingleValued", "request.navigationProperty");
+		ErrorHelper.stringParameterCheck(request.relatedCollection, "DynamicsWebApi.associateSingleValued", "request.relatedcollection");
 
-		var request: Core.InternalRequest = {
-			_additionalUrl: singleValuedNavigationPropertyName + '/$ref',
-			collection: collection,
-			key: key,
-			impersonate: impersonateUserId,
-			data: { "@odata.id": relatedCollection + "(" + relatedKey + ")" },
-			method: "PUT",
-			functionName: "associateSingleValued"
-		};
+		internalRequest.navigationProperty += '/$ref';
+		internalRequest.key = primaryKey;
+		internalRequest.data = { "@odata.id": `${request.relatedCollection}(${relatedKey})` };
 
-		return this._makeRequest(request)
-			.then(function () { });
+		return this._makeRequest(internalRequest)
+			.then(() => { return; });
 	};
 
 	/**
 	 * Removes a reference to an entity for a single-valued navigation property. (1:N)
 	 *
-	 * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-	 * @param {string} key - Entity record Id that contains an attribute.
-	 * @param {string} singleValuedNavigationPropertyName - Single-valued navigation property name (usually it's a Schema Name of the lookup attribute).
-	 * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	disassociateSingleValued = (collection: string, key: string, singleValuedNavigationPropertyName: string, impersonateUserId?: string): Promise<any> => {
+	disassociateSingleValued = (request: DynamicsWebApi.DisassociateSingleValuedRequest): Promise<void> => {
+		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		internalRequest.method = "DELETE";
+		internalRequest.functionName = "disassociateSingleValued";
 
-		ErrorHelper.stringParameterCheck(singleValuedNavigationPropertyName, "DynamicsWebApi.disassociateSingleValued", "singleValuedNavigationPropertyName");
+		let primaryKey = ErrorHelper.keyParameterCheck(request.primaryKey, "DynamicsWebApi.disassociateSingleValued", "request.primaryKey");
+		ErrorHelper.stringParameterCheck(request.navigationProperty, "DynamicsWebApi.disassociateSingleValued", "request.navigationProperty");
 
-		var request: Core.InternalRequest = {
-			_additionalUrl: singleValuedNavigationPropertyName + "/$ref",
-			key: key,
-			collection: collection,
-			impersonate: impersonateUserId,
-			method: "DELETE",
-			functionName: "disassociateSingleValued"
-		};
+		internalRequest.navigationProperty += "/$ref";
+		internalRequest.key = primaryKey;
 
-		return this._makeRequest(request)
-			.then(function () { });
+		return this._makeRequest(internalRequest)
+			.then(() => { return; });
 	};
 
 	/**
@@ -1442,11 +1324,9 @@ export declare namespace DynamicsWebApi {
 		expand?: Expand[]
 	}
 
-	export interface Request {
+	export interface BaseRequest {
 		/**XHR requests only! Indicates whether the requests should be made synchronously or asynchronously.Default value is 'true'(asynchronously). */
 		async?: boolean;
-		/**The name of the Entity Collection or Entity Logical name. */
-		collection?: string;
 		/**Impersonates the user.A String representing the GUID value for the Dynamics 365 system user id. */
 		impersonate?: string;
 		/** If set to 'true', DynamicsWebApi adds a request header 'Cache-Control: no-cache'.Default value is 'false'. */
@@ -1457,11 +1337,38 @@ export declare namespace DynamicsWebApi {
 		timeout?: number;
 	}
 
+	export interface Request extends BaseRequest {
+		/**The name of the Entity Collection or Entity Logical name. */
+		collection: string;
+	}
+
 	export interface CRUDRequest extends Request {
-		/** DEPRECATED Use "key" instead. A String representing the Primary Key(GUID) of the record. */
-		id?: string;
 		/**A String representing collection record's Primary Key (GUID) or Alternate Key(s). */
 		key?: string;
+	}
+
+	export interface CountRequest extends Request {
+		/**Use the $filter system query option to set criteria for which entities will be returned. */
+		filter?: string;
+	}
+
+	export interface CountAllRequest extends CountRequest {
+		/**An Array (of strings) representing the $select OData System Query Option to control which attributes will be returned. */
+		select?: string[];
+	}
+
+	export interface FetchAllRequest extends Request {
+		/**FetchXML is a proprietary query language that provides capabilities to perform aggregation. */
+		fetchXml: string;
+		/**Sets Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie */
+		includeAnnotations?: string;
+	}
+
+	export interface FetchXmlRequest extends FetchAllRequest {
+		/**Page number. */
+		pageNumber?: number;
+		/**Paging cookie. To retrive the first page, pagingCookie must be null. */
+		pagingCookie?: string
 	}
 
 	export interface CreateRequest extends CRUDRequest {
@@ -1571,6 +1478,44 @@ export declare namespace DynamicsWebApi {
 		top?: number;
 		/**Sets Prefer header with value 'odata.track-changes' to request that a delta link be returned which can subsequently be used to retrieve entity changes. */
 		trackChanges?: boolean;
+	}
+
+	export interface AssociateRequest extends Request {
+		/**Primary entity record id/key. */
+		primaryKey: string;
+		/**Relationship name. */
+		relationshipName: string;
+		/**Related name of the Entity Collection or Entity Logical name. */
+		relatedCollection: string;
+		/**Related entity record id/key. */
+		relatedKey: string
+	}
+
+	export interface AssociateSingleValuedRequest extends Request {
+		/**Primary entity record id/key. */
+		primaryKey: string;
+		/**Navigation property name. */
+		navigationProperty: string;
+		/**Related name of the Entity Collection or Entity Logical name. */
+		relatedCollection: string;
+		/**Related entity record id/key. */
+		relatedKey: string
+	}
+
+	export interface DisassociateRequest extends Request {
+		/**Primary entity record id/key. */
+		primaryKey: string;
+		/**Relationship name. */
+		relationshipName: string;
+		/**Related entity record id/key. */
+		relatedKey: string
+	}
+
+	export interface DisassociateSingleValuedRequest extends Request {
+		/**Primary entity record id/key. */
+		primaryKey: string;
+		/**Navigation property name. */
+		navigationProperty: string;
 	}
 
 	export interface Config {

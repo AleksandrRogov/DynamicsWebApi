@@ -97,6 +97,8 @@ export declare namespace Core {
         responseParameters?: any;
         path?: string;
         headers?: any;
+        pageNumber?: number;
+        pagingCookie?: string;
     }
     interface FetchXmlCookie {
         cookie: string;

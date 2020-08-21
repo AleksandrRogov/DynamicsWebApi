@@ -170,115 +170,58 @@ export declare class DynamicsWebApi {
     /**
      * Sends an asynchronous request to count records. IMPORTANT! The count value does not represent the total number of entities in the system. It is limited by the maximum number of entities that can be returned. Returns: Number
      *
-     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-     * @param {string} [filter] - Use the $filter system query option to set criteria for which entities will be returned.
+     * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api result
      */
-    count: (collection: string, filter?: string) => Promise<number>;
+    count: (request: DynamicsWebApi.CountRequest) => Promise<number>;
     /**
      * Sends an asynchronous request to count records. Returns: Number
-     *
-     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-     * @param {string} [filter] - Use the $filter system query option to set criteria for which entities will be returned.
-     * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
+     * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api result
      */
-    countAll: (collection: string, filter?: string, select?: string[]) => Promise<number>;
-    /**
-     * Sends an asynchronous request to retrieve records.
-     *
-     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-     * @param {Array} [select] - Use the $select system query option to limit the properties returned.
-     * @param {string} [filter] - Use the $filter system query option to set criteria for which entities will be returned.
-     * @param {string} [nextPageLink] - Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
-     * @returns {Promise} D365 Web Api result
-     */
-    /**
-     * Sends an asynchronous request to retrieve all records.
-     *
-     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-     * @param {Array} [select] - Use the $select system query option to limit the properties returned.
-     * @param {string} [filter] - Use the $filter system query option to set criteria for which entities will be returned.
-     * @returns {Promise} D365 Web Api result
-     */
-    fetch: <T>(collection: string, fetchXml: string, includeAnnotations?: string, pageNumber?: number, pagingCookie?: string, impersonateUserId?: string) => Promise<DynamicsWebApi.FetchXmlResponse<T>>;
+    countAll: (request: DynamicsWebApi.CountAllRequest) => Promise<number>;
     /**
      * Sends an asynchronous request to execute FetchXml to retrieve records. Returns: DWA.Types.FetchXmlResponse
      *
-     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-     * @param {string} fetchXml - FetchXML is a proprietary query language that provides capabilities to perform aggregation.
-     * @param {string} [includeAnnotations] - Use this parameter to include annotations to a result. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie
-     * @param {number} [pageNumber] - Page number.
-     * @param {string} [pagingCookie] - Paging cookie. For retrieving the first page, pagingCookie should be null.
-     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+     * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api result
      */
-    /**
-     * Sends an asynchronous request to execute FetchXml to retrieve records. Returns: DWA.Types.FetchXmlResponse
-     *
-     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-     * @param {string} fetchXml - FetchXML is a proprietary query language that provides capabilities to perform aggregation.
-     * @param {string} [includeAnnotations] - Use this parameter to include annotations to a result. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie
-     * @param {number} [pageNumber] - Page number.
-     * @param {string} [pagingCookie] - Paging cookie. For retrieving the first page, pagingCookie should be null.
-     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
-     * @returns {Promise} D365 Web Api result
-     */
+    fetch: <T = any>(request: DynamicsWebApi.FetchXmlRequest) => Promise<DynamicsWebApi.FetchXmlResponse<T>>;
     /**
      * Sends an asynchronous request to execute FetchXml to retrieve all records.
      *
-     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-     * @param {string} fetchXml - FetchXML is a proprietary query language that provides capabilities to perform aggregation.
-     * @param {string} [includeAnnotations] - Use this parameter to include annotations to a result. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie
-     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+     * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api result
      */
-    fetchAll: (collection: any, fetchXml: any, includeAnnotations: any, impersonateUserId: any) => any;
+    fetchAll: <T = any>(request: DynamicsWebApi.FetchAllRequest) => Promise<DynamicsWebApi.FetchXmlResponse<T>>;
     /**
      * Associate for a collection-valued navigation property. (1:N or N:N)
      *
-     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-     * @param {string} primaryKey - Primary entity record id.
-     * @param {string} relationshipName - Relationship name.
-     * @param {string} relatedCollection - Related name of the Entity Collection or Entity Logical name.
-     * @param {string} relatedKey - Related entity record id.
-     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+     * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api result
      */
-    associate: (collection: string, primaryKey: string, relationshipName: string, relatedCollection: string, relatedKey: string, impersonateUserId?: string) => Promise<any>;
+    associate: (request: DynamicsWebApi.AssociateRequest) => Promise<void>;
     /**
      * Disassociate for a collection-valued navigation property.
      *
-     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-     * @param {string} primaryKey - Primary entity record id.
-     * @param {string} relationshipName - Relationship name.
-     * @param {string} relatedKey - Related entity record id.
-     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+     * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api result
      */
-    disassociate: (collection: string, primaryKey: string, relationshipName: string, relatedKey: string, impersonateUserId?: string) => Promise<any>;
+    disassociate: (request: DynamicsWebApi.DisassociateRequest) => Promise<void>;
     /**
      * Associate for a single-valued navigation property. (1:N)
      *
-     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-     * @param {string} key - Entity record Id that contains an attribute.
-     * @param {string} singleValuedNavigationPropertyName - Single-valued navigation property name (usually it's a Schema Name of the lookup attribute).
-     * @param {string} relatedCollection - Related collection name that the lookup (attribute) points to.
-     * @param {string} relatedKey - Related entity record id that needs to be associated.
-     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+     * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api result
      */
-    associateSingleValued: (collection: string, key: string, singleValuedNavigationPropertyName: string, relatedCollection: string, relatedKey: string, impersonateUserId?: string) => Promise<any>;
+    associateSingleValued: (request: DynamicsWebApi.AssociateSingleValuedRequest) => Promise<void>;
     /**
      * Removes a reference to an entity for a single-valued navigation property. (1:N)
      *
-     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-     * @param {string} key - Entity record Id that contains an attribute.
-     * @param {string} singleValuedNavigationPropertyName - Single-valued navigation property name (usually it's a Schema Name of the lookup attribute).
-     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+     * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api result
      */
-    disassociateSingleValued: (collection: string, key: string, singleValuedNavigationPropertyName: string, impersonateUserId?: string) => Promise<any>;
+    disassociateSingleValued: (request: DynamicsWebApi.DisassociateSingleValuedRequest) => Promise<void>;
     /**
      * Executes an unbound function (not bound to a particular entity record)
      *
@@ -526,11 +469,9 @@ export declare namespace DynamicsWebApi {
         /**An Array of Expand Objects representing the $expand Query Option value to control which related records need to be returned. */
         expand?: Expand[];
     }
-    interface Request {
+    interface BaseRequest {
         /**XHR requests only! Indicates whether the requests should be made synchronously or asynchronously.Default value is 'true'(asynchronously). */
         async?: boolean;
-        /**The name of the Entity Collection or Entity Logical name. */
-        collection?: string;
         /**Impersonates the user.A String representing the GUID value for the Dynamics 365 system user id. */
         impersonate?: string;
         /** If set to 'true', DynamicsWebApi adds a request header 'Cache-Control: no-cache'.Default value is 'false'. */
@@ -540,11 +481,33 @@ export declare namespace DynamicsWebApi {
         /**Sets a number of milliseconds before a request times out. */
         timeout?: number;
     }
+    interface Request extends BaseRequest {
+        /**The name of the Entity Collection or Entity Logical name. */
+        collection: string;
+    }
     interface CRUDRequest extends Request {
-        /** DEPRECATED Use "key" instead. A String representing the Primary Key(GUID) of the record. */
-        id?: string;
         /**A String representing collection record's Primary Key (GUID) or Alternate Key(s). */
         key?: string;
+    }
+    interface CountRequest extends Request {
+        /**Use the $filter system query option to set criteria for which entities will be returned. */
+        filter?: string;
+    }
+    interface CountAllRequest extends CountRequest {
+        /**An Array (of strings) representing the $select OData System Query Option to control which attributes will be returned. */
+        select?: string[];
+    }
+    interface FetchAllRequest extends Request {
+        /**FetchXML is a proprietary query language that provides capabilities to perform aggregation. */
+        fetchXml: string;
+        /**Sets Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie */
+        includeAnnotations?: string;
+    }
+    interface FetchXmlRequest extends FetchAllRequest {
+        /**Page number. */
+        pageNumber?: number;
+        /**Paging cookie. To retrive the first page, pagingCookie must be null. */
+        pagingCookie?: string;
     }
     interface CreateRequest extends CRUDRequest {
         /**v.1.3.4+ Web API v9+ only! Boolean that enables duplicate detection. */
@@ -647,6 +610,40 @@ export declare namespace DynamicsWebApi {
         top?: number;
         /**Sets Prefer header with value 'odata.track-changes' to request that a delta link be returned which can subsequently be used to retrieve entity changes. */
         trackChanges?: boolean;
+    }
+    interface AssociateRequest extends Request {
+        /**Primary entity record id/key. */
+        primaryKey: string;
+        /**Relationship name. */
+        relationshipName: string;
+        /**Related name of the Entity Collection or Entity Logical name. */
+        relatedCollection: string;
+        /**Related entity record id/key. */
+        relatedKey: string;
+    }
+    interface AssociateSingleValuedRequest extends Request {
+        /**Primary entity record id/key. */
+        primaryKey: string;
+        /**Navigation property name. */
+        navigationProperty: string;
+        /**Related name of the Entity Collection or Entity Logical name. */
+        relatedCollection: string;
+        /**Related entity record id/key. */
+        relatedKey: string;
+    }
+    interface DisassociateRequest extends Request {
+        /**Primary entity record id/key. */
+        primaryKey: string;
+        /**Relationship name. */
+        relationshipName: string;
+        /**Related entity record id/key. */
+        relatedKey: string;
+    }
+    interface DisassociateSingleValuedRequest extends Request {
+        /**Primary entity record id/key. */
+        primaryKey: string;
+        /**Navigation property name. */
+        navigationProperty: string;
     }
     interface Config {
         /**A String representing the GUID value for the Dynamics 365 system user id.Impersonates the user. */
