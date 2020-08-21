@@ -520,13 +520,13 @@ export class DynamicsWebApi {
 		return this.retrieveMultipleRequest(request, nextPageLink).then(response => {
 			records = records.concat(response.value);
 
-			var pageLink = response.oDataNextLink;
+			let pageLink = response.oDataNextLink;
 
 			if (pageLink) {
 				return this._retrieveAllRequest(request, pageLink, records);
 			}
 
-			var result = { value: records, oDataDeltaLink: null };
+			let result: DynamicsWebApi.AllResponse<T> = { value: records };
 
 			if (response.oDataDeltaLink) {
 				result["@odata.deltaLink"] = response.oDataDeltaLink;
@@ -637,7 +637,7 @@ export class DynamicsWebApi {
 	//	});
 	//};
 
-	executeFetchXml = <T>(collection: string, fetchXml: string, includeAnnotations?: string, pageNumber?: number, pagingCookie?: string, impersonateUserId?: string): Promise<DynamicsWebApi.FetchXmlResponse<T>> => {
+	fetch = <T>(collection: string, fetchXml: string, includeAnnotations?: string, pageNumber?: number, pagingCookie?: string, impersonateUserId?: string): Promise<DynamicsWebApi.FetchXmlResponse<T>> => {
 
 		ErrorHelper.stringParameterCheck(fetchXml, "DynamicsWebApi.executeFetchXml", "fetchXml");
 
@@ -660,7 +660,7 @@ export class DynamicsWebApi {
 			impersonate: impersonateUserId,
 			fetchXml: fetchXml,
 			method: "GET",
-			functionName: "executeFetchXml",
+			functionName: "fetch",
 			responseParameters: { pageNumber: pageNumber }
 		};
 
@@ -681,7 +681,7 @@ export class DynamicsWebApi {
 	 * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	fetch = this.executeFetchXml;
+	//fetch = this.executeFetchXml;
 
 	/**
 	 * Sends an asynchronous request to execute FetchXml to retrieve records. Returns: DWA.Types.FetchXmlResponse
@@ -696,35 +696,24 @@ export class DynamicsWebApi {
 	 */
 	//this.executeFetchXml = executeFetchXml;
 
-	private _executeFetchXmlAll = (collection, fetchXml, includeAnnotations, pageNumber, pagingCookie, impersonateUserId, records?) => {
-		records = records || [];
+	//private innerExecuteFetchXmlAll = (collection, fetchXml, includeAnnotations, impersonateUserId) => {
+	//	let _executeFetchXmlAll = (collection, fetchXml, includeAnnotations, pageNumber, pagingCookie, impersonateUserId, records?) => {
+	//		records = records || [];
 
-		return this.executeFetchXml(collection, fetchXml, includeAnnotations, pageNumber, pagingCookie, impersonateUserId).then(function (response) {
-			records = records.concat(response.value);
+	//		return this.executeFetchXml(collection, fetchXml, includeAnnotations, pageNumber, pagingCookie, impersonateUserId).then(function (response) {
+	//			records = records.concat(response.value);
 
-			if (response.PagingInfo) {
-				return this._executeFetchXmlAll(collection, fetchXml, includeAnnotations, response.PagingInfo.nextPage, response.PagingInfo.cookie, impersonateUserId, records);
-			}
+	//			if (response.PagingInfo) {
+	//				return this._executeFetchXmlAll(collection, fetchXml, includeAnnotations, response.PagingInfo.nextPage, response.PagingInfo.cookie, impersonateUserId, records);
+	//			}
 
-			return { value: records };
-		});
-	};
+	//			return { value: records };
+	//		});
+	//	}
 
-	private innerExecuteFetchXmlAll = (collection, fetchXml, includeAnnotations, impersonateUserId) => {
-		ErrorHelper.batchIncompatible('DynamicsWebApi.executeFetchXmlAll', this._isBatch);
-		return this._executeFetchXmlAll(collection, fetchXml, includeAnnotations, null, null, impersonateUserId);
-	};
-
-	/**
-	 * Sends an asynchronous request to execute FetchXml to retrieve all records.
-	 *
-	 * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-	 * @param {string} fetchXml - FetchXML is a proprietary query language that provides capabilities to perform aggregation.
-	 * @param {string} [includeAnnotations] - Use this parameter to include annotations to a result. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie
-	 * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
-	 * @returns {Promise} D365 Web Api result
-	 */
-	fetchAll = this.innerExecuteFetchXmlAll;
+	//	ErrorHelper.batchIncompatible('DynamicsWebApi.executeFetchXmlAll', this._isBatch);
+	//	return _executeFetchXmlAll(collection, fetchXml, includeAnnotations, null, null, impersonateUserId);
+	//};
 
 	/**
 	 * Sends an asynchronous request to execute FetchXml to retrieve all records.
@@ -735,7 +724,35 @@ export class DynamicsWebApi {
 	 * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	executeFetchXmlAll = this.innerExecuteFetchXmlAll;
+	fetchAll = (collection, fetchXml, includeAnnotations, impersonateUserId) => {
+		let _executeFetchXmlAll = (collection, fetchXml, includeAnnotations, pageNumber, pagingCookie, impersonateUserId, records?) => {
+			records = records || [];
+
+			return this.fetch(collection, fetchXml, includeAnnotations, pageNumber, pagingCookie, impersonateUserId).then(function (response) {
+				records = records.concat(response.value);
+
+				if (response.PagingInfo) {
+					return _executeFetchXmlAll(collection, fetchXml, includeAnnotations, response.PagingInfo.nextPage, response.PagingInfo.cookie, impersonateUserId, records);
+				}
+
+				return { value: records };
+			});
+		}
+
+		ErrorHelper.batchIncompatible('DynamicsWebApi.fetchAll', this._isBatch);
+		return _executeFetchXmlAll(collection, fetchXml, includeAnnotations, null, null, impersonateUserId);
+	};
+
+	///**
+	// * Sends an asynchronous request to execute FetchXml to retrieve all records.
+	// *
+	// * @param {string} collection - The name of the Entity Collection or Entity Logical name.
+	// * @param {string} fetchXml - FetchXML is a proprietary query language that provides capabilities to perform aggregation.
+	// * @param {string} [includeAnnotations] - Use this parameter to include annotations to a result. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie
+	// * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+	// * @returns {Promise} D365 Web Api result
+	// */
+	//executeFetchXmlAll = this.innerExecuteFetchXmlAll;
 
 	/**
 	 * Associate for a collection-valued navigation property. (1:N or N:N)
@@ -954,7 +971,7 @@ export class DynamicsWebApi {
 
 		var request = {
 			collection: 'EntityDefinitions',
-			entity: entityDefinition
+			data: entityDefinition
 		};
 		return this.createRequest(request);
 	};
@@ -975,7 +992,7 @@ export class DynamicsWebApi {
 			collection: 'EntityDefinitions',
 			mergeLabels: mergeLabels,
 			key: entityDefinition.MetadataId,
-			entity: entityDefinition
+			data: entityDefinition
 		};
 		return this.updateRequest(request);
 	};
@@ -1033,7 +1050,7 @@ export class DynamicsWebApi {
 		var request = {
 			collection: 'EntityDefinitions',
 			key: entityKey,
-			entity: attributeDefinition,
+			data: attributeDefinition,
 			navigationProperty: 'Attributes'
 		};
 
@@ -1061,7 +1078,7 @@ export class DynamicsWebApi {
 		var request = {
 			collection: 'EntityDefinitions',
 			key: entityKey,
-			entity: attributeDefinition,
+			data: attributeDefinition,
 			navigationProperty: 'Attributes',
 			navigationPropertyKey: attributeDefinition.MetadataId,
 			mergeLabels: mergeLabels,
@@ -1146,7 +1163,7 @@ export class DynamicsWebApi {
 
 		var request = {
 			collection: 'RelationshipDefinitions',
-			entity: relationshipDefinition
+			data: relationshipDefinition
 		};
 		return this.createRequest(request);
 	};
@@ -1168,7 +1185,7 @@ export class DynamicsWebApi {
 			collection: 'RelationshipDefinitions',
 			mergeLabels: mergeLabels,
 			key: relationshipDefinition.MetadataId,
-			entity: relationshipDefinition,
+			data: relationshipDefinition,
 			navigationProperty: relationshipType
 		};
 
@@ -1246,7 +1263,7 @@ export class DynamicsWebApi {
 
 		var request = {
 			collection: 'GlobalOptionSetDefinitions',
-			entity: globalOptionSetDefinition
+			data: globalOptionSetDefinition
 		};
 
 		return this.createRequest(request);
@@ -1268,7 +1285,7 @@ export class DynamicsWebApi {
 			collection: 'GlobalOptionSetDefinitions',
 			mergeLabels: mergeLabels,
 			key: globalOptionSetDefinition.MetadataId,
-			entity: globalOptionSetDefinition
+			data: globalOptionSetDefinition
 		};
 		return this.updateRequest(request);
 	};

@@ -201,18 +201,6 @@ export declare class DynamicsWebApi {
      * @param {string} [filter] - Use the $filter system query option to set criteria for which entities will be returned.
      * @returns {Promise} D365 Web Api result
      */
-    executeFetchXml: <T>(collection: string, fetchXml: string, includeAnnotations?: string, pageNumber?: number, pagingCookie?: string, impersonateUserId?: string) => Promise<DynamicsWebApi.FetchXmlResponse<T>>;
-    /**
-     * Sends an asynchronous request to execute FetchXml to retrieve records. Returns: DWA.Types.FetchXmlResponse
-     *
-     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-     * @param {string} fetchXml - FetchXML is a proprietary query language that provides capabilities to perform aggregation.
-     * @param {string} [includeAnnotations] - Use this parameter to include annotations to a result. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie
-     * @param {number} [pageNumber] - Page number.
-     * @param {string} [pagingCookie] - Paging cookie. For retrieving the first page, pagingCookie should be null.
-     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
-     * @returns {Promise} D365 Web Api result
-     */
     fetch: <T>(collection: string, fetchXml: string, includeAnnotations?: string, pageNumber?: number, pagingCookie?: string, impersonateUserId?: string) => Promise<DynamicsWebApi.FetchXmlResponse<T>>;
     /**
      * Sends an asynchronous request to execute FetchXml to retrieve records. Returns: DWA.Types.FetchXmlResponse
@@ -225,8 +213,17 @@ export declare class DynamicsWebApi {
      * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      * @returns {Promise} D365 Web Api result
      */
-    private _executeFetchXmlAll;
-    private innerExecuteFetchXmlAll;
+    /**
+     * Sends an asynchronous request to execute FetchXml to retrieve records. Returns: DWA.Types.FetchXmlResponse
+     *
+     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
+     * @param {string} fetchXml - FetchXML is a proprietary query language that provides capabilities to perform aggregation.
+     * @param {string} [includeAnnotations] - Use this parameter to include annotations to a result. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie
+     * @param {number} [pageNumber] - Page number.
+     * @param {string} [pagingCookie] - Paging cookie. For retrieving the first page, pagingCookie should be null.
+     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+     * @returns {Promise} D365 Web Api result
+     */
     /**
      * Sends an asynchronous request to execute FetchXml to retrieve all records.
      *
@@ -236,17 +233,7 @@ export declare class DynamicsWebApi {
      * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      * @returns {Promise} D365 Web Api result
      */
-    fetchAll: (collection: any, fetchXml: any, includeAnnotations: any, impersonateUserId: any) => Promise<any>;
-    /**
-     * Sends an asynchronous request to execute FetchXml to retrieve all records.
-     *
-     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-     * @param {string} fetchXml - FetchXML is a proprietary query language that provides capabilities to perform aggregation.
-     * @param {string} [includeAnnotations] - Use this parameter to include annotations to a result. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie
-     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
-     * @returns {Promise} D365 Web Api result
-     */
-    executeFetchXmlAll: (collection: any, fetchXml: any, includeAnnotations: any, impersonateUserId: any) => Promise<any>;
+    fetchAll: (collection: any, fetchXml: any, includeAnnotations: any, impersonateUserId: any) => any;
     /**
      * Associate for a collection-valued navigation property. (1:N or N:N)
      *

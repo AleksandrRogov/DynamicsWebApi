@@ -253,3 +253,4 @@ ModelManifest.xml
 /scripts
 /coverage
 /tests/browser
+#*.d.ts.map

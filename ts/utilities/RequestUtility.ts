@@ -26,6 +26,7 @@ export class RequestUtility {
      * @returns {ConvertedRequest} Converted request
      */
 	static compose(request: Core.InternalRequest, config: DynamicsWebApi.Config): Core.InternalRequest {
+		request.path = request.path || "";
 		request.functionName = request.functionName || "";
         if (!request.url) {
             if (!request._isUnboundRequest && !request.collection) {

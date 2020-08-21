@@ -13,6 +13,7 @@ global.Xrm = {
 var webApiUrl = "http://testorg.crm.dynamics.com/api/data/v8.2/";
 var webApiUrl81 = "http://testorg.crm.dynamics.com/api/data/v8.1/";
 var webApiUrl80 = "http://testorg.crm.dynamics.com/api/data/v8.0/";
+var webApiUrl91 = "http://testorg.crm.dynamics.com/api/data/v9.1/";
 
 var dataStubs = {
     testEntityId: "00000000-0000-0000-0000-000000000001",
@@ -1071,5 +1072,6 @@ module.exports = {
 	responses: responseStubs,
 	webApiUrl: webApiUrl,
 	webApiUrl81: webApiUrl81,
-	webApiUrl80: webApiUrl80
+	webApiUrl80: webApiUrl80,
+	webApiUrl91: webApiUrl91
 };

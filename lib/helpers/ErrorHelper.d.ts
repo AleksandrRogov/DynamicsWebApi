@@ -17,3 +17,4 @@ export declare class ErrorHelper {
     static batchNotStarted(isBatch: boolean): void;
 }
 export {};
+//# sourceMappingURL=ErrorHelper.d.ts.map
