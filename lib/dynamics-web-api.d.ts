@@ -225,23 +225,17 @@ export declare class DynamicsWebApi {
     /**
      * Executes an unbound function (not bound to a particular entity record)
      *
-     * @param {string} functionName - The name of the function.
-     * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
-     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+     * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api result
      */
-    executeUnboundFunction: <T = any>(functionName: string, parameters?: any, impersonateUserId?: string) => Promise<T>;
+    executeUnboundFunction: <T = any>(request: DynamicsWebApi.UnboundFunctionRequest) => Promise<T>;
     /**
      * Executes a bound function
      *
-     * @param {string} [id] - A String representing the GUID value for the record.
-     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-     * @param {string} functionName - The name of the function.
-     * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
-     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+     * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api result
      */
-    executeBoundFunction: <T = any>(id: string, collection: string, functionName: string, parameters?: any, impersonateUserId?: string) => Promise<T>;
+    executeBoundFunction: <T = any>(request: DynamicsWebApi.BoundFunctionRequest) => Promise<T>;
     private _executeFunction;
     /**
      * Executes an unbound Web API action (not bound to a particular entity record)
@@ -251,7 +245,7 @@ export declare class DynamicsWebApi {
      * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      * @returns {Promise} D365 Web Api result
      */
-    executeUnboundAction: <T = any>(actionName: string, requestObject?: any, impersonateUserId?: string) => Promise<T>;
+    executeUnboundAction: <T = any>(request: DynamicsWebApi.UnboundActionRequest) => Promise<T>;
     /**
      * Executes a bound Web API action (bound to a particular entity record)
      *
@@ -262,7 +256,7 @@ export declare class DynamicsWebApi {
      * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      * @returns {Promise | Function} D365 Web Api result
      */
-    executeBoundAction: <T = any>(id: string, collection: string, actionName: string, requestObject?: any, impersonateUserId?: string) => Promise<T>;
+    executeBoundAction: <T = any>(request: DynamicsWebApi.BoundActionRequest) => Promise<T>;
     private _executeAction;
     /**
      * Sends an asynchronous request to create an entity definition.
@@ -644,6 +638,26 @@ export declare namespace DynamicsWebApi {
         primaryKey: string;
         /**Navigation property name. */
         navigationProperty: string;
+    }
+    interface UnboundFunctionRequest extends BaseRequest {
+        /**The name of the function. */
+        functionName: string;
+        /**Function's input parameters. Example: { param1: "test", param2: 3 }. */
+        parameters?: any;
+    }
+    interface BoundFunctionRequest extends UnboundFunctionRequest, Request {
+        /**A String representing the GUID value for the record. */
+        id?: string;
+    }
+    interface UnboundActionRequest extends BaseRequest {
+        /**The name of the Web API action. */
+        actionName: string;
+        /**Action request body. */
+        action?: any;
+    }
+    interface BoundActionRequest extends UnboundActionRequest, Request {
+        /**A String representing the GUID value for the record. */
+        id?: string;
     }
     interface Config {
         /**A String representing the GUID value for the Dynamics 365 system user id.Impersonates the user. */

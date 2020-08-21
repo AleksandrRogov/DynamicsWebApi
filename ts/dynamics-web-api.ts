@@ -667,6 +667,8 @@ export class DynamicsWebApi {
 	 * @returns {Promise} D365 Web Api result
 	 */
 	associate = (request: DynamicsWebApi.AssociateRequest): Promise<void> => {
+		ErrorHelper.parameterCheck(request, "DynamicsWebApi.associate", "request");
+
 		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
 		internalRequest.method = "POST";
 		internalRequest.functionName = "associate";
@@ -691,6 +693,8 @@ export class DynamicsWebApi {
 	 * @returns {Promise} D365 Web Api result
 	 */
 	disassociate = (request: DynamicsWebApi.DisassociateRequest): Promise<void> => {
+		ErrorHelper.parameterCheck(request, "DynamicsWebApi.disassociate", "request");
+
 		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
 		internalRequest.method = "DELETE";
 		internalRequest.functionName = "disassociate";
@@ -713,6 +717,8 @@ export class DynamicsWebApi {
 	 * @returns {Promise} D365 Web Api result
 	 */
 	associateSingleValued = (request: DynamicsWebApi.AssociateSingleValuedRequest): Promise<void> => {
+		ErrorHelper.parameterCheck(request, "DynamicsWebApi.associateSingleValued", "request");
+
 		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
 		internalRequest.method = "PUT";
 		internalRequest.functionName = "associateSingleValued";
@@ -737,6 +743,8 @@ export class DynamicsWebApi {
 	 * @returns {Promise} D365 Web Api result
 	 */
 	disassociateSingleValued = (request: DynamicsWebApi.DisassociateSingleValuedRequest): Promise<void> => {
+		ErrorHelper.parameterCheck(request, "DynamicsWebApi.disassociateSingleValued", "request");
+
 		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
 		internalRequest.method = "DELETE";
 		internalRequest.functionName = "disassociateSingleValued";
@@ -754,44 +762,38 @@ export class DynamicsWebApi {
 	/**
 	 * Executes an unbound function (not bound to a particular entity record)
 	 *
-	 * @param {string} functionName - The name of the function.
-	 * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
-	 * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	executeUnboundFunction = <T = any>(functionName: string, parameters?: any, impersonateUserId?: string): Promise<T> => {
-		return this._executeFunction(functionName, parameters, null, null, impersonateUserId, true);
+	executeUnboundFunction = <T = any>(request: DynamicsWebApi.UnboundFunctionRequest): Promise<T> => {
+		return this._executeFunction<T>(<DynamicsWebApi.BoundFunctionRequest>request, true);
 	};
 
 	/**
 	 * Executes a bound function
 	 *
-	 * @param {string} [id] - A String representing the GUID value for the record.
-	 * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-	 * @param {string} functionName - The name of the function.
-	 * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
-	 * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	executeBoundFunction = <T = any>(id: string, collection: string, functionName: string, parameters?: any, impersonateUserId?: string): Promise<T> => {
-		return this._executeFunction(functionName, parameters, collection, id, impersonateUserId);
+	executeBoundFunction = <T = any>(request: DynamicsWebApi.BoundFunctionRequest): Promise<T> => {
+		return this._executeFunction<T>(request);
 	};
 
-	private _executeFunction = <T = any>(functionName: string, parameters: any, collection: string, id: string, impersonateUserId: string, isUnbound: boolean = false): Promise<T> => {
+	private _executeFunction = <T = any>(request: DynamicsWebApi.BoundFunctionRequest, isUnbound: boolean = false): Promise<T> => {
+		const functionName = !isUnbound ? "executeBoundFunction" : "executeUnboundFunction";
 
-		ErrorHelper.stringParameterCheck(functionName, "DynamicsWebApi.executeFunction", "functionName");
+		ErrorHelper.parameterCheck(request, `DynamicsWebApi.${functionName}`, "request");
+		ErrorHelper.stringParameterCheck(request.functionName, `DynamicsWebApi.${functionName}`, "request.functionName");
 
-		var request = {
-			_additionalUrl: functionName + Utility.buildFunctionParameters(parameters),
-			_isUnboundRequest: isUnbound,
-			key: id,
-			collection: collection,
-			impersonate: impersonateUserId,
-			method: "GET",
-			functionName: !isUnbound ? "executeBoundFunction" : "executeUnboundFunction"
-		};
+		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		internalRequest.method = "GET";
+		internalRequest.functionName = functionName;
 
-		return this._makeRequest(request).then(function (response) {
+		internalRequest._additionalUrl = request.functionName + Utility.buildFunctionParameters(request.parameters);
+		internalRequest._isUnboundRequest = isUnbound;
+		internalRequest.key = request.id;
+
+		return this._makeRequest(internalRequest).then(function (response) {
 			return response.data;
 		});
 	};
@@ -804,8 +806,8 @@ export class DynamicsWebApi {
 	 * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	executeUnboundAction = <T = any>(actionName: string, requestObject?: any, impersonateUserId?: string): Promise<T> => {
-		return this._executeAction(actionName, requestObject, null, null, impersonateUserId, true);
+	executeUnboundAction = <T = any>(request: DynamicsWebApi.UnboundActionRequest): Promise<T> => {
+		return this._executeAction(<DynamicsWebApi.BoundActionRequest>request, true);
 	};
 
 	/**
@@ -818,25 +820,26 @@ export class DynamicsWebApi {
 	 * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
 	 * @returns {Promise | Function} D365 Web Api result
 	 */
-	executeBoundAction = <T = any>(id: string, collection: string, actionName: string, requestObject?: any, impersonateUserId?: string): Promise<T> => {
-		return this._executeAction(actionName, requestObject, collection, id, impersonateUserId);
+	executeBoundAction = <T = any>(request: DynamicsWebApi.BoundActionRequest): Promise<T> => {
+		return this._executeAction(request);
 	};
 
-	private _executeAction = <T = any>(actionName: string, requestObject: any, collection: string, id: string, impersonateUserId: string, isUnbound: boolean = false): Promise<T> => {
-		ErrorHelper.stringParameterCheck(actionName, "DynamicsWebApi.executeAction", "actionName");
+	private _executeAction = <T = any>(request: DynamicsWebApi.BoundActionRequest, isUnbound: boolean = false): Promise<T> => {
+		const functionName = !isUnbound ? "executeBoundAction" : "executeUnboundAction";
 
-		var request = {
-			_additionalUrl: actionName,
-			_isUnboundRequest: isUnbound,
-			collection: collection,
-			key: id,
-			impersonate: impersonateUserId,
-			data: requestObject,
-			method: "POST",
-			functionName: !isUnbound ? "executeBoundAction" : "executeUnboundAction"
-		};
+		ErrorHelper.parameterCheck(request, `DynamicsWebApi.${functionName}`, "request");
+		ErrorHelper.stringParameterCheck(request.actionName, `DynamicsWebApi.${functionName}`, "request.actionName");
 
-		return this._makeRequest(request).then(response => {
+		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		internalRequest.method = "POST";
+		internalRequest.functionName = functionName;
+
+		internalRequest._additionalUrl = request.actionName;
+		internalRequest._isUnboundRequest = isUnbound;
+		internalRequest.key = request.id;
+		internalRequest.data = request.action;
+
+		return this._makeRequest(internalRequest).then(response => {
 			return response.data;
 		});
 	};
@@ -1516,6 +1519,30 @@ export declare namespace DynamicsWebApi {
 		primaryKey: string;
 		/**Navigation property name. */
 		navigationProperty: string;
+	}
+
+	export interface UnboundFunctionRequest extends BaseRequest {
+		/**The name of the function. */
+		functionName: string;
+		/**Function's input parameters. Example: { param1: "test", param2: 3 }. */
+		parameters?: any;
+	}
+
+	export interface BoundFunctionRequest extends UnboundFunctionRequest, Request{
+		/**A String representing the GUID value for the record. */
+		id?: string;
+	}
+
+	export interface UnboundActionRequest extends BaseRequest {
+		/**The name of the Web API action. */
+		actionName: string;
+		/**Action request body. */
+		action?: any;
+	}
+
+	export interface BoundActionRequest extends UnboundActionRequest, Request {
+		/**A String representing the GUID value for the record. */
+		id?: string;
 	}
 
 	export interface Config {

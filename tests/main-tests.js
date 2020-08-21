@@ -1423,7 +1423,7 @@ describe("promises -", function () {
             });
 
             it("(no parameters) returns a correct response", function (done) {
-                dynamicsWebApiTest.executeUnboundFunction("FUN")
+				dynamicsWebApiTest.executeUnboundFunction({ functionName: "FUN" })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
@@ -1433,7 +1433,7 @@ describe("promises -", function () {
             });
 
             it("(with parameters) returns a correct response", function (done) {
-                dynamicsWebApiTest.executeUnboundFunction("FUN", { param1: "value1", param2: 2 })
+				dynamicsWebApiTest.executeUnboundFunction({ functionName: "FUN", parameters: { param1: "value1", param2: 2 } })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
@@ -1467,7 +1467,7 @@ describe("promises -", function () {
             });
 
             it("(no parameters) returns a correct response", function (done) {
-                dynamicsWebApiTest.executeUnboundFunction("FUN", null, mocks.data.testEntityId)
+				dynamicsWebApiTest.executeUnboundFunction({ functionName: "FUN", impersonate: mocks.data.testEntityId })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
@@ -1477,7 +1477,7 @@ describe("promises -", function () {
             });
 
             it("(with parameters) returns a correct response", function (done) {
-                dynamicsWebApiTest.executeUnboundFunction("FUN", { param1: "value1", param2: 2 }, mocks.data.testEntityId)
+				dynamicsWebApiTest.executeUnboundFunction({ functionName: "FUN", parameters: { param1: "value1", param2: 2 }, impersonate: mocks.data.testEntityId })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
@@ -1508,7 +1508,7 @@ describe("promises -", function () {
             });
 
             it("(no parameters) returns a correct response", function (done) {
-                dynamicsWebApiTest.executeBoundFunction(mocks.data.testEntityId, "tests", "FUN")
+				dynamicsWebApiTest.executeBoundFunction({ id: mocks.data.testEntityId, collection: "tests", functionName: "FUN" })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
@@ -1518,7 +1518,7 @@ describe("promises -", function () {
             });
 
             it("(with parameters) returns a correct response", function (done) {
-                dynamicsWebApiTest.executeBoundFunction(mocks.data.testEntityId, "tests", "FUN", { param1: "value1", param2: 2 })
+				dynamicsWebApiTest.executeBoundFunction({ id: mocks.data.testEntityId, collection: "tests", functionName: "FUN", parameters: { param1: "value1", param2: 2 } })
                     .then(function (object) {
                         done(object);
                     }).catch(function (object) {
@@ -1551,7 +1551,7 @@ describe("promises -", function () {
             });
 
             it("(no parameters) returns a correct response", function (done) {
-                dynamicsWebApiTest.executeBoundFunction(mocks.data.testEntityId, "tests", "FUN", null, mocks.data.testEntityId)
+				dynamicsWebApiTest.executeBoundFunction({ id: mocks.data.testEntityId, collection: "tests", functionName: "FUN", impersonate: mocks.data.testEntityId })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
@@ -1561,7 +1561,7 @@ describe("promises -", function () {
             });
 
             it("(with parameters) returns a correct response", function (done) {
-                dynamicsWebApiTest.executeBoundFunction(mocks.data.testEntityId, "tests", "FUN", { param1: "value1", param2: 2 }, mocks.data.testEntityId)
+				dynamicsWebApiTest.executeBoundFunction({ id: mocks.data.testEntityId, collection: "tests", functionName: "FUN", parameters: { param1: "value1", param2: 2 }, impersonate: mocks.data.testEntityId })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
@@ -1592,7 +1592,7 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApiTest.executeUnboundAction("FUN", mocks.responses.actionRequest)
+				dynamicsWebApiTest.executeUnboundAction({ actionName: "FUN", action: mocks.responses.actionRequest })
                     .then(function (object) {
                         done(object);
                     }).catch(function (object) {
@@ -1623,7 +1623,7 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApiTest.executeUnboundAction("FUN", mocks.responses.actionRequest, mocks.data.testEntityId2)
+				dynamicsWebApiTest.executeUnboundAction({ actionName: "FUN", action: mocks.responses.actionRequest, impersonate: mocks.data.testEntityId2 })
                     .then(function (object) {
                         done(object);
                     }).catch(function (object) {
@@ -1650,7 +1650,7 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApiTest.executeBoundAction(mocks.data.testEntityId, "tests", "FUN", mocks.responses.actionRequest)
+				dynamicsWebApiTest.executeBoundAction({ id: mocks.data.testEntityId, collection: "tests", actionName: "FUN", action: mocks.responses.actionRequest })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
@@ -1682,7 +1682,7 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApiTest.executeBoundAction(mocks.data.testEntityId, "tests", "FUN", mocks.responses.actionRequest, mocks.data.testEntityId2)
+				dynamicsWebApiTest.executeBoundAction({ id: mocks.data.testEntityId, collection: "tests", actionName: "FUN", action: mocks.responses.actionRequest, impersonate: mocks.data.testEntityId2 })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.testEntity);
                         done();
