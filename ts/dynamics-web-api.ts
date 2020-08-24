@@ -121,7 +121,7 @@ export class DynamicsWebApi {
 		*}).catch(function (error) {
 		*});
 	 */
-	createRequest = <T = any>(request: DynamicsWebApi.CreateRequest): Promise<T> => {
+	create = <T = any>(request: DynamicsWebApi.CreateRequest): Promise<T> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.create", "request");
 
 		let internalRequest: Core.InternalRequest;
@@ -140,48 +140,6 @@ export class DynamicsWebApi {
 				return response.data;
 			});
 	};
-
-	/**
-	 * Sends an asynchronous request to create a new record.
-	 *
-	 * @param {Object} object - A JavaScript object valid for create operations.
-	 * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-	 * @param {string|Array} [prefer] - Sets a Prefer header value. For example: ['retrun=representation', 'odata.include-annotations="*"']
-	 * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
-	 * @returns {Promise} D365 Web Api result
-	 * @example
-		*var lead = {
-		*    subject: "Test WebAPI",
-		*    firstname: "Test",
-		*    lastname: "WebAPI",
-		*    jobtitle: "Title"
-		*};
-		*
-		*dynamicsWebApi.create(lead, "leads").then(function (id) {
-		*}).catch(function (error) {
-		*});
-	 */
-	//create = (object, collection, prefer, select) => {
-	//	ErrorHelper.parameterCheck(object, "DynamicsWebApi.create", "object");
-	//	ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.create", "collection");
-
-	//	if (prefer) {
-	//		ErrorHelper.stringOrArrayParameterCheck(prefer, "DynamicsWebApi.create", "prefer");
-	//	}
-
-	//	if (select) {
-	//		ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.create", "select");
-	//	}
-
-	//	var request = {
-	//		collection: collection,
-	//		select: select,
-	//		prefer: prefer,
-	//		entity: object
-	//	};
-
-	//	return this.createRequest(request);
-	//};
 
 	/**
 	 * Sends an asynchronous request to retrieve a record.
@@ -203,7 +161,7 @@ export class DynamicsWebApi {
 		*
 		*});
 	 */
-	retrieveRequest = <T = any>(request: DynamicsWebApi.RetrieveRequest): Promise<T> => {
+	retrieve = <T = any>(request: DynamicsWebApi.RetrieveRequest): Promise<T> => {
 		ErrorHelper.parameterCheck(request, 'DynamicsWebApi.retrieve', 'request');
 
 		let internalRequest: Core.InternalRequest;
@@ -226,45 +184,12 @@ export class DynamicsWebApi {
 	};
 
 	/**
-	 * Sends an asynchronous request to retrieve a record.
-	 *
-	 * @param {string} key - A String representing the GUID value or Aternate Key for the record to retrieve.
-	 * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-	 * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
-	 * @param {string|Array} [expand] - A String or Array of Expand Objects representing the $expand Query Option value to control which related records need to be returned.
-	 * @returns {Promise} D365 Web Api result
-	 */
-	//this.retrieve = function (key, collection, select, expand) {
-
-	//	ErrorHelper.stringParameterCheck(key, "DynamicsWebApi.retrieve", "key");
-	//	key = ErrorHelper.keyParameterCheck(key, "DynamicsWebApi.retrieve", "key");
-	//	ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.retrieve", "collection");
-
-	//	if (select && select.length) {
-	//		ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.retrieve", "select");
-	//	}
-
-	//	if (expand && expand.length) {
-	//		ErrorHelper.stringOrArrayParameterCheck(expand, "DynamicsWebApi.retrieve", "expand");
-	//	}
-
-	//	var request = {
-	//		collection: collection,
-	//		key: key,
-	//		select: select,
-	//		expand: expand
-	//	};
-
-	//	return this.retrieveRequest(request);
-	//};
-
-	/**
 	 * Sends an asynchronous request to update a record.
 	 *
 	 * @param {DWARequest} request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	updateRequest = <T = any>(request: DynamicsWebApi.UpdateRequest): Promise<T> => {
+	update = <T = any>(request: DynamicsWebApi.UpdateRequest): Promise<T> => {
 
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.update", "request");
 
@@ -302,42 +227,6 @@ export class DynamicsWebApi {
 				throw error;
 			});
 	};
-
-	/**
-	 * Sends an asynchronous request to update a record.
-	 *
-	 * @param {string} key - A String representing the GUID value or Alternate Key for the record to update.
-	 * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-	 * @param {Object} object - A JavaScript object valid for update operations.
-	 * @param {string} [prefer] - If set to "return=representation" the function will return an updated object
-	 * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
-	 * @returns {Promise} D365 Web Api result
-	 */
-	//this.update = function (key, collection, object, prefer, select) {
-
-	//	ErrorHelper.stringParameterCheck(key, "DynamicsWebApi.update", "key");
-	//	key = ErrorHelper.keyParameterCheck(key, "DynamicsWebApi.update", "key");
-	//	ErrorHelper.parameterCheck(object, "DynamicsWebApi.update", "object");
-	//	ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.update", "collection");
-
-	//	if (prefer) {
-	//		ErrorHelper.stringOrArrayParameterCheck(prefer, "DynamicsWebApi.update", "prefer");
-	//	}
-
-	//	if (select) {
-	//		ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.update", "select");
-	//	}
-
-	//	var request = {
-	//		collection: collection,
-	//		key: key,
-	//		select: select,
-	//		prefer: prefer,
-	//		entity: object
-	//	};
-
-	//	return this.updateRequest(request);
-	//};
 
 	/**
 	 * Sends an asynchronous request to update a single value in the record.
@@ -390,14 +279,14 @@ export class DynamicsWebApi {
 	 * @param {DWARequest} request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	deleteRequest = (request: DynamicsWebApi.DeleteRequest): Promise<any> => {
-		ErrorHelper.parameterCheck(request, 'DynamicsWebApi.delete', 'request');
+	deleteRecord = (request: DynamicsWebApi.DeleteRequest): Promise<any> => {
+		ErrorHelper.parameterCheck(request, 'DynamicsWebApi.deleteRecord', 'request');
 
 		let internalRequest: Core.InternalRequest;
 
 		if (!(<Core.InternalRequest>request).functionName) {
 			internalRequest = Utility.copyObject<Core.InternalRequest>(request);
-			internalRequest.functionName = "delete";
+			internalRequest.functionName = "deleteRecord";
 		}
 		else
 			internalRequest = request;
@@ -422,37 +311,12 @@ export class DynamicsWebApi {
 	};
 
 	/**
-	 * Sends an asynchronous request to delete a record.
-	 *
-	 * @param {string} key - A String representing the GUID value or Alternate Key for the record to delete.
-	 * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-	 * @param {string} [propertyName] - The name of the property which needs to be emptied. Instead of removing a whole record only the specified property will be cleared.
-	 * @returns {Promise} D365 Web Api result
-	 */
-	//this.deleteRecord = function (key, collection, propertyName) {
-	//	ErrorHelper.stringParameterCheck(collection, 'DynamicsWebApi.deleteRecord', 'collection');
-
-	//	if (propertyName != null)
-	//		ErrorHelper.stringParameterCheck(propertyName, 'DynamicsWebApi.deleteRecord', 'propertyName');
-
-	//	var request = {
-	//		navigationProperty: propertyName,
-	//		collection: collection,
-	//		key: key
-	//	};
-
-	//	return _makeRequest('DELETE', request, 'deleteRecord').then(function () {
-	//		return;
-	//	});
-	//};
-
-	/**
 	 * Sends an asynchronous request to upsert a record.
 	 *
 	 * @param {DWARequest} request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	upsertRequest = <T = any>(request: DynamicsWebApi.UpsertRequest): Promise<T> => {
+	upsert = <T = any>(request: DynamicsWebApi.UpsertRequest): Promise<T> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.upsert", "request");
 
 		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
@@ -480,43 +344,13 @@ export class DynamicsWebApi {
 	};
 
 	/**
-	 * Sends an asynchronous request to upsert a record.
+	 * Sends an asynchronous request to retrieve records.
 	 *
-	 * @param {string} key - A String representing the GUID value or Alternate Key for the record to upsert.
-	 * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-	 * @param {Object} object - A JavaScript object valid for update operations.
-	 * @param {string|Array} [prefer] - If set to "return=representation" the function will return an updated object
-	 * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
+	 * @param request - An object that represents all possible options for a current request.
+	 * @param {string} [nextPageLink] - Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	//this.upsert = function (key, collection, object, prefer, select) {
-
-	//	ErrorHelper.stringParameterCheck(key, "DynamicsWebApi.upsert", "key");
-	//	key = ErrorHelper.keyParameterCheck(key, "DynamicsWebApi.upsert", "key");
-
-	//	ErrorHelper.parameterCheck(object, "DynamicsWebApi.upsert", "object");
-	//	ErrorHelper.stringParameterCheck(collection, "DynamicsWebApi.upsert", "collection");
-
-	//	if (prefer) {
-	//		ErrorHelper.stringOrArrayParameterCheck(prefer, "DynamicsWebApi.upsert", "prefer");
-	//	}
-
-	//	if (select) {
-	//		ErrorHelper.arrayParameterCheck(select, "DynamicsWebApi.upsert", "select");
-	//	}
-
-	//	var request = {
-	//		collection: collection,
-	//		key: key,
-	//		select: select,
-	//		prefer: prefer,
-	//		entity: object
-	//	};
-
-	//	return this.upsertRequest(request);
-	//};
-
-	retrieveMultipleRequest = <T = any>(request: DynamicsWebApi.RetrieveMultipleRequest, nextPageLink?: string): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>> => {
+	retrieveMultiple = <T = any>(request: DynamicsWebApi.RetrieveMultipleRequest, nextPageLink?: string): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieveMultiple", "request");
 
 		let internalRequest: Core.InternalRequest;
@@ -540,20 +374,10 @@ export class DynamicsWebApi {
 				return response.data;
 			});
 	};
-
-	/**
-	 * Sends an asynchronous request to retrieve records.
-	 *
-	 * @param {DWARequest} request - An object that represents all possible options for a current request.
-	 * @param {string} [nextPageLink] - Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
-	 * @returns {Promise} D365 Web Api result
-	 */
-	//this.retrieveMultipleRequest = retrieveMultipleRequest;
-
+	
 	private _retrieveAllRequest = <T = any>(request: DynamicsWebApi.RetrieveMultipleRequest, nextPageLink?: string, records: any[] = []): Promise<DynamicsWebApi.AllResponse<T>> => {
-		//records = records || [];
 
-		return this.retrieveMultipleRequest(request, nextPageLink).then(response => {
+		return this.retrieveMultiple(request, nextPageLink).then(response => {
 			records = records.concat(response.value);
 
 			let pageLink = response.oDataNextLink;
@@ -579,8 +403,8 @@ export class DynamicsWebApi {
 	 * @param {DWARequest} request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	retrieveAllRequest = <T = any>(request: DynamicsWebApi.RetrieveMultipleRequest): Promise<DynamicsWebApi.AllResponse<T>> => {
-		ErrorHelper.batchIncompatible('DynamicsWebApi.retrieveAllRequest', this._isBatch);
+	retrieveAll = <T = any>(request: DynamicsWebApi.RetrieveMultipleRequest): Promise<DynamicsWebApi.AllResponse<T>> => {
+		ErrorHelper.batchIncompatible('DynamicsWebApi.retrieveAll', this._isBatch);
 		return this._retrieveAllRequest(request);
 	};
 
@@ -888,7 +712,7 @@ export class DynamicsWebApi {
 		internalRequest.collection = "EntityDefinitions";
 		internalRequest.functionName = "createEntity";
 
-		return this.createRequest(<DynamicsWebApi.CreateRequest>internalRequest);
+		return this.create(<DynamicsWebApi.CreateRequest>internalRequest);
 	};
 
 	/**
@@ -909,7 +733,7 @@ export class DynamicsWebApi {
 		internalRequest.functionName = "updateEntity";
 		internalRequest.method = "PUT";
 
-		return this.updateRequest(<DynamicsWebApi.UpdateRequest>internalRequest);
+		return this.update(<DynamicsWebApi.UpdateRequest>internalRequest);
 	};
 
 	/**
@@ -927,7 +751,7 @@ export class DynamicsWebApi {
 		internalRequest.collection = "EntityDefinitions";
 		internalRequest.functionName = "retrieveEntity";
 
-		return this.retrieveRequest(<DynamicsWebApi.RetrieveRequest>internalRequest);
+		return this.retrieve(<DynamicsWebApi.RetrieveRequest>internalRequest);
 	};
 
 	/**
@@ -944,14 +768,13 @@ export class DynamicsWebApi {
 		internalRequest.collection = "EntityDefinitions";
 		internalRequest.functionName = "retrieveEntities";
 
-		return this.retrieveMultipleRequest(<DynamicsWebApi.RetrieveMultipleRequest>internalRequest);
+		return this.retrieveMultiple(<DynamicsWebApi.RetrieveMultipleRequest>internalRequest);
 	};
 
 	/**
 	 * Sends an asynchronous request to create an attribute.
 	 *
-	 * @param {string} entityKey - The Entity MetadataId or Alternate Key (such as LogicalName).
-	 * @param {Object} attributeDefinition - Object that describes the attribute.
+	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
 	createAttribute = <T = any>(request: DynamicsWebApi.CreateAttributeRequest): Promise<T> => {
@@ -965,16 +788,13 @@ export class DynamicsWebApi {
 		internalRequest.navigationProperty = "Attributes";
 		internalRequest.key = request.entityKey;
 
-		return this.createRequest(<DynamicsWebApi.CreateRequest>internalRequest);
+		return this.create(<DynamicsWebApi.CreateRequest>internalRequest);
 	};
 
 	/**
 	 * Sends an asynchronous request to update an attribute.
 	 *
-	 * @param {string} entityKey - The Entity MetadataId or Alternate Key (such as LogicalName).
-	 * @param {Object} attributeDefinition - Object that describes the attribute.
-	 * @param {string} [attributeType] - Use this parameter to cast the Attribute to a specific type.
-	 * @param {boolean} [mergeLabels] - Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false.
+	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
 	updateAttribute = <T = any>(request: DynamicsWebApi.UpdateAttributeRequest): Promise<T> => {
@@ -996,17 +816,13 @@ export class DynamicsWebApi {
 		internalRequest.functionName = "updateAttribute";
 		internalRequest.method = "PUT";
 
-		return this.updateRequest(<DynamicsWebApi.UpdateRequest>internalRequest);
+		return this.update(<DynamicsWebApi.UpdateRequest>internalRequest);
 	};
 
 	/**
 	 * Sends an asynchronous request to retrieve attribute metadata for a specified entity definition.
 	 *
-	 * @param {string} entityKey - The Entity MetadataId or Alternate Key (such as LogicalName).
-	 * @param {string} [attributeType] - Use this parameter to cast the Attributes to a specific type.
-	 * @param {Array} [select] - Use the $select system query option to limit the properties returned.
-	 * @param {string} [filter] - Use the $filter system query option to set criteria for which attribute definitions will be returned.
-	 * @param {string|Array} [expand] - A String or Array of Expand Objects representing the $expand Query Option value to control which related records need to be returned.
+	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
 	retrieveAttributes = <T = any>(request: DynamicsWebApi.RetrieveAttributesRequest): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>> => {
@@ -1025,17 +841,13 @@ export class DynamicsWebApi {
 		internalRequest.key = request.entityKey;
 		internalRequest.functionName = "retrieveAttributes";
 
-		return this.retrieveMultipleRequest(<DynamicsWebApi.RetrieveMultipleRequest>internalRequest);
+		return this.retrieveMultiple(<DynamicsWebApi.RetrieveMultipleRequest>internalRequest);
 	};
 
 	/**
 	 * Sends an asynchronous request to retrieve a specific attribute metadata for a specified entity definition.
 	 *
-	 * @param {string} entityKey - The Entity MetadataId or Alternate Key (such as LogicalName).
-	 * @param {string} attributeKey - The Attribute Metadata id.
-	 * @param {string} [attributeType] - Use this parameter to cast the Attribute to a specific type.
-	 * @param {Array} [select] - Use the $select system query option to limit the properties returned.
-	 * @param {string|Array} [expand] - A String or Array of Expand Objects representing the $expand Query Option value to control which related records need to be returned.
+	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
 	retrieveAttribute = <T = any>(request: DynamicsWebApi.RetrieveAttributeRequest): Promise<T> => {
@@ -1056,13 +868,13 @@ export class DynamicsWebApi {
 		internalRequest.key = request.entityKey;
 		internalRequest.functionName = "retrieveAttribute";
 
-		return this.retrieveRequest(<DynamicsWebApi.RetrieveRequest>internalRequest);
+		return this.retrieve(<DynamicsWebApi.RetrieveRequest>internalRequest);
 	};
 
 	/**
 	 * Sends an asynchronous request to create a relationship definition.
 	 *
-	 * @param {string} relationshipDefinition - Relationship Definition.
+	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
 	createRelationship = <T = any>(request: DynamicsWebApi.CreateRelationshipRequest): Promise<T> => {
@@ -1074,15 +886,13 @@ export class DynamicsWebApi {
 		internalRequest.collection = "RelationshipDefinitions";
 		internalRequest.functionName = "createRelationship";
 
-		return this.createRequest(<DynamicsWebApi.CreateRequest>internalRequest);
+		return this.create(<DynamicsWebApi.CreateRequest>internalRequest);
 	};
 
 	/**
 	 * Sends an asynchronous request to update a relationship definition.
 	 *
-	 * @param {string} relationshipDefinition - Relationship Definition.
-	 * @param {string} [relationshipType] - Use this parameter to cast the Relationship to a specific type.
-	 * @param {boolean} [mergeLabels] - Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false.
+	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
 	updateRelationship = <T = any>(request: DynamicsWebApi.UpdateRelationshipRequest): Promise<T> => {
@@ -1102,13 +912,13 @@ export class DynamicsWebApi {
 		internalRequest.functionName = "updateRelationship";
 		internalRequest.method = "PUT";
 
-		return this.updateRequest(<DynamicsWebApi.UpdateRequest>internalRequest);
+		return this.update(<DynamicsWebApi.UpdateRequest>internalRequest);
 	};
 
 	/**
 	 * Sends an asynchronous request to delete a relationship definition.
 	 *
-	 * @param {string} metadataId - A String representing the GUID value.
+	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
 	deleteRelationship = (request: DynamicsWebApi.DeleteRelationshipRequest): Promise<any> => {
@@ -1119,15 +929,13 @@ export class DynamicsWebApi {
 		internalRequest.collection = "RelationshipDefinitions";
 		internalRequest.functionName = "deleteRelationship";
 
-		return this.deleteRequest(<DynamicsWebApi.DeleteRequest>internalRequest);
+		return this.deleteRecord(<DynamicsWebApi.DeleteRequest>internalRequest);
 	};
 
 	/**
 	 * Sends an asynchronous request to retrieve relationship definitions.
 	 *
-	 * @param {string} [relationshipType] - Use this parameter to cast a Relationship to a specific type: 1:M or M:M.
-	 * @param {Array} [select] - Use the $select system query option to limit the properties returned.
-	 * @param {string} [filter] - Use the $filter system query option to set criteria for which relationships will be returned.
+	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
 	retrieveRelationships = <T = any>(request?: DynamicsWebApi.RetrieveRelationshipsRequest): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>> => {
@@ -1145,15 +953,13 @@ export class DynamicsWebApi {
 			}
 		}
 
-		return this.retrieveMultipleRequest(<DynamicsWebApi.RetrieveMultipleRequest>internalRequest);
+		return this.retrieveMultiple(<DynamicsWebApi.RetrieveMultipleRequest>internalRequest);
 	};
 
 	/**
 	 * Sends an asynchronous request to retrieve a specific relationship definition.
 	 *
-	 * @param {string} metadataId - String representing the Metadata Id GUID.
-	 * @param {string} [relationshipType] - Use this parameter to cast a Relationship to a specific type: 1:M or M:M.
-	 * @param {Array} [select] - Use the $select system query option to limit the properties returned.
+	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
 	retrieveRelationship = <T = any>(request: DynamicsWebApi.RetrieveRelationshipRequest): Promise<T> => {
@@ -1170,13 +976,13 @@ export class DynamicsWebApi {
 		internalRequest.navigationProperty = request.castType;
 		internalRequest.functionName = "retrieveRelationship";
 
-		return this.retrieveRequest(<DynamicsWebApi.RetrieveRequest>internalRequest);
+		return this.retrieve(<DynamicsWebApi.RetrieveRequest>internalRequest);
 	};
 
 	/**
 	 * Sends an asynchronous request to create a Global Option Set definition
 	 *
-	 * @param {string} globalOptionSetDefinition - Global Option Set Definition.
+	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
 	createGlobalOptionSet = <T = any>(request: DynamicsWebApi.CreateGlobalOptionSetRequest): Promise<T> => {
@@ -1188,14 +994,13 @@ export class DynamicsWebApi {
 		internalRequest.collection = "GlobalOptionSetDefinitions";
 		internalRequest.functionName = "createGlobalOptionSet";
 
-		return this.createRequest(<DynamicsWebApi.CreateRequest>internalRequest);
+		return this.create(<DynamicsWebApi.CreateRequest>internalRequest);
 	};
 
 	/**
 	 * Sends an asynchronous request to update a Global Option Set.
 	 *
-	 * @param {string} globalOptionSetDefinition - Global Option Set Definition.
-	 * @param {boolean} [mergeLabels] - Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false.
+	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
 	updateGlobalOptionSet = <T = any>(request: DynamicsWebApi.UpdateGlobalOptionSetRequest): Promise<T> => {
@@ -1214,13 +1019,13 @@ export class DynamicsWebApi {
 		internalRequest.functionName = "updateGlobalOptionSet";
 		internalRequest.method = "PUT";
 
-		return this.updateRequest(<DynamicsWebApi.UpdateRequest>internalRequest);
+		return this.update(<DynamicsWebApi.UpdateRequest>internalRequest);
 	};
 
 	/**
 	 * Sends an asynchronous request to delete a Global Option Set.
 	 *
-	 * @param {string} globalOptionSetKey - A String representing the GUID value or Alternate Key (such as Name).
+	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
 	deleteGlobalOptionSet = (request: DynamicsWebApi.DeleteGlobalOptionSetRequest): Promise<any> => {
@@ -1230,15 +1035,13 @@ export class DynamicsWebApi {
 		internalRequest.collection = "GlobalOptionSetDefinitions";
 		internalRequest.functionName = "deleteGlobalOptionSet";
 
-		return this.deleteRequest(<DynamicsWebApi.DeleteRequest>internalRequest);
+		return this.deleteRecord(<DynamicsWebApi.DeleteRequest>internalRequest);
 	};
 
 	/**
 	 * Sends an asynchronous request to retrieve Global Option Set definitions.
 	 * 
-	 * @param {string} globalOptionSetKey - The Global Option Set MetadataID or Alternate Key (such as Name).
-	 * @param {string} [castType] - Use this parameter to cast a Global Option Set to a specific type.
-	 * @param {Array} [select] - Use the $select system query option to limit the properties returned
+	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
 	retrieveGlobalOptionSet = <T = any>(request: DynamicsWebApi.RetrieveGlobalOptionSetRequest): Promise<T> => {
@@ -1253,14 +1056,13 @@ export class DynamicsWebApi {
 		internalRequest.navigationProperty = request.castType;
 		internalRequest.functionName = "retrieveGlobalOptionSet";
 
-		return this.retrieveRequest(<DynamicsWebApi.RetrieveRequest>internalRequest);
+		return this.retrieve(<DynamicsWebApi.RetrieveRequest>internalRequest);
 	};
 
 	/**
 	 * Sends an asynchronous request to retrieve Global Option Set definitions.
 	 * 
-	 * @param {string} [castType] - Use this parameter to cast a Global Option Set to a specific type.
-	 * @param {Array} [select] - Use the $select system query option to limit the properties returned
+	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
 	retrieveGlobalOptionSets = <T = any>(request?: DynamicsWebApi.RetrieveGlobalOptionSetsRequest): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>> => {
@@ -1276,7 +1078,7 @@ export class DynamicsWebApi {
 			ErrorHelper.stringParameterCheck(request.castType, "DynamicsWebApi.retrieveGlobalOptionSets", "request.castType");
 		}
 
-		return this.retrieveMultipleRequest(<DynamicsWebApi.RetrieveMultipleRequest>internalRequest);
+		return this.retrieveMultiple(<DynamicsWebApi.RetrieveMultipleRequest>internalRequest);
 	};
 
 	/**
@@ -1289,6 +1091,7 @@ export class DynamicsWebApi {
 
 	/**
 	 * Executes a batch request. Please call DynamicsWebApi.startBatch() first to start a batch request.
+	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
 	executeBatch = (request?: DynamicsWebApi.BaseRequest): Promise<any[]> => {
