@@ -116,9 +116,9 @@ export class RequestUtility {
                 }
 
                 if (request.navigationProperty === "Attributes") {
-                    if (request.metadataAttributeType) {
-                        ErrorHelper.stringParameterCheck(request.metadataAttributeType, `DynamicsWebApi.${request.functionName}`, "request.metadataAttributeType");
-                        url += "/" + request.metadataAttributeType;
+					if (request.metadataAttributeType) {
+						ErrorHelper.stringParameterCheck(request.metadataAttributeType, `DynamicsWebApi.${request.functionName}`, "request.metadataAttributeType");
+						url += "/" + request.metadataAttributeType;
                     }
                 }
             }

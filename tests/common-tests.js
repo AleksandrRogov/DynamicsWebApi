@@ -1585,12 +1585,12 @@ describe("ErrorHelper.parameterCheck", function () {
 	it("when parameter is null it throws an error", function () {
 		expect(function () {
 			ErrorHelper.parameterCheck(null, "fun", "param", "type");
-		}).to.throw("fun requires the param parameter to be of type type");
+		}).to.throw("fun requires a param parameter to be of type type");
 	});
 	it("throws Error with message without type", function () {
 		expect(function () {
 			ErrorHelper.parameterCheck(null, "fun", "param");
-		}).to.throw("fun requires the param parameter");
+		}).to.throw("fun requires a param parameter");
 	});
 });
 
@@ -1602,7 +1602,7 @@ describe("ErrorHelper.stringParameterCheck", function () {
 	it("when parameter is wrong it throws an error", function () {
 		expect(function () {
 			ErrorHelper.stringParameterCheck(4, "fun", "param");
-		}).to.throw("fun requires the param parameter to be of type String");
+		}).to.throw("fun requires a param parameter to be of type String");
 	});
 });
 
@@ -1614,7 +1614,7 @@ describe("ErrorHelper.arrayParameterCheck", function () {
 	it("when parameter is wrong it throws an error", function () {
 		expect(function () {
 			ErrorHelper.arrayParameterCheck({}, "fun", "param");
-		}).to.throw("fun requires the param parameter to be of type Array");
+		}).to.throw("fun requires a param parameter to be of type Array");
 	});
 });
 
@@ -1629,7 +1629,7 @@ describe("ErrorHelper.stringOrArrayParameterCheck", function () {
 	it("when parameter is wrong it throws an error", function () {
 		expect(function () {
 			ErrorHelper.stringOrArrayParameterCheck({}, "fun", "param");
-		}).to.throw("fun requires the param parameter to be of type String or Array");
+		}).to.throw("fun requires a param parameter to be of type String or Array");
 	});
 });
 
@@ -1645,7 +1645,7 @@ describe("ErrorHelper.numberParameterCheck", function () {
 	it("when parameter is wrong it throws an error", function () {
 		expect(function () {
 			ErrorHelper.numberParameterCheck("a word", "fun", "param");
-		}).to.throw("fun requires the param parameter to be of type Number");
+		}).to.throw("fun requires a param parameter to be of type Number");
 	});
 });
 
@@ -1657,7 +1657,7 @@ describe("ErrorHelper.boolParameterCheck", function () {
 	it("when parameter is wrong it throws an error", function () {
 		expect(function () {
 			ErrorHelper.boolParameterCheck("a word", "fun", "param");
-		}).to.throw("fun requires the param parameter to be of type Boolean");
+		}).to.throw("fun requires a param parameter to be of type Boolean");
 	});
 });
 
@@ -1669,7 +1669,7 @@ describe("ErrorHelper.callbackParameterCheck", function () {
 	it("when parameter is wrong it throws an error", function () {
 		expect(function () {
 			ErrorHelper.callbackParameterCheck("a word", "fun", "param");
-		}).to.throw("fun requires the param parameter to be of type Function");
+		}).to.throw("fun requires a param parameter to be of type Function");
 	});
 });
 
@@ -1683,7 +1683,7 @@ describe("ErrorHelper.guidParameterCheck", function () {
 	it("throws an error", function () {
 		expect(function () {
 			ErrorHelper.guidParameterCheck("ds", "fun", "param");
-		}).to.throw("fun requires the param parameter to be of type GUID String");
+		}).to.throw("fun requires a param parameter to be of type GUID String");
 	});
 });
 
@@ -1722,19 +1722,19 @@ describe("ErrorHelper.keyParameterCheck", function () {
 		expect(function () {
 			var alternateKey = "altKey='value, anotherKey='value2'";
 			ErrorHelper.keyParameterCheck(alternateKey, "fun", "param");
-		}).to.throw("fun requires the param parameter to be of type String representing GUID or Alternate Key");
+		}).to.throw("fun requires a param parameter to be of type String representing GUID or Alternate Key");
 	});
 
 	it("throws an error", function () {
 		expect(function () {
 			ErrorHelper.keyParameterCheck("ds", "fun", "param");
-		}).to.throw("fun requires the param parameter to be of type String representing GUID or Alternate Key");
+		}).to.throw("fun requires a param parameter to be of type String representing GUID or Alternate Key");
 	});
 
 	it("throws an error when the parameter is not a string", function () {
 		expect(function () {
 			ErrorHelper.keyParameterCheck([], "fun", "param");
-		}).to.throw("fun requires the param parameter to be of type String representing GUID or Alternate Key");
+		}).to.throw("fun requires a param parameter to be of type String representing GUID or Alternate Key");
 	});
 });
 

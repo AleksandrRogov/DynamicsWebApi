@@ -4,8 +4,8 @@
 
 function throwParameterError(functionName: string, parameterName: string, type: string): void {
     throw new Error(type
-        ? `${functionName} requires the ${parameterName} parameter to be of type ${type}.`
-        : `${functionName} requires the ${parameterName} parameter.`);
+        ? `${functionName} requires a ${parameterName} parameter to be of type ${type}.`
+        : `${functionName} requires a ${parameterName} parameter.`);
 };
 
 export class ErrorHelper {

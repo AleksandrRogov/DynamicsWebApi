@@ -40,7 +40,7 @@ export class RequestClient {
 			batchResult = RequestUtility.convertToBatch(RequestClient._batchRequestCollection, config);
 
 			stringifiedData = batchResult.body;
-			request.headers = batchResult.headers;
+			request.headers = { ...batchResult.headers, ...request.headers };
 
 			//clear an array of requests
 			RequestClient._batchRequestCollection.length = 0;

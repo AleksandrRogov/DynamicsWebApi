@@ -124,9 +124,16 @@ export class DynamicsWebApi {
 	createRequest = <T = any>(request: DynamicsWebApi.CreateRequest): Promise<T> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.create", "request");
 
-		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		let internalRequest: Core.InternalRequest;
+
+		if (!(<Core.InternalRequest>request).functionName) {
+			internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+			internalRequest.functionName = "create";
+		}
+		else
+			internalRequest = request;
+
 		internalRequest.method = "POST";
-		internalRequest.functionName = "create";
 
 		return this._makeRequest(internalRequest)
 			.then(function (response) {
@@ -199,9 +206,16 @@ export class DynamicsWebApi {
 	retrieveRequest = <T = any>(request: DynamicsWebApi.RetrieveRequest): Promise<T> => {
 		ErrorHelper.parameterCheck(request, 'DynamicsWebApi.retrieve', 'request');
 
-		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		let internalRequest: Core.InternalRequest;
+
+		if (!(<Core.InternalRequest>request).functionName) {
+			internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+			internalRequest.functionName = "retrieve";
+		}
+		else
+			internalRequest = request;
+
 		internalRequest.method = "GET";
-		internalRequest.functionName = "retrieve";
 		internalRequest.responseParameters = {
 			isRef: internalRequest.select != null && internalRequest.select.length === 1 && internalRequest.select[0].endsWith("/$ref")
 		};
@@ -254,15 +268,24 @@ export class DynamicsWebApi {
 
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.update", "request");
 
-		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		let internalRequest: Core.InternalRequest;
+
+		if (!(<Core.InternalRequest>request).functionName) {
+			internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+			internalRequest.functionName = "update";
+		}
+		else
+			internalRequest = request;
+
 		//Metadata definitions, cannot be updated using "PATCH" method
-		internalRequest.method = /EntityDefinitions|RelationshipDefinitions|GlobalOptionSetDefinitions/.test(internalRequest.collection)
-			? "PUT" : "PATCH";
-		internalRequest.functionName = "update";
+		if (!internalRequest.method)
+			internalRequest.method = /EntityDefinitions|RelationshipDefinitions|GlobalOptionSetDefinitions/.test(internalRequest.collection)
+				? "PUT" : "PATCH";
+
 		internalRequest.responseParameters = { valueIfEmpty: true };
 
 		if (internalRequest.ifmatch == null) {
-			internalRequest.ifmatch = '*'; //to prevent upsert
+			internalRequest.ifmatch = "*"; //to prevent upsert
 		}
 
 		//copy locally
@@ -368,12 +391,18 @@ export class DynamicsWebApi {
 	 * @returns {Promise} D365 Web Api result
 	 */
 	deleteRequest = (request: DynamicsWebApi.DeleteRequest): Promise<any> => {
-
 		ErrorHelper.parameterCheck(request, 'DynamicsWebApi.delete', 'request');
 
-		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		let internalRequest: Core.InternalRequest;
+
+		if (!(<Core.InternalRequest>request).functionName) {
+			internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+			internalRequest.functionName = "delete";
+		}
+		else
+			internalRequest = request;
+
 		internalRequest.method = "DELETE";
-		internalRequest.functionName = "delete";
 		internalRequest.responseParameters = { valueIfEmpty: true };
 
 		//copy locally
@@ -488,14 +517,21 @@ export class DynamicsWebApi {
 	//};
 
 	retrieveMultipleRequest = <T = any>(request: DynamicsWebApi.RetrieveMultipleRequest, nextPageLink?: string): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>> => {
-		ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieveMultipleRequest", "request");
+		ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieveMultiple", "request");
 
-		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		let internalRequest: Core.InternalRequest;
+
+		if (!(<Core.InternalRequest>request).functionName) {
+			internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+			internalRequest.functionName = "retrieveMultiple";
+		}
+		else
+			internalRequest = request;
+
 		internalRequest.method = "GET";
-		internalRequest.functionName = "retrieveMultiple";
 
 		if (nextPageLink) {
-			ErrorHelper.stringParameterCheck(nextPageLink, 'DynamicsWebApi.retrieveMultiple', 'nextPageLink');
+			ErrorHelper.stringParameterCheck(nextPageLink, "DynamicsWebApi.retrieveMultiple", "nextPageLink");
 			internalRequest.url = nextPageLink;
 		}
 
@@ -801,27 +837,21 @@ export class DynamicsWebApi {
 	/**
 	 * Executes an unbound Web API action (not bound to a particular entity record)
 	 *
-	 * @param {string} actionName - The name of the Web API action.
-	 * @param {Object} [requestObject] - Action request body object.
-	 * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
 	executeUnboundAction = <T = any>(request: DynamicsWebApi.UnboundActionRequest): Promise<T> => {
-		return this._executeAction(<DynamicsWebApi.BoundActionRequest>request, true);
+		return this._executeAction<T>(<DynamicsWebApi.BoundActionRequest>request, true);
 	};
 
 	/**
 	 * Executes a bound Web API action (bound to a particular entity record)
 	 *
-	 * @param {string} id - A String representing the GUID value for the record.
-	 * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-	 * @param {string} actionName - The name of the Web API action.
-	 * @param {Object} [requestObject] - Action request body object.
-	 * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise | Function} D365 Web Api result
 	 */
 	executeBoundAction = <T = any>(request: DynamicsWebApi.BoundActionRequest): Promise<T> => {
-		return this._executeAction(request);
+		return this._executeAction<T>(request);
 	};
 
 	private _executeAction = <T = any>(request: DynamicsWebApi.BoundActionRequest, isUnbound: boolean = false): Promise<T> => {
@@ -847,78 +877,74 @@ export class DynamicsWebApi {
 	/**
 	 * Sends an asynchronous request to create an entity definition.
 	 *
-	 * @param {string} entityDefinition - Entity Definition.
+	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	createEntity = <T = any>(entityDefinition: Object): Promise<T> => {
+	createEntity = <T = any>(request: DynamicsWebApi.CreateEntityRequest): Promise<T> => {
+		ErrorHelper.parameterCheck(request, `DynamicsWebApi.createEntity`, "request");
+		ErrorHelper.parameterCheck(request.data, 'DynamicsWebApi.createEntity', "request.data");
 
-		ErrorHelper.parameterCheck(entityDefinition, 'DynamicsWebApi.createEntity', 'entityDefinition');
+		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		internalRequest.collection = "EntityDefinitions";
+		internalRequest.functionName = "createEntity";
 
-		var request = {
-			collection: 'EntityDefinitions',
-			data: entityDefinition
-		};
-		return this.createRequest(request);
+		return this.createRequest(<DynamicsWebApi.CreateRequest>internalRequest);
 	};
 
 	/**
 	 * Sends an asynchronous request to update an entity definition.
 	 *
-	 * @param {string} entityDefinition - Entity Definition.
-	 * @param {boolean} [mergeLabels] - Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false.
+	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	updateEntity = <T>(entityDefinition: any, mergeLabels?: boolean): Promise<T> => {
+	updateEntity = <T = any>(request: DynamicsWebApi.UpdateEntityRequest): Promise<T> => {
 
-		ErrorHelper.parameterCheck(entityDefinition, 'DynamicsWebApi.updateEntity', 'entityDefinition');
-		ErrorHelper.guidParameterCheck(entityDefinition.MetadataId, 'DynamicsWebApi.updateEntity', 'entityDefinition.MetadataId');
+		ErrorHelper.parameterCheck(request, "DynamicsWebApi.updateEntity", "request");
+		ErrorHelper.parameterCheck(request.data, "DynamicsWebApi.updateEntity", "request.data");
+		ErrorHelper.guidParameterCheck(request.data.MetadataId, "DynamicsWebApi.updateEntity", "request.data.MetadataId");
 
-		var request = {
-			collection: 'EntityDefinitions',
-			mergeLabels: mergeLabels,
-			key: entityDefinition.MetadataId,
-			data: entityDefinition
-		};
-		return this.updateRequest(request);
+		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		internalRequest.collection = "EntityDefinitions";
+		internalRequest.key = internalRequest.data.MetadataId;
+		internalRequest.functionName = "updateEntity";
+		internalRequest.method = "PUT";
+
+		return this.updateRequest(<DynamicsWebApi.UpdateRequest>internalRequest);
 	};
 
 	/**
 	 * Sends an asynchronous request to retrieve a specific entity definition.
 	 *
-	 * @param {string} entityKey - The Entity MetadataId or Alternate Key (such as LogicalName).
-	 * @param {Array} [select] - Use the $select system query option to limit the properties returned.
-	 * @param {string|Array} [expand] - A String or Array of Expand Objects representing the $expand Query Option value to control which related records need to be returned.
+	 * @param request - An object that represents all possible options for a current request.
 	* @returns {Promise} D365 Web Api result
 	 */
-	retrieveEntity = <T>(entityKey: string, select?: string[], expand?: DynamicsWebApi.Expand[]): Promise<T> => {
+	retrieveEntity = <T = any>(request: DynamicsWebApi.RetrieveEntityRequest): Promise<T> => {
 
-		ErrorHelper.keyParameterCheck(entityKey, 'DynamicsWebApi.retrieveEntity', 'entityKey');
+		ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieveEntity", "request");
+		ErrorHelper.keyParameterCheck(request.key, "DynamicsWebApi.retrieveEntity", "request.key");
 
-		var request = {
-			collection: 'EntityDefinitions',
-			key: entityKey,
-			select: select,
-			expand: expand
-		};
+		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		internalRequest.collection = "EntityDefinitions";
+		internalRequest.functionName = "retrieveEntity";
 
-		return this.retrieveRequest(request);
+		return this.retrieveRequest(<DynamicsWebApi.RetrieveRequest>internalRequest);
 	};
 
 	/**
 	 * Sends an asynchronous request to retrieve entity definitions.
 	 *
-	 * @param {Array} [select] - Use the $select system query option to limit the properties returned.
-	 * @param {string} [filter] - Use the $filter system query option to set criteria for which entity definitions will be returned.
+	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	retrieveEntities = <T>(select?: string[], filter?: string): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>> => {
-		var request = {
-			collection: 'EntityDefinitions',
-			select: select,
-			filter: filter
-		};
+	retrieveEntities = <T = any>(request?: DynamicsWebApi.RetrieveEntitiesRequest): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>> => {
+		let internalRequest: Core.InternalRequest = !request
+			? {}
+			: Utility.copyObject<Core.InternalRequest>(request);
 
-		return this.retrieveRequest(request);
+		internalRequest.collection = "EntityDefinitions";
+		internalRequest.functionName = "retrieveEntities";
+
+		return this.retrieveMultipleRequest(<DynamicsWebApi.RetrieveMultipleRequest>internalRequest);
 	};
 
 	/**
@@ -928,18 +954,18 @@ export class DynamicsWebApi {
 	 * @param {Object} attributeDefinition - Object that describes the attribute.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	createAttribute = <T>(entityKey: string, attributeDefinition: Object): Promise<T> => {
-		ErrorHelper.keyParameterCheck(entityKey, 'DynamicsWebApi.createAttribute', 'entityKey');
-		ErrorHelper.parameterCheck(attributeDefinition, 'DynamicsWebApi.createAttribute', 'attributeDefinition');
+	createAttribute = <T = any>(request: DynamicsWebApi.CreateAttributeRequest): Promise<T> => {
+		ErrorHelper.parameterCheck(request, "DynamicsWebApi.createAttribute", "request");
+		ErrorHelper.parameterCheck(request.data, "DynamicsWebApi.createAttribute", "request.data");
+		ErrorHelper.keyParameterCheck(request.entityKey, "DynamicsWebApi.createAttribute", "request.entityKey");
 
-		var request = {
-			collection: 'EntityDefinitions',
-			key: entityKey,
-			data: attributeDefinition,
-			navigationProperty: 'Attributes'
-		};
+		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		internalRequest.collection = "EntityDefinitions";
+		internalRequest.functionName = "retrieveEntity";
+		internalRequest.navigationProperty = "Attributes";
+		internalRequest.key = request.entityKey;
 
-		return this.createRequest(request);
+		return this.createRequest(<DynamicsWebApi.CreateRequest>internalRequest);
 	};
 
 	/**
@@ -951,26 +977,26 @@ export class DynamicsWebApi {
 	 * @param {boolean} [mergeLabels] - Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	updateAttribute = <T>(entityKey: string, attributeDefinition: any, attributeType?: string, mergeLabels?: boolean): Promise<T> => {
-		ErrorHelper.keyParameterCheck(entityKey, 'DynamicsWebApi.updateAttribute', 'entityKey');
-		ErrorHelper.parameterCheck(attributeDefinition, 'DynamicsWebApi.updateAttribute', 'attributeDefinition');
-		ErrorHelper.guidParameterCheck(attributeDefinition.MetadataId, 'DynamicsWebApi.updateAttribute', 'attributeDefinition.MetadataId');
+	updateAttribute = <T = any>(request: DynamicsWebApi.UpdateAttributeRequest): Promise<T> => {
+		ErrorHelper.parameterCheck(request, "DynamicsWebApi.updateAttribute", "request");
+		ErrorHelper.parameterCheck(request.data, "DynamicsWebApi.updateAttribute", "request.data");
+		ErrorHelper.keyParameterCheck(request.entityKey, "DynamicsWebApi.updateAttribute", "request.entityKey");
+		ErrorHelper.guidParameterCheck(request.data.MetadataId, "DynamicsWebApi.updateAttribute", "request.data.MetadataId");
 
-		if (attributeType) {
-			ErrorHelper.stringParameterCheck(attributeType, 'DynamicsWebApi.updateAttribute', 'attributeType');
+		if (request.castType) {
+			ErrorHelper.stringParameterCheck(request.castType, "DynamicsWebApi.updateAttribute", "request.castType");
 		}
 
-		var request = {
-			collection: 'EntityDefinitions',
-			key: entityKey,
-			data: attributeDefinition,
-			navigationProperty: 'Attributes',
-			navigationPropertyKey: attributeDefinition.MetadataId,
-			mergeLabels: mergeLabels,
-			metadataAttributeType: attributeType
-		};
+		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		internalRequest.collection = "EntityDefinitions";
+		internalRequest.navigationProperty = "Attributes";
+		internalRequest.navigationPropertyKey = request.data.MetadataId;
+		internalRequest.metadataAttributeType = request.castType;
+		internalRequest.key = request.entityKey;
+		internalRequest.functionName = "updateAttribute";
+		internalRequest.method = "PUT";
 
-		return this.updateRequest(request);
+		return this.updateRequest(<DynamicsWebApi.UpdateRequest>internalRequest);
 	};
 
 	/**
@@ -983,25 +1009,23 @@ export class DynamicsWebApi {
 	 * @param {string|Array} [expand] - A String or Array of Expand Objects representing the $expand Query Option value to control which related records need to be returned.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	retrieveAttributes = <T>(entityKey: string, attributeType?: string, select?: string[], filter?: string, expand?: DynamicsWebApi.Expand[]): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>> => {
+	retrieveAttributes = <T = any>(request: DynamicsWebApi.RetrieveAttributesRequest): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>> => {
 
-		ErrorHelper.keyParameterCheck(entityKey, 'DynamicsWebApi.retrieveAttributes', 'entityKey');
+		ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieveAttributes", "request");
+		ErrorHelper.keyParameterCheck(request.entityKey, "DynamicsWebApi.retrieveAttributes", "request.entityKey");
 
-		if (attributeType) {
-			ErrorHelper.stringParameterCheck(attributeType, 'DynamicsWebApi.retrieveAttributes', 'attributeType');
+		if (request.castType) {
+			ErrorHelper.stringParameterCheck(request.castType, "DynamicsWebApi.retrieveAttributes", "request.castType");
 		}
 
-		var request = {
-			collection: 'EntityDefinitions',
-			key: entityKey,
-			navigationProperty: 'Attributes',
-			select: select,
-			filter: filter,
-			expand: expand,
-			metadataAttributeType: attributeType
-		};
+		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		internalRequest.collection = "EntityDefinitions";
+		internalRequest.navigationProperty = "Attributes";
+		internalRequest.metadataAttributeType = request.castType;
+		internalRequest.key = request.entityKey;
+		internalRequest.functionName = "retrieveAttributes";
 
-		return this.retrieveRequest(request);
+		return this.retrieveMultipleRequest(<DynamicsWebApi.RetrieveMultipleRequest>internalRequest);
 	};
 
 	/**
@@ -1014,26 +1038,25 @@ export class DynamicsWebApi {
 	 * @param {string|Array} [expand] - A String or Array of Expand Objects representing the $expand Query Option value to control which related records need to be returned.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	retrieveAttribute = <T>(entityKey: string, attributeKey: string, attributeType?: string, select?: string[], expand?: DynamicsWebApi.Expand[]): Promise<T> => {
+	retrieveAttribute = <T = any>(request: DynamicsWebApi.RetrieveAttributeRequest): Promise<T> => {
 
-		ErrorHelper.keyParameterCheck(entityKey, 'DynamicsWebApi.retrieveAttribute', 'entityKey');
-		ErrorHelper.keyParameterCheck(attributeKey, 'DynamicsWebApi.retrieveAttribute', 'attributeKey');
+		ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieveAttributes", "request");
+		ErrorHelper.keyParameterCheck(request.entityKey, "DynamicsWebApi.retrieveAttribute", "request.entityKey");
+		ErrorHelper.keyParameterCheck(request.attributeKey, "DynamicsWebApi.retrieveAttribute", "request.attributeKey");
 
-		if (attributeType) {
-			ErrorHelper.stringParameterCheck(attributeType, 'DynamicsWebApi.retrieveAttribute', 'attributeType');
+		if (request.castType) {
+			ErrorHelper.stringParameterCheck(request.castType, "DynamicsWebApi.retrieveAttribute", "request.castType");
 		}
 
-		var request = {
-			collection: 'EntityDefinitions',
-			key: entityKey,
-			navigationProperty: 'Attributes',
-			select: select,
-			expand: expand,
-			metadataAttributeType: attributeType,
-			navigationPropertyKey: attributeKey
-		};
+		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		internalRequest.collection = "EntityDefinitions";
+		internalRequest.navigationProperty = "Attributes";
+		internalRequest.navigationPropertyKey = request.attributeKey;
+		internalRequest.metadataAttributeType = request.castType;
+		internalRequest.key = request.entityKey;
+		internalRequest.functionName = "retrieveAttribute";
 
-		return this.retrieveRequest(request);
+		return this.retrieveRequest(<DynamicsWebApi.RetrieveRequest>internalRequest);
 	};
 
 	/**
@@ -1042,15 +1065,16 @@ export class DynamicsWebApi {
 	 * @param {string} relationshipDefinition - Relationship Definition.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	createRelationship = <T>(relationshipDefinition: Object): Promise<T> => {
+	createRelationship = <T = any>(request: DynamicsWebApi.CreateRelationshipRequest): Promise<T> => {
 
-		ErrorHelper.parameterCheck(relationshipDefinition, 'DynamicsWebApi.createRelationship', 'relationshipDefinition');
+		ErrorHelper.parameterCheck(request, "DynamicsWebApi.createRelationship", "request");
+		ErrorHelper.parameterCheck(request.data, "DynamicsWebApi.createRelationship", "request.data");
 
-		var request = {
-			collection: 'RelationshipDefinitions',
-			data: relationshipDefinition
-		};
-		return this.createRequest(request);
+		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		internalRequest.collection = "RelationshipDefinitions";
+		internalRequest.functionName = "createRelationship";
+
+		return this.createRequest(<DynamicsWebApi.CreateRequest>internalRequest);
 	};
 
 	/**
@@ -1061,20 +1085,24 @@ export class DynamicsWebApi {
 	 * @param {boolean} [mergeLabels] - Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	updateRelationship = <T>(relationshipDefinition: any, relationshipType?: string, mergeLabels?: boolean): Promise<T> => {
+	updateRelationship = <T = any>(request: DynamicsWebApi.UpdateRelationshipRequest): Promise<T> => {
 
-		ErrorHelper.parameterCheck(relationshipDefinition, 'DynamicsWebApi.updateRelationship', 'relationshipDefinition');
-		ErrorHelper.guidParameterCheck(relationshipDefinition.MetadataId, 'DynamicsWebApi.updateRelationship', 'relationshipDefinition.MetadataId');
+		ErrorHelper.parameterCheck(request, "DynamicsWebApi.updateRelationship", "request");
+		ErrorHelper.parameterCheck(request.data, "DynamicsWebApi.updateRelationship", "request.data");
+		ErrorHelper.guidParameterCheck(request.data.MetadataId, "DynamicsWebApi.updateRelationship", "request.data.MetadataId");
 
-		var request = {
-			collection: 'RelationshipDefinitions',
-			mergeLabels: mergeLabels,
-			key: relationshipDefinition.MetadataId,
-			data: relationshipDefinition,
-			navigationProperty: relationshipType
-		};
+		if (request.castType) {
+			ErrorHelper.stringParameterCheck(request.castType, "DynamicsWebApi.updateRelationship", "request.castType");
+		}
 
-		return this.updateRequest(request);
+		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		internalRequest.collection = "RelationshipDefinitions";
+		internalRequest.key = request.data.MetadataId;
+		internalRequest.navigationProperty = request.castType;
+		internalRequest.functionName = "updateRelationship";
+		internalRequest.method = "PUT";
+
+		return this.updateRequest(<DynamicsWebApi.UpdateRequest>internalRequest);
 	};
 
 	/**
@@ -1083,15 +1111,15 @@ export class DynamicsWebApi {
 	 * @param {string} metadataId - A String representing the GUID value.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	deleteRelationship = (metadataId: string): Promise<any> => {
-		ErrorHelper.keyParameterCheck(metadataId, 'DynamicsWebApi.deleteRelationship', 'metadataId');
+	deleteRelationship = (request: DynamicsWebApi.DeleteRelationshipRequest): Promise<any> => {
+		ErrorHelper.parameterCheck(request, "DynamicsWebApi.deleteRelationship", "request");
+		ErrorHelper.keyParameterCheck(request.key, "DynamicsWebApi.deleteRelationship", "request.key");
 
-		var request = {
-			collection: 'RelationshipDefinitions',
-			key: metadataId
-		};
+		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		internalRequest.collection = "RelationshipDefinitions";
+		internalRequest.functionName = "deleteRelationship";
 
-		return this.deleteRequest(request);
+		return this.deleteRequest(<DynamicsWebApi.DeleteRequest>internalRequest);
 	};
 
 	/**
@@ -1102,16 +1130,22 @@ export class DynamicsWebApi {
 	 * @param {string} [filter] - Use the $filter system query option to set criteria for which relationships will be returned.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	retrieveRelationships = <T>(relationshipType?: string, select?: string[], filter?: string): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>> => {
+	retrieveRelationships = <T = any>(request?: DynamicsWebApi.RetrieveRelationshipsRequest): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>> => {
+		let internalRequest: Core.InternalRequest = !request
+			? {}
+			: Utility.copyObject<Core.InternalRequest>(request);
 
-		var request = {
-			collection: 'RelationshipDefinitions',
-			navigationProperty: relationshipType,
-			select: select,
-			filter: filter
-		};
+		internalRequest.collection = "RelationshipDefinitions";
+		internalRequest.functionName = "retrieveRelationships";
 
-		return this.retrieveMultipleRequest(request);
+		if (request) {
+			if (request.castType) {
+				ErrorHelper.stringParameterCheck(request.castType, "DynamicsWebApi.retrieveRelationships", "request.castType");
+				internalRequest.navigationProperty = request.castType;
+			}
+		}
+
+		return this.retrieveMultipleRequest(<DynamicsWebApi.RetrieveMultipleRequest>internalRequest);
 	};
 
 	/**
@@ -1122,18 +1156,21 @@ export class DynamicsWebApi {
 	 * @param {Array} [select] - Use the $select system query option to limit the properties returned.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	retrieveRelationship = <T>(metadataId: string, relationshipType?: string, select?: string[]): Promise<T> => {
+	retrieveRelationship = <T = any>(request: DynamicsWebApi.RetrieveRelationshipRequest): Promise<T> => {
 
-		ErrorHelper.keyParameterCheck(metadataId, 'DynamicsWebApi.retrieveRelationship', 'metadataId');
+		ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieveRelationship", "request");
+		ErrorHelper.keyParameterCheck(request.key, "DynamicsWebApi.retrieveRelationship", "request.key");
 
-		var request = {
-			collection: 'RelationshipDefinitions',
-			navigationProperty: relationshipType,
-			key: metadataId,
-			select: select
-		};
+		if (request.castType) {
+			ErrorHelper.stringParameterCheck(request.castType, "DynamicsWebApi.retrieveRelationship", "request.castType");
+		}
 
-		return this.retrieveRequest(request);
+		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		internalRequest.collection = "RelationshipDefinitions";
+		internalRequest.navigationProperty = request.castType;
+		internalRequest.functionName = "retrieveRelationship";
+
+		return this.retrieveRequest(<DynamicsWebApi.RetrieveRequest>internalRequest);
 	};
 
 	/**
@@ -1142,16 +1179,16 @@ export class DynamicsWebApi {
 	 * @param {string} globalOptionSetDefinition - Global Option Set Definition.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	createGlobalOptionSet = <T>(globalOptionSetDefinition: any): Promise<T> => {
+	createGlobalOptionSet = <T = any>(request: DynamicsWebApi.CreateGlobalOptionSetRequest): Promise<T> => {
 
-		ErrorHelper.parameterCheck(globalOptionSetDefinition, 'DynamicsWebApi.createGlobalOptionSet', 'globalOptionSetDefinition');
+		ErrorHelper.parameterCheck(request, "DynamicsWebApi.createGlobalOptionSet", "request");
+		ErrorHelper.parameterCheck(request.data, "DynamicsWebApi.createGlobalOptionSet", "request.data");
 
-		var request = {
-			collection: 'GlobalOptionSetDefinitions',
-			data: globalOptionSetDefinition
-		};
+		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		internalRequest.collection = "GlobalOptionSetDefinitions";
+		internalRequest.functionName = "createGlobalOptionSet";
 
-		return this.createRequest(request);
+		return this.createRequest(<DynamicsWebApi.CreateRequest>internalRequest);
 	};
 
 	/**
@@ -1161,18 +1198,23 @@ export class DynamicsWebApi {
 	 * @param {boolean} [mergeLabels] - Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	updateGlobalOptionSet = <T>(globalOptionSetDefinition: any, mergeLabels?: boolean): Promise<T> => {
+	updateGlobalOptionSet = <T = any>(request: DynamicsWebApi.UpdateGlobalOptionSetRequest): Promise<T> => {
 
-		ErrorHelper.parameterCheck(globalOptionSetDefinition, 'DynamicsWebApi.updateGlobalOptionSet', 'globalOptionSetDefinition');
-		ErrorHelper.guidParameterCheck(globalOptionSetDefinition.MetadataId, 'DynamicsWebApi.updateGlobalOptionSet', 'globalOptionSetDefinition.MetadataId');
+		ErrorHelper.parameterCheck(request, "DynamicsWebApi.updateGlobalOptionSet", "request");
+		ErrorHelper.parameterCheck(request.data, "DynamicsWebApi.updateGlobalOptionSet", "request.data");
+		ErrorHelper.guidParameterCheck(request.data.MetadataId, "DynamicsWebApi.updateGlobalOptionSet", "request.data.MetadataId");
 
-		var request = {
-			collection: 'GlobalOptionSetDefinitions',
-			mergeLabels: mergeLabels,
-			key: globalOptionSetDefinition.MetadataId,
-			data: globalOptionSetDefinition
-		};
-		return this.updateRequest(request);
+		if (request.castType) {
+			ErrorHelper.stringParameterCheck(request.castType, "DynamicsWebApi.updateGlobalOptionSet", "request.castType");
+		}
+
+		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		internalRequest.collection = "GlobalOptionSetDefinitions";
+		internalRequest.key = request.data.MetadataId;
+		internalRequest.functionName = "updateGlobalOptionSet";
+		internalRequest.method = "PUT";
+
+		return this.updateRequest(<DynamicsWebApi.UpdateRequest>internalRequest);
 	};
 
 	/**
@@ -1181,15 +1223,14 @@ export class DynamicsWebApi {
 	 * @param {string} globalOptionSetKey - A String representing the GUID value or Alternate Key (such as Name).
 	 * @returns {Promise} D365 Web Api result
 	 */
-	deleteGlobalOptionSet = (globalOptionSetKey: string): Promise<any> => {
-		ErrorHelper.keyParameterCheck(globalOptionSetKey, 'DynamicsWebApi.deleteGlobalOptionSet', 'globalOptionSetKey');
+	deleteGlobalOptionSet = (request: DynamicsWebApi.DeleteGlobalOptionSetRequest): Promise<any> => {
+		ErrorHelper.parameterCheck(request, "DynamicsWebApi.deleteGlobalOptionSet", "request");
 
-		var request = {
-			collection: 'GlobalOptionSetDefinitions',
-			key: globalOptionSetKey
-		};
+		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		internalRequest.collection = "GlobalOptionSetDefinitions";
+		internalRequest.functionName = "deleteGlobalOptionSet";
 
-		return this.deleteRequest(request);
+		return this.deleteRequest(<DynamicsWebApi.DeleteRequest>internalRequest);
 	};
 
 	/**
@@ -1200,17 +1241,19 @@ export class DynamicsWebApi {
 	 * @param {Array} [select] - Use the $select system query option to limit the properties returned
 	 * @returns {Promise} D365 Web Api result
 	 */
-	retrieveGlobalOptionSet = <T>(globalOptionSetKey: string, castType?: string, select?: string[]): Promise<T> => {
-		ErrorHelper.keyParameterCheck(globalOptionSetKey, 'DynamicsWebApi.retrieveGlobalOptionSet', 'globalOptionSetKey');
+	retrieveGlobalOptionSet = <T = any>(request: DynamicsWebApi.RetrieveGlobalOptionSetRequest): Promise<T> => {
+		ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieveGlobalOptionSet", "request");
 
-		var request = {
-			collection: 'GlobalOptionSetDefinitions',
-			key: globalOptionSetKey,
-			navigationProperty: castType,
-			select: select
-		};
+		if (request.castType) {
+			ErrorHelper.stringParameterCheck(request.castType, "DynamicsWebApi.retrieveGlobalOptionSet", "request.castType");
+		}
 
-		return this.retrieveRequest(request);
+		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		internalRequest.collection = "GlobalOptionSetDefinitions";
+		internalRequest.navigationProperty = request.castType;
+		internalRequest.functionName = "retrieveGlobalOptionSet";
+
+		return this.retrieveRequest(<DynamicsWebApi.RetrieveRequest>internalRequest);
 	};
 
 	/**
@@ -1220,15 +1263,20 @@ export class DynamicsWebApi {
 	 * @param {Array} [select] - Use the $select system query option to limit the properties returned
 	 * @returns {Promise} D365 Web Api result
 	 */
-	retrieveGlobalOptionSets = <T>(castType?: string, select?: string[]): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>> => {
+	retrieveGlobalOptionSets = <T = any>(request?: DynamicsWebApi.RetrieveGlobalOptionSetsRequest): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>> => {
+		let internalRequest: Core.InternalRequest = !request
+			? {}
+			: Utility.copyObject<Core.InternalRequest>(request);
 
-		var request = {
-			collection: 'GlobalOptionSetDefinitions',
-			navigationProperty: castType,
-			select: select
-		};
+		internalRequest.collection = "GlobalOptionSetDefinitions";
+		internalRequest.functionName = "retrieveGlobalOptionSets";
 
-		return this.retrieveMultipleRequest(request);
+		if (request && request.castType) {
+			internalRequest.navigationProperty = request.castType;
+			ErrorHelper.stringParameterCheck(request.castType, "DynamicsWebApi.retrieveGlobalOptionSets", "request.castType");
+		}
+
+		return this.retrieveMultipleRequest(<DynamicsWebApi.RetrieveMultipleRequest>internalRequest);
 	};
 
 	/**
@@ -1243,17 +1291,19 @@ export class DynamicsWebApi {
 	 * Executes a batch request. Please call DynamicsWebApi.startBatch() first to start a batch request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	executeBatch = (): Promise<any[]> => {
+	executeBatch = (request?: DynamicsWebApi.BaseRequest): Promise<any[]> => {
 		ErrorHelper.batchNotStarted(this._isBatch);
 
-		let request: Core.InternalRequest = {
-			collection: "$batch",
-			method: "POST",
-			functionName: "executeBatch"
-		}
+		let internalRequest: Core.InternalRequest = !request
+			? {}
+			: Utility.copyObject<Core.InternalRequest>(request);
+
+		internalRequest.collection = "$batch";
+		internalRequest.method = "POST";
+		internalRequest.functionName = "executeBatch";
 
 		this._isBatch = false;
-		return this._makeRequest(request)
+		return this._makeRequest(internalRequest)
 			.then(function (response) {
 				return response.data;
 			});
@@ -1528,7 +1578,7 @@ export declare namespace DynamicsWebApi {
 		parameters?: any;
 	}
 
-	export interface BoundFunctionRequest extends UnboundFunctionRequest, Request{
+	export interface BoundFunctionRequest extends UnboundFunctionRequest, Request {
 		/**A String representing the GUID value for the record. */
 		id?: string;
 	}
@@ -1543,6 +1593,154 @@ export declare namespace DynamicsWebApi {
 	export interface BoundActionRequest extends UnboundActionRequest, Request {
 		/**A String representing the GUID value for the record. */
 		id?: string;
+	}
+
+	export interface CreateEntityRequest extends BaseRequest {
+		/**An object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single-valued navigation properties). */
+		data: any;
+	}
+
+	export interface UpdateEntityRequest extends CRUDRequest {
+		/**An object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single-valued navigation properties). */
+		data: any;
+		/**Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false. */
+		mergeLabels?: boolean;
+	}
+
+	export interface RetrieveEntityRequest extends BaseRequest {
+		/**The Entity MetadataId or Alternate Key (such as LogicalName). */
+		key: string,
+		/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+		select?: string[];
+		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
+		expand?: Expand[];
+	}
+
+	export interface RetrieveEntitiesRequest extends BaseRequest {
+		/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+		select?: string[];
+		/**Use the $filter system query option to set criteria for which entities will be returned. */
+		filter?: string;
+		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
+		expand?: Expand[];
+	}
+
+	export interface CreateAttributeRequest extends BaseRequest {
+		/**The Entity MetadataId or Alternate Key (such as LogicalName). */
+		entityKey: string;
+		/**Attribute metadata object. */
+		data: any;
+	}
+
+	export interface UpdateAttributeRequest extends CreateAttributeRequest {
+		/**Use this parameter to cast the Attribute to a specific type. */
+		castType?: string;
+		/**Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false. */
+		mergeLabels?: boolean;
+	}
+
+	export interface RetrieveAttributesRequest extends BaseRequest {
+		/**The Entity MetadataId or Alternate Key (such as LogicalName). */
+		entityKey: string;
+		/**Use this parameter to cast the Attribute to a specific type. */
+		castType?: string;
+		/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+		select?: string[];
+		/**Use the $filter system query option to set criteria for which entities will be returned. */
+		filter?: string;
+		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
+		expand?: Expand[];
+	}
+
+	export interface RetrieveAttributeRequest extends BaseRequest {
+		/**The Attribute MetadataId or Alternate Key (such as LogicalName). */
+		attributeKey: string;
+		/**The Entity MetadataId or Alternate Key (such as LogicalName). */
+		entityKey: string;
+		/**Use this parameter to cast the Attribute to a specific type. */
+		castType?: string;
+		/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+		select?: string[];
+		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
+		expand?: Expand[];
+	}
+
+	export interface CreateRelationshipRequest extends BaseRequest {
+		/**Relationship Definition. */
+		data: any;
+	}
+
+	export interface UpdateRelationshipRequest extends CreateRelationshipRequest {
+		/**Use this parameter to cast the Relationship metadata to a specific type. */
+		castType?: string;
+		/**Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false. */
+		mergeLabels?: boolean;
+	}
+
+	export interface DeleteRelationshipRequest extends BaseRequest {
+		/**The Relationship MetadataId or Alternate Key (such as LogicalName). */
+		key: string;
+	}
+
+	export interface RetrieveRelationshipsRequest extends BaseRequest {
+		/**Use this parameter to cast the Relationship metadata to a specific type. */
+		castType?: string;
+		/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+		select?: string[];
+		/**Use the $filter system query option to set criteria for which entities will be returned. */
+		filter?: string;
+		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
+		expand?: Expand[];
+	}
+
+	export interface RetrieveRelationshipRequest extends BaseRequest {
+		/**The Relationship MetadataId or Alternate Key (such as LogicalName). */
+		key: string;
+		/**Use this parameter to cast the Relationship metadata to a specific type. */
+		castType?: string;
+		/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+		select?: string[];
+		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
+		expand?: Expand[];
+	}
+
+	export interface CreateGlobalOptionSetRequest extends BaseRequest {
+		/**Global Option Set Definition. */
+		data: any;
+	}
+
+	export interface UpdateGlobalOptionSetRequest extends CreateRelationshipRequest {
+		/**Use this parameter to cast the Global Option Set metadata to a specific type. */
+		castType?: string;
+		/**Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false. */
+		mergeLabels?: boolean;
+	}
+
+	export interface DeleteGlobalOptionSetRequest extends BaseRequest {
+		/**The Global Option Set MetadataId or Alternate Key (such as LogicalName). */
+		key: string;
+	}
+
+	export interface RetrieveGlobalOptionSetsRequest extends BaseRequest {
+		/**Use this parameter to cast the Global Option Set metadata to a specific type. */
+		castType?: string;
+		/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+		select?: string[];
+		/**Use the $filter system query option to set criteria for which entities will be returned. */
+		filter?: string;
+		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
+		expand?: Expand[];
+	}
+
+	export interface RetrieveGlobalOptionSetRequest extends BaseRequest {
+		/**The Global Option Set MetadataId or Alternate Key (such as LogicalName). */
+		key: string;
+		/**Use this parameter to cast the Global Option Set metadata to a specific type. */
+		castType?: string;
+		/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+		select?: string[];
+		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
+		expand?: Expand[];
 	}
 
 	export interface Config {

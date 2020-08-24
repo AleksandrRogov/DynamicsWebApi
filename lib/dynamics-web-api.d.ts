@@ -240,20 +240,14 @@ export declare class DynamicsWebApi {
     /**
      * Executes an unbound Web API action (not bound to a particular entity record)
      *
-     * @param {string} actionName - The name of the Web API action.
-     * @param {Object} [requestObject] - Action request body object.
-     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+     * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api result
      */
     executeUnboundAction: <T = any>(request: DynamicsWebApi.UnboundActionRequest) => Promise<T>;
     /**
      * Executes a bound Web API action (bound to a particular entity record)
      *
-     * @param {string} id - A String representing the GUID value for the record.
-     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-     * @param {string} actionName - The name of the Web API action.
-     * @param {Object} [requestObject] - Action request body object.
-     * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
+     * @param request - An object that represents all possible options for a current request.
      * @returns {Promise | Function} D365 Web Api result
      */
     executeBoundAction: <T = any>(request: DynamicsWebApi.BoundActionRequest) => Promise<T>;
@@ -261,35 +255,31 @@ export declare class DynamicsWebApi {
     /**
      * Sends an asynchronous request to create an entity definition.
      *
-     * @param {string} entityDefinition - Entity Definition.
+     * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api result
      */
-    createEntity: <T = any>(entityDefinition: Object) => Promise<T>;
+    createEntity: <T = any>(request: DynamicsWebApi.CreateEntityRequest) => Promise<T>;
     /**
      * Sends an asynchronous request to update an entity definition.
      *
-     * @param {string} entityDefinition - Entity Definition.
-     * @param {boolean} [mergeLabels] - Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false.
+     * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api result
      */
-    updateEntity: <T>(entityDefinition: any, mergeLabels?: boolean) => Promise<T>;
+    updateEntity: <T = any>(request: DynamicsWebApi.UpdateEntityRequest) => Promise<T>;
     /**
      * Sends an asynchronous request to retrieve a specific entity definition.
      *
-     * @param {string} entityKey - The Entity MetadataId or Alternate Key (such as LogicalName).
-     * @param {Array} [select] - Use the $select system query option to limit the properties returned.
-     * @param {string|Array} [expand] - A String or Array of Expand Objects representing the $expand Query Option value to control which related records need to be returned.
+     * @param request - An object that represents all possible options for a current request.
     * @returns {Promise} D365 Web Api result
      */
-    retrieveEntity: <T>(entityKey: string, select?: string[], expand?: DynamicsWebApi.Expand[]) => Promise<T>;
+    retrieveEntity: <T = any>(request: DynamicsWebApi.RetrieveEntityRequest) => Promise<T>;
     /**
      * Sends an asynchronous request to retrieve entity definitions.
      *
-     * @param {Array} [select] - Use the $select system query option to limit the properties returned.
-     * @param {string} [filter] - Use the $filter system query option to set criteria for which entity definitions will be returned.
+     * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api result
      */
-    retrieveEntities: <T>(select?: string[], filter?: string) => Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
+    retrieveEntities: <T = any>(request?: DynamicsWebApi.RetrieveEntitiesRequest) => Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
     /**
      * Sends an asynchronous request to create an attribute.
      *
@@ -297,7 +287,7 @@ export declare class DynamicsWebApi {
      * @param {Object} attributeDefinition - Object that describes the attribute.
      * @returns {Promise} D365 Web Api result
      */
-    createAttribute: <T>(entityKey: string, attributeDefinition: Object) => Promise<T>;
+    createAttribute: <T = any>(request: DynamicsWebApi.CreateAttributeRequest) => Promise<T>;
     /**
      * Sends an asynchronous request to update an attribute.
      *
@@ -307,7 +297,7 @@ export declare class DynamicsWebApi {
      * @param {boolean} [mergeLabels] - Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false.
      * @returns {Promise} D365 Web Api result
      */
-    updateAttribute: <T>(entityKey: string, attributeDefinition: any, attributeType?: string, mergeLabels?: boolean) => Promise<T>;
+    updateAttribute: <T = any>(request: DynamicsWebApi.UpdateAttributeRequest) => Promise<T>;
     /**
      * Sends an asynchronous request to retrieve attribute metadata for a specified entity definition.
      *
@@ -318,7 +308,7 @@ export declare class DynamicsWebApi {
      * @param {string|Array} [expand] - A String or Array of Expand Objects representing the $expand Query Option value to control which related records need to be returned.
      * @returns {Promise} D365 Web Api result
      */
-    retrieveAttributes: <T>(entityKey: string, attributeType?: string, select?: string[], filter?: string, expand?: DynamicsWebApi.Expand[]) => Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
+    retrieveAttributes: <T = any>(request: DynamicsWebApi.RetrieveAttributesRequest) => Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
     /**
      * Sends an asynchronous request to retrieve a specific attribute metadata for a specified entity definition.
      *
@@ -329,14 +319,14 @@ export declare class DynamicsWebApi {
      * @param {string|Array} [expand] - A String or Array of Expand Objects representing the $expand Query Option value to control which related records need to be returned.
      * @returns {Promise} D365 Web Api result
      */
-    retrieveAttribute: <T>(entityKey: string, attributeKey: string, attributeType?: string, select?: string[], expand?: DynamicsWebApi.Expand[]) => Promise<T>;
+    retrieveAttribute: <T = any>(request: DynamicsWebApi.RetrieveAttributeRequest) => Promise<T>;
     /**
      * Sends an asynchronous request to create a relationship definition.
      *
      * @param {string} relationshipDefinition - Relationship Definition.
      * @returns {Promise} D365 Web Api result
      */
-    createRelationship: <T>(relationshipDefinition: Object) => Promise<T>;
+    createRelationship: <T = any>(request: DynamicsWebApi.CreateRelationshipRequest) => Promise<T>;
     /**
      * Sends an asynchronous request to update a relationship definition.
      *
@@ -345,14 +335,14 @@ export declare class DynamicsWebApi {
      * @param {boolean} [mergeLabels] - Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false.
      * @returns {Promise} D365 Web Api result
      */
-    updateRelationship: <T>(relationshipDefinition: any, relationshipType?: string, mergeLabels?: boolean) => Promise<T>;
+    updateRelationship: <T = any>(request: DynamicsWebApi.UpdateRelationshipRequest) => Promise<T>;
     /**
      * Sends an asynchronous request to delete a relationship definition.
      *
      * @param {string} metadataId - A String representing the GUID value.
      * @returns {Promise} D365 Web Api result
      */
-    deleteRelationship: (metadataId: string) => Promise<any>;
+    deleteRelationship: (request: DynamicsWebApi.DeleteRelationshipRequest) => Promise<any>;
     /**
      * Sends an asynchronous request to retrieve relationship definitions.
      *
@@ -361,7 +351,7 @@ export declare class DynamicsWebApi {
      * @param {string} [filter] - Use the $filter system query option to set criteria for which relationships will be returned.
      * @returns {Promise} D365 Web Api result
      */
-    retrieveRelationships: <T>(relationshipType?: string, select?: string[], filter?: string) => Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
+    retrieveRelationships: <T = any>(request?: DynamicsWebApi.RetrieveRelationshipsRequest) => Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
     /**
      * Sends an asynchronous request to retrieve a specific relationship definition.
      *
@@ -370,14 +360,14 @@ export declare class DynamicsWebApi {
      * @param {Array} [select] - Use the $select system query option to limit the properties returned.
      * @returns {Promise} D365 Web Api result
      */
-    retrieveRelationship: <T>(metadataId: string, relationshipType?: string, select?: string[]) => Promise<T>;
+    retrieveRelationship: <T = any>(request: DynamicsWebApi.RetrieveRelationshipRequest) => Promise<T>;
     /**
      * Sends an asynchronous request to create a Global Option Set definition
      *
      * @param {string} globalOptionSetDefinition - Global Option Set Definition.
      * @returns {Promise} D365 Web Api result
      */
-    createGlobalOptionSet: <T>(globalOptionSetDefinition: any) => Promise<T>;
+    createGlobalOptionSet: <T = any>(request: DynamicsWebApi.CreateGlobalOptionSetRequest) => Promise<T>;
     /**
      * Sends an asynchronous request to update a Global Option Set.
      *
@@ -385,14 +375,14 @@ export declare class DynamicsWebApi {
      * @param {boolean} [mergeLabels] - Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false.
      * @returns {Promise} D365 Web Api result
      */
-    updateGlobalOptionSet: <T>(globalOptionSetDefinition: any, mergeLabels?: boolean) => Promise<T>;
+    updateGlobalOptionSet: <T = any>(request: DynamicsWebApi.UpdateGlobalOptionSetRequest) => Promise<T>;
     /**
      * Sends an asynchronous request to delete a Global Option Set.
      *
      * @param {string} globalOptionSetKey - A String representing the GUID value or Alternate Key (such as Name).
      * @returns {Promise} D365 Web Api result
      */
-    deleteGlobalOptionSet: (globalOptionSetKey: string) => Promise<any>;
+    deleteGlobalOptionSet: (request: DynamicsWebApi.DeleteGlobalOptionSetRequest) => Promise<any>;
     /**
      * Sends an asynchronous request to retrieve Global Option Set definitions.
      *
@@ -401,7 +391,7 @@ export declare class DynamicsWebApi {
      * @param {Array} [select] - Use the $select system query option to limit the properties returned
      * @returns {Promise} D365 Web Api result
      */
-    retrieveGlobalOptionSet: <T>(globalOptionSetKey: string, castType?: string, select?: string[]) => Promise<T>;
+    retrieveGlobalOptionSet: <T = any>(request: DynamicsWebApi.RetrieveGlobalOptionSetRequest) => Promise<T>;
     /**
      * Sends an asynchronous request to retrieve Global Option Set definitions.
      *
@@ -409,7 +399,7 @@ export declare class DynamicsWebApi {
      * @param {Array} [select] - Use the $select system query option to limit the properties returned
      * @returns {Promise} D365 Web Api result
      */
-    retrieveGlobalOptionSets: <T>(castType?: string, select?: string[]) => Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
+    retrieveGlobalOptionSets: <T = any>(request?: DynamicsWebApi.RetrieveGlobalOptionSetsRequest) => Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
     /**
      * Starts a batch request.
      *
@@ -419,7 +409,7 @@ export declare class DynamicsWebApi {
      * Executes a batch request. Please call DynamicsWebApi.startBatch() first to start a batch request.
      * @returns {Promise} D365 Web Api result
      */
-    executeBatch: () => Promise<any[]>;
+    executeBatch: (request?: DynamicsWebApi.BaseRequest) => Promise<any[]>;
     /**
      * Creates a new instance of DynamicsWebApi
      *
@@ -658,6 +648,136 @@ export declare namespace DynamicsWebApi {
     interface BoundActionRequest extends UnboundActionRequest, Request {
         /**A String representing the GUID value for the record. */
         id?: string;
+    }
+    interface CreateEntityRequest extends BaseRequest {
+        /**An object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single-valued navigation properties). */
+        data: any;
+    }
+    interface UpdateEntityRequest extends CRUDRequest {
+        /**An object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single-valued navigation properties). */
+        data: any;
+        /**Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false. */
+        mergeLabels?: boolean;
+    }
+    interface RetrieveEntityRequest extends BaseRequest {
+        /**The Entity MetadataId or Alternate Key (such as LogicalName). */
+        key: string;
+        /**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+        select?: string[];
+        /**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
+        expand?: Expand[];
+    }
+    interface RetrieveEntitiesRequest extends BaseRequest {
+        /**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+        select?: string[];
+        /**Use the $filter system query option to set criteria for which entities will be returned. */
+        filter?: string;
+        /**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
+        expand?: Expand[];
+    }
+    interface CreateAttributeRequest extends BaseRequest {
+        /**The Entity MetadataId or Alternate Key (such as LogicalName). */
+        entityKey: string;
+        /**Attribute metadata object. */
+        data: any;
+    }
+    interface UpdateAttributeRequest extends CreateAttributeRequest {
+        /**Use this parameter to cast the Attribute to a specific type. */
+        castType?: string;
+        /**Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false. */
+        mergeLabels?: boolean;
+    }
+    interface RetrieveAttributesRequest extends BaseRequest {
+        /**The Entity MetadataId or Alternate Key (such as LogicalName). */
+        entityKey: string;
+        /**Use this parameter to cast the Attribute to a specific type. */
+        castType?: string;
+        /**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+        select?: string[];
+        /**Use the $filter system query option to set criteria for which entities will be returned. */
+        filter?: string;
+        /**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
+        expand?: Expand[];
+    }
+    interface RetrieveAttributeRequest extends BaseRequest {
+        /**The Attribute MetadataId or Alternate Key (such as LogicalName). */
+        attributeKey: string;
+        /**The Entity MetadataId or Alternate Key (such as LogicalName). */
+        entityKey: string;
+        /**Use this parameter to cast the Attribute to a specific type. */
+        castType?: string;
+        /**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+        select?: string[];
+        /**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
+        expand?: Expand[];
+    }
+    interface CreateRelationshipRequest extends BaseRequest {
+        /**Relationship Definition. */
+        data: any;
+    }
+    interface UpdateRelationshipRequest extends CreateRelationshipRequest {
+        /**Use this parameter to cast the Relationship metadata to a specific type. */
+        castType?: string;
+        /**Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false. */
+        mergeLabels?: boolean;
+    }
+    interface DeleteRelationshipRequest extends BaseRequest {
+        /**The Relationship MetadataId or Alternate Key (such as LogicalName). */
+        key: string;
+    }
+    interface RetrieveRelationshipsRequest extends BaseRequest {
+        /**Use this parameter to cast the Relationship metadata to a specific type. */
+        castType?: string;
+        /**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+        select?: string[];
+        /**Use the $filter system query option to set criteria for which entities will be returned. */
+        filter?: string;
+        /**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
+        expand?: Expand[];
+    }
+    interface RetrieveRelationshipRequest extends BaseRequest {
+        /**The Relationship MetadataId or Alternate Key (such as LogicalName). */
+        key: string;
+        /**Use this parameter to cast the Relationship metadata to a specific type. */
+        castType?: string;
+        /**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+        select?: string[];
+        /**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
+        expand?: Expand[];
+    }
+    interface CreateGlobalOptionSetRequest extends BaseRequest {
+        /**Global Option Set Definition. */
+        data: any;
+    }
+    interface UpdateGlobalOptionSetRequest extends CreateRelationshipRequest {
+        /**Use this parameter to cast the Global Option Set metadata to a specific type. */
+        castType?: string;
+        /**Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false. */
+        mergeLabels?: boolean;
+    }
+    interface DeleteGlobalOptionSetRequest extends BaseRequest {
+        /**The Global Option Set MetadataId or Alternate Key (such as LogicalName). */
+        key: string;
+    }
+    interface RetrieveGlobalOptionSetsRequest extends BaseRequest {
+        /**Use this parameter to cast the Global Option Set metadata to a specific type. */
+        castType?: string;
+        /**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+        select?: string[];
+        /**Use the $filter system query option to set criteria for which entities will be returned. */
+        filter?: string;
+        /**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
+        expand?: Expand[];
+    }
+    interface RetrieveGlobalOptionSetRequest extends BaseRequest {
+        /**The Global Option Set MetadataId or Alternate Key (such as LogicalName). */
+        key: string;
+        /**Use this parameter to cast the Global Option Set metadata to a specific type. */
+        castType?: string;
+        /**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+        select?: string[];
+        /**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
+        expand?: Expand[];
     }
     interface Config {
         /**A String representing the GUID value for the Dynamics 365 system user id.Impersonates the user. */
