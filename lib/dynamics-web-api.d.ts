@@ -79,7 +79,7 @@ export declare class DynamicsWebApi {
      * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
      * @returns {Promise} D365 Web Api result
      */
-    updateSingleProperty: <T = any>(key: string, collection: string, keyValuePair: Object, prefer?: string | string[], select?: string[]) => Promise<T>;
+    updateSingleProperty: <T = any>(request: DynamicsWebApi.UpdateSinglePropertyRequest) => Promise<T>;
     /**
      * Sends an asynchronous request to delete a record.
      *
@@ -460,6 +460,22 @@ export declare namespace DynamicsWebApi {
     interface UpdateRequest extends UpdateRequestBase {
         /**If set to 'true', DynamicsWebApi adds a request header 'MSCRM.MergeLabels: true'. Default value is 'false' */
         mergeLabels?: boolean;
+    }
+    interface UpdateSinglePropertyRequest extends CRUDRequest {
+        /**Object with a logical name of the field as a key and a value to update with. Example: {subject: "Update Record"} */
+        fieldValuePair: Object;
+        /**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
+        expand?: Expand[];
+        /**Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests.*/
+        ifmatch?: string;
+        /**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types. */
+        includeAnnotations?: string;
+        /**Sets Prefer header request with value "return=representation".Use this property to return just created or updated entity in a single request. */
+        returnRepresentation?: boolean;
+        /**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+        select?: string[];
+        /**BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */
+        contentId?: string;
     }
     interface UpsertRequest extends UpdateRequestBase {
         /**Sets If-None-Match header value that enables to use conditional retrieval in applicable requests. */

@@ -240,7 +240,7 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApiTest.updateSingleProperty(mocks.data.testEntityId, "tests", mocks.data.updatedEntity)
+				dynamicsWebApiTest.updateSingleProperty({ key: mocks.data.testEntityId, collection: "tests", fieldValuePair: mocks.data.updatedEntity })
                     .then(function (object) {
                         done(object);
                     }).catch(function (object) {
@@ -273,7 +273,7 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApiTest.updateSingleProperty(mocks.data.testEntityId, "tests", mocks.data.updatedEntity, DWA.Prefer.ReturnRepresentation)
+				dynamicsWebApiTest.updateSingleProperty({ key: mocks.data.testEntityId, collection: "tests", fieldValuePair: mocks.data.updatedEntity, returnRepresentation: true })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.updatedEntity);
                         done();
@@ -307,7 +307,7 @@ describe("promises -", function () {
             });
 
             it("returns a correct response", function (done) {
-                dynamicsWebApiTest.updateSingleProperty(mocks.data.testEntityId, "tests", mocks.data.updatedEntity, DWA.Prefer.ReturnRepresentation, ['name'])
+				dynamicsWebApiTest.updateSingleProperty({ key: mocks.data.testEntityId, collection: "tests", fieldValuePair: mocks.data.updatedEntity, returnRepresentation: true, select: ['name'] })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.data.updatedEntity);
                         done();
