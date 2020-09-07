@@ -465,6 +465,8 @@ declare namespace DynamicsWebApi {
 		async?: boolean;
 		/**Impersonates the user.A String representing the GUID value for the Dynamics 365 system user id. */
 		impersonate?: string;
+		/**Impersonates the user.A String representing the GUID value for the Azure active directory object id. */
+		impersonateAAD?: string;
 		/** If set to 'true', DynamicsWebApi adds a request header 'Cache-Control: no-cache'.Default value is 'false'. */
 		noCache?: boolean;
 		/** Authorization Token. If set, onTokenRefresh will not be called. */
@@ -593,12 +595,14 @@ declare namespace DynamicsWebApi {
 	}
 
 	interface Config {
-		/**A String representing the GUID value for the Dynamics 365 system user id.Impersonates the user. */
+		/**A String representing a URL to Web API(webApiVersion not required if webApiUrl specified)[not used inside of CRM] */
 		webApiUrl?: string;
 		/**The version of Web API to use, for example: "8.1" */
 		webApiVersion?: string;
-		/**A String representing a URL to Web API(webApiVersion not required if webApiUrl specified)[not used inside of CRM] */
+		/**A String representing a GUID value for the Dynamics 365 system user id */
 		impersonate?: string;
+		/**Impersonates the user.A String representing the GUID value for the Azure active directory object id. */
+		impersonateAAD?: string;
 		/**A function that is called when a security token needs to be refreshed. */
 		onTokenRefresh?: (callback: OnTokenAcquiredCallback) => void;
 		/**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types.*/

@@ -660,6 +660,11 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
             ErrorHelper.stringParameterCheck(request.impersonate, 'DynamicsWebApi.' + functionName, "request.impersonate");
             headers['MSCRMCallerID'] = ErrorHelper.guidParameterCheck(request.impersonate, 'DynamicsWebApi.' + functionName, "request.impersonate");
         }
+        
+        if (request.impersonateAAD) {
+            ErrorHelper.stringParameterCheck(request.impersonateAAD, 'DynamicsWebApi.' + functionName, "request.impersonateAAD");
+            headers['CallerObjectId'] = ErrorHelper.guidParameterCheck(request.impersonateAAD, 'DynamicsWebApi.' + functionName, "request.impersonateAAD");
+        }
 
         if (request.token) {
             ErrorHelper.stringParameterCheck(request.token, 'DynamicsWebApi.' + functionName, "request.token");
@@ -1083,6 +1088,10 @@ function sendRequest(method, path, config, data, additionalHeaders, responsePara
 
 	if (config.impersonate && !additionalHeaders['MSCRMCallerID']) {
 		additionalHeaders['MSCRMCallerID'] = config.impersonate;
+	}
+	
+	if (config.impersonateAAD && !additionalHeaders['CallerObjectId']) {
+		additionalHeaders['CallerObjectId'] = config.impersonateAAD;
 	}
 
 	var executeRequest;

@@ -785,6 +785,10 @@ function sendRequest(method, path, config, data, additionalHeaders, responsePara
 	if (config.impersonate && !additionalHeaders['MSCRMCallerID']) {
 		additionalHeaders['MSCRMCallerID'] = config.impersonate;
 	}
+	
+	if (config.impersonateAAD && !additionalHeaders['CallerObjectId']) {
+		additionalHeaders['CallerObjectId'] = config.impersonateAAD;
+	}
 
 	var executeRequest;
 
@@ -935,8 +939,9 @@ if (!String.prototype.endsWith || !String.prototype.startsWith) {
  * Configuration object for DynamicsWebApi
  * @typedef {object} DWAConfig
  * @property {string} webApiUrl - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
- * @property {string} webApiVersion - The version of Web API to use, for example: "8.1"
+ * @property {string} impersonate - A String representing a GUID value for the Dynamics 365 system user id.
  * @property {string} impersonate - A String representing a URL to Web API (webApiVersion not required if webApiUrl specified) [not used inside of CRM]
+ * @property {string} impersonateAAD - A String representing a GUID value for the Azure active directory object id.
  * @property {Function} onTokenRefresh - A function that is called when a security token needs to be refreshed.
  * @property {string} includeAnnotations - Sets Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
  * @property {string} maxPageSize - Sets the odata.maxpagesize preference value to request the number of entities returned in the response.
@@ -964,6 +969,7 @@ if (!String.prototype.endsWith || !String.prototype.startsWith) {
  * @property {boolean} returnRepresentation - Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
  * @property {Object} entity - A JavaScript object with properties corresponding to the logical name of entity attributes (exceptions are lookups and single-valued navigation properties).
  * @property {string} impersonate - Impersonates the user. A String representing the GUID value for the Dynamics 365 system user id.
+ * @property {string} impersonateAAD - Impersonates the user. A String representing the GUID value for the Azure active directory object id.
  * @property {string} navigationProperty - A String representing the name of a single-valued navigation property. Useful when needed to retrieve information about a related record in a single request.
  * @property {string} navigationPropertyKey - v.1.4.3+ A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata).
  * @property {string} metadataAttributeType - v.1.4.3+ Casts the AttributeMetadata to a specific type. (Used in requests to Attribute Metadata).
@@ -997,6 +1003,7 @@ function DynamicsWebApi(config) {
 		webApiVersion: "8.0",
 		webApiUrl: null,
 		impersonate: null,
+		impersonateAAD: null,
 		onTokenRefresh: null,
 		includeAnnotations: null,
 		maxPageSize: null,
@@ -1036,6 +1043,10 @@ function DynamicsWebApi(config) {
 
 		if (config.impersonate) {
 			_internalConfig.impersonate = ErrorHelper.guidParameterCheck(config.impersonate, "DynamicsWebApi.setConfig", "config.impersonate");
+		}
+
+		if (config.impersonateAAD) {
+			_internalConfig.impersonateAAD = ErrorHelper.guidParameterCheck(config.impersonateAAD, "DynamicsWebApi.setConfig", "config.impersonateAAD");
 		}
 
 		if (config.onTokenRefresh) {
@@ -2955,6 +2966,11 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
         if (request.impersonate) {
             ErrorHelper.stringParameterCheck(request.impersonate, 'DynamicsWebApi.' + functionName, "request.impersonate");
             headers['MSCRMCallerID'] = ErrorHelper.guidParameterCheck(request.impersonate, 'DynamicsWebApi.' + functionName, "request.impersonate");
+        }
+        
+        if (request.impersonateAAD) {
+            ErrorHelper.stringParameterCheck(request.impersonateAAD, 'DynamicsWebApi.' + functionName, "request.impersonateAAD");
+            headers['CallerObjectId'] = ErrorHelper.guidParameterCheck(request.impersonateAAD, 'DynamicsWebApi.' + functionName, "request.impersonateAAD");
         }
 
         if (request.token) {
