@@ -9,3 +9,5 @@ obj
 
 # Exclude type definitions for callbacks version
 /types/dynamics-web-api-callbacks.d.ts
+
+*.d.ts.map

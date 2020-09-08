@@ -200,7 +200,7 @@ dynamicsWebApi.setConfig({ webApiVersion: '8.2' });
 Property Name | Type | Description
 ------------ | ------------- | -------------
 impersonate | String | A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
-impersonateAAD | String | A String representing the GUID value for the Azure active directory object id. Impersonates the user.
+impersonateAAD | String | `v.1.6.12+` A String representing the GUID value for the Azure active directory object id. Impersonates the user. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/impersonate-another-user-web-api)
 includeAnnotations | String | Defaults Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
 maxPageSize | Number | Defaults the odata.maxpagesize preference. Use to set the number of entities returned in the response.
 onTokenRefresh | Function | A callback function that triggered when DynamicsWebApi requests a new OAuth token. (At this moment it is done before each call to Dynamics 365, as [recommended by Microsoft](https://msdn.microsoft.com/en-ca/library/gg327838.aspx#Anchor_2)).
@@ -252,7 +252,7 @@ id | String | `retrieveRequest`, `createRequest`, `updateRequest`, `upsertReques
 ifmatch | String | `retrieveRequest`, `updateRequest`, `upsertRequest`, `deleteRequest` | Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests. [More Info](https://msdn.microsoft.com/en-us/library/mt607711.aspx)
 ifnonematch | String | `retrieveRequest`, `upsertRequest` | Sets If-None-Match header value that enables to use conditional retrieval in applicable requests. [More Info](https://msdn.microsoft.com/en-us/library/mt607711.aspx).
 impersonate | String | All | A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
-impersonateAAD | String | All | A String representing the GUID value for the Azure active directory object id. Impersonates the user.
+impersonateAAD | String | All | `v.1.6.12+` A String representing the GUID value for the Azure active directory object id. Impersonates the user. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/impersonate-another-user-web-api)
 includeAnnotations | String | `retrieveRequest`, `retrieveMultipleRequest`, `retrieveAllRequest`, `createRequest`, `updateRequest`, `upsertRequest` | Sets Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
 key | String | `retrieveRequest`, `createRequest`, `updateRequest`, `upsertRequest`, `deleteRequest` | `v.1.3.4+` A String representing collection record's Primary Key (GUID) or Alternate Key(s).
 maxPageSize | Number | `retrieveMultipleRequest`, `retrieveAllRequest` | Sets the odata.maxpagesize preference value to request the number of entities returned in the response.
