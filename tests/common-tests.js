@@ -681,6 +681,31 @@ describe("RequestConverter.convertRequestOptions -", function () {
 		expect(result).to.deep.equal({ url: stubUrl, query: "", headers: { "MSCRMCallerID": mocks.data.testEntityId } });
 	});
 
+	it("impersonateAAD empty", function () {
+		var dwaRequest = {
+			impersonateAAD: ""
+		};
+
+		var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
+		expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
+
+		dwaRequest = {
+			impersonateAAD: null
+		};
+
+		result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
+		expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
+	});
+
+	it("impersonateAAD", function () {
+		var dwaRequest = {
+			impersonateAAD: mocks.data.testEntityId
+		};
+
+		var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
+		expect(result).to.deep.equal({ url: stubUrl, query: "", headers: { "CallerObjectId": mocks.data.testEntityId } });
+	});
+
 	it("includeAnnotations empty", function () {
 		var dwaRequest = {
 			includeAnnotations: ""
