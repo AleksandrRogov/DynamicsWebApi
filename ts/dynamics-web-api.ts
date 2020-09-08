@@ -1265,7 +1265,7 @@ export declare namespace DynamicsWebApi {
 
 	export interface UpdateSinglePropertyRequest extends CRUDRequest {
 		/**Object with a logical name of the field as a key and a value to update with. Example: {subject: "Update Record"} */
-		fieldValuePair: Object,
+		fieldValuePair: any,
 		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
 		expand?: Expand[];
 		/**Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests.*/
