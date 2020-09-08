@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.6.11 (c) 2020 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.6.12 (c) 2020 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -1300,7 +1300,8 @@ function DynamicsWebApi(config) {
     var _internalConfig = {
         webApiVersion: "8.0",
         webApiUrl: "",
-        impersonate: null,
+		impersonate: null,
+		impersonateAAD: null,
         onTokenRefresh: null,
         includeAnnotations: null,
         maxPageSize: null,
@@ -1340,7 +1341,11 @@ function DynamicsWebApi(config) {
 
         if (config.impersonate) {
             _internalConfig.impersonate = ErrorHelper.guidParameterCheck(config.impersonate, "DynamicsWebApi.setConfig", "config.impersonate");
-        }
+		}
+
+		if (config.impersonateAAD) {
+			_internalConfig.impersonateAAD = ErrorHelper.guidParameterCheck(config.impersonateAAD, "DynamicsWebApi.setConfig", "config.impersonateAAD");
+		}
 
         if (config.onTokenRefresh) {
             ErrorHelper.callbackParameterCheck(config.onTokenRefresh, "DynamicsWebApi.setConfig", "config.onTokenRefresh");
