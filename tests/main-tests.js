@@ -5351,7 +5351,77 @@ describe("promises -", function () {
             it("all requests have been made", function () {
                 expect(scope.isDone()).to.be.true;
             });
-        });
+		});
+
+		describe("webApiVersion and impersonateAAD", function () {
+			var dynamicsWebApi90 = new DynamicsWebApi();
+			dynamicsWebApi90.setConfig({ webApiVersion: "9.0", impersonateAAD: mocks.data.testEntityId2 });
+
+			var scope;
+			before(function () {
+				var response = mocks.responses.createReturnId;
+				scope = nock(mocks.webApiUrl90, {
+					reqheaders: {
+						CallerObjectId: mocks.data.testEntityId2
+					}
+				})
+					.post("/tests", mocks.data.testEntity)
+					.reply(response.status, response.responseText, response.responseHeaders);
+			});
+
+			after(function () {
+				nock.cleanAll();
+			});
+
+			it("it makes a correct request and returns a correct response", function (done) {
+				dynamicsWebApi90.create({ data: mocks.data.testEntity, collection: "tests" })
+					.then(function (object) {
+						expect(object).to.equal(mocks.data.testEntityId);
+						done();
+					}).catch(function (object) {
+						done(object);
+					});
+			});
+
+			it("all requests have been made", function () {
+				expect(scope.isDone()).to.be.true;
+			});
+		});
+
+		describe("impersonateAAD overriden with a request.impersonateAAD", function () {
+			var dynamicsWebApi90 = new DynamicsWebApi();
+
+			var scope;
+			before(function () {
+				var response = mocks.responses.multipleResponse;
+				scope = nock(mocks.webApiUrl90, {
+					reqheaders: {
+						CallerObjectId: mocks.data.testEntityId3
+					}
+				})
+					.get("/tests")
+					.reply(response.status, response.responseText, response.responseHeaders);
+			});
+
+			after(function () {
+				nock.cleanAll();
+			});
+
+			it("sends the request to the right end point with a correct CallerObjectId header", function (done) {
+				dynamicsWebApi90.setConfig({ webApiVersion: "9.0", impersonateAAD: mocks.data.testEntityId2 });
+				dynamicsWebApi90.retrieveMultiple({ collection: "tests", impersonateAAD: mocks.data.testEntityId3 })
+					.then(function (object) {
+						expect(object).to.deep.equal(mocks.responses.multiple());
+						done();
+					}).catch(function (object) {
+						done(object);
+					});
+			});
+
+			it("all requests have been made", function () {
+				expect(scope.isDone()).to.be.true;
+			});
+		});
 
         describe("webApiVersion is overriden by url set in setConfig", function () {
             var dynamicsWebApi81 = new DynamicsWebApi({ webApiVersion: "8.1", impersonate: mocks.data.testEntityId2 });

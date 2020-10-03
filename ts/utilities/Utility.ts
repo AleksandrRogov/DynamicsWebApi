@@ -229,7 +229,7 @@ export class Utility {
 		for (var prop in src) {
 			if (src.hasOwnProperty(prop)) {
 				// if the value is a nested object, recursively copy all its properties
-				if (Utility.isObject(src[prop])) {
+				if (Utility.isObject(src[prop]) && Object.prototype.toString.call(src[prop]) !== "[object Date]") {
 					if (!Array.isArray(src[prop])) {
 						target[prop] = Utility.copyObject(src[prop]);
 					}

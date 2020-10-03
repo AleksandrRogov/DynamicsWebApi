@@ -1012,6 +1012,31 @@ describe("RequestUtility.composeHeaders -", function () {
 		expect(result).to.deep.equal({ "MSCRMCallerID": mocks.data.testEntityId });
 	});
 
+	it("impersonateAAD empty", function () {
+		var dwaRequest = {
+			impersonateAAD: ""
+		};
+
+		var result = RequestUtility.composeHeaders(dwaRequest);
+		expect(result).to.deep.equal({});
+
+		dwaRequest = {
+			impersonateAAD: null
+		};
+
+		result = RequestUtility.composeHeaders(dwaRequest);
+		expect(result).to.deep.equal({});
+	});
+
+	it("impersonateAAD", function () {
+		var dwaRequest = {
+			impersonateAAD: mocks.data.testEntityId
+		};
+
+		var result = RequestUtility.composeHeaders(dwaRequest);
+		expect(result).to.deep.equal({ "CallerObjectId": mocks.data.testEntityId });
+	});
+
 	it("includeAnnotations empty", function () {
 		var dwaRequest = {
 			includeAnnotations: "",

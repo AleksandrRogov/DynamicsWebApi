@@ -39,8 +39,10 @@
 			apply?: string;
 			/**The name of the Entity Collection or Entity Logical name. */
 			collection?: string;
-			/**Impersonates the user.A String representing the GUID value for the Dynamics 365 system user id. */
+			/**Impersonates a user based on their systemuserid by adding "MSCRMCallerID" header. A String representing the GUID value for the Dynamics 365 systemuserid. */
 			impersonate?: string;
+			/**Impersonates a user based on their Azure Active Directory (AAD) object id by passing that value along with the header "CallerObjectId". A String should represent a GUID value. */
+			impersonateAAD: string;
 			/** If set to 'true', DynamicsWebApi adds a request header 'Cache-Control: no-cache'.Default value is 'false'. */
 			noCache?: boolean;
 			/** Authorization Token. If set, onTokenRefresh will not be called. */
@@ -226,8 +228,6 @@
 		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
 		expand?: Expand[];
 		/**Use the $filter system query option to set criteria for which entities will be returned. */
-		filter?: string;
-		/**Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests.*/
 		ifmatch?: string;
 		/**Sets If-None-Match header value that enables to use conditional retrieval in applicable requests. */
 		ifnonematch?: string;

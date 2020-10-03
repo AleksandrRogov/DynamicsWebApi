@@ -378,8 +378,10 @@ export declare namespace DynamicsWebApi {
     interface BaseRequest {
         /**XHR requests only! Indicates whether the requests should be made synchronously or asynchronously.Default value is 'true'(asynchronously). */
         async?: boolean;
-        /**Impersonates the user.A String representing the GUID value for the Dynamics 365 system user id. */
+        /**Impersonates a user based on their systemuserid by adding "MSCRMCallerID" header. A String representing the GUID value for the Dynamics 365 systemuserid. */
         impersonate?: string;
+        /**Impersonates a user based on their Azure Active Directory (AAD) object id by passing that value along with the header "CallerObjectId". A String should represent a GUID value. */
+        impersonateAAD?: string;
         /** If set to 'true', DynamicsWebApi adds a request header 'Cache-Control: no-cache'.Default value is 'false'. */
         noCache?: boolean;
         /** Authorization Token. If set, onTokenRefresh will not be called. */
@@ -490,8 +492,6 @@ export declare namespace DynamicsWebApi {
     interface RetrieveRequest extends CRUDRequest {
         /**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
         expand?: Expand[];
-        /**Use the $filter system query option to set criteria for which entities will be returned. */
-        filter?: string;
         /**Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests.*/
         ifmatch?: string;
         /**Sets If-None-Match header value that enables to use conditional retrieval in applicable requests. */
@@ -722,8 +722,10 @@ export declare namespace DynamicsWebApi {
         webApiUrl?: string;
         /**The version of Web API to use, for example: "8.1" */
         webApiVersion?: string;
-        /**A String representing a URL to Web API(webApiVersion not required if webApiUrl specified)[not used inside of CRM] */
+        /**Impersonates a user based on their systemuserid by adding "MSCRMCallerID" header. A String representing the GUID value for the Dynamics 365 systemuserid. */
         impersonate?: string;
+        /**Impersonates a user based on their Azure Active Directory (AAD) object id by passing that value along with the header "CallerObjectId". A String should represent a GUID value. */
+        impersonateAAD?: string;
         /**A function that is called when a security token needs to be refreshed. */
         onTokenRefresh?: (callback: OnTokenAcquiredCallback) => void;
         /**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types.*/

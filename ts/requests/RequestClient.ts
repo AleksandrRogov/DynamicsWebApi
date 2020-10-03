@@ -56,6 +56,10 @@ export class RequestClient {
 			request.headers["MSCRMCallerID"] = config.impersonate;
 		}
 
+		if (config.impersonateAAD && !request.headers['CallerObjectId']) {
+			request.headers['CallerObjectId'] = config.impersonateAAD;
+		}
+
 		var executeRequest;
 		/* develblock:start */
 		if (typeof XMLHttpRequest !== "undefined") {

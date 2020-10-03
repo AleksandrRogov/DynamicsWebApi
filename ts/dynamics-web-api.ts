@@ -15,6 +15,7 @@ export class DynamicsWebApi {
 		webApiVersion: "9.1",
 		webApiUrl: null,
 		impersonate: null,
+		impersonateAAD: null,
 		onTokenRefresh: null,
 		includeAnnotations: null,
 		maxPageSize: null,
@@ -58,6 +59,10 @@ export class DynamicsWebApi {
 
 		if (config.impersonate) {
 			this._internalConfig.impersonate = ErrorHelper.guidParameterCheck(config.impersonate, "DynamicsWebApi.setConfig", "config.impersonate");
+		}
+
+		if (config.impersonateAAD) {
+			this._internalConfig.impersonateAAD = ErrorHelper.guidParameterCheck(config.impersonateAAD, "DynamicsWebApi.setConfig", "config.impersonateAAD");
 		}
 
 		if (config.onTokenRefresh) {
@@ -245,7 +250,7 @@ export class DynamicsWebApi {
 
 		var field = Object.keys(request.fieldValuePair)[0];
 		var fieldValue = request.fieldValuePair[field];
-			
+
 		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
 		internalRequest.navigationProperty = field;
 		internalRequest.data = { value: fieldValue };
@@ -361,7 +366,7 @@ export class DynamicsWebApi {
 				return response.data;
 			});
 	};
-	
+
 	private _retrieveAllRequest = <T = any>(request: DynamicsWebApi.RetrieveMultipleRequest, nextPageLink?: string, records: any[] = []): Promise<DynamicsWebApi.AllResponse<T>> => {
 
 		return this.retrieveMultiple(request, nextPageLink).then(response => {
@@ -1170,8 +1175,10 @@ export declare namespace DynamicsWebApi {
 	export interface BaseRequest {
 		/**XHR requests only! Indicates whether the requests should be made synchronously or asynchronously.Default value is 'true'(asynchronously). */
 		async?: boolean;
-		/**Impersonates the user.A String representing the GUID value for the Dynamics 365 system user id. */
+		/**Impersonates a user based on their systemuserid by adding "MSCRMCallerID" header. A String representing the GUID value for the Dynamics 365 systemuserid. */
 		impersonate?: string;
+		/**Impersonates a user based on their Azure Active Directory (AAD) object id by passing that value along with the header "CallerObjectId". A String should represent a GUID value. */
+		impersonateAAD?: string;
 		/** If set to 'true', DynamicsWebApi adds a request header 'Cache-Control: no-cache'.Default value is 'false'. */
 		noCache?: boolean;
 		/** Authorization Token. If set, onTokenRefresh will not be called. */
@@ -1295,8 +1302,6 @@ export declare namespace DynamicsWebApi {
 	export interface RetrieveRequest extends CRUDRequest {
 		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
 		expand?: Expand[];
-		/**Use the $filter system query option to set criteria for which entities will be returned. */
-		filter?: string;
 		/**Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests.*/
 		ifmatch?: string;
 		/**Sets If-None-Match header value that enables to use conditional retrieval in applicable requests. */
@@ -1555,8 +1560,10 @@ export declare namespace DynamicsWebApi {
 		webApiUrl?: string;
 		/**The version of Web API to use, for example: "8.1" */
 		webApiVersion?: string;
-		/**A String representing a URL to Web API(webApiVersion not required if webApiUrl specified)[not used inside of CRM] */
+		/**Impersonates a user based on their systemuserid by adding "MSCRMCallerID" header. A String representing the GUID value for the Dynamics 365 systemuserid. */
 		impersonate?: string;
+		/**Impersonates a user based on their Azure Active Directory (AAD) object id by passing that value along with the header "CallerObjectId". A String should represent a GUID value. */
+		impersonateAAD?: string;
 		/**A function that is called when a security token needs to be refreshed. */
 		onTokenRefresh?: (callback: OnTokenAcquiredCallback) => void;
 		/**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types.*/
