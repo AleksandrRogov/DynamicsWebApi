@@ -1179,7 +1179,7 @@ export declare namespace DynamicsWebApi {
 		impersonate?: string;
 		/**Impersonates a user based on their Azure Active Directory (AAD) object id by passing that value along with the header "CallerObjectId". A String should represent a GUID value. */
 		impersonateAAD?: string;
-		/** If set to 'true', DynamicsWebApi adds a request header 'Cache-Control: no-cache'.Default value is 'false'. */
+		/**If set to 'true', DynamicsWebApi adds a request header 'Cache-Control: no-cache'.Default value is 'false'. */
 		noCache?: boolean;
 		/** Authorization Token. If set, onTokenRefresh will not be called. */
 		token?: string;
@@ -1188,7 +1188,7 @@ export declare namespace DynamicsWebApi {
 	}
 
 	export interface Request extends BaseRequest {
-		/**The name of the Entity Collection or Entity Logical name. */
+		/**A name of the Entity Collection or Entity Logical name. */
 		collection: string;
 	}
 
@@ -1208,7 +1208,7 @@ export declare namespace DynamicsWebApi {
 	}
 
 	export interface FetchAllRequest extends Request {
-		/**FetchXML is a proprietary query language that provides capabilities to perform aggregation. */
+		/**Sets FetchXML - a proprietary query language that provides capabilities to perform aggregation. */
 		fetchXml: string;
 		/**Sets Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie */
 		includeAnnotations?: string;
@@ -1222,17 +1222,17 @@ export declare namespace DynamicsWebApi {
 	}
 
 	export interface CreateRequest extends CRUDRequest {
-		/**v.1.3.4+ Web API v9+ only! Boolean that enables duplicate detection. */
+		/**Web API v9+ only! Boolean that enables duplicate detection. */
 		duplicateDetection?: boolean;
 		/**A JavaScript object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single-valued navigation properties). */
-		entity?: any;
+		data?: any;
 		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
 		expand?: Expand[];
 		/**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types. */
 		includeAnnotations?: string;
 		/**A String representing the name of a single - valued navigation property.Useful when needed to retrieve information about a related record in a single request. */
 		navigationProperty?: string;
-		/**v.1.4.3 + A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata). */
+		/**A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata). */
 		navigationPropertyKey?: string;
 		/**Sets Prefer header request with value "return=representation".Use this property to return just created or updated entity in a single request. */
 		returnRepresentation?: boolean;
@@ -1241,10 +1241,10 @@ export declare namespace DynamicsWebApi {
 	}
 
 	export interface UpdateRequestBase extends CRUDRequest {
-		/**v.1.3.4+ Web API v9+ only! Boolean that enables duplicate detection. */
+		/**Web API v9+ only! Boolean that enables duplicate detection. */
 		duplicateDetection?: boolean;
 		/**A JavaScript object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single-valued navigation properties). */
-		entity?: any;
+		data?: any;
 		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
 		expand?: Expand[];
 		/**Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests.*/
@@ -1257,11 +1257,11 @@ export declare namespace DynamicsWebApi {
 		select?: string[];
 		/**BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */
 		contentId?: string;
-		/**v.1.4.3 + Casts the AttributeMetadata to a specific type. (Used in requests to Attribute Metadata). */
+		/**Casts the AttributeMetadata to a specific type. (Used in requests to Attribute Metadata). */
 		metadataAttributeType?: string;
 		/**A String representing the name of a single - valued navigation property.Useful when needed to retrieve information about a related record in a single request. */
 		navigationProperty?: string;
-		/**v.1.4.3 + A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata). */
+		/**A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata). */
 		navigationPropertyKey?: string;
 	}
 
@@ -1308,11 +1308,11 @@ export declare namespace DynamicsWebApi {
 		ifnonematch?: string;
 		/**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types. */
 		includeAnnotations?: string;
-		/**v.1.4.3 + Casts the AttributeMetadata to a specific type. (Used in requests to Attribute Metadata). */
+		/**Casts the AttributeMetadata to a specific type. (Used in requests to Attribute Metadata). */
 		metadataAttributeType?: string;
 		/**A String representing the name of a single - valued navigation property.Useful when needed to retrieve information about a related record in a single request. */
 		navigationProperty?: string;
-		/**v.1.4.3 + A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata). */
+		/**A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata). */
 		navigationPropertyKey?: string;
 		/**A String representing the GUID value of the saved query. */
 		savedQuery?: string;
@@ -1384,7 +1384,7 @@ export declare namespace DynamicsWebApi {
 	}
 
 	export interface UnboundFunctionRequest extends BaseRequest {
-		/**The name of the function. */
+		/**Name of the function. */
 		functionName: string;
 		/**Function's input parameters. Example: { param1: "test", param2: 3 }. */
 		parameters?: any;
@@ -1396,9 +1396,9 @@ export declare namespace DynamicsWebApi {
 	}
 
 	export interface UnboundActionRequest extends BaseRequest {
-		/**The name of the Web API action. */
+		/**A name of the Web API action. */
 		actionName: string;
-		/**Action request body. */
+		/**A JavaScript object that represents a Dynamics 365 action. */
 		action?: any;
 	}
 
@@ -1420,7 +1420,7 @@ export declare namespace DynamicsWebApi {
 	}
 
 	export interface RetrieveEntityRequest extends BaseRequest {
-		/**The Entity MetadataId or Alternate Key (such as LogicalName). */
+		/**An Entity MetadataId or Alternate Key (such as LogicalName). */
 		key: string,
 		/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
 		select?: string[];
@@ -1438,7 +1438,7 @@ export declare namespace DynamicsWebApi {
 	}
 
 	export interface CreateAttributeRequest extends BaseRequest {
-		/**The Entity MetadataId or Alternate Key (such as LogicalName). */
+		/**An Entity MetadataId or Alternate Key (such as LogicalName). */
 		entityKey: string;
 		/**Attribute metadata object. */
 		data: any;
@@ -1452,7 +1452,7 @@ export declare namespace DynamicsWebApi {
 	}
 
 	export interface RetrieveAttributesRequest extends BaseRequest {
-		/**The Entity MetadataId or Alternate Key (such as LogicalName). */
+		/**An Entity MetadataId or Alternate Key (such as LogicalName). */
 		entityKey: string;
 		/**Use this parameter to cast the Attribute to a specific type. */
 		castType?: string;
@@ -1465,9 +1465,9 @@ export declare namespace DynamicsWebApi {
 	}
 
 	export interface RetrieveAttributeRequest extends BaseRequest {
-		/**The Attribute MetadataId or Alternate Key (such as LogicalName). */
+		/**An Attribute MetadataId or Alternate Key (such as LogicalName). */
 		attributeKey: string;
-		/**The Entity MetadataId or Alternate Key (such as LogicalName). */
+		/**An Entity MetadataId or Alternate Key (such as LogicalName). */
 		entityKey: string;
 		/**Use this parameter to cast the Attribute to a specific type. */
 		castType?: string;
@@ -1490,7 +1490,7 @@ export declare namespace DynamicsWebApi {
 	}
 
 	export interface DeleteRelationshipRequest extends BaseRequest {
-		/**The Relationship MetadataId or Alternate Key (such as LogicalName). */
+		/**A Relationship MetadataId or Alternate Key (such as LogicalName). */
 		key: string;
 	}
 
@@ -1506,7 +1506,7 @@ export declare namespace DynamicsWebApi {
 	}
 
 	export interface RetrieveRelationshipRequest extends BaseRequest {
-		/**The Relationship MetadataId or Alternate Key (such as LogicalName). */
+		/**A Relationship MetadataId or Alternate Key (such as LogicalName). */
 		key: string;
 		/**Use this parameter to cast the Relationship metadata to a specific type. */
 		castType?: string;
@@ -1529,7 +1529,7 @@ export declare namespace DynamicsWebApi {
 	}
 
 	export interface DeleteGlobalOptionSetRequest extends BaseRequest {
-		/**The Global Option Set MetadataId or Alternate Key (such as LogicalName). */
+		/**A Global Option Set MetadataId or Alternate Key (such as LogicalName). */
 		key: string;
 	}
 
@@ -1545,7 +1545,7 @@ export declare namespace DynamicsWebApi {
 	}
 
 	export interface RetrieveGlobalOptionSetRequest extends BaseRequest {
-		/**The Global Option Set MetadataId or Alternate Key (such as LogicalName). */
+		/**A Global Option Set MetadataId or Alternate Key (such as LogicalName). */
 		key: string;
 		/**Use this parameter to cast the Global Option Set metadata to a specific type. */
 		castType?: string;
@@ -1558,7 +1558,7 @@ export declare namespace DynamicsWebApi {
 	export interface Config {
 		/**A String representing the GUID value for the Dynamics 365 system user id.Impersonates the user. */
 		webApiUrl?: string;
-		/**The version of Web API to use, for example: "8.1" */
+		/**Web API Version to use, for example: "8.1" */
 		webApiVersion?: string;
 		/**Impersonates a user based on their systemuserid by adding "MSCRMCallerID" header. A String representing the GUID value for the Dynamics 365 systemuserid. */
 		impersonate?: string;
