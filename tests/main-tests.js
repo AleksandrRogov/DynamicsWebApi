@@ -1,4 +1,5 @@
-﻿var chai = require('chai');
+﻿'use strict';
+var chai = require('chai');
 var expect = chai.expect;
 var nock = require('nock');
 var sinon = require('sinon');
@@ -5005,7 +5006,7 @@ describe("promises -", function () {
 						expect(object.length).to.be.eq(1);
 
 						expect(object[0].headers).to.deep.equal({
-							"odata-version": "4.0", "req_id": "5fe339e5-c75e-4dad-9597-b257ebce666b", "content-type": "application/json; odata.metadata=minimal" 
+							"odata-version": "4.0", "req_id": "5fe339e5-c75e-4dad-9597-b257ebce666b", "content-type": "application/json; odata.metadata=minimal"
 						});
 
 						expect(object[0].error).to.deep.equal({
@@ -5971,7 +5972,7 @@ describe("promises -", function () {
             });
 
             it("sends the request to the right end point", function (done) {
-                dynamicsWebApiCopy = dynamicsWebApi81.initializeInstance({ webApiVersion: "8.2" });
+                var dynamicsWebApiCopy = dynamicsWebApi81.initializeInstance({ webApiVersion: "8.2" });
                 dynamicsWebApiCopy.retrieveMultipleRequest({ collection: "tests" })
                     .then(function (object) {
                         expect(object).to.deep.equal(mocks.responses.multiple());
