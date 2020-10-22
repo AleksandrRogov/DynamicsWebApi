@@ -1,4 +1,5 @@
-﻿var chai = require('chai');
+﻿'use strict';
+var chai = require('chai');
 var expect = chai.expect;
 var nock = require('nock');
 var sinon = require('sinon');
@@ -5272,7 +5273,7 @@ describe("callbacks -", function () {
             });
 
             it("sends the request to the right end point", function (done) {
-                dynamicsWebApiCopy = dynamicsWebApi81.initializeInstance({ webApiVersion: "8.2" });
+                var dynamicsWebApiCopy = dynamicsWebApi81.initializeInstance({ webApiVersion: "8.2" });
                 dynamicsWebApiCopy.retrieveMultipleRequest({ collection: "tests" }, function (object) {
                     expect(object).to.deep.equal(mocks.responses.multiple());
                     done();

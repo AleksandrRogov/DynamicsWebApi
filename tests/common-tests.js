@@ -1,4 +1,5 @@
-﻿var chai = require('chai');
+﻿'use strict';
+var chai = require('chai');
 var expect = chai.expect;
 
 var nock = require('nock');
@@ -836,7 +837,7 @@ describe("RequestConverter.convertRequestOptions -", function () {
 			returnRepresentation: null
 		};
 
-		result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
+		var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
 		expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
 	});
 
@@ -863,7 +864,7 @@ describe("RequestConverter.convertRequestOptions -", function () {
 			duplicateDetection: null
 		};
 
-		result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
+		var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
 		expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
 	});
 
