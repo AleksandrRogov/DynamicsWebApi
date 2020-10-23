@@ -1,4 +1,4 @@
-/*! dynamics-web-api v1.6.12 (c) 2020 Aleksandr Rogov */
+/*! dynamics-web-api v1.6.13 (c) 2020 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -2823,6 +2823,8 @@ module.exports = xhrRequest;
 /* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
 var DWA = __webpack_require__(1);
 var ErrorHelper = __webpack_require__(0);
 var buildPreferHeader = __webpack_require__(13);
@@ -2903,11 +2905,8 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
             var filterResult = request.filter;
 
             //fix bug 2018-06-11
+            var m;
             while ((m = removeBracketsFromGuidReg.exec(filterResult)) !== null) {
-                if (m.index === removeBracketsFromGuidReg.lastIndex) {
-                    regex.lastIndex++;
-                }
-
                 var replacement = m[0].endsWith(')') ? ')' : ' ';
                 filterResult = filterResult.replace(m[0], ' ' + m[1] + replacement);
             }
@@ -2967,7 +2966,7 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
             ErrorHelper.stringParameterCheck(request.impersonate, 'DynamicsWebApi.' + functionName, "request.impersonate");
             headers['MSCRMCallerID'] = ErrorHelper.guidParameterCheck(request.impersonate, 'DynamicsWebApi.' + functionName, "request.impersonate");
         }
-        
+
         if (request.impersonateAAD) {
             ErrorHelper.stringParameterCheck(request.impersonateAAD, 'DynamicsWebApi.' + functionName, "request.impersonateAAD");
             headers['CallerObjectId'] = ErrorHelper.guidParameterCheck(request.impersonateAAD, 'DynamicsWebApi.' + functionName, "request.impersonateAAD");
@@ -3122,6 +3121,7 @@ var RequestConverter = {
 };
 
 module.exports = RequestConverter;
+
 
 /***/ }),
 /* 12 */
