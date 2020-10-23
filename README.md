@@ -92,14 +92,11 @@ In order to use DynamicsWebApi inside Dynamics 365 you need to download a browse
 Upload a script as a JavaScript Web Resource, place on the entity form or refer to it in your HTML Web Resource and then initialize the main object:
 
 ```js
-//DynamicsWebApi makes calls to Web API v8.0 if a configuration not set
-var dynamicsWebApi = new DynamicsWebApi();
+//DynamicsWebApi makes calls to Web API v9.1 if a configuration not set
+const dynamicsWebApi = new DynamicsWebApi();
 
-dynamicsWebApi.executeUnboundFunction("WhoAmI").then(function (response) {
-    Xrm.Utility.alertDialog('Hello Dynamics 365! My id is: ' + response.UserId);
-}).catch(function(error){
-    console.log(error.message);
-});
+let response = await dynamicsWebApi.executeUnboundFunction("WhoAmI");
+Xrm.Navigation.openAlertDialog({ text: `Hello Dynamics 365! My id is: ${response.UserId}` });
 ```
 
 ### DynamicsWebApi for Node.js
