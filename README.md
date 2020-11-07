@@ -92,11 +92,14 @@ In order to use DynamicsWebApi inside Dynamics 365 you need to download a browse
 Upload a script as a JavaScript Web Resource, place on the entity form or refer to it in your HTML Web Resource and then initialize the main object:
 
 ```js
-//DynamicsWebApi makes calls to Web API v8.0 if a configuration not set
+//DynamicsWebApi makes calls to Web API v8.0 if a configuration is not set
 var dynamicsWebApi = new DynamicsWebApi();
 
 dynamicsWebApi.executeUnboundFunction("WhoAmI").then(function (response) {
-    Xrm.Utility.alertDialog('Hello Dynamics 365! My id is: ' + response.UserId);
+    Xrm.Navigation.openAlertDialog({ 
+        text: "Hello Dynamics 365! My id is: " + response.UserId,
+        title: "DynamicsWebApi Test"
+    });
 }).catch(function(error){
     console.log(error.message);
 });
@@ -159,7 +162,7 @@ function acquireToken(dynamicsWebApiCallback){
 
 //create DynamicsWebApi object
 var dynamicsWebApi = new DynamicsWebApi({
-    webApiUrl: 'https://myorg.api.crm.dynamics.com/api/data/v9.0/',
+    webApiUrl: 'https://myorg.api.crm.dynamics.com/api/data/v9.1/',
     onTokenRefresh: acquireToken
 });
 
@@ -177,14 +180,14 @@ To initialize a new instance of DynamicsWebApi with a configuration object, plea
 #### Web browser
 
 ```js
-var dynamicsWebApi = new DynamicsWebApi({ webApiVersion: '9.0' });
+var dynamicsWebApi = new DynamicsWebApi({ webApiVersion: '9.1' });
 ```
 
 #### Node.js
 
 ```js
 var dynamicsWebApi = new DynamicsWebApi({
-    webApiUrl: 'https://myorg.api.crm.dynamics.com/api/data/v9.0/',
+    webApiUrl: 'https://myorg.api.crm.dynamics.com/api/data/v9.1/',
     onTokenRefresh: acquireToken
 });
 ```
@@ -193,7 +196,7 @@ You can set a configuration dynamically if needed:
 
 ```js
 //or can be set dynamically
-dynamicsWebApi.setConfig({ webApiVersion: '8.2' });
+dynamicsWebApi.setConfig({ webApiVersion: '9.1' });
 ```
 
 #### Configuration Parameters
@@ -207,7 +210,7 @@ onTokenRefresh | Function | A callback function that triggered when DynamicsWebA
 returnRepresentation | Boolean | Defaults Prefer header with value "return=representation". Use this property to return just created or updated entity in a single request.
 timeout | Number | Sets a number of milliseconds before a request times out.
 useEntityNames | Boolean | `v.1.4.0+` Indicates whether to use entity logical names instead of collection logical names during requests.
-webApiUrl | String | A complete URL string to Web API. Example of the URL: "https://myorg.api.crm.dynamics.com/api/data/v8.2/". If it is specified then webApiVersion property will not be used even if it is not empty. 
+webApiUrl | String | A complete URL string to Web API. Example of the URL: "https://myorg.api.crm.dynamics.com/api/data/v9.1/". If it is specified then webApiVersion property will not be used even if it is not empty. 
 webApiVersion | String | Version of the Web API. Default version is "8.0".
 
 Configuration property `webApiVersion` is required only when DynamicsWebApi used inside CRM. 
