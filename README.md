@@ -634,106 +634,85 @@ let fullname = parentLead.fullname;
 
 ### Retrieve multiple records
 
-#### Basic
+#### TypeScript
 
-```js
-dynamicsWebApi.retrieveMultiple("leads", ["fullname", "subject"], "statecode eq 0").then(function (records) {
-    //do something with retrieved records here
-})
-.catch(function (error) {
-    //catch an error
-});
-```
+```ts
+//declaring interface for a Lead entity (declaration can be done in d.ts file)
+interface Lead {
+    leadid?: string,
+    subject?: string,
+    fullname?: string
+}
 
-#### Advanced using Request Object
-
-```js
-//set the request parameters
-var request = {
+let request: DynamicsWebApi.RetrieveMultipleRequest = {
     collection: "leads",
     select: ["fullname", "subject"],
     filter: "statecode eq 0",
     maxPageSize: 5,
     count: true
-};
+}
 
-//perform a multiple records retrieve operation
-dynamicsWebApi.retrieveMultipleRequest(request).then(function (response) {
+let response = await dynamicsWebApi.retrieveMultiple<Lead>(request);
 
-    var count = response.oDataCount;
-    var nextLink = response.oDataNextLink;
-    var records = response.value;
-    //do something else with a records array. Access a record: response.value[0].subject;
-})
-.catch(function (error){
-    //catch an error
-});
+let count = response.oDataCount;
+let nextLink = response.oDataNextLink;
+let records = response.value;
+```
+
+#### JavaScript
+
+```js
+let request = {
+    collection: "leads",
+    select: ["fullname", "subject"],
+    filter: "statecode eq 0",
+    maxPageSize: 5,
+    count: true
+}
+
+let result = await dynamicsWebApi.retrieveMultiple(request);
+
+let count = response.oDataCount;
+let nextLink = response.oDataNextLink;
+let records = response.value;
+//do something else with a records array. Access a record: records[0].subject;
 ```
 
 #### Change Tracking
 
-```js
+```ts
 //set the request parameters
-var request = {
+var request: DynamicsWebApi.RetrieveMultipleRequest = {
     collection: "leads",
     select: ["fullname", "subject"],
     trackChanges: true
 };
 
 //perform a multiple records retrieve operation (1)
-dynamicsWebApi.retrieveMultipleRequest(request).then(function (response) {
+let response1 = await dynamicsWebApi.retrieveMultiple<Lead>(request).then(function (response) {
 
-    var deltaLink = response.oDataDeltaLink;
-    //make other requests to Web API
-    //...
-
-    //(2) only retrieve changes:
-    return dynamicsWebApi.retrieveMultipleRequest(request, response.oDataDeltaLink);
-})
-.then(function (response) {
-   //here you will get changes between the first retrieveMultipleRequest (1) and the second one (2)
-})
-.catch(function (error){
-   //catch an error
-});
+let deltaLink = response1.oDataDeltaLink;
+//make other requests to Web API
+//...
+//(2) only retrieve changes:
+let response2 = await dynamicsWebApi.retrieveMultiple<Lead>(request, deltaLink);
+//response2 contains only changed records between the first retrieveMultiple (1) and the second one (2)
 ```
 
 #### Retrieve All records
 
 The following function retrieves records and goes through all pages automatically.
 
-```js
+```ts
 //perform a multiple records retrieve operation
-dynamicsWebApi.retrieveAll("leads", ["fullname", "subject"], "statecode eq 0").then(function (response) {
-
-    var records = response.value;
-    //do something else with a records array. Access a record: response.value[0].subject;
-})
-.catch(function (error){
-    //catch an error
+let response = await dynamicsWebApi.retrieveAll<Lead>({ 
+    collection: "leads", 
+    select: ["fullname", "subject"], 
+    filter: "statecode eq 0"
 });
-```
 
-OR advanced function:
-
-```js
-//set the request parameters
-var request = {
-    collection: "leads",
-    select: ["fullname", "subject"],
-    filter: "statecode eq 0",
-    maxPageSize: 5				//just for an example
-};
-
-//perform a multiple records retrieve operation
-dynamicsWebApi.retrieveAllRequest(request).then(function (response) {
-
-    var records = response.value;
-    //do something else with a records array. Access a record: response.value[0].subject;
-})
-.catch(function (error){
-    //catch an error
-});
+let records = response.value;
+//do something else with a records array. Access a record: records[0].subject;
 ```
 
 ### Count
@@ -742,40 +721,30 @@ It is possible to count records separately from RetrieveMultiple call. In order 
 
 IMPORTANT! The count value does not represent the total number of entities in the system. It is limited by the maximum number of entities that can be returned.
 
-```js
-dynamicsWebApi.count("leads", "statecode eq 0").then(function (count) {
-    //do something with count here
-})
-.catch(function (error) {
-    //catch an error
+```ts
+let count = await dynamicsWebApi.count({ 
+    collection: "leads", 
+    filter: "statecode eq 0"
 });
+
+//do something with count here
 ```
 
 #### Count limitation workaround
 
 The following function can be used to count all records in a collection. It's a workaround and just counts the number of objects in the array 
-returned in `retrieveAllRequest`.
-
-
-```js
-dynamicsWebApi.countAll("leads", "statecode eq 0").then(function (count) {
-    //do something with count here
-})
-.catch(function (error) {
-    //catch an error
-});
-```
+returned in `retrieveAll`.
 
 Downside of this workaround is that it does not only return a count number but also all data for records in a collection. In order to make a small
-optimisation I added the third parameter to the function that can be used to reduce the length of the response. The third parameter represents
-a select query option.
+optimisation always provide a column for select paramete, it will reduce a size of the response significantly. 
 
-```js
-dynamicsWebApi.countAll("leads", "statecode eq 0", ["subject"]).then(function (count) {
-    //do something with count here
-})
-.catch(function (error) {
-    //catch an error
+```ts
+let count = await dynamicsWebApi.countAll({ 
+    collection: "leads", 
+    filter: "statecode eq 0",
+    //if you use this workaround, always provide a column 
+    //to limit a response size
+    select: ["leadid"]
 });
 ```
 
@@ -784,165 +753,278 @@ by default.
 
 ### Associate
 
-```js
-var accountId = '00000000-0000-0000-0000-000000000001';
-var leadId = '00000000-0000-0000-0000-000000000002';
-dynamicsWebApi.associate("accounts", accountId, "lead_parent_account", "leads", leadId).then(function () {
-    //success
-}).catch(function (error) {
-    //catch an error
-});
+```ts
+let accountId = "00000000-0000-0000-0000-000000000001";
+let leadId = "00000000-0000-0000-0000-000000000002";
+
+//associate lead reacord to account
+let request: DynamicsWebApi.AssociateRequest = {
+    collection: "accounts",
+    primaryKey: accountId,
+    relationshipName: "lead_parent_account",
+    relatedCollection: "leads",
+    relatedKey: leadId
+}
+
+await dynamicsWebApi.associate(request);
+//does not have any return value
 ```
+
+JavaScript sample is the same only without a request type declaration.
 
 ### Associate for a single-valued navigation property
 
 The name of a single-valued navigation property can be retrieved by using a `GET` request with a header `Prefer:odata.include-annotations=Microsoft.Dynamics.CRM.associatednavigationproperty`, 
-then individual records in the response will contain the property `@Microsoft.Dynamics.CRM.associatednavigationproperty` which is the name of the needed navigation property. 
-Usually it will be equal to a schema name of the entity attribute.
+then individual records in the response will contain the property `@Microsoft.Dynamics.CRM.associatednavigationproperty` which is the name of the needed navigation property.
 
 For example, there is an entity with a logical name `new_test`, it has a lookup attribute to `lead` entity called `new_parentlead` and schema name `new_ParentLead` which is needed single-valued navigation property.
 
-```js
-var new_testid = '00000000-0000-0000-0000-000000000001';
-var leadId = '00000000-0000-0000-0000-000000000002';
-dynamicsWebApi.associateSingleValued("new_tests", new_testid, "new_ParentLead", "leads", leadId)
-    .then(function () {
-        //success
-    }).catch(function (error) {
-        //catch an error
-    });
+```ts
+let new_testid = "00000000-0000-0000-0000-000000000001";
+let leadId = "00000000-0000-0000-0000-000000000002";
+
+let request: DynamicsWebApi.AssociateSingleValuedRequest = {
+    collection: "new_tests",
+    primaryKey: new_testid,
+    navigationProperty: "new_ParentLead",
+    relatedCollection: "leads",
+    relatedKey: leadId
+}
+
+await dynamicsWebApi.associateSingleValued(request);
+//does not have any return value
 ```
+
+JavaScript sample is the same only without a request type declaration.
 
 ### Disassociate
 
-```js
-var accountId = '00000000-0000-0000-0000-000000000001';
-var leadId = '00000000-0000-0000-0000-000000000002';
-dynamicsWebApi.disassociate("accounts", accountId, "lead_parent_account", leadId).then(function () {
-    //success
-}).catch(function (error) {
-    //catch an error
-});
+```ts
+let accountId = "00000000-0000-0000-0000-000000000001";
+let leadId = "00000000-0000-0000-0000-000000000002";
+
+let request: DynamicsWebApi.DisassociateRequest = {
+    collection: "accounts",
+    primaryKey: accountId,
+    relationshipName: "lead_parent_account",
+    relatedKey: leadId
+}
+
+await dynamicsWebApi.disassociate(request);
+//does not have any return value
 ```
+
+JavaScript sample is the same only without a request type declaration.
 
 ### Disassociate for a single-valued navigation property
-Current request removes a reference to an entity for a single-valued navigation property. The following code snippet uses an example shown in [Associate for a single-valued navigation property](#associate-for-a-single-valued-navigation-property).
+Current request removes a reference to an entity for a single-valued navigation property. 
+The following code snippet uses an example shown in [Associate for a single-valued navigation property](#associate-for-a-single-valued-navigation-property).
 
-```js
-var new_testid = '00000000-0000-0000-0000-000000000001';
-dynamicsWebApi.disassociateSingleValued("new_tests", new_testid, "new_ParentLead").then(function () {
-    //success
-}).catch(function (error) {
-    //catch an error
-});
+```ts
+let new_testid = "00000000-0000-0000-0000-000000000001";
+
+let request: DynamicsWebApi.AssociateSingleValuedRequest = {
+    collection: "new_tests",
+    primaryKey: new_testid,
+    navigationProperty: "new_ParentLead"
+}
+
+await dynamicsWebApi.disassociateSingleValued(request);
+//does not have any return value
 ```
+
+JavaScript sample is the same only without a request type declaration.
 
 ### Fetch XML Request
 
-```js
+#### TypeScript
+
+```ts
+//declaring interface for an Account entity (declaration can be done in d.ts file)
+interface Account {
+    accountid?: string,
+    name?: string
+}
+
 //build a fetch xml
-var fetchXml = '<fetch mapping="logical">' +
+let fetchXml = '<fetch mapping="logical">' +
                     '<entity name="account">' +
                         '<attribute name="accountid"/>' +
                         '<attribute name="name"/>' +
                     '</entity>' +
                '</fetch>';
 
-dynamicsWebApi.executeFetchXml("accounts", fetchXml).then(function (response) {
-    /// <param name="response" type="DWA.Types.FetchXmlResponse">Request response</param>
+let request: DynamicsWebApi.FetchXmlRequest = {
+    collection: "accounts",
+    fetchXml: fetchXml
+}
 
-    //do something with results here; access records response.value[0].accountid 
-})
-.catch(function (error) {
-    //catch an error
-});
+let result = await dynamicsWebApi.fetch<Account>(request);
+//do something with results here; access records result.value[0].accountid 
 ```
 
-Starting from version 1.2.5 DynamicsWebApi has an alias with a shorter name and same parameters: `dynamicsWebApi.fetch(...)`, 
-that works in the same way as `executeFetchXml`.
+#### JavaScript
+
+```js
+//build a fetch xml
+let fetchXml = '<fetch mapping="logical">' +
+                    '<entity name="account">' +
+                        '<attribute name="accountid"/>' +
+                        '<attribute name="name"/>' +
+                    '</entity>' +
+               '</fetch>';
+
+let request = {
+    collection: "accounts",
+    fetchXml: fetchXml
+}
+
+let result = await dynamicsWebApi.fetch(request);
+//do something with results here; access records result.value[0].accountid 
+```
 
 #### Paging
 
-```js
+```ts
 //build a fetch xml
-var fetchXml = '<fetch mapping="logical">' +
+let fetchXml = '<fetch mapping="logical">' +
                     '<entity name="account">' +
                         '<attribute name="accountid"/>' +
                         '<attribute name="name"/>' +
                     '</entity>' +
                '</fetch>';
 
-dynamicsWebApi.executeFetchXml("accounts", fetchXml).then(function (response) {
-    /// <param name="response" type="DWA.Types.FetchXmlResponse">Request response</param>
-    
-    //do something with results here; access records response.value[0].accountid
+let request: DynamicsWebApi.FetchXmlRequest = {
+    collection: "accounts",
+    fetchXml: fetchXml
+}
 
-    return dynamicsWebApi
-        .executeFetchXml("accounts", fetchXml, null, response.PagingInfo.nextPage, response.PagingInfo.cookie);
-}).then(function (response) {
-    /// <param name="response" type="DWA.Types.FetchXmlResponse">Request response</param>
-    
-    //page 2
-    //do something with results here; access records response.value[0].accountid
+let page1 = await dynamicsWebApi.fetch<Account>(request);
+//do something with results here; access records page1.value[0].accountid
 
-    return dynamicsWebApi
-        .executeFetchXml("accounts", fetchXml, null, response.PagingInfo.nextPage, response.PagingInfo.cookie);
-}).then(function (response) {
-    /// <param name="response" type="DWA.Types.FetchXmlResponse">Request response</param>
-    //page 3
-    //and so on... or use a loop.
-})
-//catch...
+request.pageNumber = page1.PagingInfo.nextPage;
+request.pagingCookie = page1.PagingInfo.cookie;
+
+let page2 = await dynamicsWebApi.fetch<Account>(request);
+//do something with results here; access records page2.value[0].accountid
+
+request.pageNumber = page2.PagingInfo.nextPage;
+request.pagingCookie = page2.PagingInfo.cookie;
+
+let page3 = await dynamicsWebApi.fetch<Account>(request);
+//and so on... or use a recoursive loop.
 ```
 
 #### Fetch All records
 
-The following function executes a FetchXml and goes through all pages automatically:
+The following function executes a FetchXml request and goes through all pages automatically:
 
-```js
-var fetchXml = '<fetch mapping="logical">' +
+```ts
+let fetchXml = '<fetch mapping="logical">' +
                     '<entity name="account">' +
                         '<attribute name="accountid"/>' +
                         '<attribute name="name"/>' +
                     '</entity>' +
                '</fetch>';
 
-dynamicsWebApi.executeFetchXmlAll("accounts", fetchXml).then(function (response) {
-    
-    //do something with results here; access records response.value[0].accountid
-})
-//catch...
+let result = await dynamicsWebApi.fetchAll<Account>({
+    collection: "accounts", 
+    fetchXml: fetchXml
+});
+//do something with results here; access records result.value[0].accountid
 ```
-
-Starting from version 1.2.5 DynamicsWebApi has an alias with a shorter name and same parameters: `dynamicsWebApi.fetchAll(...)`, 
-that works in the same way as `executeFetchXmlAll`.
 
 ### Execute Web API functions
 
 #### Bound functions
 
+**TypeScript**
+
+```ts
+//declaring needed types for the Function (types can be declared in *.d.ts file), if needed
+enum UserResponse {
+    Basic = 0,
+    Local = 1,
+    Deep = 2,
+    Global = 3
+}
+
+interface RolePrivilege {
+    Depth: UserResponse,
+    PrivilegeId: string,
+    BusinessUnitId: string
+}
+
+interface RetrieveTeamPrivilegesResponse {
+    RolePrivileges: RolePrivilege[]
+}
+
+let teamId = "00000000-0000-0000-0000-000000000001";
+
+let request: DynamicsWebApi.BoundFunctionRequest = {
+    id: teamId,
+    collection: "teams",
+    functionName: "Microsoft.Dynamics.CRM.RetrieveTeamPrivileges"
+}
+
+let result = await dynamicsWebApi.executeBoundFunction<RetrieveTeamPrivilegesResponse>(request);
+//do something with a result
+```
+
+**JavaScript**
+
 ```js
-var teamId = "00000000-0000-0000-0000-000000000001";
-dynamicsWebApi.executeBoundFunction(teamId, "teams", "Microsoft.Dynamics.CRM.RetrieveTeamPrivileges")
-    .then(function (response) {
-        //do something with a response
-    }).catch(function (error) {
-        //catch an error
-    });
+let teamId = "00000000-0000-0000-0000-000000000001";
+
+let request = {
+    id: teamId,
+    collection: "teams",
+    functionName: "Microsoft.Dynamics.CRM.RetrieveTeamPrivileges"
+}
+
+let result = await dynamicsWebApi.executeBoundFunction(request);
+//do something with a result
 ```
 
 #### Unbound functions
 
-```js
-var parameters = {
-    LocalizedStandardName: 'Pacific Standard Time',
+**TypeScript**
+
+```ts
+//declaring needed types for the Function (types can be declared in *.d.ts file), if needed
+interface GetTimeZoneCodeByLocalizedNameResponse {
+    TimeZoneCode: number
+}
+
+let parameters = {
+    LocalizedStandardName: "Pacific Standard Time",
     LocaleId: 1033
 };
-dynamicsWebApi.executeUnboundFunction("GetTimeZoneCodeByLocalizedName", parameters).then(function (result) {
-    var timeZoneCode = result.TimeZoneCode;
-}).catch(function (error) {
-    //catch an error
-});
+
+let request: DynamicsWebApi.UnboundFunctionRequest = {
+    parameters: parameters,
+    functionName: "GetTimeZoneCodeByLocalizedName"
+}
+
+let result = await dynamicsWebApi.executeUnboundFunction<GetTimeZoneCodeByLocalizedNameResponse>(request);
+let timeZoneCode = result.TimeZoneCode;
+```
+
+**JavaScript**
+
+```js
+let parameters = {
+    LocalizedStandardName: "Pacific Standard Time",
+    LocaleId: 1033
+};
+
+let request = {
+    parameters: parameters,
+    functionName: "GetTimeZoneCodeByLocalizedName"
+}
+
+let result = await dynamicsWebApi.executeUnboundFunction(request);
+let timeZoneCode = result.TimeZoneCode;
 ```
 
 ### Execute Web API actions

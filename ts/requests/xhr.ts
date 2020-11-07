@@ -39,7 +39,10 @@ function xhrRequest (options: Core.RequestOptions) {
                         data: responseData,
                         headers: responseHeaders,
                         status: request.status
-                    };
+					};
+
+					request = null;
+					responseParams.length = 0;
 
                     successCallback(response);
                     break;
@@ -63,19 +66,21 @@ function xhrRequest (options: Core.RequestOptions) {
                         else {
                             error = { message: "Unexpected Error" };
                         }
-                    }
+					}
 
-                    errorCallback(ErrorHelper.handleHttpError(error, {
-                        status: request.status,
+					let errorParameters = {
+						status: request.status,
 						statusText: request.statusText,
 						headers: headers
-                    }));
+					}
+
+					request = null;
+					responseParams.length = 0;
+
+					errorCallback(ErrorHelper.handleHttpError(error, errorParameters));
 
                     break;
             }
-
-            request = null;
-            responseParams.length = 0;
         }
     };
 
