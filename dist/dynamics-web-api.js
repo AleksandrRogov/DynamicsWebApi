@@ -1,4 +1,4 @@
-/*! dynamics-web-api v1.6.13 (c) 2020 Aleksandr Rogov */
+/*! dynamics-web-api v1.6.14 (c) 2020 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -2745,7 +2745,11 @@ var xhrRequest = function (options) {
 						status: request.status
 					};
 
+					responseParams.length = 0;
+					request = null;
+
 					successCallback(response);
+
 					break;
 				}
 				default: // All other statuses are error cases.
@@ -2769,17 +2773,19 @@ var xhrRequest = function (options) {
 						}
 					}
 
-					errorCallback(ErrorHelper.handleHttpError(error, {
+					var errorResponse = {
 						status: request.status,
 						statusText: request.statusText,
 						headers: headers
-					}));
+					}
+
+					responseParams.length = 0;
+					request = null;
+
+					errorCallback(ErrorHelper.handleHttpError(error, errorResponse));
 
 					break;
 			}
-
-			request = null;
-			responseParams.length = 0;
 		}
 	};
 
