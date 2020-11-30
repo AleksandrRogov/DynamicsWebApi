@@ -1,4 +1,5 @@
 ﻿var webpack = require('webpack');
+var TerserPlugin = require('terser-webpack-plugin');
 var path = require('path');
 var version = require('./package').version;
 
@@ -19,12 +20,8 @@ var configs = [];
         ? 'DWA'
         : 'DynamicsWebApi';
 
-    if (minimize) {
-        plugins.push(new webpack.optimize.UglifyJsPlugin());
-    }
-
     plugins.push(new webpack.BannerPlugin({
-        banner: `${packageName} v${version} (c) ${new Date().getFullYear()} Aleksandr Rogov`
+		banner: `${packageName} v${version} (c) ${new Date().getFullYear()} Aleksandr Rogov`
     }));
 
     configs.push({
@@ -36,13 +33,40 @@ var configs = [];
             library: outputLibrary,
             libraryTarget: "umd",
             umdNamedDefine: true
-        },
-        plugins: plugins,
+		},
+		optimization: {
+			minimize: minimize,
+			minimizer: [
+				new TerserPlugin({
+					terserOptions: {
+						format: {
+							comments: /^.+Aleksandr Rogov.+$/,
+						},
+					},
+					extractComments: false
+				})
+			]
+		},
+		plugins: plugins,
         module: {
-            loaders: [
-                { test: /\.js$/, loader: 'webpack-strip-block' }
-            ]
-        }
+			rules: [
+				{
+					test: /\.js$/,
+					enforce: 'pre',
+					exclude: /(node_modules|bower_components|\.spec\.js)/,
+					use: [
+						{
+							loader: 'webpack-strip-block'
+						}
+					]
+				}
+			]
+		},
+		resolve: {
+			fallback: {
+				"crypto": false
+			}
+		}
     });
 });
 

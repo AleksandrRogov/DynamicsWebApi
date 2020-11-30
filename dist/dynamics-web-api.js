@@ -1,4 +1,4 @@
-/*! dynamics-web-api v1.6.14 (c) 2020 Aleksandr Rogov */
+/*! dynamics-web-api v1.6.15 (c) 2020 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -8,285 +8,12 @@
 		exports["DynamicsWebApi"] = factory();
 	else
 		root["DynamicsWebApi"] = factory();
-})(this, function() {
-return /******/ (function(modules) { // webpackBootstrap
-/******/ 	// The module cache
-/******/ 	var installedModules = {};
-/******/
-/******/ 	// The require function
-/******/ 	function __webpack_require__(moduleId) {
-/******/
-/******/ 		// Check if module is in cache
-/******/ 		if(installedModules[moduleId]) {
-/******/ 			return installedModules[moduleId].exports;
-/******/ 		}
-/******/ 		// Create a new module (and put it into the cache)
-/******/ 		var module = installedModules[moduleId] = {
-/******/ 			i: moduleId,
-/******/ 			l: false,
-/******/ 			exports: {}
-/******/ 		};
-/******/
-/******/ 		// Execute the module function
-/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-/******/
-/******/ 		// Flag the module as loaded
-/******/ 		module.l = true;
-/******/
-/******/ 		// Return the exports of the module
-/******/ 		return module.exports;
-/******/ 	}
-/******/
-/******/
-/******/ 	// expose the modules object (__webpack_modules__)
-/******/ 	__webpack_require__.m = modules;
-/******/
-/******/ 	// expose the module cache
-/******/ 	__webpack_require__.c = installedModules;
-/******/
-/******/ 	// identity function for calling harmony imports with the correct context
-/******/ 	__webpack_require__.i = function(value) { return value; };
-/******/
-/******/ 	// define getter function for harmony exports
-/******/ 	__webpack_require__.d = function(exports, name, getter) {
-/******/ 		if(!__webpack_require__.o(exports, name)) {
-/******/ 			Object.defineProperty(exports, name, {
-/******/ 				configurable: false,
-/******/ 				enumerable: true,
-/******/ 				get: getter
-/******/ 			});
-/******/ 		}
-/******/ 	};
-/******/
-/******/ 	// getDefaultExport function for compatibility with non-harmony modules
-/******/ 	__webpack_require__.n = function(module) {
-/******/ 		var getter = module && module.__esModule ?
-/******/ 			function getDefault() { return module['default']; } :
-/******/ 			function getModuleExports() { return module; };
-/******/ 		__webpack_require__.d(getter, 'a', getter);
-/******/ 		return getter;
-/******/ 	};
-/******/
-/******/ 	// Object.prototype.hasOwnProperty.call
-/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
-/******/
-/******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "";
-/******/
-/******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 5);
-/******/ })
-/************************************************************************/
-/******/ ([
-/* 0 */
-/***/ (function(module, exports) {
+})(self, function() {
+return /******/ (() => { // webpackBootstrap
+/******/ 	var __webpack_modules__ = ({
 
-function throwParameterError(functionName, parameterName, type) {
-    throw new Error(type
-        ? functionName + " requires the " + parameterName + " parameter to be of type " + type
-        : functionName + " requires the " + parameterName + " parameter.");
-};
-
-var ErrorHelper = {
-    handleErrorResponse: function (req) {
-        ///<summary>
-        /// Private function return an Error object to the errorCallback
-        ///</summary>
-        ///<param name="req" type="XMLHttpRequest">
-        /// The XMLHttpRequest response that returned an error.
-        ///</param>
-        ///<returns>Error</returns>
-        throw new Error("Error: " +
-            req.status + ": " +
-            req.message);
-    },
-
-    parameterCheck: function (parameter, functionName, parameterName, type) {
-        ///<summary>
-        /// Private function used to check whether required parameters are null or undefined
-        ///</summary>
-        ///<param name="parameter" type="Object">
-        /// The parameter to check;
-        ///</param>
-        ///<param name="message" type="String">
-        /// The error message text to include when the error is thrown.
-        ///</param>
-        if ((typeof parameter === "undefined") || parameter === null || parameter == "") {
-            throwParameterError(functionName, parameterName, type);
-        }
-    },
-
-    stringParameterCheck: function (parameter, functionName, parameterName) {
-        ///<summary>
-        /// Private function used to check whether required parameters are null or undefined
-        ///</summary>
-        ///<param name="parameter" type="String">
-        /// The string parameter to check;
-        ///</param>
-        ///<param name="message" type="String">
-        /// The error message text to include when the error is thrown.
-        ///</param>
-        if (typeof parameter != "string") {
-            throwParameterError(functionName, parameterName, "String");
-        }
-    },
-
-    arrayParameterCheck: function (parameter, functionName, parameterName) {
-        ///<summary>
-        /// Private function used to check whether required parameters are null or undefined
-        ///</summary>
-        ///<param name="parameter" type="String">
-        /// The string parameter to check;
-        ///</param>
-        ///<param name="message" type="String">
-        /// The error message text to include when the error is thrown.
-        ///</param>
-        if (parameter.constructor !== Array) {
-            throwParameterError(functionName, parameterName, "Array");
-        }
-    },
-
-    stringOrArrayParameterCheck: function (parameter, functionName, parameterName) {
-        if (parameter.constructor !== Array && typeof parameter != "string") {
-            throwParameterError(functionName, parameterName, "String or Array");
-        }
-    },
-
-    numberParameterCheck: function (parameter, functionName, parameterName) {
-        ///<summary>
-        /// Private function used to check whether required parameters are null or undefined
-        ///</summary>
-        ///<param name="parameter" type="Number">
-        /// The string parameter to check;
-        ///</param>
-        ///<param name="message" type="String">
-        /// The error message text to include when the error is thrown.
-        ///</param>
-        if (typeof parameter != "number") {
-            if (typeof parameter === "string" && parameter) {
-                if (!isNaN(parseInt(parameter))) {
-                    return;
-                }
-            }
-            throwParameterError(functionName, parameterName, "Number");
-        }
-    },
-
-    boolParameterCheck: function (parameter, functionName, parameterName) {
-        ///<summary>
-        /// Private function used to check whether required parameters are null or undefined
-        ///</summary>
-        ///<param name="parameter" type="Boolean">
-        /// The string parameter to check;
-        ///</param>
-        ///<param name="message" type="String">
-        /// The error message text to include when the error is thrown.
-        ///</param>
-        if (typeof parameter != "boolean") {
-            throwParameterError(functionName, parameterName, "Boolean");
-        }
-    },
-
-    guidParameterCheck: function (parameter, functionName, parameterName) {
-        ///<summary>
-        /// Private function used to check whether required parameter is a valid GUID
-        ///</summary>
-        ///<param name="parameter" type="String">
-        /// The GUID parameter to check;
-        ///</param>
-        ///<param name="message" type="String">
-        /// The error message text to include when the error is thrown.
-        ///</param>
-        /// <returns type="String" />
-
-        try {
-            var match = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(parameter)[0];
-
-            return match;
-        }
-        catch (error) {
-            throwParameterError(functionName, parameterName, "GUID String");
-        }
-    },
-
-    keyParameterCheck: function (parameter, functionName, parameterName) {
-
-        try {
-            ErrorHelper.stringParameterCheck(parameter, functionName, parameterName);
-
-            //check if the param is a guid
-            var match = /^{?([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})}?$/i.exec(parameter);
-            if (match) {
-                return match[1];
-            }
-
-            //check the alternate key
-            var alternateKeys = parameter.split(',');
-
-            if (alternateKeys.length) {
-                for (var i = 0; i < alternateKeys.length; i++) {
-                    alternateKeys[i] = alternateKeys[i].trim().replace('"', "'");
-                    /^[\w\d\_]+\=('[^\'\r\n]+'|\d+)$/i.exec(alternateKeys[i])[0];
-                }
-            }
-
-            return alternateKeys.join(',');
-        }
-        catch (error) {
-            throwParameterError(functionName, parameterName, "String representing GUID or Alternate Key");
-        }
-    },
-
-    callbackParameterCheck: function (callbackParameter, functionName, parameterName) {
-        ///<summary>
-        /// Private function used to check whether required callback parameters are functions
-        ///</summary>
-        ///<param name="callbackParameter" type="Function">
-        /// The callback parameter to check;
-        ///</param>
-        ///<param name="message" type="String">
-        /// The error message text to include when the error is thrown.
-        ///</param>
-        if (typeof callbackParameter != "function") {
-            throwParameterError(functionName, parameterName, "Function");
-        }
-    },
-
-    batchIncompatible: function (functionName, isBatch) {
-        if (isBatch) {
-            isBatch = false;
-            throw new Error(functionName + " cannot be used in a BATCH request.");
-        }
-    },
-
-    batchNotStarted: function (isBatch) {
-        if (!isBatch) {
-            throw new Error("Batch operation has not been started. Please call a DynamicsWebApi.startBatch() function prior to calling DynamicsWebApi.executeBatch() to perform a batch request correctly.");
-        }
-    },
-
-    handleHttpError: function (parsedError, parameters) {
-        var error = new Error();
-
-        Object.keys(parsedError).forEach(function(k) {
-            error[k] = parsedError[k];
-        });
-
-        if (parameters) {
-            Object.keys(parameters).forEach(function (k) {
-                error[k] = parameters[k];
-            });
-        }
-
-        return error;
-    }
-};
-
-module.exports = ErrorHelper;
-
-/***/ }),
-/* 1 */
-/***/ (function(module, exports) {
+/***/ 923:
+/***/ ((module) => {
 
 var DWA = {
     Types: {
@@ -354,586 +81,24 @@ var DWA = {
 module.exports = DWA;
 
 /***/ }),
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
 
-function isNull(value) {
-	return typeof value === "undefined" || value == null;
-}
-
-//https://stackoverflow.com/a/8809472
-function generateUUID() { // Public Domain/MIT
-	var d = new Date().getTime();
-	if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
-		d += performance.now(); //use high-precision timer if available
-	}
-	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-		var r = (d + Math.random() * 16) % 16 | 0;
-		d = Math.floor(d / 16);
-		return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-	});
-}
-
-function getXrmContext() {
-	if (typeof GetGlobalContext !== 'undefined') {
-		return GetGlobalContext();
-	}
-	else {
-		if (typeof Xrm !== 'undefined') {
-			//d365 v.9.0
-			if (!isNull(Xrm.Utility) && !isNull(Xrm.Utility.getGlobalContext)) {
-				return Xrm.Utility.getGlobalContext();
-			}
-			else if (!isNull(Xrm.Page) && !isNull(Xrm.Page.context)) {
-				return Xrm.Page.context;
-			}
-		}
-	}
-
-	throw new Error('Xrm Context is not available. In most cases, it can be resolved by adding a reference to a ClientGlobalContext.js.aspx. Please refer to MSDN documentation for more details.');
-}
-
-function getClientUrl() {
-	var context = getXrmContext();
-
-	var clientUrl = context.getClientUrl();
-
-	if (clientUrl.match(/\/$/)) {
-		clientUrl = clientUrl.substring(0, clientUrl.length - 1);
-	}
-	return clientUrl;
-}
-
-function initWebApiUrl(version) {
-	return getClientUrl() + '/api/data/v' + version + '/';
-}
-
-function getXrmInternal() {
-	//todo: Xrm.Internal namespace is not supported
-	return typeof Xrm !== "undefined" ? Xrm.Internal : null;
-}
-
-function getXrmUtility() {
-	return typeof Xrm !== "undefined" ? Xrm.Utility : null;
-}
-
-function _isObject(obj) {
-	var type = typeof obj;
-	return type === 'object' && !!obj;
-}
-
-function copyObject(src) {
-	var target = {};
-	for (var prop in src) {
-		if (src.hasOwnProperty(prop)) {
-			// if the value is a nested object, recursively copy all its properties
-			if (_isObject(src[prop]) && Object.prototype.toString.call(src[prop]) !== '[object Date]') {
-				if (!Array.isArray(src[prop])) {
-					target[prop] = copyObject(src[prop]);
-				}
-				else {
-					target[prop] = src[prop].slice();
-				}
-
-			} else {
-				target[prop] = src[prop];
-			}
-		}
-	}
-	return target;
-}
-
-var Utility = {
-	/**
-	 * Builds parametes for a funciton. Returns '()' (if no parameters) or '([params])?[query]'
-	 *
-	 * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
-	 * @returns {string}
-	 */
-	buildFunctionParameters: __webpack_require__(12),
-
-	/**
-	 * Parses a paging cookie returned in response
-	 *
-	 * @param {string} pageCookies - Page cookies returned in @Microsoft.Dynamics.CRM.fetchxmlpagingcookie.
-	 * @param {number} currentPageNumber - A current page number. Fix empty paging-cookie for complex fetch xmls.
-	 * @returns {{ cookie: "", number: 0, next: 1 }}
-	 */
-	getFetchXmlPagingCookie: __webpack_require__(15),
-
-	/**
-	 * Converts a response to a reference object
-	 *
-	 * @param {Object} responseData - Response object
-	 * @returns {ReferenceObject}
-	 */
-	convertToReferenceObject: __webpack_require__(14),
-
-	/**
-	 * Checks whether the value is JS Null.
-	 * @param {Object} value
-	 * @returns {boolean}
-	 */
-	isNull: isNull,
-
-	generateUUID: generateUUID,
-
-	getXrmContext: getXrmContext,
-
-	getXrmInternal: getXrmInternal,
-
-	getXrmUtility: getXrmUtility,
-
-	getClientUrl: getClientUrl,
-
-	initWebApiUrl: initWebApiUrl,
-
-	copyObject: copyObject
-};
-
-module.exports = Utility;
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports) {
-
-String.prototype.endsWith = function (searchString, position) {
-    var subjectString = this.toString();
-    if (typeof position !== 'number' || !isFinite(position) || Math.floor(position) !== position || position > subjectString.length) {
-        position = subjectString.length;
-    }
-    position -= searchString.length;
-    var lastIndex = subjectString.lastIndexOf(searchString, position);
-    return lastIndex !== -1 && lastIndex === position;
-};
-
-String.prototype.startsWith = function (searchString, position) {
-    position = position || 0;
-    return this.substr(position, searchString.length) === searchString;
-};
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var Utility = __webpack_require__(2);
-var RequestConverter = __webpack_require__(11);
-
-var _entityNames;
-
-/**
- * Searches for a collection name by provided entity name in a cached entity metadata.
- * The returned collection name can be null.
- *
- * @param {string} entityName - entity name
- * @returns {string} - a collection name
- */
-function findCollectionName(entityName) {
-	var xrmInternal = Utility.getXrmInternal();
-
-	if (!Utility.isNull(xrmInternal) && typeof xrmInternal.getEntitySetName === "function") {
-		return xrmInternal.getEntitySetName(entityName) || entityName;
-	}
-
-	var collectionName = null;
-
-	if (!Utility.isNull(_entityNames)) {
-		collectionName = _entityNames[entityName];
-		if (Utility.isNull(collectionName)) {
-			for (var key in _entityNames) {
-				if (_entityNames[key] === entityName) {
-					return entityName;
-				}
-			}
-		}
-	}
-
-	return collectionName;
-}
-
-function setStandardHeaders(additionalHeaders) {
-	additionalHeaders["Accept"] = "application/json";
-	additionalHeaders["OData-MaxVersion"] = "4.0";
-	additionalHeaders["OData-Version"] = "4.0";
-	additionalHeaders['Content-Type'] = 'application/json; charset=utf-8';
-
-	return additionalHeaders;
-}
-
-function stringifyData(data, config) {
-	var stringifiedData;
-	if (data) {
-		stringifiedData = JSON.stringify(data, function (key, value) {
-			/// <param name="key" type="String">Description</param>
-			if (key.endsWith('@odata.bind') || key.endsWith('@odata.id')) {
-				if (typeof value === 'string' && !value.startsWith('$')) {
-					//remove brackets in guid
-					if (/\(\{[\w\d-]+\}\)/g.test(value)) {
-						value = value.replace(/(.+)\(\{([\w\d-]+)\}\)/g, '$1($2)');
-					}
-
-					if (config.useEntityNames) {
-						//replace entity name with collection name
-						var regularExpression = /([\w_]+)(\([\d\w-]+\))$/;
-						var valueParts = regularExpression.exec(value);
-						if (valueParts.length > 2) {
-							var collectionName = findCollectionName(valueParts[1]);
-
-							if (!Utility.isNull(collectionName)) {
-								value = value.replace(regularExpression, collectionName + '$2');
-							}
-						}
-					}
-
-					if (!value.startsWith(config.webApiUrl)) {
-						//add full web api url if it's not set
-						if (key.endsWith('@odata.bind')) {
-							if (!value.startsWith('/')) {
-								value = '/' + value;
-							}
-						}
-						else {
-							value = config.webApiUrl + value.replace(/^\//, '');
-						}
-					}
-				}
-			}
-			else
-				if (key.startsWith('oData') ||
-					key.endsWith('_Formatted') ||
-					key.endsWith('_NavigationProperty') ||
-					key.endsWith('_LogicalName')) {
-					value = undefined;
-				}
-
-			return value;
-		});
-
-		stringifiedData = stringifiedData.replace(/[\u007F-\uFFFF]/g, function (chr) {
-			return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substr(-4);
-		});
-	}
-
-	return stringifiedData;
-}
-
-var _batchRequestCollection = [];
-var _responseParseParams = [];
-
-var _convertToBatch = function (requestCollection, config) {
-	var batchBoundary = 'dwa_batch_' + Utility.generateUUID();
-
-	var batchBody = [];
-	var currentChangeSet = null;
-	var contentId = 100000;
-
-	for (var i = 0; i < requestCollection.length; i++) {
-		var rawRequest = requestCollection[i].request;
-
-		if (config.useEntityNames) {
-			rawRequest.collection = findCollectionName(rawRequest.collection) || rawRequest.collection;
-		}
-
-		var request = RequestConverter.convertRequest(rawRequest, "executeBatch", config);
-		var method = requestCollection[i].method;
-		var isGet = method === 'GET';
-
-		if (isGet && currentChangeSet) {
-			//end current change set
-			batchBody.push('\n--' + currentChangeSet + '--');
-
-			currentChangeSet = null;
-			contentId = 100000;
-		}
-
-		if (!currentChangeSet) {
-			batchBody.push('\n--' + batchBoundary);
-
-			if (!isGet) {
-				currentChangeSet = 'changeset_' + Utility.generateUUID();
-				batchBody.push('Content-Type: multipart/mixed;boundary=' + currentChangeSet);
-			}
-		}
-
-		if (!isGet) {
-			batchBody.push('\n--' + currentChangeSet);
-		}
-
-		batchBody.push('Content-Type: application/http');
-		batchBody.push('Content-Transfer-Encoding: binary');
-
-		if (!isGet) {
-			var contentIdValue = request.headers.hasOwnProperty('Content-ID')
-				? request.headers['Content-ID']
-				: ++contentId;
-
-			batchBody.push('Content-ID: ' + contentIdValue);
-		}
-
-		if (!request.url.startsWith("$")) {
-			batchBody.push('\n' + method + ' ' + config.webApiUrl + request.url + ' HTTP/1.1');
-		}
-		else {
-			batchBody.push('\n' + method + ' ' + request.url + ' HTTP/1.1');
-		}
-
-		if (isGet) {
-			batchBody.push('Accept: application/json');
-		}
-		else {
-			batchBody.push('Content-Type: application/json');
-		}
-
-		for (var key in request.headers) {
-			if (key === 'Authorization' || key === 'Content-ID')
-				continue;
-
-			batchBody.push(key + ': ' + request.headers[key]);
-		}
-
-		var data = rawRequest.data || rawRequest.entity;
-
-		if (!isGet && data) {
-			batchBody.push('\n' + stringifyData(data, config));
-		}
-	}
-
-	if (currentChangeSet) {
-		batchBody.push('\n--' + currentChangeSet + '--');
-	}
-
-	batchBody.push('\n--' + batchBoundary + '--');
-
-	return { boundary: batchBoundary, body: batchBody.join('\n') };
-};
-
-/**
- * Sends a request to given URL with given parameters
- *
- * @param {string} method - Method of the request.
- * @param {string} path - Request path.
- * @param {Object} config - DynamicsWebApi config.
- * @param {Object} [data] - Data to send in the request.
- * @param {Object} [additionalHeaders] - Object with additional headers. IMPORTANT! This object does not contain default headers needed for every request.
- * @param {any} [responseParams] - parameters for parsing the response
- * @param {Function} successCallback - A callback called on success of the request.
- * @param {Function} errorCallback - A callback called when a request failed.
- * @param {boolean} [isBatch] - Indicates whether the request is a Batch request or not. Default: false
- * @param {boolean} [isAsync] - Indicates whether the request should be made synchronously or asynchronously.
- * @param {number} [timeout] - Indicates timeout.
- */
-function sendRequest(method, path, config, data, additionalHeaders, responseParams, successCallback, errorCallback, isBatch, isAsync, timeout) {
-
-	additionalHeaders = additionalHeaders || {};
-	responseParams = responseParams || {};
-
-	//add response parameters to parse
-	_responseParseParams.push(responseParams);
-
-	//stringify passed data
-	var stringifiedData = stringifyData(data, config);
-
-	if (path === '$batch') {
-		var batchResult = _convertToBatch(_batchRequestCollection, config);
-
-		stringifiedData = batchResult.body;
-
-		//clear an array of requests
-		_batchRequestCollection.length = 0;
-
-		additionalHeaders = setStandardHeaders(additionalHeaders);
-		additionalHeaders['Content-Type'] = 'multipart/mixed;boundary=' + batchResult.boundary;
-	}
-	else {
-		additionalHeaders = setStandardHeaders(additionalHeaders);
-	}
-
-	responseParams.convertedToBatch = false;
-
-	//if the URL contains more characters than max possible limit, convert the request to a batch request
-	if (path.length > 2000) {
-		var batchBoundary = 'dwa_batch_' + Utility.generateUUID();
-
-		var batchBody = [];
-		batchBody.push('--' + batchBoundary);
-		batchBody.push('Content-Type: application/http');
-		batchBody.push('Content-Transfer-Encoding: binary\n');
-		batchBody.push(method + ' ' + config.webApiUrl + path + ' HTTP/1.1');
-
-		for (var key in additionalHeaders) {
-			if (key === 'Authorization')
-				continue;
-
-			batchBody.push(key + ': ' + additionalHeaders[key]);
-
-			//authorization header is an exception. bug #27
-			delete additionalHeaders[key];
-		}
-
-		batchBody.push('\n--' + batchBoundary + '--');
-
-		stringifiedData = batchBody.join('\n');
-
-		additionalHeaders = setStandardHeaders(additionalHeaders);
-		additionalHeaders['Content-Type'] = 'multipart/mixed;boundary=' + batchBoundary;
-		path = '$batch';
-		method = 'POST';
-
-		responseParams.convertedToBatch = true;
-	}
-
-	if (config.impersonate && !additionalHeaders['MSCRMCallerID']) {
-		additionalHeaders['MSCRMCallerID'] = config.impersonate;
-	}
-	
-	if (config.impersonateAAD && !additionalHeaders['CallerObjectId']) {
-		additionalHeaders['CallerObjectId'] = config.impersonateAAD;
-	}
-
-	var executeRequest;
-
-		executeRequest = __webpack_require__(10);
-
-
-	var sendInternalRequest = function (token) {
-		if (token) {
-			if (!additionalHeaders) {
-				additionalHeaders = {};
-			}
-			additionalHeaders['Authorization'] = 'Bearer ' +
-				(token.hasOwnProperty('accessToken') ?
-					token.accessToken :
-					token);
-		}
-
-		executeRequest({
-			method: method,
-			uri: config.webApiUrl + path,
-			data: stringifiedData,
-			additionalHeaders: additionalHeaders,
-			responseParams: _responseParseParams,
-			successCallback: successCallback,
-			errorCallback: errorCallback,
-			isAsync: isAsync,
-			timeout: timeout
-		});
-	};
-
-	//call a token refresh callback only if it is set and there is no "Authorization" header set yet
-	if (config.onTokenRefresh && (!additionalHeaders || (additionalHeaders && !additionalHeaders['Authorization']))) {
-		config.onTokenRefresh(sendInternalRequest);
-	}
-	else {
-		sendInternalRequest();
-	}
-}
-
-function _getCollectionNames(entityName, config, successCallback, errorCallback) {
-
-	//make a web api call for Node.js apps
-	if (!Utility.isNull(_entityNames)) {
-		successCallback(findCollectionName(entityName) || entityName);
-	}
-	else {
-		var resolve = function (result) {
-			_entityNames = {};
-			for (var i = 0; i < result.data.value.length; i++) {
-				_entityNames[result.data.value[i].LogicalName] = result.data.value[i].EntitySetName;
-			}
-
-			successCallback(findCollectionName(entityName) || entityName);
-		};
-
-		var reject = function (error) {
-			errorCallback({ message: 'Unable to fetch EntityDefinitions. Error: ' + error.message });
-		};
-
-		var request = RequestConverter.convertRequest({
-			collection: 'EntityDefinitions',
-			select: ['EntitySetName', 'LogicalName'],
-			noCache: true
-		}, 'retrieveMultiple', config);
-
-		sendRequest('GET', request.url, config, null, request.headers, null, resolve, reject, false, request.async, config.timeout);
-	}
-}
-
-function _isEntityNameException(entityName) {
-	var exceptions = [
-		'EntityDefinitions', '$metadata', 'RelationshipDefinitions',
-		'GlobalOptionSetDefinitions', 'ManagedPropertyDefinitions'];
-
-	return exceptions.indexOf(entityName) > -1;
-}
-
-function _checkCollectionName(entityName, config, successCallback, errorCallback) {
-
-	if (_isEntityNameException(entityName) || Utility.isNull(entityName)) {
-		successCallback(entityName);
-		return;
-	}
-
-	entityName = entityName.toLowerCase();
-
-	if (!config.useEntityNames) {
-		successCallback(entityName);
-		return;
-	}
-
-	try {
-		_getCollectionNames(entityName, config, successCallback, errorCallback);
-	}
-	catch (error) {
-		errorCallback({ message: 'Unable to fetch Collection Names. Error: ' + error.message });
-	}
-}
-
-function makeRequest(method, request, functionName, config, responseParams, resolve, reject) {
-	//no need to make a request to web api if it's a part of batch
-	if (request.isBatch) {
-		//add response parameters to parse
-		_responseParseParams.push(responseParams || {});
-
-		_batchRequestCollection.push({ method: method, request: Utility.copyObject(request) });
-
-		//check for errors
-		RequestConverter.convertRequest(request, functionName, config);
-	}
-	else {
-		_checkCollectionName(request.collection, config, function (collectionName) {
-			request.collection = collectionName;
-			var result = RequestConverter.convertRequest(request, functionName, config);
-			sendRequest(method, result.url, config, request.data || request.entity, result.headers, responseParams, resolve, reject, request.isBatch, result.async, request.timeout || config.timeout);
-		}, reject);
-	}
-}
-
-module.exports = {
-	sendRequest: sendRequest,
-	makeRequest: makeRequest,
-	getCollectionName: findCollectionName,
-
-};
-
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ 530:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 "use strict";
 
 
-var DWA = __webpack_require__(1);
-var Utility = __webpack_require__(2);
-var ErrorHelper = __webpack_require__(0);
-var Request = __webpack_require__(4);
+var DWA = __webpack_require__(923);
+var Utility = __webpack_require__(389);
+var ErrorHelper = __webpack_require__(535);
+var Request = __webpack_require__(67);
 
 //string es6 polyfill
 if (!String.prototype.endsWith || !String.prototype.startsWith) {
-	__webpack_require__(3);
+	__webpack_require__(200);
 }
 
-
+/* webpack-strip-block:removed */
 
 /**
  * Configuration object for DynamicsWebApi
@@ -1011,6 +176,7 @@ function DynamicsWebApi(config) {
 	};
 
 	var _isBatch = false;
+	var _batchRequestId;
 
 	if (!config) {
 		config = _internalConfig;
@@ -1084,6 +250,7 @@ function DynamicsWebApi(config) {
 
 	var _makeRequest = function (method, request, functionName, responseParams) {
 		request.isBatch = _isBatch;
+		request.requestId = _batchRequestId;
 		return new Promise(function (resolve, reject) {
 			Request.makeRequest(method, request, functionName, _internalConfig, responseParams, resolve, reject);
 		});
@@ -1454,6 +621,58 @@ function DynamicsWebApi(config) {
 
 		return this.upsertRequest(request);
 	};
+
+	//var _uploadFileChunk = function (request, fileBytes, chunkSize, offset) {
+	//	offset = offset || 0;
+
+	//	var count = (offset + chunkSize) > fileBytes.length
+	//		? fileBytes.length % chunkSize
+	//		: chunkSize;
+
+	//	var content = new Uint8Array(count);
+	//	for (var i = 0; i < count; i++) {
+	//		content[i] = fileBytes[offset + i];
+	//	}
+
+	//	request.data = content;
+	//	request.contentRange = "bytes " + offset + "-" + (offset + count - 1) + "/" + fileBytes.length;
+
+	//	return _makeRequest("PATCH", request, "uploadFile")
+	//		.then(function (response) {
+	//			if (response === true) {
+	//				return _uploadFileChunk(request, fileBytes, chunkSize, offset + chunkSize);
+	//			}
+
+	//			return true;
+	//		});
+	//}
+
+	///**
+	// * Upload File to a File Field
+	// * 
+	// * @param {any} request - An object that represents all possible options for a current request.
+	// */
+	//this.uploadFile = function (request) {
+	//	ErrorHelper.parameterCheck(request, "DynamicsWebApi.uploadFile", "request");
+
+	//	var internalRequest = Utility.copyObject(request);
+	//	delete internalRequest.data;
+
+	//	return _makeRequest("PATCH", request, "uploadFile")
+	//		.then(response => {
+	//			internalRequest.url = response.location;
+	//			return _uploadFileChunk(internalRequest, request.data, response.chunkSize);
+	//		});
+	//};
+
+	//this.downloadFile = function (request) {
+	//	ErrorHelper.parameterCheck(request, "DynamicsWebApi.downloadFile", "request");
+
+	//	return _makeRequest("GET", request, "downloadFile")
+	//		.then(response => {
+
+	//		});
+	//}
 
 	var retrieveMultipleRequest = function (request, nextPageLink) {
 
@@ -2281,6 +1500,7 @@ function DynamicsWebApi(config) {
      */
 	this.startBatch = function () {
 		_isBatch = true;
+		_batchRequestId = Utility.generateUUID();
 	};
 
     /**
@@ -2301,6 +1521,8 @@ function DynamicsWebApi(config) {
 		return _makeRequest('POST', request, 'executeBatch')
 			.then(function (response) {
 				return response.data;
+			}).finally(function () {
+				_batchRequestId = null;
 			});
 	};
 
@@ -2343,16 +1565,246 @@ DynamicsWebApi.prototype.utility = {
 module.exports = DynamicsWebApi;
 
 /***/ }),
-/* 6 */
-/***/ (function(module, exports) {
+
+/***/ 535:
+/***/ ((module) => {
+
+function throwParameterError(functionName, parameterName, type) {
+    throw new Error(type
+        ? functionName + " requires the " + parameterName + " parameter to be of type " + type
+        : functionName + " requires the " + parameterName + " parameter.");
+};
+
+var ErrorHelper = {
+    handleErrorResponse: function (req) {
+        ///<summary>
+        /// Private function return an Error object to the errorCallback
+        ///</summary>
+        ///<param name="req" type="XMLHttpRequest">
+        /// The XMLHttpRequest response that returned an error.
+        ///</param>
+        ///<returns>Error</returns>
+        throw new Error("Error: " +
+            req.status + ": " +
+            req.message);
+    },
+
+    parameterCheck: function (parameter, functionName, parameterName, type) {
+        ///<summary>
+        /// Private function used to check whether required parameters are null or undefined
+        ///</summary>
+        ///<param name="parameter" type="Object">
+        /// The parameter to check;
+        ///</param>
+        ///<param name="message" type="String">
+        /// The error message text to include when the error is thrown.
+        ///</param>
+        if ((typeof parameter === "undefined") || parameter === null || parameter == "") {
+            throwParameterError(functionName, parameterName, type);
+        }
+    },
+
+    stringParameterCheck: function (parameter, functionName, parameterName) {
+        ///<summary>
+        /// Private function used to check whether required parameters are null or undefined
+        ///</summary>
+        ///<param name="parameter" type="String">
+        /// The string parameter to check;
+        ///</param>
+        ///<param name="message" type="String">
+        /// The error message text to include when the error is thrown.
+        ///</param>
+        if (typeof parameter != "string") {
+            throwParameterError(functionName, parameterName, "String");
+        }
+    },
+
+    arrayParameterCheck: function (parameter, functionName, parameterName) {
+        ///<summary>
+        /// Private function used to check whether required parameters are null or undefined
+        ///</summary>
+        ///<param name="parameter" type="String">
+        /// The string parameter to check;
+        ///</param>
+        ///<param name="message" type="String">
+        /// The error message text to include when the error is thrown.
+        ///</param>
+        if (parameter.constructor !== Array) {
+            throwParameterError(functionName, parameterName, "Array");
+        }
+    },
+
+    stringOrArrayParameterCheck: function (parameter, functionName, parameterName) {
+        if (parameter.constructor !== Array && typeof parameter != "string") {
+            throwParameterError(functionName, parameterName, "String or Array");
+        }
+    },
+
+    numberParameterCheck: function (parameter, functionName, parameterName) {
+        ///<summary>
+        /// Private function used to check whether required parameters are null or undefined
+        ///</summary>
+        ///<param name="parameter" type="Number">
+        /// The string parameter to check;
+        ///</param>
+        ///<param name="message" type="String">
+        /// The error message text to include when the error is thrown.
+        ///</param>
+        if (typeof parameter != "number") {
+            if (typeof parameter === "string" && parameter) {
+                if (!isNaN(parseInt(parameter))) {
+                    return;
+                }
+            }
+            throwParameterError(functionName, parameterName, "Number");
+        }
+    },
+
+    boolParameterCheck: function (parameter, functionName, parameterName) {
+        ///<summary>
+        /// Private function used to check whether required parameters are null or undefined
+        ///</summary>
+        ///<param name="parameter" type="Boolean">
+        /// The string parameter to check;
+        ///</param>
+        ///<param name="message" type="String">
+        /// The error message text to include when the error is thrown.
+        ///</param>
+        if (typeof parameter != "boolean") {
+            throwParameterError(functionName, parameterName, "Boolean");
+        }
+    },
+
+    guidParameterCheck: function (parameter, functionName, parameterName) {
+        ///<summary>
+        /// Private function used to check whether required parameter is a valid GUID
+        ///</summary>
+        ///<param name="parameter" type="String">
+        /// The GUID parameter to check;
+        ///</param>
+        ///<param name="message" type="String">
+        /// The error message text to include when the error is thrown.
+        ///</param>
+        /// <returns type="String" />
+
+        try {
+            var match = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(parameter)[0];
+
+            return match;
+        }
+        catch (error) {
+            throwParameterError(functionName, parameterName, "GUID String");
+        }
+    },
+
+    keyParameterCheck: function (parameter, functionName, parameterName) {
+
+        try {
+            ErrorHelper.stringParameterCheck(parameter, functionName, parameterName);
+
+            //check if the param is a guid
+            var match = /^{?([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})}?$/i.exec(parameter);
+            if (match) {
+                return match[1];
+            }
+
+            //check the alternate key
+            var alternateKeys = parameter.split(',');
+
+            if (alternateKeys.length) {
+                for (var i = 0; i < alternateKeys.length; i++) {
+                    alternateKeys[i] = alternateKeys[i].trim().replace('"', "'");
+                    /^[\w\d\_]+\=('[^\'\r\n]+'|\d+)$/i.exec(alternateKeys[i])[0];
+                }
+            }
+
+            return alternateKeys.join(',');
+        }
+        catch (error) {
+            throwParameterError(functionName, parameterName, "String representing GUID or Alternate Key");
+        }
+    },
+
+    callbackParameterCheck: function (callbackParameter, functionName, parameterName) {
+        ///<summary>
+        /// Private function used to check whether required callback parameters are functions
+        ///</summary>
+        ///<param name="callbackParameter" type="Function">
+        /// The callback parameter to check;
+        ///</param>
+        ///<param name="message" type="String">
+        /// The error message text to include when the error is thrown.
+        ///</param>
+        if (typeof callbackParameter != "function") {
+            throwParameterError(functionName, parameterName, "Function");
+        }
+    },
+
+    batchIncompatible: function (functionName, isBatch) {
+        if (isBatch) {
+            isBatch = false;
+            throw new Error(functionName + " cannot be used in a BATCH request.");
+        }
+    },
+
+    batchNotStarted: function (isBatch) {
+        if (!isBatch) {
+            throw new Error("Batch operation has not been started. Please call a DynamicsWebApi.startBatch() function prior to calling DynamicsWebApi.executeBatch() to perform a batch request correctly.");
+        }
+    },
+
+    handleHttpError: function (parsedError, parameters) {
+        var error = new Error();
+
+        Object.keys(parsedError).forEach(function(k) {
+            error[k] = parsedError[k];
+        });
+
+        if (parameters) {
+            Object.keys(parameters).forEach(function (k) {
+                error[k] = parameters[k];
+            });
+        }
+
+        return error;
+    }
+};
+
+module.exports = ErrorHelper;
+
+/***/ }),
+
+/***/ 984:
+/***/ (() => {
 
 Array.isArray = function (arg) {
     return Object.prototype.toString.call(arg) === '[object Array]';
 };
 
 /***/ }),
-/* 7 */
-/***/ (function(module, exports) {
+
+/***/ 200:
+/***/ (() => {
+
+String.prototype.endsWith = function (searchString, position) {
+    var subjectString = this.toString();
+    if (typeof position !== 'number' || !isFinite(position) || Math.floor(position) !== position || position > subjectString.length) {
+        position = subjectString.length;
+    }
+    position -= searchString.length;
+    var lastIndex = subjectString.lastIndexOf(searchString, position);
+    return lastIndex !== -1 && lastIndex === position;
+};
+
+String.prototype.startsWith = function (searchString, position) {
+    position = position || 0;
+    return this.substr(position, searchString.length) === searchString;
+};
+
+/***/ }),
+
+/***/ 723:
+/***/ ((module) => {
 
 module.exports = function dateReviver(key, value) {
     ///<summary>
@@ -2375,17 +1827,18 @@ module.exports = function dateReviver(key, value) {
 };
 
 /***/ }),
-/* 8 */
-/***/ (function(module, exports, __webpack_require__) {
 
-var DWA = __webpack_require__(1);
-var Utility = __webpack_require__(2);
-var ErrorHelper = __webpack_require__(0);
-var dateReviver = __webpack_require__(7);
+/***/ 49:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+var DWA = __webpack_require__(923);
+var Utility = __webpack_require__(389);
+var ErrorHelper = __webpack_require__(535);
+var dateReviver = __webpack_require__(723);
 
 //string es6 polyfill
 if (!String.prototype.endsWith || !String.prototype.startsWith) {
-	__webpack_require__(3);
+	__webpack_require__(200);
 }
 
 function getFormattedKeyValue(keyName, value) {
@@ -2668,16 +2121,23 @@ module.exports = function parseResponse(response, responseHeaders, parseParams) 
 					parseResult = guidResult[1];
 				}
 			}
+			else if (responseHeaders['x-ms-chunk-size'] && responseHeaders['Location']) {
+				parseResult = {
+					chunkSize: parseInt(responseHeaders['x-ms-chunk-size']),
+					location: responseHeaders['Location']
+				}
+			}
 	}
 
-	parseParams.length = 0;
+	//parseParams.length = 0;
 
 	return parseResult;
 }
 
 /***/ }),
-/* 9 */
-/***/ (function(module, exports) {
+
+/***/ 364:
+/***/ ((module) => {
 
 module.exports = function parseResponseHeaders(headerStr) {
     var headers = {};
@@ -2696,15 +2156,452 @@ module.exports = function parseResponseHeaders(headerStr) {
 };
 
 /***/ }),
-/* 10 */
-/***/ (function(module, exports, __webpack_require__) {
 
-var parseResponse = __webpack_require__(8);
-var parseResponseHeaders = __webpack_require__(9);
-var ErrorHelper = __webpack_require__(0);
+/***/ 67:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+var Utility = __webpack_require__(389);
+var RequestConverter = __webpack_require__(359);
+
+var _entityNames;
+
+/**
+ * Searches for a collection name by provided entity name in a cached entity metadata.
+ * The returned collection name can be null.
+ *
+ * @param {string} entityName - entity name
+ * @returns {string} - a collection name
+ */
+function findCollectionName(entityName) {
+	var xrmInternal = Utility.getXrmInternal();
+
+	if (!Utility.isNull(xrmInternal) && typeof xrmInternal.getEntitySetName === "function") {
+		return xrmInternal.getEntitySetName(entityName) || entityName;
+	}
+
+	var collectionName = null;
+
+	if (!Utility.isNull(_entityNames)) {
+		collectionName = _entityNames[entityName];
+		if (Utility.isNull(collectionName)) {
+			for (var key in _entityNames) {
+				if (_entityNames[key] === entityName) {
+					return entityName;
+				}
+			}
+		}
+	}
+
+	return collectionName;
+}
+
+function setStandardHeaders(additionalHeaders) {
+	additionalHeaders["Accept"] = "application/json";
+	additionalHeaders["OData-MaxVersion"] = "4.0";
+	additionalHeaders["OData-Version"] = "4.0";
+	additionalHeaders['Content-Type'] = additionalHeaders["Content-Range"]
+		? 'application/octet-stream'
+		: 'application/json; charset=utf-8';
+
+	return additionalHeaders;
+}
+
+function processData(data, config) {
+	var stringifiedData;
+	if (data) {
+		if (data instanceof Uint8Array || data instanceof Uint16Array || data instanceof Uint32Array)
+			return data;
+
+		stringifiedData = JSON.stringify(data, function (key, value) {
+			/// <param name="key" type="String">Description</param>
+			if (key.endsWith('@odata.bind') || key.endsWith('@odata.id')) {
+				if (typeof value === 'string' && !value.startsWith('$')) {
+					//remove brackets in guid
+					if (/\(\{[\w\d-]+\}\)/g.test(value)) {
+						value = value.replace(/(.+)\(\{([\w\d-]+)\}\)/g, '$1($2)');
+					}
+
+					if (config.useEntityNames) {
+						//replace entity name with collection name
+						var regularExpression = /([\w_]+)(\([\d\w-]+\))$/;
+						var valueParts = regularExpression.exec(value);
+						if (valueParts.length > 2) {
+							var collectionName = findCollectionName(valueParts[1]);
+
+							if (!Utility.isNull(collectionName)) {
+								value = value.replace(regularExpression, collectionName + '$2');
+							}
+						}
+					}
+
+					if (!value.startsWith(config.webApiUrl)) {
+						//add full web api url if it's not set
+						if (key.endsWith('@odata.bind')) {
+							if (!value.startsWith('/')) {
+								value = '/' + value;
+							}
+						}
+						else {
+							value = config.webApiUrl + value.replace(/^\//, '');
+						}
+					}
+				}
+			}
+			else
+				if (key.startsWith('oData') ||
+					key.endsWith('_Formatted') ||
+					key.endsWith('_NavigationProperty') ||
+					key.endsWith('_LogicalName')) {
+					value = undefined;
+				}
+
+			return value;
+		});
+
+		stringifiedData = stringifiedData.replace(/[\u007F-\uFFFF]/g, function (chr) {
+			return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substr(-4);
+		});
+	}
+
+	return stringifiedData;
+}
+
+var _batchRequestCollection = {};
+var _responseParseParams = {};
+
+var _convertToBatch = function (requestCollection, config) {
+	var batchBoundary = 'dwa_batch_' + Utility.generateUUID();
+
+	var batchBody = [];
+	var currentChangeSet = null;
+	var contentId = 100000;
+
+	for (var i = 0; i < requestCollection.length; i++) {
+		var rawRequest = requestCollection[i].request;
+
+		if (config.useEntityNames) {
+			rawRequest.collection = findCollectionName(rawRequest.collection) || rawRequest.collection;
+		}
+
+		var request = RequestConverter.convertRequest(rawRequest, "executeBatch", config);
+		var method = requestCollection[i].method;
+		var isGet = method === 'GET';
+
+		if (isGet && currentChangeSet) {
+			//end current change set
+			batchBody.push('\n--' + currentChangeSet + '--');
+
+			currentChangeSet = null;
+			contentId = 100000;
+		}
+
+		if (!currentChangeSet) {
+			batchBody.push('\n--' + batchBoundary);
+
+			if (!isGet) {
+				currentChangeSet = 'changeset_' + Utility.generateUUID();
+				batchBody.push('Content-Type: multipart/mixed;boundary=' + currentChangeSet);
+			}
+		}
+
+		if (!isGet) {
+			batchBody.push('\n--' + currentChangeSet);
+		}
+
+		batchBody.push('Content-Type: application/http');
+		batchBody.push('Content-Transfer-Encoding: binary');
+
+		if (!isGet) {
+			var contentIdValue = request.headers.hasOwnProperty('Content-ID')
+				? request.headers['Content-ID']
+				: ++contentId;
+
+			batchBody.push('Content-ID: ' + contentIdValue);
+		}
+
+		if (!request.url.startsWith("$")) {
+			batchBody.push('\n' + method + ' ' + config.webApiUrl + request.url + ' HTTP/1.1');
+		}
+		else {
+			batchBody.push('\n' + method + ' ' + request.url + ' HTTP/1.1');
+		}
+
+		if (isGet) {
+			batchBody.push('Accept: application/json');
+		}
+		else {
+			batchBody.push('Content-Type: application/json');
+		}
+
+		for (var key in request.headers) {
+			if (key === 'Authorization' || key === 'Content-ID')
+				continue;
+
+			batchBody.push(key + ': ' + request.headers[key]);
+		}
+
+		var data = rawRequest.data || rawRequest.entity;
+
+		if (!isGet && data) {
+			batchBody.push('\n' + processData(data, config));
+		}
+	}
+
+	if (currentChangeSet) {
+		batchBody.push('\n--' + currentChangeSet + '--');
+	}
+
+	batchBody.push('\n--' + batchBoundary + '--');
+
+	return { boundary: batchBoundary, body: batchBody.join('\n') };
+};
+
+function addResponseParams(requestId, responseParams) {
+	if (_responseParseParams[requestId])
+		_responseParseParams[requestId].push(responseParams);
+	else
+		_responseParseParams[requestId] = [responseParams];
+}
+
+function addRequestToBatchCollection(requestId, request) {
+	if (_batchRequestCollection[requestId])
+		_batchRequestCollection[requestId].push(request);
+	else
+		_batchRequestCollection[requestId] = [request];
+}
+
+/**
+ * Sends a request to given URL with given parameters
+ *
+ * @param {string} method - Method of the request.
+ * @param {string} path - Request path.
+ * @param {Object} config - DynamicsWebApi config.
+ * @param {Object} [data] - Data to send in the request.
+ * @param {Object} [additionalHeaders] - Object with additional headers. IMPORTANT! This object does not contain default headers needed for every request.
+ * @param {any} [responseParams] - parameters for parsing the response
+ * @param {Function} successCallback - A callback called on success of the request.
+ * @param {Function} errorCallback - A callback called when a request failed.
+ * @param {boolean} [isBatch] - Indicates whether the request is a Batch request or not. Default: false
+ * @param {boolean} [isAsync] - Indicates whether the request should be made synchronously or asynchronously.
+ * @param {number} [timeout] - Indicates timeout.
+ */
+function sendRequest(method, path, config, data, additionalHeaders, responseParams, successCallback, errorCallback, isBatch, isAsync, timeout, requestId) {
+
+	additionalHeaders = additionalHeaders || {};
+	responseParams = responseParams || {};
+	requestId = requestId || Utility.generateUUID();
+
+	//add response parameters to parse
+	addResponseParams(requestId, responseParams);
+	//_responseParseParams.push(responseParams);
+
+	//stringify passed data
+	var processedData = processData(data, config);
+
+	if (path === '$batch') {
+		var batchResult = _convertToBatch(_batchRequestCollection[requestId], config);
+
+		processedData = batchResult.body;
+
+		//clear an array of requests
+		delete _batchRequestCollection[requestId];
+
+		additionalHeaders = setStandardHeaders(additionalHeaders);
+		additionalHeaders['Content-Type'] = 'multipart/mixed;boundary=' + batchResult.boundary;
+	}
+	else {
+		additionalHeaders = setStandardHeaders(additionalHeaders);
+	}
+
+	responseParams.convertedToBatch = false;
+
+	//if the URL contains more characters than max possible limit, convert the request to a batch request
+	if (path.length > 2000) {
+		var batchBoundary = 'dwa_batch_' + Utility.generateUUID();
+
+		var batchBody = [];
+		batchBody.push('--' + batchBoundary);
+		batchBody.push('Content-Type: application/http');
+		batchBody.push('Content-Transfer-Encoding: binary\n');
+		batchBody.push(method + ' ' + config.webApiUrl + path + ' HTTP/1.1');
+
+		for (var key in additionalHeaders) {
+			if (key === 'Authorization')
+				continue;
+
+			batchBody.push(key + ': ' + additionalHeaders[key]);
+
+			//authorization header is an exception. bug #27
+			delete additionalHeaders[key];
+		}
+
+		batchBody.push('\n--' + batchBoundary + '--');
+
+		processedData = batchBody.join('\n');
+
+		additionalHeaders = setStandardHeaders(additionalHeaders);
+		additionalHeaders['Content-Type'] = 'multipart/mixed;boundary=' + batchBoundary;
+		path = '$batch';
+		method = 'POST';
+
+		responseParams.convertedToBatch = true;
+	}
+
+	if (config.impersonate && !additionalHeaders['MSCRMCallerID']) {
+		additionalHeaders['MSCRMCallerID'] = config.impersonate;
+	}
+
+	if (config.impersonateAAD && !additionalHeaders['CallerObjectId']) {
+		additionalHeaders['CallerObjectId'] = config.impersonateAAD;
+	}
+
+	var executeRequest;
+	/* webpack-strip-block:removed */
+		executeRequest = __webpack_require__(105);
+		/* webpack-strip-block:removed */
+
+	var sendInternalRequest = function (token) {
+		if (token) {
+			if (!additionalHeaders) {
+				additionalHeaders = {};
+			}
+			additionalHeaders['Authorization'] = 'Bearer ' +
+				(token.hasOwnProperty('accessToken') ?
+					token.accessToken :
+					token);
+		}
+
+		executeRequest({
+			method: method,
+			uri: config.webApiUrl + path,
+			data: processedData,
+			requestId: requestId,
+			additionalHeaders: additionalHeaders,
+			responseParams: _responseParseParams,
+			successCallback: successCallback,
+			errorCallback: errorCallback,
+			isAsync: isAsync,
+			timeout: timeout,
+			requestId: requestId
+		});
+	};
+
+	//call a token refresh callback only if it is set and there is no "Authorization" header set yet
+	if (config.onTokenRefresh && (!additionalHeaders || (additionalHeaders && !additionalHeaders['Authorization']))) {
+		config.onTokenRefresh(sendInternalRequest);
+	}
+	else {
+		sendInternalRequest();
+	}
+}
+
+function _getCollectionNames(entityName, config, successCallback, errorCallback) {
+
+	//make a web api call for Node.js apps
+	if (!Utility.isNull(_entityNames)) {
+		successCallback(findCollectionName(entityName) || entityName);
+	}
+	else {
+		var resolve = function (result) {
+			_entityNames = {};
+			for (var i = 0; i < result.data.value.length; i++) {
+				_entityNames[result.data.value[i].LogicalName] = result.data.value[i].EntitySetName;
+			}
+
+			successCallback(findCollectionName(entityName) || entityName);
+		};
+
+		var reject = function (error) {
+			errorCallback({ message: 'Unable to fetch EntityDefinitions. Error: ' + error.message });
+		};
+
+		var request = RequestConverter.convertRequest({
+			collection: 'EntityDefinitions',
+			select: ['EntitySetName', 'LogicalName'],
+			noCache: true
+		}, 'retrieveMultiple', config);
+
+		sendRequest('GET', request.url, config, null, request.headers, null, resolve, reject, false, request.async, config.timeout);
+	}
+}
+
+function _isEntityNameException(entityName) {
+	var exceptions = [
+		'EntityDefinitions', '$metadata', 'RelationshipDefinitions',
+		'GlobalOptionSetDefinitions', 'ManagedPropertyDefinitions'];
+
+	return exceptions.indexOf(entityName) > -1;
+}
+
+function _checkCollectionName(entityName, config, successCallback, errorCallback) {
+
+	if (_isEntityNameException(entityName) || Utility.isNull(entityName)) {
+		successCallback(entityName);
+		return;
+	}
+
+	entityName = entityName.toLowerCase();
+
+	if (!config.useEntityNames) {
+		successCallback(entityName);
+		return;
+	}
+
+	try {
+		_getCollectionNames(entityName, config, successCallback, errorCallback);
+	}
+	catch (error) {
+		errorCallback({ message: 'Unable to fetch Collection Names. Error: ' + error.message });
+	}
+}
+
+function makeRequest(method, request, functionName, config, responseParams, resolve, reject) {
+	//no need to make a request to web api if it's a part of batch
+	if (request.isBatch) {
+		//add response parameters to parse
+		addResponseParams(request.requestId, responseParams || {});
+		//_responseParseParams.push(responseParams || {});
+
+		addRequestToBatchCollection(request.requestId, { method: method, request: Utility.copyObject(request) })
+		//_batchRequestCollection.push({ method: method, request: Utility.copyObject(request) });
+
+		//deleting additional fields
+		delete request.isBatch;
+		delete request.requestId;
+
+		//check for errors
+		RequestConverter.convertRequest(request, functionName, config);
+	}
+	else {
+		_checkCollectionName(request.collection, config, function (collectionName) {
+			request.collection = collectionName;
+			var result = RequestConverter.convertRequest(request, functionName, config);
+			var requestId = request.requestId;
+			delete request.requestId;
+			sendRequest(method, result.url, config, request.data || request.entity, result.headers, responseParams, resolve, reject, request.isBatch, result.async, request.timeout || config.timeout, requestId);
+		}, reject);
+	}
+}
+
+module.exports = {
+	sendRequest: sendRequest,
+	makeRequest: makeRequest,
+	getCollectionName: findCollectionName,
+	/* webpack-strip-block:removed */
+};
+
+
+/***/ }),
+
+/***/ 105:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+var parseResponse = __webpack_require__(49);
+var parseResponseHeaders = __webpack_require__(364);
+var ErrorHelper = __webpack_require__(535);
 
 if (!Array.isArray) {
-	__webpack_require__(6);
+	__webpack_require__(984);
 }
 
 /**
@@ -2720,6 +2617,7 @@ var xhrRequest = function (options) {
 	var successCallback = options.successCallback;
 	var errorCallback = options.errorCallback;
 	var isAsync = options.isAsync;
+	var requestId = options.requestId;
 
 	var request = new XMLHttpRequest();
 	request.open(method, uri, isAsync);
@@ -2737,7 +2635,7 @@ var xhrRequest = function (options) {
 				case 204: // Success with no content returned in response body.
 				case 304: {// Success with Not Modified
 					var responseHeaders = parseResponseHeaders(request.getAllResponseHeaders());
-					var responseData = parseResponse(request.responseText, responseHeaders, responseParams);
+					var responseData = parseResponse(request.responseText, responseHeaders, responseParams[requestId]);
 
 					var response = {
 						data: responseData,
@@ -2745,7 +2643,7 @@ var xhrRequest = function (options) {
 						status: request.status
 					};
 
-					responseParams.length = 0;
+					delete responseParams[requestId];
 					request = null;
 
 					successCallback(response);
@@ -2756,7 +2654,7 @@ var xhrRequest = function (options) {
 					var error;
 					try {
 						var headers = parseResponseHeaders(request.getAllResponseHeaders());
-						var errorParsed = parseResponse(request.responseText, headers, responseParams);
+						var errorParsed = parseResponse(request.responseText, headers, responseParams[requestId]);
 
 						if (Array.isArray(errorParsed)) {
 							errorCallback(errorParsed);
@@ -2779,7 +2677,7 @@ var xhrRequest = function (options) {
 						headers: headers
 					}
 
-					responseParams.length = 0;
+					delete responseParams[requestId];
 					request = null;
 
 					errorCallback(ErrorHelper.handleHttpError(error, errorResponse));
@@ -2801,7 +2699,7 @@ var xhrRequest = function (options) {
 			message: request.responseText || "Network Error",
 			headers: headers
 		}));
-		responseParams.length = 0;
+		delete responseParams[requestId];
 		request = null;
 	};
 
@@ -2813,7 +2711,7 @@ var xhrRequest = function (options) {
 			message: request.responseText || "Request Timed Out",
 			headers: headers
 		}));
-		responseParams.length = 0;
+		delete responseParams[requestId];
 		request = null;
 	};
 
@@ -2826,14 +2724,15 @@ module.exports = xhrRequest;
 
 
 /***/ }),
-/* 11 */
-/***/ (function(module, exports, __webpack_require__) {
+
+/***/ 359:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 "use strict";
 
-var DWA = __webpack_require__(1);
-var ErrorHelper = __webpack_require__(0);
-var buildPreferHeader = __webpack_require__(13);
+var DWA = __webpack_require__(923);
+var ErrorHelper = __webpack_require__(535);
+var buildPreferHeader = __webpack_require__(956);
 
 /**
  * @typedef {Object} ConvertedRequestOptions
@@ -2880,7 +2779,7 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
                     url += '/' + request.metadataAttributeType;
                 }
             }
-        }
+		}
 
         if (request.select != null && request.select.length) {
             ErrorHelper.arrayParameterCheck(request.select, 'DynamicsWebApi.' + functionName, 'request.select');
@@ -2918,7 +2817,12 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
             }
 
             requestArray.push("$filter=" + encodeURIComponent(filterResult));
-        }
+		}
+
+		if (request.fieldName) {
+			ErrorHelper.stringParameterCheck(request.fieldName, 'DynamicsWebApi.' + functionName, 'request.fieldName');
+			url += '/' + request.fieldName;
+		}
 
         if (request.savedQuery) {
             requestArray.push("savedQuery=" + ErrorHelper.guidParameterCheck(request.savedQuery, 'DynamicsWebApi.' + functionName, "request.savedQuery"));
@@ -2946,7 +2850,13 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
         if (request.orderBy != null && request.orderBy.length) {
             ErrorHelper.arrayParameterCheck(request.orderBy, 'DynamicsWebApi.' + functionName, "request.orderBy");
             requestArray.push("$orderby=" + request.orderBy.join(','));
-        }
+		}
+
+		if (request.filename) {
+			ErrorHelper.stringParameterCheck(request.filename, 'DynamicsWebApi.' + functionName, "request.filename");
+			requestArray.push("x-ms-file-name=" + request.filename);
+			headers["x-ms-transfer-mode"] = "chunked";
+		}
 
         var prefer = buildPreferHeader(request, functionName, config);
 
@@ -2994,7 +2904,12 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
 
         if (request.data) {
             ErrorHelper.parameterCheck(request.data, 'DynamicsWebApi.' + functionName, 'request.data');
-        }
+		}
+
+		if (request.contentRange) {
+			ErrorHelper.stringParameterCheck(request.contentRange, 'DynamicsWebApi.' + functionName, 'request.contentRange');
+			headers['Content-Range'] = request.contentRange;
+		}
 
         if (request.noCache) {
             ErrorHelper.boolParameterCheck(request.noCache, 'DynamicsWebApi.' + functionName, 'request.noCache');
@@ -3130,8 +3045,163 @@ module.exports = RequestConverter;
 
 
 /***/ }),
-/* 12 */
-/***/ (function(module, exports) {
+
+/***/ 389:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+var uCrypto = getCrypto();
+
+function isNull(value) {
+	return typeof value === "undefined" || value == null;
+}
+
+function getCrypto() {
+	if (typeof process !== "undefined") {
+		return __webpack_require__(906);
+	}
+	else if (typeof window !== "undefined")
+		return window.crypto;
+
+	return null;
+}
+
+function generateRandomBytes() {
+	if (typeof uCrypto.getRandomValues !== "undefined") {
+		return uCrypto.getRandomValues(new Uint8Array(1));
+	}
+
+	return uCrypto.randomBytes(1);
+}
+
+function generateUUID() {
+	return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
+		(c ^ generateRandomBytes()[0] & 15 >> c / 4).toString(16)
+	);
+}
+
+function getXrmContext() {
+	if (typeof GetGlobalContext !== 'undefined') {
+		return GetGlobalContext();
+	}
+	else {
+		if (typeof Xrm !== 'undefined') {
+			//d365 v.9.0
+			if (!isNull(Xrm.Utility) && !isNull(Xrm.Utility.getGlobalContext)) {
+				return Xrm.Utility.getGlobalContext();
+			}
+			else if (!isNull(Xrm.Page) && !isNull(Xrm.Page.context)) {
+				return Xrm.Page.context;
+			}
+		}
+	}
+
+	throw new Error('Xrm Context is not available. In most cases, it can be resolved by adding a reference to a ClientGlobalContext.js.aspx. Please refer to MSDN documentation for more details.');
+}
+
+function getClientUrl() {
+	var context = getXrmContext();
+
+	var clientUrl = context.getClientUrl();
+
+	if (clientUrl.match(/\/$/)) {
+		clientUrl = clientUrl.substring(0, clientUrl.length - 1);
+	}
+	return clientUrl;
+}
+
+function initWebApiUrl(version) {
+	return getClientUrl() + '/api/data/v' + version + '/';
+}
+
+function getXrmInternal() {
+	//todo: Xrm.Internal namespace is not supported
+	return typeof Xrm !== "undefined" ? Xrm.Internal : null;
+}
+
+function getXrmUtility() {
+	return typeof Xrm !== "undefined" ? Xrm.Utility : null;
+}
+
+function _isObject(obj) {
+	var type = typeof obj;
+	return type === 'object' && !!obj;
+}
+
+function copyObject(src) {
+	var target = {};
+	for (var prop in src) {
+		if (src.hasOwnProperty(prop)) {
+			// if the value is a nested object, recursively copy all its properties
+			if (_isObject(src[prop]) && Object.prototype.toString.call(src[prop]) !== '[object Date]') {
+				if (!Array.isArray(src[prop])) {
+					target[prop] = copyObject(src[prop]);
+				}
+				else {
+					target[prop] = src[prop].slice();
+				}
+
+			} else {
+				target[prop] = src[prop];
+			}
+		}
+	}
+	return target;
+}
+
+var Utility = {
+	/**
+	 * Builds parametes for a funciton. Returns '()' (if no parameters) or '([params])?[query]'
+	 *
+	 * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
+	 * @returns {string}
+	 */
+	buildFunctionParameters: __webpack_require__(390),
+
+	/**
+	 * Parses a paging cookie returned in response
+	 *
+	 * @param {string} pageCookies - Page cookies returned in @Microsoft.Dynamics.CRM.fetchxmlpagingcookie.
+	 * @param {number} currentPageNumber - A current page number. Fix empty paging-cookie for complex fetch xmls.
+	 * @returns {{ cookie: "", number: 0, next: 1 }}
+	 */
+	getFetchXmlPagingCookie: __webpack_require__(458),
+
+	/**
+	 * Converts a response to a reference object
+	 *
+	 * @param {Object} responseData - Response object
+	 * @returns {ReferenceObject}
+	 */
+	convertToReferenceObject: __webpack_require__(875),
+
+	/**
+	 * Checks whether the value is JS Null.
+	 * @param {Object} value
+	 * @returns {boolean}
+	 */
+	isNull: isNull,
+
+	generateUUID: generateUUID,
+
+	getXrmContext: getXrmContext,
+
+	getXrmInternal: getXrmInternal,
+
+	getXrmUtility: getXrmUtility,
+
+	getClientUrl: getClientUrl,
+
+	initWebApiUrl: initWebApiUrl,
+
+	copyObject: copyObject
+};
+
+module.exports = Utility;
+
+/***/ }),
+
+/***/ 390:
+/***/ ((module) => {
 
 /**
  * Builds parametes for a funciton. Returns '()' (if no parameters) or '([params])?[query]'
@@ -3177,11 +3247,12 @@ module.exports = function buildFunctionParameters(parameters) {
 };
 
 /***/ }),
-/* 13 */
-/***/ (function(module, exports, __webpack_require__) {
 
-var DWA = __webpack_require__(1);
-var ErrorHelper = __webpack_require__(0);
+/***/ 956:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+var DWA = __webpack_require__(923);
+var ErrorHelper = __webpack_require__(535);
 
 /**
  * Builds a Prefer header value
@@ -3255,8 +3326,9 @@ module.exports = function buildPreferHeader(request, functionName, config) {
 }
 
 /***/ }),
-/* 14 */
-/***/ (function(module, exports) {
+
+/***/ 875:
+/***/ ((module) => {
 
 /**
  * @typedef {Object} ReferenceObject
@@ -3277,8 +3349,9 @@ module.exports = function convertToReferenceObject(responseData) {
 };
 
 /***/ }),
-/* 15 */
-/***/ (function(module, exports) {
+
+/***/ 458:
+/***/ ((module) => {
 
 /**
  * Parses a paging cookie returned in response
@@ -3313,6 +3386,45 @@ module.exports = function getFetchXmlPagingCookie(pageCookies, currentPageNumber
     }
 };
 
+/***/ }),
+
+/***/ 906:
+/***/ (() => {
+
+/* (ignored) */
+
 /***/ })
-/******/ ]);
+
+/******/ 	});
+/************************************************************************/
+/******/ 	// The module cache
+/******/ 	var __webpack_module_cache__ = {};
+/******/ 	
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/ 		// Check if module is in cache
+/******/ 		if(__webpack_module_cache__[moduleId]) {
+/******/ 			return __webpack_module_cache__[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 			// no module.id needed
+/******/ 			// no module.loaded needed
+/******/ 			exports: {}
+/******/ 		};
+/******/ 	
+/******/ 		// Execute the module function
+/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
+/******/ 	
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/ 	
+/************************************************************************/
+/******/ 	// module exports must be returned from runtime so entry inlining is disabled
+/******/ 	// startup
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(530);
+/******/ })()
+;
 });
