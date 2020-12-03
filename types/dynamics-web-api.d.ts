@@ -1,6 +1,8 @@
-﻿// Type definitions for dynamics-web-api v1.6.15
+﻿// Type definitions for dynamics-web-api v1.7.0
 // Project: https://github.com/AleksandrRogov/DynamicsWebApi/
 // Definitions by: Aleksandr Rogov https://github.com/AleksandrRogov/
+
+import { UploadRequest } from "dynamics-web-api";
 
 declare class DynamicsWebApi {
     /**
@@ -215,6 +217,16 @@ declare class DynamicsWebApi {
      * @param impersonateUserId - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
 	fetchAll<T>(collection: string, fetchXml: string, includeAnnotations?: string, impersonateUserId?: string): Promise<DynamicsWebApi.MultipleResponse<T>>;
+	/**
+	 * Uploads file to a file attribute
+	 * @param request - An object that represents all possible options for a current request.
+	 */
+	uploadFile(request: DynamicsWebApi.UploadRequest): Promise<void>;
+	/**
+	 * Downloads file from a file attribute
+	 * @param request - An object that represents all possible options for a current request.
+	 */
+	downloadFile(request: DynamicsWebApi.DownloadRequest): Promise<DynamicsWebApi.DownloadResponse>;
     /**
      * Associate for a collection-valued navigation property. (1:N or N:N)
      *
@@ -546,6 +558,8 @@ declare namespace DynamicsWebApi {
 		ifmatch?: string;
 		/**BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */
 		contentId?: string;
+		/**Field name that needs to be cleared (for example File Field) */
+		fieldName?: string;
 	}
 
 	interface RetrieveRequest extends CRUDRequest {
@@ -592,6 +606,20 @@ declare namespace DynamicsWebApi {
 		top?: number;
 		/**Sets Prefer header with value 'odata.track-changes' to request that a delta link be returned which can subsequently be used to retrieve entity changes. */
 		trackChanges?: boolean;
+	}
+
+	interface UploadRequest extends CRUDRequest {
+		/**Binary Buffer*/
+		data: Uint8Array | Buffer;
+		/**Name of the file */
+		fileName: string;
+		/**File Field Name */
+		fieldName: string;
+	}
+
+	interface DownloadRequest extends CRUDRequest {
+		/**File Field Name */
+		fieldName: string;
 	}
 
 	interface Config {
@@ -678,6 +706,15 @@ declare namespace DynamicsWebApi {
 			/**Next page cookie */
 			cookie?: string
 		}
+	}
+
+	interface DownloadResponse {
+		/**The name of the file */
+		fileName: string,
+		/**File size */
+		fileSize: number,
+		/**File Data */
+		data: Uint8Array | Buffer
 	}
 }
 

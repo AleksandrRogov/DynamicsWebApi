@@ -1,4 +1,4 @@
-﻿// Type definitions for dynamics-web-api-callbacks v1.6.15
+﻿// Type definitions for dynamics-web-api-callbacks v1.7.0
 // Project: https://github.com/AleksandrRogov/DynamicsWebApi
 // Definitions by: Aleksandr Rogov https://github.com/AleksandrRogov/
 
@@ -257,7 +257,21 @@ declare class DynamicsWebApi {
      * @param impersonateUserId - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
 	fetchAll<T = any>(collection: string, fetchXml: string, successCallback: (result: DynamicsWebApi.MultipleResponse<T>) => void, errorCallback: (error: DynamicsWebApi.RequestError) => void, includeAnnotations?: string, impersonateUserId?: string): void;
-    /**
+	/**
+	 * Uploads file to a file attribute
+	 * @param request - An object that represents all possible options for a current request.
+	 * @param successCallback - The function that will be passed through and be called by a successful response.
+     * @param errorCallback - The function that will be passed through and be called by a failed response.
+	 */
+	uploadFile(request: DynamicsWebApi.UploadRequest, successCallback: () => void, errorCallback: (error: DynamicsWebApi.RequestError) => void): void;
+	/**
+	 * Downloads file from a file attribute
+	 * @param request - An object that represents all possible options for a current request.
+	 * @param successCallback - The function that will be passed through and be called by a successful response.
+     * @param errorCallback - The function that will be passed through and be called by a failed response.
+	 */
+	downloadFile(request: DynamicsWebApi.DownloadRequest, successCallback: (result: DynamicsWebApi.DownloadResponse) => void, errorCallback: (error: DynamicsWebApi.RequestError) => void): void;
+	/**
      * Associate for a collection-valued navigation property. (1:N or N:N)
      *
      * @param collection - Primary Entity Collection name or Entity Name.
@@ -643,6 +657,8 @@ declare namespace DynamicsWebApi {
 		ifmatch?: string;
 		/**BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */
 		contentId?: string;
+		/**Field name that needs to be cleared (for example File Field) */
+		fieldName?: string;
 	}
 
 	interface RetrieveRequest extends CRUDRequest {
@@ -687,6 +703,20 @@ declare namespace DynamicsWebApi {
 		select?: string[];
 		/**Limit the number of results returned by using the $top system query option.Do not use $top with $count! */
 		top?: number;
+	}
+
+	interface UploadRequest extends CRUDRequest {
+		/**Binary Buffer*/
+		data: Uint8Array | Buffer;
+		/**Name of the file */
+		fileName: string;
+		/**File Field Name */
+		fieldName: string;
+	}
+
+	interface DownloadRequest extends CRUDRequest {
+		/**File Field Name */
+		fieldName: string;
 	}
 
 	interface Config {
@@ -773,5 +803,14 @@ declare namespace DynamicsWebApi {
 			/**Next page cookie */
 			cookie?: string
 		}
+	}
+
+	interface DownloadResponse {
+		/**The name of the file */
+		fileName: string,
+		/**File size */
+		fileSize: number,
+		/**File Data */
+		data: Uint8Array | Buffer
 	}
 }

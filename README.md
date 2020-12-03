@@ -17,8 +17,12 @@ If you feel that this project saved your time and you would like to support it, 
 Please check [suggestions and contributions](#contributions) section to learn more on how you can help to improve this project.
 
 **DynamicsWebApi v2 is coming!**
-There will be breaking changes between v1 and v2. One of them: v2 will not have simple requests, only the advanced ones, therefore I highly recommend using request objects for making requests.
-Also v2 will be written in TypeScript and include numerous optimizations. I am very excited to finally release the new version and I hope you too! Stay tuned!
+v2 will be written in TypeScript and include numerous optimizations.
+There will be breaking changes between v1 and v2: 
+  1. v2 will not have simple requests, only the advanced ones (with request objects), therefore I highly recommend using request objects for making requests.
+  2. DynamicsWebApi Callbacks will not be a part of v2.
+
+I am very excited to finally release the new version and I hope you too! Stay tuned!
 
 **Important!** For some reason, npm was not removing `.git` folder from a published package, 
 even though [it should have done it by default](https://docs.npmjs.com/misc/developers#keeping-files-out-of-your-package), therefore
@@ -56,7 +60,7 @@ Please note, that "Dynamics 365" in this readme refers to Microsoft Dynamics 365
   * [Execute Web API functions](#execute-web-api-functions)
   * [Execute Web API actions](#execute-web-api-actions)
   * [Execute Batch Operations](#execute-batch-operations)
-  * [Working with Metadata Definitions](#working-with-metadata-definitions)
+  * [Work with Metadata Definitions](#work-with-metadata-definitions)
     * [Create Entity](#create-entity)
     * [Retrieve Entity](#retrieve-entity)
     * [Update Entity](#update-entity)
@@ -76,6 +80,10 @@ Please note, that "Dynamics 365" in this readme refers to Microsoft Dynamics 365
 	* [Delete Global Option Set](#delete-global-option-set)
 	* [Retrieve Global Option Set](#retrieve-global-option-set)
 	* [Retrieve Multiple Global Option Sets](#retrieve-multiple-global-option-sets)
+  * [Work with File Fields](#work-with-file-fields)
+    * [Upload file](#upload-file)
+    * [Download file](#download-file)
+    * [Delete file](#delete-file)
 * [Formatted Values and Lookup Properties](#formatted-values-and-lookup-properties)
 * [Using Alternate Keys](#using-alternate-keys)
 * [Making requests using Entity Logical Names](#making-requests-using-entity-logical-names)
@@ -234,7 +242,7 @@ Basic functions are: `create`, `update`, `upsert`, `deleteRecord`, `retrieve`, `
 `executeFetchXml`, `executeFetchXmlAll`, `associate`, `disassociate`, `associateSingleValued`, `disassociateSingleValued`, `executeBoundFunction`, 
 `executeUnboundFunction`, `executeBoundAction`, `executeUnboundAction`.
 
-Advanced functions have a suffix `Request` added to the end of the applicable operation. 
+Advanced functions have a suffix `Request` added to the end of the applicable operation (exceptions are `uploadFile` and `downloadFile`). 
 Most of the functions have a single input parameter which is a `request` object.
 
 The following table describes all properties that are accepted in this object. __Important!__ Not all operaions accept all properties and if you by mistake specified
@@ -243,13 +251,16 @@ an invalid property you will receive either an error saying that the request is 
 Property Name | Type | Operation(s) Supported | Description
 ------------ | ------------- | ------------- | -------------
 apply | String | `retrieveMultipleRequest`, `retrieveAllRequest` | `v1.6.4+` Sets the $apply system query option to aggregate and group your data dynamically. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/query-data-web-api#aggregate-and-grouping-results)
-async | Boolean | All | **Important! XHR requests only!** Indicates whether the requests should be made synchronously or asynchronously. Default value is `true` (asynchronously).
+async | Boolean | All | **XHR requests only!** Indicates whether the requests should be made synchronously or asynchronously. Default value is `true` (asynchronously).
 collection | String | All | The name of the Entity Collection (or Entity Logical name in `v1.4.0+`).
 contentId | String | `createRequest`, `updateRequest`, `upsertRequest`, `deleteRequest` | `v1.5.6+` **BATCH REQUESTS ONLY!** Sets Content-ID header or references request in a Change Set. [More Info](https://www.odata.org/documentation/odata-version-3-0/batch-processing/)
 count | Boolean | `retrieveMultipleRequest`, `retrieveAllRequest` | Boolean that sets the $count system query option with a value of true to include a count of entities that match the filter criteria up to 5000 (per page). Do not use $top with $count!
+data | ArrayBuffer / Buffer (for node.js) | `uploadFile` | `v.1.7.0+` **Web API v9.1+ only!** File buffer for uploading to File Attributes.
 duplicateDetection | Boolean | `createRequest`, `updateRequest`, `upsertRequest` | `v.1.3.4+` **Web API v9+ only!** Boolean that enables duplicate detection. [More Info](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/webapi/update-delete-entities-using-web-api#check-for-duplicate-records)
 entity | Object | `createRequest`, `updateRequest`, `upsertRequest` | A JavaScript object with properties corresponding to the logical name of entity attributes (exceptions are lookups and single-valued navigation properties).
 expand | Array | `retrieveRequest`, `retrieveMultipleRequest`, `createRequest`, `updateRequest`, `upsertRequest` | An array of Expand Objects (described below the table) representing the $expand OData System Query Option value to control which related records are also returned.
+fieldName | String | `uploadFile`, `downloadFile`, `deleteRequest` | `v.1.7.0+` **Web API v9.1+ only!** Use this option to specify the name of the file attribute in Dynamics 365. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/file-attributes)
+fileName | String | `uploadFile` | `v.1.7.0+` **Web API v9.1+ only!** Specifies the name of the file
 filter | String | `retrieveRequest`, `retrieveMultipleRequest`, `retrieveAllRequest` | Use the $filter system query option to set criteria for which entities will be returned.
 id | String | `retrieveRequest`, `createRequest`, `updateRequest`, `upsertRequest`, `deleteRequest` | `deprecated in v.1.3.4` Use `key` field, instead of `id`. A String representing the Primary Key (GUID) of the record. 
 ifmatch | String | `retrieveRequest`, `updateRequest`, `upsertRequest`, `deleteRequest` | Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests. [More Info](https://msdn.microsoft.com/en-us/library/mt607711.aspx)
@@ -257,7 +268,7 @@ ifnonematch | String | `retrieveRequest`, `upsertRequest` | Sets If-None-Match h
 impersonate | String | All | A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
 impersonateAAD | String | All | `v.1.6.12+` A String representing the GUID value for the Azure active directory object id. Impersonates the user. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/impersonate-another-user-web-api)
 includeAnnotations | String | `retrieveRequest`, `retrieveMultipleRequest`, `retrieveAllRequest`, `createRequest`, `updateRequest`, `upsertRequest` | Sets Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
-key | String | `retrieveRequest`, `createRequest`, `updateRequest`, `upsertRequest`, `deleteRequest` | `v.1.3.4+` A String representing collection record's Primary Key (GUID) or Alternate Key(s).
+key | String | `retrieveRequest`, `createRequest`, `updateRequest`, `upsertRequest`, `deleteRequest`, `uploadFile`, `downloadFile` | `v.1.3.4+` A String representing collection record's Primary Key (GUID) or Alternate Key(s).
 maxPageSize | Number | `retrieveMultipleRequest`, `retrieveAllRequest` | Sets the odata.maxpagesize preference value to request the number of entities returned in the response.
 mergeLabels | Boolean | `updateRequest` | `v.1.4.2+` **Metadata Update only!** Sets `MSCRM.MergeLabels` header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is `false`. [More Info](https://msdn.microsoft.com/en-us/library/mt593078.aspx#bkmk_updateEntities)
 metadataAttributeType | String | `retrieveRequest`, `updateRequest` | `v.1.4.3+` Casts the Attributes to a specific type. (Used in requests to Attribute Metadata) [More Info](https://msdn.microsoft.com/en-us/library/mt607522.aspx#Anchor_4)
@@ -1151,7 +1162,7 @@ There are also out of the box Web API limitations for batch operations:
 
 You can find an official documentation that covers Web API batch requests here: [Execute batch operations using the Web API](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/webapi/execute-batch-operations-using-web-api).
 
-## Working with Metadata Definitions
+## Work with Metadata Definitions
 
 `Version 1.4.3+`
 
@@ -1806,6 +1817,98 @@ dynamicsWebApi.retrieveGlobalOptionSets('Microsoft.Dynamics.CRM.OptionSetMetadat
 	var optionSet = response.value[0]; //first global option set
 }).catch (function (error) {
     //catch error here
+});
+```
+
+## Work with File Fields
+
+`version 1.7.0+`
+
+Please make sure that you are connected to Dynamics 365 Web API with version 9.1+ to successfully use the functions. More information can be found [here](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/file-attributes)
+
+### Upload file
+
+**Browser**
+
+```js
+
+var fileElement = document.getElementById("upload");
+var fileName = fileElement.files[0].name;
+
+var fr = new FileReader();
+fr.onload = function(){
+    var fileData = new Uint8Array(this.result);
+
+	dynamicsWebApi.uploadFile({
+        collection: 'dwa_filestorages',
+        key: '00000000-0000-0000-0000-000000000001',
+        fieldName: 'dwa_file',
+        fileName: fileName,
+        data: fileData
+	}).then(function(){
+		//success
+	}).catch (function (error) {
+	    //catch error here
+    });
+}
+
+fr.readAsArrayBuffer(fileElement.files[0]);
+
+```
+
+**Node.JS**
+
+```js
+
+var fs = require('fs');
+var filename = 'logo.png';
+fs.readFile(filename, (err, data) => {
+    dynamicsWebApi.uploadFile({
+        collection: 'dwa_filestorages',
+        key: '00000000-0000-0000-0000-000000000001',
+        fieldName: 'dwa_file',
+        fileName: filename
+        data: data,
+    }).then(function() {
+        //success
+    }).catch(function (error) {
+        //catch error here	
+    });
+});
+
+```
+
+### Download file
+
+```js
+
+dynamicsWebApi.downloadFile({
+    collection: 'dwa_filestorages',
+    key: '00000000-0000-0000-0000-000000000001',
+    fieldName: 'dwa_file'
+}).then(function(result){
+    //Uint8Array for browser and Buffer for Node.js
+    var fileBinary = result.data; 
+    var fileName = result.fileName;
+    var fileSize = result.fileSize;
+})
+.catch(function (error) {
+    //catch an error
+});
+```
+
+### Delete file
+
+```js
+dynamicsWebApi.deleteRequest({
+    collection: 'dwa_filestorages',
+    key: '00000000-0000-0000-0000-000000000001',
+    fieldName: 'dwa_file'
+}).then(function(result){
+    //success
+})
+.catch(function (error) {
+    //catch an error
 });
 ```
 

@@ -947,7 +947,99 @@ function DynamicsWebApi(config) {
      * @param {string} [includeAnnotations] - Use this parameter to include annotations to a result. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie
      * @param {string} [impersonateUserId] - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
-    this.executeFetchXmlAll = innerExecuteFetchXmlAll;
+	this.executeFetchXmlAll = innerExecuteFetchXmlAll;
+
+	var _uploadFileChunk = function (request, fileBytes, chunkSize, offset, successCallback, errorCallback) {
+		offset = offset || 0;
+		Utility.setFileChunk(request, fileBytes, chunkSize, offset);
+
+		var internalSuccessCallback = function (response) {
+			offset += chunkSize;
+			if (offset <= fileBytes.length) {
+				_uploadFileChunk(request, fileBytes, chunkSize, offset, successCallback, errorCallback);
+			}
+
+			successCallback();
+		}
+
+		return _makeRequest("PATCH", request, "uploadFile", internalSuccessCallback, errorCallback);
+	};
+
+	/**
+	 * Upload file to a File Attribute
+	 * 
+	 * @param {any} request - An object that represents all possible options for a current request.
+	 * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
+     * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
+	 */
+	this.uploadFile = function (request, successCallback, errorCallback) {
+		ErrorHelper.batchIncompatible('DynamicsWebApi.uploadFile', _isBatch);
+		ErrorHelper.parameterCheck(request, "DynamicsWebApi.uploadFile", "request");
+		ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.uploadFile", "successCallback");
+		ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.uploadFile", "errorCallback");
+
+		var data = request.data;
+		delete request.data;
+		var internalRequest = Utility.copyObject(request);
+		internalRequest.transferMode = "chunked";
+		request.data = data;
+
+		var internalSuccessCallback = function (response) {
+			internalRequest.url = response.data.location;
+			delete internalRequest.transferMode;
+			delete internalRequest.fieldName;
+			return _uploadFileChunk(internalRequest, request.data, response.data.chunkSize, null, successCallback, errorCallback);
+		}
+
+		return _makeRequest("PATCH", internalRequest, "uploadFile", internalSuccessCallback, errorCallback);
+	};
+
+	var _chunkSize = 4194304;
+
+	var _downloadFileChunk = function (request, bytesDownloaded, fileSize, data, successCallback, errorCallback) {
+		bytesDownloaded = bytesDownloaded || 0;
+		fileSize = fileSize || 0;
+		data = data || "";
+
+		request.range = "bytes=" + bytesDownloaded + "-" + (bytesDownloaded + _chunkSize - 1);
+		request.downloadSize = "full";
+
+		var internalSuccessCallback = function (response) {
+			request.url = response.data.location;
+			data += response.data.value;
+
+			bytesDownloaded += _chunkSize;
+
+			if (bytesDownloaded <= response.data.fileSize) {
+				_downloadFileChunk(request, bytesDownloaded, response.data.fileSize, data, successCallback, errorCallback);
+			}
+
+			successCallback({
+				fileName: response.data.fileName,
+				fileSize: response.data.fileSize,
+				data: Utility.convertToFileBuffer(data)
+			});
+		}
+
+		return _makeRequest("GET", request, "downloadFile", internalSuccessCallback, errorCallback, { parse: true });
+	};
+
+	/**
+	 * Download a file from a File Attribute
+	 * @param {any} request - An object that represents all possible options for a current request.
+	 * @param {Function} successCallback - The function that will be passed through and be called by a successful response.
+     * @param {Function} errorCallback - The function that will be passed through and be called by a failed response.
+	 */
+	this.downloadFile = function (request, successCallback, errorCallback) {
+		ErrorHelper.batchIncompatible('DynamicsWebApi.downloadFile', _isBatch);
+		ErrorHelper.parameterCheck(request, "DynamicsWebApi.downloadFile", "request");
+		ErrorHelper.callbackParameterCheck(successCallback, "DynamicsWebApi.downloadFile", "successCallback");
+		ErrorHelper.callbackParameterCheck(errorCallback, "DynamicsWebApi.downloadFile", "errorCallback");
+
+		var internalRequest = Utility.copyObject(request);
+
+		_downloadFileChunk(internalRequest, null, null, null, successCallback, errorCallback);
+	};
 
     /**
      * Associate for a collection-valued navigation property. (1:N or N:N)
@@ -2212,6 +2304,46 @@ function parseBatchResponse(response, parseParams, requestNumber) {
 	return result;
 }
 
+function base64ToString(base64) {
+	/* webpack-strip-block:removed */
+		return window.atob(base64);
+}
+
+function parseFileResponse(response, responseHeaders, parseParams) {
+	var data = response;
+
+	if (parseParams.hasOwnProperty('parse')) {
+		data = JSON.parse(data).value;
+		data = base64ToString(data);
+	}
+
+	var parseResult = {
+		value: data
+	};
+
+	if (responseHeaders['x-ms-file-name'])
+		parseResult.fileName = responseHeaders['x-ms-file-name'];
+
+	if (responseHeaders['x-ms-file-size'])
+		parseResult.fileSize = parseInt(responseHeaders['x-ms-file-size']);
+
+	if (hasHeader(responseHeaders, 'Location'))
+		parseResult.location = getHeader(responseHeaders, 'Location');
+
+	return parseResult;
+}
+
+function hasHeader(headers, name) {
+	return headers.hasOwnProperty(name) || headers.hasOwnProperty(name.toLowerCase());
+}
+
+function getHeader(headers, name) {
+	if (headers[name])
+		return headers[name];
+
+	return headers[name.toLowerCase()];
+}
+
 /**
  *
  * @param {string} response - response that needs to be parsed
@@ -2230,7 +2362,12 @@ module.exports = function parseResponse(response, responseHeaders, parseParams) 
 				: batch;
 		}
 		else {
-			parseResult = parseData(JSON.parse(response, dateReviver), parseParams[0]);
+			if (hasHeader(responseHeaders, 'Content-Disposition')) {
+				parseResult = parseFileResponse(response, responseHeaders, parseParams[0]);
+			}
+			else {
+				parseResult = parseData(JSON.parse(response, dateReviver), parseParams[0]);
+			}
 		}
 	}
 	else {
@@ -2238,10 +2375,8 @@ module.exports = function parseResponse(response, responseHeaders, parseParams) 
 			parseResult = parseParams[0].valueIfEmpty;
 		}
 		else
-			if (responseHeaders['OData-EntityId'] || responseHeaders['odata-entityid']) {
-				var entityUrl = responseHeaders['OData-EntityId']
-					? responseHeaders['OData-EntityId']
-					: responseHeaders['odata-entityid'];
+			if (hasHeader(responseHeaders, 'OData-EntityId')) {
+				var entityUrl = getHeader(responseHeaders, 'OData-EntityId');
 
 				var guidResult = /([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})\)$/i.exec(entityUrl);
 
@@ -2249,11 +2384,13 @@ module.exports = function parseResponse(response, responseHeaders, parseParams) 
 					parseResult = guidResult[1];
 				}
 			}
-			else if (responseHeaders['x-ms-chunk-size'] && responseHeaders['Location']) {
+			else if (hasHeader(responseHeaders, 'Location')) {
 				parseResult = {
-					chunkSize: parseInt(responseHeaders['x-ms-chunk-size']),
-					location: responseHeaders['Location']
+					location: getHeader(responseHeaders, 'Location')
 				}
+
+				if (responseHeaders['x-ms-chunk-size'])
+					parseResult.chunkSize = parseInt(responseHeaders['x-ms-chunk-size']);
 			}
 	}
 
@@ -2778,6 +2915,11 @@ var xhrRequest = function (options) {
 
 					break;
 				}
+				case 206: { //Success with partial content
+					//true indicates continue
+					successCallback(true);
+					break;
+				}
 				default: // All other statuses are error cases.
 					var error;
 					try {
@@ -2980,10 +3122,14 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
             requestArray.push("$orderby=" + request.orderBy.join(','));
 		}
 
-		if (request.filename) {
-			ErrorHelper.stringParameterCheck(request.filename, 'DynamicsWebApi.' + functionName, "request.filename");
-			requestArray.push("x-ms-file-name=" + request.filename);
-			headers["x-ms-transfer-mode"] = "chunked";
+		if (request.downloadSize) {
+			ErrorHelper.stringParameterCheck(request.downloadSize, 'DynamicsWebApi.' + functionName, 'request.downloadSize');
+			requestArray.push("size=" + request.downloadSize);
+		}
+
+		if (request.fileName) {
+			ErrorHelper.stringParameterCheck(request.fileName, 'DynamicsWebApi.' + functionName, "request.fileName");
+			requestArray.push("x-ms-file-name=" + request.fileName);
 		}
 
         var prefer = buildPreferHeader(request, functionName, config);
@@ -2994,7 +3140,11 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
 
         if (request.ifmatch != null && request.ifnonematch != null) {
             throw new Error('DynamicsWebApi.' + functionName + ". Either one of request.ifmatch or request.ifnonematch parameters should be used in a call, not both.");
-        }
+		}
+
+		if (request.transferMode) {
+			headers["x-ms-transfer-mode"] = request.transferMode;
+		}
 
         if (request.ifmatch) {
             ErrorHelper.stringParameterCheck(request.ifmatch, 'DynamicsWebApi.' + functionName, "request.ifmatch");
@@ -3037,6 +3187,11 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
 		if (request.contentRange) {
 			ErrorHelper.stringParameterCheck(request.contentRange, 'DynamicsWebApi.' + functionName, 'request.contentRange');
 			headers['Content-Range'] = request.contentRange;
+		}
+
+		if (request.range) {
+			ErrorHelper.stringParameterCheck(request.range, 'DynamicsWebApi.' + functionName, 'request.range');
+			headers['Range'] = request.range;
 		}
 
         if (request.noCache) {
@@ -3177,28 +3332,23 @@ module.exports = RequestConverter;
 /***/ 389:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
+/* webpack-strip-block:removed */
+
+function getCrypto() {
+	/* webpack-strip-block:removed */
+		return window.crypto;
+}
+
 var uCrypto = getCrypto();
 
 function isNull(value) {
 	return typeof value === "undefined" || value == null;
 }
 
-function getCrypto() {
-	if (typeof process !== "undefined") {
-		return __webpack_require__(906);
-	}
-	else if (typeof window !== "undefined")
-		return window.crypto;
-
-	return null;
-}
-
 function generateRandomBytes() {
-	if (typeof uCrypto.getRandomValues !== "undefined") {
+	/* webpack-strip-block:removed */
 		return uCrypto.getRandomValues(new Uint8Array(1));
-	}
-
-	return uCrypto.randomBytes(1);
+		/* webpack-strip-block:removed */
 }
 
 function generateUUID() {
@@ -3276,6 +3426,36 @@ function copyObject(src) {
 	return target;
 }
 
+function setFileChunk(request, fileBuffer, chunkSize, offset) {
+	offset = offset || 0;
+
+	var count = (offset + chunkSize) > fileBuffer.length
+		? fileBuffer.length % chunkSize
+		: chunkSize;
+
+	var content;
+
+	/* webpack-strip-block:removed */
+		content = new Uint8Array(count);
+		for (var i = 0; i < count; i++) {
+			content[i] = fileBuffer[offset + i];
+		}
+		/* webpack-strip-block:removed */
+
+	request.data = content;
+	request.contentRange = "bytes " + offset + "-" + (offset + count - 1) + "/" + fileBuffer.length;
+}
+
+function convertToFileBuffer(binaryString) {
+	/* webpack-strip-block:removed */
+		var bytes = new Uint8Array(data.length);
+		for (var i = 0; i < data.length; i++) {
+			bytes[i] = data.charCodeAt(i);
+		}
+		return bytes;
+		/* webpack-strip-block:removed */
+}
+
 var Utility = {
 	/**
 	 * Builds parametes for a funciton. Returns '()' (if no parameters) or '([params])?[query]'
@@ -3321,7 +3501,11 @@ var Utility = {
 
 	initWebApiUrl: initWebApiUrl,
 
-	copyObject: copyObject
+	copyObject: copyObject,
+
+	setFileChunk: setFileChunk,
+
+	convertToFileBuffer: convertToFileBuffer
 };
 
 module.exports = Utility;
@@ -3513,13 +3697,6 @@ module.exports = function getFetchXmlPagingCookie(pageCookies, currentPageNumber
         };
     }
 };
-
-/***/ }),
-
-/***/ 906:
-/***/ (() => {
-
-/* (ignored) */
 
 /***/ })
 
