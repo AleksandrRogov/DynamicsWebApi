@@ -2113,7 +2113,7 @@ In my web resources project I usually put a declaration file under "./types/" fo
 ]
 ```
 
-### In Progress
+### In Progress / Feature List
 
 - [X] Overloaded functions with rich request options for all Web API operations.
 - [X] Get all pages requests, such as: countAll, retrieveMultipleAll, fetchXmlAll and etc. `Implemented in v.1.2.5`
@@ -2123,7 +2123,7 @@ Feature is very convenient for big Fetch XMLs. `Implemented in v.1.2.8`
 the config option "formatted" will enable developers to retrieve all information about such fields in a single requests and access it through DynamicsWebApi custom response objects.
 - [X] Simplified names for "Formatted" properties. `Implemented in v.1.3.0`
 - [X] RUD operations using Alternate Keys. `Implemented in v.1.3.4`
-- [X] Duplicate Detection for Web API v.9. `Implemented in v.1.3.4`
+- [X] Duplicate Detection for Web API v.9.0. `Implemented in v.1.3.4`
 - [X] Ability to use entity names instead of collection names. `Implemented in v.1.4.0`
 - [X] Entity and Attribute Metadata helpers. `Implemented in v.1.4.3`
 - [X] Entity Relationships and Global Option Sets helpers. `Implemented in v.1.4.6`
@@ -2131,6 +2131,10 @@ the config option "formatted" will enable developers to retrieve all information
 - [X] TypeScript declaration files `d.ts` `Added in v.1.5.3`.
 - [X] Implement `Content-ID` header to reference a request in a Change Set in a batch operation `Added in v.1.5.6`.
 - [X] Change Tracking `Added in v.1.5.11`.
+- [X] Support for Aggregate and Grouping results `Added in v1.6.4`.
+- [X] Support for Timeout option in the configuration `Added in v1.6.10`.
+- [X] Impersonate a user based on their Azure Active Directory (AAD) object id. `Added in v.1.6.12`.
+- [X] File upload/download/delete for a File Field. `Added in v.1.7.0`.
 - [ ] Refactoring and conversion to TypeScript - coming with `v.2.0`! Stay tuned!
 
 Many more features to come!
