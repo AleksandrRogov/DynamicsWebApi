@@ -1,20 +1,24 @@
-# DynamicsWebApi for Microsoft Dynamics 365 CE (CRM) / Common Data Service Web API
+# DynamicsWebApi for Microsoft Dynamics 365 CE (CRM) / Microsoft Dataverse Web API (formerly known as Microsoft Common Data Service Web API) 
 
 [![Travis](https://img.shields.io/travis/AleksandrRogov/DynamicsWebApi.svg?style=flat-square)](https://travis-ci.org/AleksandrRogov/DynamicsWebApi)
 [![Coveralls](https://img.shields.io/coveralls/AleksandrRogov/DynamicsWebApi.svg?style=flat-square)](https://coveralls.io/github/AleksandrRogov/DynamicsWebApi)
 ![npm](https://img.shields.io/npm/dm/dynamics-web-api?style=flat-square)
 ![npm](https://img.shields.io/npm/dt/dynamics-web-api?style=flat-square)
 
-DynamicsWebApi is a Microsoft Dynamics 365 CE (CRM) / Common Data Service Web API helper library written in JavaScript.
-It is compatible with: Common Data Service, Dynamics 365 CE (online), Dynamics 365 CE (on-premises), Dynamics CRM 2016, Dynamics CRM Online
+DynamicsWebApi is a Microsoft Dynamics 365 CE (CRM) / Microsoft Dataverse (formerly: Common Data Service) Web API helper library written in JavaScript.
+It is compatible with: Microsoft Dataverse (formerly: Microsoft Common Data Service), Microsoft Dynamics 365 CE (online), Microsoft Dynamics 365 CE (on-premises), Microsoft Dynamics CRM 2016, Microsoft Dynamics CRM Online.
 
 Please check [DynamicsWebApi Wiki](../../wiki/) where you will find documentation to DynamicsWebApi API and more.
 
 Libraries for browsers can be found in [dist](/dist/) folder.
 
-If you feel that this project saved your time and you would like to support it, then please feel free to donate: [![PayPal.Me](/extra/paypal.png)](https://paypal.me/alexrogov)
+***
 
-Please check [suggestions and contributions](#contributions) section to learn more on how you can help to improve this project.
+I maintain this project in my free time and, to be honest with you, it takes a considerable amount of time to make sure that the library has all new features, gets improved and all raised tickets have been answered and fixed in a short amount of time. If you feel that this project has saved your time and you would like to support it, then please feel free to sponsor it through GitHub Sponsors or send a donation directly to my PayPal: [![PayPal.Me](/extra/paypal.png)](https://paypal.me/alexrogov). GitHub button can be found on the project's page.
+
+Also, please check [suggestions and contributions](#contributions) section to learn more on how you can help to improve this project.
+
+***
 
 **DynamicsWebApi v2 is coming!**
 v2 will be written in TypeScript and include numerous optimizations.
@@ -24,12 +28,9 @@ There will be breaking changes between v1 and v2:
 
 I am very excited to finally release the new version and I hope you too! Stay tuned!
 
-**Important!** For some reason, npm was not removing `.git` folder from a published package, 
-even though [it should have done it by default](https://docs.npmjs.com/misc/developers#keeping-files-out-of-your-package), therefore
-`npm update dynamics-web-api` was not working properly. If you see an error during an update of the package, 
-please go to `node_modules\dynamics-web-api` of your application and remove `.git` directory manually. This error has been fixed in `v.1.4.7`.
+***
 
-Please note, that "Dynamics 365" in this readme refers to Microsoft Dynamics 365 Customer Engagement / Common Data Service.
+Please note, that "Dynamics 365" in this readme refers to Microsoft Dynamics 365 Customer Engagement / Microsoft Dataverse (formerly known as Microsoft Common Data Service).
 
 ## Table of Contents
 
@@ -1839,16 +1840,16 @@ var fr = new FileReader();
 fr.onload = function(){
     var fileData = new Uint8Array(this.result);
 
-	dynamicsWebApi.uploadFile({
+    dynamicsWebApi.uploadFile({
         collection: 'dwa_filestorages',
         key: '00000000-0000-0000-0000-000000000001',
         fieldName: 'dwa_file',
         fileName: fileName,
         data: fileData
-	}).then(function(){
-		//success
-	}).catch (function (error) {
-	    //catch error here
+    }).then(function(){
+        //success
+    }).catch (function (error) {
+        //catch error here
     });
 }
 
@@ -2151,6 +2152,6 @@ And if you would like to contribute to the project you may do it in multiple way
 2. If you know the root of the issue please feel free to submit a pull request, just make sure that all tests pass and if the fix needs new unit tests, please add one.
 3. Let me and community know if you have any ideas or suggestions on how to improve the project by submitting an issue on GitHub, I will label it as a 'future enhancement'.
 4. Feel free to connect with me on [LinkedIn](https://www.linkedin.com/in/alexrogov/) and if you wish to let me know how you use `DynamicsWebApi` and what project you are working on, I will be happy to hear about it.
-5. If you feel that this project saved your time and you would like to support it, then please feel free to donate: [![PayPal.Me](/extra/paypal.png)](https://paypal.me/alexrogov)
+5. I maintain this project in my free time and, to be honest with you, it takes a considerable amount of time to make sure that the library has all new features, gets improved and all raised tickets have been answered and fixed in a short amount of time. If you feel that this project has saved your time and you would like to support it, then please feel free to use PayPal or GitHub Sponsors. My PayPal button: [![PayPal.Me](/extra/paypal.png)](https://paypal.me/alexrogov), GitHub button can be found on the project's page.
 
-Any contribution is greatly appreciated!
+All contributions are greatly appreciated!
