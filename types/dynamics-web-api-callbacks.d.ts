@@ -13,7 +13,7 @@ declare class DynamicsWebApi {
      *
      * @param config - configuration object
      * @example
-        dynamicsWebApi.setConfig({ webApiVersion: '9.0' });
+        dynamicsWebApi.setConfig({ webApiVersion: '9.1' });
      */
 	setConfig(config: DynamicsWebApi.Config): void;
     /**
@@ -258,14 +258,14 @@ declare class DynamicsWebApi {
      */
 	fetchAll<T = any>(collection: string, fetchXml: string, successCallback: (result: DynamicsWebApi.MultipleResponse<T>) => void, errorCallback: (error: DynamicsWebApi.RequestError) => void, includeAnnotations?: string, impersonateUserId?: string): void;
 	/**
-	 * Uploads file to a file attribute
+	 * Uploads a file to a file attribute
 	 * @param request - An object that represents all possible options for a current request.
 	 * @param successCallback - The function that will be passed through and be called by a successful response.
      * @param errorCallback - The function that will be passed through and be called by a failed response.
 	 */
 	uploadFile(request: DynamicsWebApi.UploadRequest, successCallback: () => void, errorCallback: (error: DynamicsWebApi.RequestError) => void): void;
 	/**
-	 * Downloads file from a file attribute
+	 * Downloads a file from a file attribute
 	 * @param request - An object that represents all possible options for a current request.
 	 * @param successCallback - The function that will be passed through and be called by a successful response.
      * @param errorCallback - The function that will be passed through and be called by a failed response.

@@ -2,8 +2,6 @@
 // Project: https://github.com/AleksandrRogov/DynamicsWebApi/
 // Definitions by: Aleksandr Rogov https://github.com/AleksandrRogov/
 
-import { UploadRequest } from "dynamics-web-api";
-
 declare class DynamicsWebApi {
     /**
      * DynamicsWebApi constructor
@@ -15,7 +13,7 @@ declare class DynamicsWebApi {
      *
      * @param config - configuration object
      * @example
-        dynamicsWebApi.setConfig({ webApiVersion: '9.0' });
+        dynamicsWebApi.setConfig({ webApiVersion: '9.1' });
      */
 	setConfig(config: DynamicsWebApi.Config): void;
     /**
@@ -218,12 +216,12 @@ declare class DynamicsWebApi {
      */
 	fetchAll<T>(collection: string, fetchXml: string, includeAnnotations?: string, impersonateUserId?: string): Promise<DynamicsWebApi.MultipleResponse<T>>;
 	/**
-	 * Uploads file to a file attribute
+	 * Uploads a file to a file attribute
 	 * @param request - An object that represents all possible options for a current request.
 	 */
 	uploadFile(request: DynamicsWebApi.UploadRequest): Promise<void>;
 	/**
-	 * Downloads file from a file attribute
+	 * Downloads a file from a file attribute
 	 * @param request - An object that represents all possible options for a current request.
 	 */
 	downloadFile(request: DynamicsWebApi.DownloadRequest): Promise<DynamicsWebApi.DownloadResponse>;

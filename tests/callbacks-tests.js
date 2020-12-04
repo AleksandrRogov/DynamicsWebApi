@@ -9,6 +9,9 @@ var DWA = require("../lib/dwa");
 var DynamicsWebApiCallbacks = require("../lib/dynamics-web-api-callbacks");
 var dynamicsWebApiTest = new DynamicsWebApiCallbacks({ webApiVersion: "8.2" });
 
+var Utility = require("../lib/utilities/Utility");
+Utility.downloadChunkSize = 15;
+
 describe("callbacks -", function () {
     describe("dynamicsWebApi.create -", function () {
         describe("basic", function () {
@@ -4084,7 +4087,7 @@ describe("callbacks -", function () {
             }
             before(function () {
                 var response = mocks.responses.batchRetrieveMultipleCreateRetrieveMultiple;
-                scope = nock(mocks.webApiUrl + '$batch')
+                scope = nock(mocks.webApiUrl)
                     .filteringRequestBody(function (body) {
                         body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
                         body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'changeset_XXX');
@@ -4096,7 +4099,7 @@ describe("callbacks -", function () {
                         }
                         return resultBody;
                     })
-                    .post("", checkBody)
+					.post("/$batch", checkBody)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -4139,7 +4142,7 @@ describe("callbacks -", function () {
             }
             before(function () {
                 var response = mocks.responses.batchRetrieveMultipleUpdateRetrieveMultiple;
-                scope = nock(mocks.webApiUrl + '$batch')
+                scope = nock(mocks.webApiUrl)
                     .filteringRequestBody(function (body) {
                         body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
                         body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'changeset_XXX');
@@ -4151,7 +4154,7 @@ describe("callbacks -", function () {
                         }
                         return resultBody;
                     })
-                    .post("", checkBody)
+					.post("/$batch", checkBody)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -4194,7 +4197,7 @@ describe("callbacks -", function () {
             }
             before(function () {
                 var response = mocks.responses.batchRetrieveMultipleDeleteRetrieveMultiple;
-                scope = nock(mocks.webApiUrl + '$batch')
+                scope = nock(mocks.webApiUrl)
                     .filteringRequestBody(function (body) {
                         body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
                         body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'changeset_XXX');
@@ -4206,7 +4209,7 @@ describe("callbacks -", function () {
                         }
                         return resultBody;
                     })
-                    .post("", checkBody)
+					.post("/$batch", checkBody)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -4249,7 +4252,7 @@ describe("callbacks -", function () {
             }
             before(function () {
                 var response = mocks.responses.batchRetrieveMultipleCountRetrieveMultiple;
-                scope = nock(mocks.webApiUrl + '$batch')
+                scope = nock(mocks.webApiUrl)
                     .filteringRequestBody(function (body) {
                         body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
                         body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'changeset_XXX');
@@ -4261,7 +4264,7 @@ describe("callbacks -", function () {
                         }
                         return resultBody;
                     })
-                    .post("", checkBody)
+					.post("/$batch", checkBody)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -4304,7 +4307,7 @@ describe("callbacks -", function () {
             }
             before(function () {
                 var response = mocks.responses.batchRetrieveMultipleCountFilteredRetrieveMultiple;
-                scope = nock(mocks.webApiUrl + '$batch')
+                scope = nock(mocks.webApiUrl)
                     .filteringRequestBody(function (body) {
                         body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
                         body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'changeset_XXX');
@@ -4316,7 +4319,7 @@ describe("callbacks -", function () {
                         }
                         return resultBody;
                     })
-                    .post("", checkBody)
+					.post("/$batch", checkBody)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -4359,7 +4362,7 @@ describe("callbacks -", function () {
             }
             before(function () {
                 var response = mocks.responses.batchRetrieveMultipleCountFilteredRetrieveMultiple;
-                scope = nock(mocks.webApiUrl + '$batch')
+                scope = nock(mocks.webApiUrl)
                     .filteringRequestBody(function (body) {
                         body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
                         body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'changeset_XXX');
@@ -4371,7 +4374,7 @@ describe("callbacks -", function () {
                         }
                         return resultBody;
                     })
-                    .post("", checkBody)
+					.post("/$batch", checkBody)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -4449,7 +4452,7 @@ describe("callbacks -", function () {
             }
             before(function () {
                 var response = mocks.responses.batchUpdateDelete;
-                scope = nock(mocks.webApiUrl + '$batch')
+                scope = nock(mocks.webApiUrl)
                     .filteringRequestBody(function (body) {
                         body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
                         body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'changeset_XXX');
@@ -4461,7 +4464,7 @@ describe("callbacks -", function () {
                         }
                         return resultBody;
                     })
-                    .post("", checkBody)
+					.post("/$batch", checkBody)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -4502,7 +4505,7 @@ describe("callbacks -", function () {
             }
             before(function () {
                 var response = mocks.responses.batchUpdateDelete;
-                scope = nock(mocks.webApiUrl + '$batch', {
+                scope = nock(mocks.webApiUrl, {
                     reqheaders: {
                         Authorization: "Bearer 123"
                     }
@@ -4518,7 +4521,7 @@ describe("callbacks -", function () {
                         }
                         return resultBody;
                     })
-                    .post("", checkBody)
+					.post("/$batch", checkBody)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -4559,7 +4562,7 @@ describe("callbacks -", function () {
             }
             before(function () {
                 var response = mocks.responses.batchError;
-                scope = nock(mocks.webApiUrl + '$batch')
+                scope = nock(mocks.webApiUrl)
                     .filteringRequestBody(function (body) {
                         body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
                         body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'changeset_XXX');
@@ -4571,7 +4574,7 @@ describe("callbacks -", function () {
                         }
                         return resultBody;
                     })
-                    .post("", checkBody)
+					.post("/$batch", checkBody)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -4606,7 +4609,114 @@ describe("callbacks -", function () {
                 expect(scope.isDone()).to.be.true;
             });
         });
-    });
+	});
+
+	describe("dynamicsWebApi.uploadFile -", function () {
+
+		describe("file upload with 2 chunks", function () {
+			var dwaRequest = {
+				key: mocks.data.testEntityId,
+				collection: "tests",
+				fileName: "test.json",
+				fieldName: "dwa_file",
+				data: Buffer.from("Welcome to DynamicsWebApi!", "utf-8")
+			};
+
+			var scope;
+			var scope1;
+			var scope2;
+			before(function () {
+				var beginResponse = mocks.responses.uploadFileBeginResponse;
+				var response1 = mocks.responses.uploadFile1stResponse;
+
+				var locationUrl = beginResponse.responseHeaders.Location.replace(mocks.webApiUrl, "/");
+
+				scope = nock(mocks.webApiUrl)
+					.matchHeader("x-ms-transfer-mode", "chunked")
+					.patch(mocks.responses.testEntityUrl + `/${dwaRequest.fieldName}?x-ms-file-name=${dwaRequest.fileName}`)
+					.reply(beginResponse.status, "", beginResponse.responseHeaders);
+
+				scope1 = nock(mocks.webApiUrl)
+					.matchHeader("Content-Range", `bytes 0-${beginResponse.responseHeaders["x-ms-chunk-size"] - 1}/${dwaRequest.data.length}`)
+					.matchHeader("Content-Type", `application/octet-stream`)
+					.patch(locationUrl, dwaRequest.data.slice(0, beginResponse.responseHeaders["x-ms-chunk-size"]))
+					.reply(response1.status);
+
+				scope2 = nock(mocks.webApiUrl)
+					.matchHeader("Content-Range", `bytes ${beginResponse.responseHeaders["x-ms-chunk-size"]}-${dwaRequest.data.length - 1}/${dwaRequest.data.length}`)
+					.matchHeader("Content-Type", `application/octet-stream`)
+					.patch(locationUrl, dwaRequest.data.slice(beginResponse.responseHeaders["x-ms-chunk-size"], dwaRequest.data.length))
+					.reply(response1.status);
+			});
+
+			after(function () {
+				nock.cleanAll();
+			});
+
+			it("returns a correct response", function (done) {
+				dynamicsWebApiTest.uploadFile(dwaRequest, function (object) {
+					done(object);
+				}, function (object) {
+					done(object);
+				});
+			});
+
+			it("all requests have been made", function () {
+				expect(scope.isDone()).to.be.true;
+				expect(scope1.isDone()).to.be.true;
+				expect(scope2.isDone()).to.be.true;
+			});
+		});
+	});
+
+	describe("dynamicsWebApi.downloadFile -", function () {
+		describe("file download with 2 chunks", function () {
+			var dwaRequest = {
+				key: mocks.data.testEntityId,
+				collection: "tests",
+				fieldName: "dwa_file"
+			};
+
+			var scope;
+			var scope1;
+
+			var chunk1 = mocks.responses.downloadFileResponseChunk1;
+			var chunk2 = mocks.responses.downloadFileResponseChunk2;
+			before(function () {
+				scope = nock(mocks.webApiUrl)
+					.matchHeader("Range", `bytes=0-${Utility.downloadChunkSize - 1}`)
+					.get(mocks.responses.testEntityUrl + `/${dwaRequest.fieldName}?size=full`)
+					.reply(chunk1.status, chunk1.responseText, chunk1.responseHeaders);
+
+				scope1 = nock(mocks.webApiUrl)
+					.matchHeader("Range", `bytes=${Utility.downloadChunkSize}-${Utility.downloadChunkSize * 2 - 1}`)
+					.get(mocks.responses.testEntityUrl + `/${dwaRequest.fieldName}?size=full`)
+					.reply(chunk2.status, chunk2.responseText, chunk2.responseHeaders);
+			});
+
+			after(function () {
+				nock.cleanAll();
+			});
+
+			it("returns a correct response", function (done) {
+				dynamicsWebApiTest.downloadFile(dwaRequest, function (object) {
+						var text = object.data.toString();
+						expect(text).to.eq("Welcome to DynamicsWebApi!");
+						expect(object.fileName).to.eq(chunk2.responseHeaders["x-ms-file-name"]);
+						expect(object.fileSize).to.eq(chunk2.responseHeaders["x-ms-file-size"]);
+
+						done();
+					}, function (object) {
+						done(object);
+					});
+			});
+
+			it("all requests have been made", function () {
+				expect(scope.isDone()).to.be.true;
+				expect(scope1.isDone()).to.be.true;
+			});
+		});
+	});
 
     describe("dynamicsWebApi.constructor -", function () {
 
