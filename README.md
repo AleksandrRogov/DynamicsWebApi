@@ -30,6 +30,8 @@ I am very excited to finally release the new version and I hope you too! Stay tu
 
 ***
 
+**Important!** starting from `v1.7.1` `dist` and `test` folders are no longer going to be a part of an npm package. That will shrink the size of the package from 1.7mb to around 300kb.
+
 Please note, that "Dynamics 365" in this readme refers to Microsoft Dynamics 365 Customer Engagement / Microsoft Dataverse (formerly known as Microsoft Common Data Service).
 
 ## Table of Contents
