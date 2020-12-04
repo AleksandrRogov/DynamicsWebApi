@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.6.15 (c) 2020 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.7.0 (c) 2020 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -958,11 +958,12 @@ function DynamicsWebApi(config) {
 			if (offset <= fileBytes.length) {
 				_uploadFileChunk(request, fileBytes, chunkSize, offset, successCallback, errorCallback);
 			}
-
-			successCallback();
+			else {
+				successCallback();
+			}
 		}
 
-		return _makeRequest("PATCH", request, "uploadFile", internalSuccessCallback, errorCallback);
+		_makeRequest("PATCH", request, "uploadFile", internalSuccessCallback, errorCallback);
 	};
 
 	/**
@@ -988,40 +989,39 @@ function DynamicsWebApi(config) {
 			internalRequest.url = response.data.location;
 			delete internalRequest.transferMode;
 			delete internalRequest.fieldName;
-			return _uploadFileChunk(internalRequest, request.data, response.data.chunkSize, null, successCallback, errorCallback);
+			_uploadFileChunk(internalRequest, request.data, response.data.chunkSize, null, successCallback, errorCallback);
 		}
 
-		return _makeRequest("PATCH", internalRequest, "uploadFile", internalSuccessCallback, errorCallback);
+		_makeRequest("PATCH", internalRequest, "uploadFile", internalSuccessCallback, errorCallback);
 	};
-
-	var _chunkSize = 4194304;
 
 	var _downloadFileChunk = function (request, bytesDownloaded, fileSize, data, successCallback, errorCallback) {
 		bytesDownloaded = bytesDownloaded || 0;
 		fileSize = fileSize || 0;
 		data = data || "";
 
-		request.range = "bytes=" + bytesDownloaded + "-" + (bytesDownloaded + _chunkSize - 1);
+		request.range = "bytes=" + bytesDownloaded + "-" + (bytesDownloaded + Utility.downloadChunkSize - 1);
 		request.downloadSize = "full";
 
 		var internalSuccessCallback = function (response) {
 			request.url = response.data.location;
 			data += response.data.value;
 
-			bytesDownloaded += _chunkSize;
+			bytesDownloaded += Utility.downloadChunkSize;
 
 			if (bytesDownloaded <= response.data.fileSize) {
 				_downloadFileChunk(request, bytesDownloaded, response.data.fileSize, data, successCallback, errorCallback);
 			}
-
-			successCallback({
-				fileName: response.data.fileName,
-				fileSize: response.data.fileSize,
-				data: Utility.convertToFileBuffer(data)
-			});
+			else {
+				successCallback({
+					fileName: response.data.fileName,
+					fileSize: response.data.fileSize,
+					data: Utility.convertToFileBuffer(data)
+				});
+			}
 		}
 
-		return _makeRequest("GET", request, "downloadFile", internalSuccessCallback, errorCallback, { parse: true });
+		_makeRequest("GET", request, "downloadFile", internalSuccessCallback, errorCallback, { parse: true });
 	};
 
 	/**
@@ -2466,7 +2466,7 @@ function setStandardHeaders(additionalHeaders) {
 	additionalHeaders["OData-Version"] = "4.0";
 	additionalHeaders['Content-Type'] = additionalHeaders["Content-Range"]
 		? 'application/octet-stream'
-		: 'application/json; charset=utf-8';
+		: 'application/json;charset=utf-8';
 
 	return additionalHeaders;
 }
@@ -2722,7 +2722,7 @@ function sendRequest(method, path, config, data, additionalHeaders, responsePara
 
 	var executeRequest;
 	/* webpack-strip-block:removed */
-		executeRequest = __webpack_require__(105);
+		executeRequest = __webpack_require__(105).xhrRequest;
 		/* webpack-strip-block:removed */
 
 	var sendInternalRequest = function (token) {
@@ -2873,124 +2873,130 @@ if (!Array.isArray) {
  * Sends a request to given URL with given parameters
  *
  */
-var xhrRequest = function (options) {
-	var method = options.method;
-	var uri = options.uri;
-	var data = options.data;
-	var additionalHeaders = options.additionalHeaders;
-	var responseParams = options.responseParams;
-	var successCallback = options.successCallback;
-	var errorCallback = options.errorCallback;
-	var isAsync = options.isAsync;
-	var requestId = options.requestId;
 
-	var request = new XMLHttpRequest();
-	request.open(method, uri, isAsync);
+let xhrWrapper = {
+	//for testing
+	afterSendEvent: null,
+	xhrRequest: function (options) {
+		var method = options.method;
+		var uri = options.uri;
+		var data = options.data;
+		var additionalHeaders = options.additionalHeaders;
+		var responseParams = options.responseParams;
+		var successCallback = options.successCallback;
+		var errorCallback = options.errorCallback;
+		var isAsync = options.isAsync;
+		var requestId = options.requestId;
 
-	//set additional headers
-	for (var key in additionalHeaders) {
-		request.setRequestHeader(key, additionalHeaders[key]);
-	}
 
-	request.onreadystatechange = function () {
-		if (request.readyState === 4) {
-			switch (request.status) {
-				case 200: // Success with content returned in response body.
-				case 201: // Success with content returned in response body.
-				case 204: // Success with no content returned in response body.
-				case 304: {// Success with Not Modified
-					var responseHeaders = parseResponseHeaders(request.getAllResponseHeaders());
-					var responseData = parseResponse(request.responseText, responseHeaders, responseParams[requestId]);
+		var request = new XMLHttpRequest();
+		request.open(method, uri, isAsync);
 
-					var response = {
-						data: responseData,
-						headers: responseHeaders,
-						status: request.status
-					};
-
-					delete responseParams[requestId];
-					request = null;
-
-					successCallback(response);
-
-					break;
-				}
-				case 206: { //Success with partial content
-					//true indicates continue
-					successCallback(true);
-					break;
-				}
-				default: // All other statuses are error cases.
-					var error;
-					try {
-						var headers = parseResponseHeaders(request.getAllResponseHeaders());
-						var errorParsed = parseResponse(request.responseText, headers, responseParams[requestId]);
-
-						if (Array.isArray(errorParsed)) {
-							errorCallback(errorParsed);
-							break;
-						}
-
-						error = errorParsed.error;
-					} catch (e) {
-						if (request.response.length > 0) {
-							error = { message: request.response };
-						}
-						else {
-							error = { message: "Unexpected Error" };
-						}
-					}
-
-					var errorResponse = {
-						status: request.status,
-						statusText: request.statusText,
-						headers: headers
-					}
-
-					delete responseParams[requestId];
-					request = null;
-
-					errorCallback(ErrorHelper.handleHttpError(error, errorResponse));
-
-					break;
-			}
+		//set additional headers
+		for (var key in additionalHeaders) {
+			request.setRequestHeader(key, additionalHeaders[key]);
 		}
-	};
 
-	if (options.timeout) {
-		request.timeout = options.timeout;
+		request.onreadystatechange = function () {
+			if (request.readyState === 4) {
+				switch (request.status) {
+					case 200: // Success with content returned in response body.
+					case 201: // Success with content returned in response body.
+					case 204: // Success with no content returned in response body.
+					case 206: //Success with partial content
+					case 304: {// Success with Not Modified
+						var responseHeaders = parseResponseHeaders(request.getAllResponseHeaders());
+						var responseData = parseResponse(request.responseText, responseHeaders, responseParams[requestId]);
+
+						var response = {
+							data: responseData,
+							headers: responseHeaders,
+							status: request.status
+						};
+
+						delete responseParams[requestId];
+						request = null;
+
+						successCallback(response);
+
+						break;
+					}
+					default: // All other statuses are error cases.
+						var error;
+						try {
+							var headers = parseResponseHeaders(request.getAllResponseHeaders());
+							var errorParsed = parseResponse(request.responseText, headers, responseParams[requestId]);
+
+							if (Array.isArray(errorParsed)) {
+								errorCallback(errorParsed);
+								break;
+							}
+
+							error = errorParsed.error;
+						} catch (e) {
+							if (request.response.length > 0) {
+								error = { message: request.response };
+							}
+							else {
+								error = { message: "Unexpected Error" };
+							}
+						}
+
+						var errorResponse = {
+							status: request.status,
+							statusText: request.statusText,
+							headers: headers
+						}
+
+						delete responseParams[requestId];
+						request = null;
+
+						errorCallback(ErrorHelper.handleHttpError(error, errorResponse));
+
+						break;
+				}
+			}
+		};
+
+		if (options.timeout) {
+			request.timeout = options.timeout;
+		}
+
+		request.onerror = function () {
+			var headers = parseResponseHeaders(request.getAllResponseHeaders());
+			errorCallback(ErrorHelper.handleHttpError({
+				status: request.status,
+				statusText: request.statusText,
+				message: request.responseText || "Network Error",
+				headers: headers
+			}));
+			delete responseParams[requestId];
+			request = null;
+		};
+
+		request.ontimeout = function () {
+			var headers = parseResponseHeaders(request.getAllResponseHeaders());
+			errorCallback(ErrorHelper.handleHttpError({
+				status: request.status,
+				statusText: request.statusText,
+				message: request.responseText || "Request Timed Out",
+				headers: headers
+			}));
+			delete responseParams[requestId];
+			request = null;
+		};
+
+		data
+			? request.send(data)
+			: request.send();
+
+		//called for testing
+		if (xhrWrapper.afterSendEvent)
+			xhrWrapper.afterSendEvent();
 	}
+}
 
-	request.onerror = function () {
-		var headers = parseResponseHeaders(request.getAllResponseHeaders());
-		errorCallback(ErrorHelper.handleHttpError({
-			status: request.status,
-			statusText: request.statusText,
-			message: request.responseText || "Network Error",
-			headers: headers
-		}));
-		delete responseParams[requestId];
-		request = null;
-	};
-
-	request.ontimeout = function () {
-		var headers = parseResponseHeaders(request.getAllResponseHeaders());
-		errorCallback(ErrorHelper.handleHttpError({
-			status: request.status,
-			statusText: request.statusText,
-			message: request.responseText || "Request Timed Out",
-			headers: headers
-		}));
-		delete responseParams[requestId];
-		request = null;
-	};
-
-	data
-		? request.send(data)
-		: request.send();
-};
-
-module.exports = xhrRequest;
+module.exports = xhrWrapper;
 
 
 /***/ }),
@@ -3339,13 +3345,12 @@ function getCrypto() {
 		return window.crypto;
 }
 
-var uCrypto = getCrypto();
-
 function isNull(value) {
 	return typeof value === "undefined" || value == null;
 }
 
 function generateRandomBytes() {
+	var uCrypto = getCrypto();
 	/* webpack-strip-block:removed */
 		return uCrypto.getRandomValues(new Uint8Array(1));
 		/* webpack-strip-block:removed */
@@ -3448,13 +3453,15 @@ function setFileChunk(request, fileBuffer, chunkSize, offset) {
 
 function convertToFileBuffer(binaryString) {
 	/* webpack-strip-block:removed */
-		var bytes = new Uint8Array(data.length);
-		for (var i = 0; i < data.length; i++) {
-			bytes[i] = data.charCodeAt(i);
+		var bytes = new Uint8Array(binaryString.length);
+		for (var i = 0; i < binaryString.length; i++) {
+			bytes[i] = binaryString.charCodeAt(i);
 		}
 		return bytes;
 		/* webpack-strip-block:removed */
 }
+
+var downloadChunkSize = 4194304;
 
 var Utility = {
 	/**
@@ -3505,7 +3512,9 @@ var Utility = {
 
 	setFileChunk: setFileChunk,
 
-	convertToFileBuffer: convertToFileBuffer
+	convertToFileBuffer: convertToFileBuffer,
+
+	downloadChunkSize: downloadChunkSize
 };
 
 module.exports = Utility;
