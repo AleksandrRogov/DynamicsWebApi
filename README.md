@@ -2142,12 +2142,12 @@ Many more features to come!
 Thank you for your patience and for using DynamcisWebApi!
 
 ## JavaScript Promises
-Please use the following library that implements [ES6 Promises](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise): [DynamicsWebApi with Promises](/scripts/dynamics-web-api.js).
+Please use the following library that implements [ES6 Promises](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise): [DynamicsWebApi with Promises](/dist/dynamics-web-api.js).
 
 It is highly recommended to use one of the Promise Polyfills (Yaku, ES6 Promise and etc.) if DynamicsWebApi is intended to be used in the browsers.
 
 ## JavaScript Callbacks
-Please use the following library that implements Callbacks : [DynamicsWebApi with Callbacks](/scripts/dynamics-web-api-callbacks.js).
+Please use the following library that implements Callbacks : [DynamicsWebApi with Callbacks](/dist/dynamics-web-api-callbacks.js).
 
 ## Contributions
 
