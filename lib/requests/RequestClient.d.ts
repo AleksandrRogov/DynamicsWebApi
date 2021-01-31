@@ -3,6 +3,8 @@ import { Core } from "../../ts/types";
 export declare class RequestClient {
     private static _batchRequestCollection;
     private static _responseParseParams;
+    private static addResponseParams;
+    private static addRequestToBatchCollection;
     /**
      * Sends a request to given URL with given parameters
      *

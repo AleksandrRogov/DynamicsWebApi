@@ -4110,7 +4110,7 @@ describe("promises -", function () {
             }
             before(function () {
                 var response = mocks.responses.batchRetrieveMultipleCreateRetrieveMultiple;
-                scope = nock(mocks.webApiUrl + '$batch')
+                scope = nock(mocks.webApiUrl)
                     .filteringRequestBody(function (body) {
                         body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
                         body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'changeset_XXX');
@@ -4122,7 +4122,7 @@ describe("promises -", function () {
                         }
                         return resultBody;
                     })
-                    .post("", checkBody)
+                    .post("/$batch", checkBody)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -4166,7 +4166,7 @@ describe("promises -", function () {
             }
             before(function () {
                 var response = mocks.responses.batchRetrieveMultipleUpdateRetrieveMultiple;
-                scope = nock(mocks.webApiUrl + '$batch')
+                scope = nock(mocks.webApiUrl)
                     .filteringRequestBody(function (body) {
                         body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
                         body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'changeset_XXX');
@@ -4178,7 +4178,7 @@ describe("promises -", function () {
                         }
                         return resultBody;
                     })
-                    .post("", checkBody)
+                    .post("/$batch", checkBody)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -4222,7 +4222,7 @@ describe("promises -", function () {
             }
             before(function () {
                 var response = mocks.responses.batchRetrieveMultipleDeleteRetrieveMultiple;
-                scope = nock(mocks.webApiUrl + '$batch')
+                scope = nock(mocks.webApiUrl)
                     .filteringRequestBody(function (body) {
                         body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
                         body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'changeset_XXX');
@@ -4234,7 +4234,7 @@ describe("promises -", function () {
                         }
                         return resultBody;
                     })
-                    .post("", checkBody)
+                    .post("/$batch", checkBody)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -4278,7 +4278,7 @@ describe("promises -", function () {
             }
             before(function () {
                 var response = mocks.responses.batchRetrieveMultipleCountRetrieveMultiple;
-                scope = nock(mocks.webApiUrl + '$batch')
+                scope = nock(mocks.webApiUrl)
                     .filteringRequestBody(function (body) {
                         body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
                         body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'changeset_XXX');
@@ -4290,7 +4290,7 @@ describe("promises -", function () {
                         }
                         return resultBody;
                     })
-                    .post("", checkBody)
+                    .post("/$batch", checkBody)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -4334,7 +4334,7 @@ describe("promises -", function () {
             }
             before(function () {
                 var response = mocks.responses.batchRetrieveMultipleCountFilteredRetrieveMultiple;
-                scope = nock(mocks.webApiUrl + '$batch')
+                scope = nock(mocks.webApiUrl)
                     .filteringRequestBody(function (body) {
                         body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
                         body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'changeset_XXX');
@@ -4346,7 +4346,7 @@ describe("promises -", function () {
                         }
                         return resultBody;
                     })
-                    .post("", checkBody)
+                    .post("/$batch", checkBody)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -4390,7 +4390,7 @@ describe("promises -", function () {
             }
             before(function () {
                 var response = mocks.responses.batchRetrieveMultipleCountFilteredRetrieveMultiple;
-                scope = nock(mocks.webApiUrl + '$batch')
+                scope = nock(mocks.webApiUrl)
                     .filteringRequestBody(function (body) {
                         body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
                         body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'changeset_XXX');
@@ -4402,7 +4402,7 @@ describe("promises -", function () {
                         }
                         return resultBody;
                     })
-                    .post("", checkBody)
+                    .post("/$batch", checkBody)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -4473,7 +4473,7 @@ describe("promises -", function () {
             }
             before(function () {
                 var response = mocks.responses.batchUpdateDelete;
-                scope = nock(mocks.webApiUrl + '$batch')
+                scope = nock(mocks.webApiUrl)
                     .filteringRequestBody(function (body) {
                         body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
                         body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'changeset_XXX');
@@ -4485,7 +4485,7 @@ describe("promises -", function () {
                         }
                         return resultBody;
                     })
-                    .post("", checkBody)
+                    .post("/$batch", checkBody)
 					.reply( response.status, response.responseText, response.responseHeaders);
             });
 
@@ -4500,7 +4500,9 @@ describe("promises -", function () {
 				dynamicsWebApiTest.deleteRecord({ key: mocks.data.testEntityId2, collection: 'records', navigationProperty: 'firstname' });
 
                 dynamicsWebApiTest.executeBatch()
-                    .then(function (object) {
+					.then(function (object) {
+						expect(object).to.be.not.null;
+
                         expect(object.length).to.be.eq(2);
 
                         expect(object[0]).to.be.true;
@@ -4527,7 +4529,7 @@ describe("promises -", function () {
 			}
 			before(function () {
 				var response = mocks.responses.batchUpdateDelete;
-				scope = nock(mocks.webApiUrl + '$batch', {
+				scope = nock(mocks.webApiUrl, {
 					reqheaders: {
 						Authorization: "Bearer 123"
 					}
@@ -4543,7 +4545,7 @@ describe("promises -", function () {
 						}
 						return resultBody;
 					})
-					.post("", checkBody)
+					.post("/$batch", checkBody)
 					.reply(response.status, response.responseText, response.responseHeaders);
 			});
 
@@ -4585,7 +4587,7 @@ describe("promises -", function () {
             }
             before(function () {
                 var response = mocks.responses.batchError;
-                scope = nock(mocks.webApiUrl + '$batch')
+                scope = nock(mocks.webApiUrl)
                     .filteringRequestBody(function (body) {
                         body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
                         body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'changeset_XXX');
@@ -4597,7 +4599,7 @@ describe("promises -", function () {
                         }
                         return resultBody;
                     })
-                    .post("", checkBody)
+                    .post("/$batch", checkBody)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -4648,7 +4650,7 @@ describe("promises -", function () {
             }
             before(function () {
                 var response = mocks.responses.batchUpdateDelete;
-                scope = nock(mocks.webApiUrl + '$batch')
+                scope = nock(mocks.webApiUrl)
                     .filteringRequestBody(function (body) {
                         body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
                         body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'changeset_XXX');
@@ -4660,7 +4662,7 @@ describe("promises -", function () {
                         }
                         return resultBody;
                     })
-                    .post("", checkBody)
+                    .post("/$batch", checkBody)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -4702,7 +4704,7 @@ describe("promises -", function () {
             }
             before(function () {
                 var response = mocks.responses.batchUpdateDelete;
-                scope = nock(mocks.webApiUrl + '$batch')
+                scope = nock(mocks.webApiUrl)
                     .filteringRequestBody(function (body) {
                         body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
                         body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'changeset_XXX');
@@ -4714,7 +4716,7 @@ describe("promises -", function () {
                         }
                         return resultBody;
                     })
-                    .post("", checkBody)
+                    .post("/$batch", checkBody)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 
@@ -4756,7 +4758,7 @@ describe("promises -", function () {
             }
             before(function () {
                 var response = mocks.responses.batchUpsertUpsertUpsertWithAlternateKeys;
-                scope = nock(mocks.webApiUrl + '$batch')
+                scope = nock(mocks.webApiUrl)
                     .filteringRequestBody(function (body) {
                         body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
                         body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'changeset_XXX');
@@ -4768,7 +4770,7 @@ describe("promises -", function () {
                         }
                         return resultBody;
                     })
-                    .post("", checkBody)
+                    .post("/$batch", checkBody)
                     .reply(response.status, response.responseText, response.responseHeaders);
             });
 

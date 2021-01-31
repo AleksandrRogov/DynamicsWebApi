@@ -289,9 +289,13 @@ export function parseResponse(response: string, responseHeaders: any, parseParam
 					parseResult = guidResult[1];
 				}
 			}
+			else if (responseHeaders['x-ms-chunk-size'] && responseHeaders['Location']) {
+				parseResult = {
+					chunkSize: parseInt(responseHeaders['x-ms-chunk-size']),
+					location: responseHeaders['Location']
+				}
+			}
 	}
-
-	parseParams.length = 0;
 
 	return parseResult;
 }

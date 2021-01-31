@@ -5,11 +5,17 @@ export declare namespace Core {
         uri: string;
         data: string;
         additionalHeaders: any;
-        responseParams: any[];
+        responseParams: {
+            [key: string]: any[];
+        };
         successCallback: Function;
         errorCallback: Function;
         timeout: number;
         isAsync?: boolean;
+        requestId?: string;
+    }
+    interface BatchRequestCollection {
+        [key: string]: InternalRequest[];
     }
     interface ConvertedRequest {
         path?: string;
@@ -87,6 +93,11 @@ export declare namespace Core {
         top?: number;
         /**Sets Prefer header with value 'odata.track-changes' to request that a delta link be returned which can subsequently be used to retrieve entity changes. */
         trackChanges?: boolean;
+        /**v.1.7.0+ Web API v9.1+ only! Use this option to specify the name of the file attribute in Dynamics 365. */
+        fieldName?: string;
+        /**v.1.7.0+ Web API v9.1+ only! Specifies the name of the file */
+        fileName?: string;
+        contentRange?: string;
         url?: string;
         _isUnboundRequest?: boolean;
         _additionalUrl?: string;
@@ -101,6 +112,7 @@ export declare namespace Core {
         headers?: any;
         pageNumber?: number;
         pagingCookie?: string;
+        requestId?: string;
     }
     interface FetchXmlCookie {
         cookie: string;

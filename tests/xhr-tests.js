@@ -488,8 +488,8 @@ describe("xhr -", function() {
                 expect(this.requests[0].method).to.equal('GET');
             });
 
-            it("does not send data", function() {
-                expect(JSON.parse(this.requests[0].requestBody)).to.be.null;
+			it("does not send data", function () {
+				expect(this.requests[0].requestBody).to.be.undefined;
             });
 
             it("sends the correct If-Match header", function() {
@@ -557,7 +557,7 @@ describe("xhr -", function() {
             });
 
             it("does not send data", function() {
-                expect(JSON.parse(this.requests[0].requestBody)).to.be.null;
+				expect(this.requests[0].requestBody).to.be.undefined;
             });
 
             it("sends the correct Authorization header", function() {
@@ -609,7 +609,7 @@ describe("xhr -", function() {
             });
 
             it("does not send data", function() {
-                expect(JSON.parse(this.requests[0].requestBody)).to.be.null;
+				expect(this.requests[0].requestBody).to.be.undefined;
             });
 
             it("does not send If-Match header", function() {
@@ -675,8 +675,8 @@ describe("xhr -", function() {
             });
 
             it("does not send data", function() {
-                expect(JSON.parse(this.requests[0].requestBody)).to.be.null;
-                expect(JSON.parse(this.requests[1].requestBody)).to.be.null;
+				expect(this.requests[0].requestBody).to.be.undefined;
+				expect(this.requests[1].requestBody).to.be.undefined;
             });
 
             it("does not send If-Match header", function() {
@@ -745,8 +745,8 @@ describe("xhr -", function() {
             });
 
             it("does not send data", function() {
-                expect(JSON.parse(this.requests[0].requestBody)).to.be.null;
-                expect(JSON.parse(this.requests[1].requestBody)).to.be.null;
+				expect(this.requests[0].requestBody).to.be.undefined;
+				expect(this.requests[1].requestBody).to.be.undefined;
             });
 
             it("does not send If-Match header", function() {
@@ -817,8 +817,8 @@ describe("xhr -", function() {
             });
 
             it("does not send data", function() {
-                expect(JSON.parse(this.requests[0].requestBody)).to.be.null;
-                expect(JSON.parse(this.requests[1].requestBody)).to.be.null;
+				expect(this.requests[0].requestBody).to.be.undefined;
+				expect(this.requests[1].requestBody).to.be.undefined;
             });
 
             it("does not send If-Match header", function() {

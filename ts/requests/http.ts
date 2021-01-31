@@ -10,14 +10,11 @@ import { parseResponse } from "./helpers/parseResponse";
  *
  */
 function httpRequest(options: Core.RequestOptions) {
-	const method = options.method;
-	const uri = options.uri;
 	const data = options.data;
 	const additionalHeaders = options.additionalHeaders;
 	const responseParams = options.responseParams;
 	const successCallback = options.successCallback;
 	const errorCallback = options.errorCallback;
-	const timeout = options.timeout;
 
 	var headers: http.OutgoingHttpHeaders = {};
 
@@ -33,7 +30,7 @@ function httpRequest(options: Core.RequestOptions) {
 		headers[key] = additionalHeaders[key];
 	}
 
-	var parsedUrl = url.parse(uri);
+	var parsedUrl = url.parse(options.uri);
 	var protocol = parsedUrl.protocol.replace(":", "");
 	var protocolInterface = protocol === "http" ? http : https;
 
@@ -41,8 +38,8 @@ function httpRequest(options: Core.RequestOptions) {
 		hostname: parsedUrl.hostname,
 		port: parsedUrl.port,
 		path: parsedUrl.path,
-		method: method,
-		timeout: timeout,
+		method: options.method,
+		timeout: options.timeout,
 		headers: headers
 	};
 
@@ -60,8 +57,8 @@ function httpRequest(options: Core.RequestOptions) {
 			hostname: proxyUrl.hostname,
 			port: proxyUrl.port,
 			path: parsedUrl.href,
-			method: method,
-			timeout: timeout,
+			method: options.method,
+			timeout: options.timeout,
 			headers: headers
 		};
 	}
@@ -78,7 +75,7 @@ function httpRequest(options: Core.RequestOptions) {
 				case 201: // Success with content returned in response body.
 				case 204: // Success with no content returned in response body.
 				case 304: {// Success with Not Modified
-					let responseData = parseResponse(rawData, res.headers, responseParams);
+					let responseData = parseResponse(rawData, res.headers, responseParams[options.requestId]);
 
 					let response = {
 						data: responseData,
@@ -86,14 +83,15 @@ function httpRequest(options: Core.RequestOptions) {
 						status: res.statusCode
 					};
 
-					responseParams.length = 0;
+					delete responseParams[options.requestId];
+
 					successCallback(response);
 					break;
 				}
 				default: // All other statuses are error cases.
 					let crmError;
 					try {
-						var errorParsed = parseResponse(rawData, res.headers, responseParams);
+						var errorParsed = parseResponse(rawData, res.headers, responseParams[options.requestId]);
 
 						if (Array.isArray(errorParsed)) {
 							errorCallback(errorParsed);
@@ -112,7 +110,8 @@ function httpRequest(options: Core.RequestOptions) {
 						}
 					}
 
-					responseParams.length = 0;
+					delete responseParams[options.requestId];
+
 					errorCallback(ErrorHelper.handleHttpError(crmError, { status: res.statusCode, statusText: "", statusMessage: res.statusMessage, headers: res.headers }));
 					break;
 			}
@@ -126,7 +125,7 @@ function httpRequest(options: Core.RequestOptions) {
 	}
 
 	request.on("error", function (error) {
-		responseParams.length = 0;
+		delete responseParams[options.requestId];
 		errorCallback(error);
 	});
 

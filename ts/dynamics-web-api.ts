@@ -23,6 +23,7 @@ export class DynamicsWebApi {
 	};
 
 	private _isBatch = false;
+	private _batchRequestId: string;
 
 	constructor(config?: DynamicsWebApi.Config) {
 		if (!config) {
@@ -98,6 +99,7 @@ export class DynamicsWebApi {
 
 	private _makeRequest = (request: Core.InternalRequest): Promise<any> => {
 		request.isBatch = this._isBatch;
+		request.requestId = this._batchRequestId;
 		return new Promise((resolve, reject) => {
 			RequestClient.makeRequest(request, this._internalConfig, resolve, reject);
 		});
@@ -1079,6 +1081,7 @@ export class DynamicsWebApi {
 	 */
 	startBatch = (): void => {
 		this._isBatch = true;
+		this._batchRequestId = Utility.generateUUID();
 	};
 
 	/**
@@ -1101,6 +1104,8 @@ export class DynamicsWebApi {
 		return this._makeRequest(internalRequest)
 			.then(function (response) {
 				return response.data;
+			}).finally(() => {
+				this._batchRequestId = null;
 			});
 	};
 

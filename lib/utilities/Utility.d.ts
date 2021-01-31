@@ -30,6 +30,7 @@ export declare class Utility {
      * @returns {boolean}
      */
     static isNull(value: any): boolean;
+    /** Generates UUID */
     static generateUUID(): string;
     static getXrmContext(): any;
     static getXrmUtility(): any;

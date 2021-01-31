@@ -163,7 +163,12 @@ export class RequestUtility {
                 }
 
                 queryArray.push("$filter=" + encodeURIComponent(filterResult));
-            }
+			}
+
+			if (request.fieldName) {
+				ErrorHelper.stringParameterCheck(request.fieldName, `DynamicsWebApi.${request.functionName}`, "request.fieldName");
+				url += '/' + request.fieldName;
+			}
 
             if (request.savedQuery) {
                 queryArray.push("savedQuery=" + ErrorHelper.guidParameterCheck(request.savedQuery, `DynamicsWebApi.${request.functionName}`, "request.savedQuery"));
@@ -191,7 +196,12 @@ export class RequestUtility {
             if (request.orderBy != null && request.orderBy.length) {
                 ErrorHelper.arrayParameterCheck(request.orderBy, `DynamicsWebApi.${request.functionName}`, "request.orderBy");
                 queryArray.push("$orderby=" + request.orderBy.join(","));
-            }
+			}
+
+			if (request.fileName) {
+				ErrorHelper.stringParameterCheck(request.fileName, `DynamicsWebApi.${request.functionName}`, "request.filename");
+				queryArray.push("x-ms-file-name=" + request.fileName);
+			}
 
             if (request.entity) {
                 ErrorHelper.parameterCheck(request.entity, `DynamicsWebApi.${request.functionName}`, "request.entity");
@@ -297,7 +307,17 @@ export class RequestUtility {
             if (!request.contentId.startsWith("$")) {
                 headers["Content-ID"] = request.contentId;
             }
-        }
+		}
+
+		if (request.fileName) {
+			ErrorHelper.stringParameterCheck(request.fileName, `DynamicsWebApi.${request.functionName}`, "request.filename");
+			headers["x-ms-transfer-mode"] = "chunked";
+		}
+
+		if (request.contentRange) {
+			ErrorHelper.stringParameterCheck(request.contentRange, `DynamicsWebApi.${request.functionName}`, "request.contentRange");
+			headers['Content-Range'] = request.contentRange;
+		}
 
         return headers;
     }
@@ -433,7 +453,7 @@ export class RequestUtility {
 			const data = internalRequest.data || internalRequest.entity;
 
 			if (!isGet && data) {
-                batchBody.push(`\n${RequestUtility.stringifyData(data, config)}`);
+                batchBody.push(`\n${RequestUtility.processData(data, config)}`);
             }
         });
 
@@ -468,9 +488,12 @@ export class RequestUtility {
 		return collectionName;
 	}
 
-	static stringifyData (data: any, config: DynamicsWebApi.Config): string {
+	static processData (data: any, config: DynamicsWebApi.Config): any {
 		let stringifiedData;
 		if (data) {
+			if (data instanceof Uint8Array || data instanceof Uint16Array || data instanceof Uint32Array)
+				return data;
+
 			stringifiedData = JSON.stringify(data, (key, value) => {
 				if (key.endsWith('@odata.bind') || key.endsWith('@odata.id')) {
 					if (typeof value === 'string' && !value.startsWith('$')) {
@@ -529,7 +552,9 @@ export class RequestUtility {
         headers["Accept"] = "application/json";
         headers["OData-MaxVersion"] = "4.0";
         headers["OData-Version"] = "4.0";
-        headers["Content-Type"] = "application/json; charset=utf-8";
+		headers["Content-Type"] = headers["Content-Range"]
+			? 'application/octet-stream'
+			: 'application/json; charset=utf-8';
 
         return headers;
     }

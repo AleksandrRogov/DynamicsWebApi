@@ -2029,8 +2029,8 @@ describe('RequestClient.makeRequest', function () {
 		var url = 'test';
 		before(function () {
 			var response = mocks.responses.basicEmptyResponseSuccess;
-			scope = nock(mocks.webApiUrl + 'test')
-				.post("", mocks.data.testEntity)
+			scope = nock(mocks.webApiUrl)
+				.post("/test", mocks.data.testEntity)
 				.socketDelay(1000)
 				.reply(response.status, response.responseText, response.responseHeaders);
 		});
@@ -2071,8 +2071,8 @@ describe('RequestClient.makeRequest', function () {
 		var url = 'test';
 		before(function () {
 			var response = mocks.responses.basicEmptyResponseSuccess;
-			scope = nock(mocks.webApiUrl + 'test')
-				.post("", mocks.data.testEntity)
+			scope = nock(mocks.webApiUrl)
+				.post("/test", mocks.data.testEntity)
 				.socketDelay(1000)
 				.reply(response.status, response.responseText, response.responseHeaders);
 		});
@@ -2113,8 +2113,8 @@ describe('RequestClient.makeRequest', function () {
 		var url = 'test';
 		before(function () {
 			var response = mocks.responses.basicEmptyResponseSuccess;
-			scope = nock(mocks.webApiUrl + 'test')
-				.post("", mocks.data.testEntity)
+			scope = nock(mocks.webApiUrl)
+				.post("/test", mocks.data.testEntity)
 				.delayConnection(1000)
 				.reply(response.status, response.responseText, response.responseHeaders);
 		});
@@ -2155,8 +2155,8 @@ describe('RequestClient.makeRequest', function () {
 		var url = 'test';
 		before(function () {
 			var response = mocks.responses.basicEmptyResponseSuccess;
-			scope = nock(mocks.webApiUrl + 'test')
-				.post("", mocks.data.testEntity)
+			scope = nock(mocks.webApiUrl)
+				.post("/test", mocks.data.testEntity)
 				.delayConnection(1000)
 				.reply(response.status, response.responseText, response.responseHeaders);
 		});
@@ -2207,7 +2207,7 @@ describe('RequestClient.makeRequest', function () {
 
 		before(function () {
 			var response = mocks.responses.batch;
-			scope = nock(mocks.webApiUrl + '$batch')
+			scope = nock(mocks.webApiUrl)
 				.filteringRequestBody(function (body) {
 					body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
 					var bodys = body.split('\n');
@@ -2218,7 +2218,7 @@ describe('RequestClient.makeRequest', function () {
 					}
 					return resultBody;
 				})
-				.post("", checkBody)
+				.post("/$batch", checkBody)
 				.reply(response.status, response.responseText, response.responseHeaders);
 		});
 
@@ -2260,8 +2260,8 @@ describe("RequestClient.sendRequest", function () {
 		var url = 'test';
 		before(function () {
 			var response = mocks.responses.basicEmptyResponseSuccess;
-			scope = nock(mocks.webApiUrl + 'test')
-				.patch("", mocks.data.testEntityWithExpand)
+			scope = nock(mocks.webApiUrl)
+				.patch("/test", mocks.data.testEntityWithExpand)
 				.reply(response.status, response.responseText, response.responseHeaders);
 		});
 
@@ -2293,8 +2293,8 @@ describe("RequestClient.sendRequest", function () {
 		var scope;
 		var url = 'test';
 		before(function () {
-			scope = nock(mocks.webApiUrl + 'test')
-				.post("", mocks.data.testEntity)
+			scope = nock(mocks.webApiUrl)
+				.post("/test", mocks.data.testEntity)
 				.replyWithError({ code: 'Error' });
 		});
 
@@ -2322,8 +2322,8 @@ describe("RequestClient.sendRequest", function () {
 		var url = 'test';
 		before(function () {
 			var response = mocks.responses.basicEmptyResponseSuccess;
-			scope = nock(mocks.webApiUrl + 'test')
-				.post("", mocks.data.testEntity)
+			scope = nock(mocks.webApiUrl)
+				.post("/test", mocks.data.testEntity)
 				.socketDelay(1000)
 				.reply(response.status, response.responseText, response.responseHeaders);
 		});
@@ -2353,8 +2353,8 @@ describe("RequestClient.sendRequest", function () {
 		var url = 'test';
 		before(function () {
 			var response = mocks.responses.basicEmptyResponseSuccess;
-			scope = nock(mocks.webApiUrl + 'test')
-				.post("", mocks.data.testEntity)
+			scope = nock(mocks.webApiUrl)
+				.post("/test", mocks.data.testEntity)
 				.delayConnection(1000)
 				.reply(response.status, response.responseText, response.responseHeaders);
 		});

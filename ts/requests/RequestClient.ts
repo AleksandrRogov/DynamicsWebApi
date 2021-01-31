@@ -5,8 +5,22 @@ import { Core } from "../../ts/types";
 
 export class RequestClient {
 
-	private static _batchRequestCollection: Core.InternalRequest[] = [];
-	private static _responseParseParams = [];
+	private static _batchRequestCollection: Core.BatchRequestCollection = {};
+	private static _responseParseParams: { [key: string]: any[] } = {};
+
+	private static addResponseParams(requestId, responseParams) {
+		if (RequestClient._responseParseParams[requestId])
+			RequestClient._responseParseParams[requestId].push(responseParams);
+		else
+			RequestClient._responseParseParams[requestId] = [responseParams];
+	}
+
+	private static addRequestToBatchCollection(requestId, request) {
+		if (RequestClient._batchRequestCollection[requestId])
+			RequestClient._batchRequestCollection[requestId].push(request);
+		else
+			RequestClient._batchRequestCollection[requestId] = [request];
+	}
 
 	/**
 	 * Sends a request to given URL with given parameters
@@ -26,27 +40,28 @@ export class RequestClient {
 
 		request.headers = request.headers || {};
 		request.responseParameters = request.responseParameters || {};
+		request.requestId = request.requestId || Utility.generateUUID();
 
 		//add response parameters to parse
-		RequestClient._responseParseParams.push(request.responseParameters);
+		RequestClient.addResponseParams(request.requestId, request.responseParameters);
 
 		//stringify passed data
-		var stringifiedData = null;
+		var processedData = null;
 
 		var batchResult;
 		let isBatchConverted = request.responseParameters != null && request.responseParameters.convertedToBatch;
 
 		if (request.path === "$batch" && !isBatchConverted) {
-			batchResult = RequestUtility.convertToBatch(RequestClient._batchRequestCollection, config);
+			batchResult = RequestUtility.convertToBatch(RequestClient._batchRequestCollection[request.requestId], config);
 
-			stringifiedData = batchResult.body;
+			processedData = batchResult.body;
 			request.headers = { ...batchResult.headers, ...request.headers };
 
 			//clear an array of requests
-			RequestClient._batchRequestCollection.length = 0;
+			delete RequestClient._batchRequestCollection[request.requestId];
 		}
 		else {
-			stringifiedData = !isBatchConverted ? RequestUtility.stringifyData(request.data, config) : request.data;
+			processedData = !isBatchConverted ? RequestUtility.processData(request.data, config) : request.data;
 
 			if (!isBatchConverted)
 				request.headers = RequestUtility.setStandardHeaders(request.headers);
@@ -83,13 +98,14 @@ export class RequestClient {
 			executeRequest({
 				method: request.method,
 				uri: config.webApiUrl + request.path,
-				data: stringifiedData,
+				data: processedData,
 				additionalHeaders: request.headers,
 				responseParams: RequestClient._responseParseParams,
 				successCallback: successCallback,
 				errorCallback: errorCallback,
 				isAsync: request.async,
-				timeout: request.timeout || config.timeout
+				timeout: request.timeout || config.timeout,
+				requestId: request.requestId
 			});
 		};
 
@@ -171,9 +187,9 @@ export class RequestClient {
 			request = RequestUtility.compose(request, config);
 
 			//add response parameters to parse
-			RequestClient._responseParseParams.push(request.responseParameters);
+			RequestClient.addResponseParams(request.requestId, request.responseParameters);
 
-			RequestClient._batchRequestCollection.push(request);
+			RequestClient.addRequestToBatchCollection(request.requestId, request);
 		}
 		else {
 			RequestClient._checkCollectionName(request.collection, config, collectionName => {

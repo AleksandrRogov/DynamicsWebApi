@@ -7,6 +7,7 @@ import { RequestClient } from "./requests/RequestClient";
 export declare class DynamicsWebApi {
     private _internalConfig;
     private _isBatch;
+    private _batchRequestId;
     constructor(config?: DynamicsWebApi.Config);
     /**
      * Sets the configuration parameters for DynamicsWebApi helper.

@@ -37,7 +37,7 @@ export declare class RequestUtility {
     static convertToBatch(requests: Core.InternalRequest[], config: DynamicsWebApi.Config): Core.InternalBatchRequest;
     static entityNames: any;
     static findCollectionName(entityName: string): string;
-    static stringifyData(data: any, config: DynamicsWebApi.Config): string;
+    static processData(data: any, config: DynamicsWebApi.Config): any;
     static setStandardHeaders(headers?: any): any;
 }
 //# sourceMappingURL=RequestUtility.d.ts.map

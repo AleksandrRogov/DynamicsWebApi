@@ -3,33 +3,6 @@
 declare let GetGlobalContext: any;
 declare let Xrm: any;
 
-const INITIAL_TIME = Date.now();
-let prevNow = 0;
-
-/**
- * Cross platform compatible partial performance implementation
- */
-//partially taken from https://github.com/getsentry/sentry-javascript/blob/master/packages/utils/src/misc.ts
-interface CrossPlatformPerformance {
-	/**
-	 * Returns the current timestamp in ms
-	 */
-	now(): number;
-	timeOrigin: number;
-}
-
-const performanceFallback: CrossPlatformPerformance = {
-	now(): number {
-		let now = Date.now() - INITIAL_TIME;
-		if (now < prevNow) {
-			now = prevNow;
-		}
-		prevNow = now;
-		return now;
-	},
-	timeOrigin: INITIAL_TIME
-};
-
 function isNodeEnv(): boolean {
 	// tslint:disable:strict-type-predicates
 	return Object.prototype.toString.call(typeof process !== "undefined" ? process : 0) === "[object process]";
@@ -45,29 +18,31 @@ function getGlobalObject<T>(): T {
 				: {}) as T;
 }
 
-function getPerformance(): CrossPlatformPerformance {
-	if (isNodeEnv()) {
-		try {
-			const perfHooks = require("perf_hooks");
-			return perfHooks.performance;
-		} catch (_) {
-			return performanceFallback;
-		}
+/* develblock:start */
+const nCrypto = require("crypto");
+/* develblock:end */
+
+function getCrypto() {
+	/* develblock:start */
+	if (typeof window === "undefined") {
+		return nCrypto;
+	}
+	else
+		/* develblock:end */
+		return window.crypto;
+}
+
+function generateRandomBytes() {
+	var uCrypto = getCrypto();
+	/* develblock:start */
+	if (typeof uCrypto.getRandomValues !== "undefined") {
+		/* develblock:end */
+		return uCrypto.getRandomValues(new Uint8Array(1));
+		/* develblock:start */
 	}
 
-	let window = getGlobalObject<Window>();
-
-	if (window.performance) {
-		// Polyfill for performance.timeOrigin.
-		// tslint:disable-next-line:strict-type-predicates
-		if (typeof window.performance.timeOrigin === "undefined") {
-			// @ts-ignore
-			// tslint:disable-next-line:deprecation
-			window.performance.timeOrigin = (window.performance.timing && window.performance.timing.navigationStart) || INITIAL_TIME;
-		}
-	}
-
-	return window.performance || performanceFallback
+	return uCrypto.randomBytes(1);
+	/* develblock:end */
 }
 
 export class Utility {
@@ -166,19 +141,11 @@ export class Utility {
         return typeof value === "undefined" || value == null;
     }
 
-    static generateUUID(): string { // Public Domain/MIT
-		var d = new Date().getTime();
-
-		const performance = getPerformance();
-
-		if (performance && typeof performance.now === 'function') {
-            d += performance.now(); //use high-precision timer if available
-        }
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-            var r = (d + Math.random() * 16) % 16 | 0;
-            d = Math.floor(d / 16);
-            return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-        });
+	/** Generates UUID */
+    static generateUUID(): string {
+		return (<any>[1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
+			(c ^ generateRandomBytes()[0] & 15 >> c / 4).toString(16)
+		);
     }
 
     static getXrmContext(): any {
