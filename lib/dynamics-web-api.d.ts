@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { RequestClient } from "./requests/RequestClient";
 /**
  * Microsoft Dynamics CRM Web API helper library written in JavaScript.
@@ -14,7 +15,7 @@ export declare class DynamicsWebApi {
      *
      * @param {DWAConfig} config - configuration object
      * @example
-       dynamicsWebApi.setConfig({ webApiVersion: '9.0' });
+       dynamicsWebApi.setConfig({ webApiVersion: '9.1' });
      */
     setConfig: (config: DynamicsWebApi.Config) => void;
     private _makeRequest;
@@ -95,6 +96,19 @@ export declare class DynamicsWebApi {
      * @returns {Promise} D365 Web Api result
      */
     upsert: <T = any>(request: DynamicsWebApi.UpsertRequest) => Promise<T>;
+    private _uploadFileChunk;
+    /**
+     * Upload file to a File Attribute
+     *
+     * @param {any} request - An object that represents all possible options for a current request.
+     */
+    uploadFile: (request: DynamicsWebApi.UploadRequest) => Promise<void>;
+    private _downloadFileChunk;
+    /**
+     * Download a file from a File Attribute
+     * @param {any} request - An object that represents all possible options for a current request.
+     */
+    downloadFile: (request: DynamicsWebApi.DownloadRequest) => Promise<DynamicsWebApi.DownloadResponse>;
     /**
      * Sends an asynchronous request to retrieve records.
      *
@@ -489,6 +503,8 @@ export declare namespace DynamicsWebApi {
         ifmatch?: string;
         /**BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */
         contentId?: string;
+        /**Field name that needs to be cleared (for example File Field) */
+        fieldName?: string;
     }
     interface RetrieveRequest extends CRUDRequest {
         /**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
@@ -718,6 +734,18 @@ export declare namespace DynamicsWebApi {
         /**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
         expand?: Expand[];
     }
+    interface UploadRequest extends CRUDRequest {
+        /**Binary Buffer*/
+        data: Uint8Array | Buffer;
+        /**Name of the file */
+        fileName: string;
+        /**File Field Name */
+        fieldName: string;
+    }
+    interface DownloadRequest extends CRUDRequest {
+        /**File Field Name */
+        fieldName: string;
+    }
     interface Config {
         /**A String representing the GUID value for the Dynamics 365 system user id.Impersonates the user. */
         webApiUrl?: string;
@@ -795,6 +823,14 @@ export declare namespace DynamicsWebApi {
             /**Next page cookie */
             cookie?: string;
         };
+    }
+    interface DownloadResponse {
+        /**The name of the file */
+        fileName: string;
+        /**File size */
+        fileSize: number;
+        /**File Data */
+        data: Uint8Array | Buffer;
     }
 }
 //# sourceMappingURL=dynamics-web-api.d.ts.map

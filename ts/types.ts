@@ -119,6 +119,16 @@ export declare namespace Core {
 		pageNumber?: number;
 		pagingCookie?: string;
 		requestId?: string;
+		transferMode?: string;
+		range?: string;
+		downloadSize?: string;
+	}
+
+	interface FileParseResult {
+		value: any,
+		fileName?: string,
+		fileSize?: number,
+		location?: string
 	}
 
 	interface FetchXmlCookie {

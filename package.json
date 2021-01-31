@@ -4,10 +4,15 @@
 	"description": "DynamicsWebApi is a Microsoft Dynamics CRM Web API helper library",
 	"keywords": [
 		"crm",
+		"cds",
 		"web-api",
 		"helper",
+		"d365",
 		"dynamics-crm",
 		"dynamics-365",
+		"common-data-service",
+		"dataverse",
+		"microsoft-dataverse",
 		"dynamics-crm-webapi",
 		"dynamics-crm-online"
 	],
@@ -17,17 +22,21 @@
 		"name": "Aleksandr Rogov"
 	},
 	"devDependencies": {
+		"@peculiar/webcrypto": "^1.1.4",
+		"Base64": "^1.1.0",
 		"chai": "^3.5.0",
 		"coveralls": "^2.13.3",
 		"gulp": "^3.9.1",
 		"istanbul": "^0.4.5",
 		"mocha": "^3.5.3",
 		"mocha-lcov-reporter": "^1.3.0",
-		"nock": "^11.4.0",
+		"nock": "^11.9.1",
 		"rimraf": "^2.6.2",
-		"sinon": "^1.17.7",
-		"webpack": "^2.7.0",
-		"webpack-strip-block": "^0.1.1"
+		"sinon": "^9.2.1",
+		"terser-webpack-plugin": "^5.0.3",
+		"webpack": "^5.9.0",
+		"webpack-cli": "^4.2.0",
+		"webpack-strip-block": "^0.3.0"
 	},
 	"dependencies": {
 		"@types/node": "^12.12.7",

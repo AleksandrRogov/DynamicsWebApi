@@ -38,7 +38,7 @@ export class DynamicsWebApi {
 	 *
 	 * @param {DWAConfig} config - configuration object
 	 * @example
-	   dynamicsWebApi.setConfig({ webApiVersion: '9.0' });
+	   dynamicsWebApi.setConfig({ webApiVersion: '9.1' });
 	 */
 	setConfig = (config: DynamicsWebApi.Config): void => {
 
@@ -335,6 +335,91 @@ export class DynamicsWebApi {
 				//rethrow error otherwise
 				throw error;
 			});
+	};
+
+	private _uploadFileChunk = (request: Core.InternalRequest, fileBytes: Uint8Array | Buffer, chunkSize: number, offset?: number): Promise<void> => {
+		offset = offset || 0;
+		Utility.setFileChunk(request, fileBytes, chunkSize, offset);
+
+		return this._makeRequest(request)
+			.then(() => {
+				offset += chunkSize;
+				if (offset <= fileBytes.length) {
+					return this._uploadFileChunk(request, fileBytes, chunkSize, offset);
+				}
+
+				return;
+			});
+	};
+
+	/**
+	 * Upload file to a File Attribute
+	 * 
+	 * @param {any} request - An object that represents all possible options for a current request.
+	 */
+	uploadFile = (request: DynamicsWebApi.UploadRequest): Promise<void> => {
+		ErrorHelper.batchIncompatible("DynamicsWebApi.uploadFile", this._isBatch);
+		ErrorHelper.parameterCheck(request, "DynamicsWebApi.uploadFile", "request");
+
+		const data = request.data;
+		delete request.data;
+		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		internalRequest.method = "PATCH";
+		internalRequest.functionName = "uploadFile";
+		internalRequest.transferMode = "chunked";
+		request.data = data;
+
+		return this._makeRequest(internalRequest)
+			.then((response) => {
+				internalRequest.url = response.data.location;
+				delete internalRequest.transferMode;
+				delete internalRequest.fieldName;
+				delete internalRequest.fileName;
+				return this._uploadFileChunk(internalRequest, request.data, response.data.chunkSize);
+			});
+	};
+
+	private _downloadFileChunk = (request: Core.InternalRequest, bytesDownloaded?: number, fileSize?: number, data?: string): Promise<DynamicsWebApi.DownloadResponse> => {
+		bytesDownloaded = bytesDownloaded || 0;
+		fileSize = fileSize || 0;
+		data = data || "";
+
+		request.range = "bytes=" + bytesDownloaded + "-" + (bytesDownloaded + Utility.downloadChunkSize - 1);
+		request.downloadSize = "full";
+
+		return this._makeRequest(request)
+			.then((response) => {
+				request.url = response.data.location;
+				data += response.data.value;
+
+				bytesDownloaded += Utility.downloadChunkSize;
+
+				if (bytesDownloaded <= response.data.fileSize) {
+					return this._downloadFileChunk(request, bytesDownloaded, response.data.fileSize, data);
+				}
+
+				return {
+					fileName: response.data.fileName,
+					fileSize: response.data.fileSize,
+					data: Utility.convertToFileBuffer(data)
+				}
+			});
+	};
+
+	/**
+	 * Download a file from a File Attribute
+	 * @param {any} request - An object that represents all possible options for a current request.
+	 */
+	downloadFile = (request: DynamicsWebApi.DownloadRequest): Promise<DynamicsWebApi.DownloadResponse> => {
+		ErrorHelper.batchIncompatible('DynamicsWebApi.downloadFile', this._isBatch);
+		ErrorHelper.parameterCheck(request, "DynamicsWebApi.downloadFile", "request");
+
+		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		internalRequest.method = "GET";
+		internalRequest.functionName = "downloadFile";
+		internalRequest.responseParameters = { parse: true };
+
+		return this._downloadFileChunk(internalRequest);
 	};
 
 	/**
@@ -1302,6 +1387,8 @@ export declare namespace DynamicsWebApi {
 		ifmatch?: string;
 		/**BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */
 		contentId?: string;
+		/**Field name that needs to be cleared (for example File Field) */
+		fieldName?: string;
 	}
 
 	export interface RetrieveRequest extends CRUDRequest {
@@ -1560,6 +1647,20 @@ export declare namespace DynamicsWebApi {
 		expand?: Expand[];
 	}
 
+	interface UploadRequest extends CRUDRequest {
+		/**Binary Buffer*/
+		data: Uint8Array | Buffer;
+		/**Name of the file */
+		fileName: string;
+		/**File Field Name */
+		fieldName: string;
+	}
+
+	interface DownloadRequest extends CRUDRequest {
+		/**File Field Name */
+		fieldName: string;
+	}
+
 	export interface Config {
 		/**A String representing the GUID value for the Dynamics 365 system user id.Impersonates the user. */
 		webApiUrl?: string;
@@ -1644,5 +1745,14 @@ export declare namespace DynamicsWebApi {
 			/**Next page cookie */
 			cookie?: string
 		}
+	}
+
+	interface DownloadResponse {
+		/**The name of the file */
+		fileName: string,
+		/**File size */
+		fileSize: number,
+		/**File Data */
+		data: Uint8Array | Buffer
 	}
 }

@@ -195,11 +195,16 @@ export class RequestUtility {
 
             if (request.orderBy != null && request.orderBy.length) {
                 ErrorHelper.arrayParameterCheck(request.orderBy, `DynamicsWebApi.${request.functionName}`, "request.orderBy");
-                queryArray.push("$orderby=" + request.orderBy.join(","));
+				queryArray.push("$orderby=" + request.orderBy.join(","));
+			}
+
+			if (request.downloadSize) {
+				ErrorHelper.stringParameterCheck(request.downloadSize, `DynamicsWebApi.${request.functionName}`, 'request.downloadSize');
+				queryArray.push("size=" + request.downloadSize);
 			}
 
 			if (request.fileName) {
-				ErrorHelper.stringParameterCheck(request.fileName, `DynamicsWebApi.${request.functionName}`, "request.filename");
+				ErrorHelper.stringParameterCheck(request.fileName, `DynamicsWebApi.${request.functionName}`, "request.fileName");
 				queryArray.push("x-ms-file-name=" + request.fileName);
 			}
 
@@ -256,7 +261,11 @@ export class RequestUtility {
 
         if (prefer.length) {
             headers["Prefer"] = prefer;
-        }
+		}
+
+		if (request.transferMode) {
+			headers["x-ms-transfer-mode"] = request.transferMode;
+		}
 
         if (request.ifmatch != null && request.ifnonematch != null) {
             throw new Error(`DynamicsWebApi.${request.functionName}. Either one of request.ifmatch or request.ifnonematch parameters should be used in a call, not both.`);
@@ -309,14 +318,14 @@ export class RequestUtility {
             }
 		}
 
-		if (request.fileName) {
-			ErrorHelper.stringParameterCheck(request.fileName, `DynamicsWebApi.${request.functionName}`, "request.filename");
-			headers["x-ms-transfer-mode"] = "chunked";
-		}
-
 		if (request.contentRange) {
 			ErrorHelper.stringParameterCheck(request.contentRange, `DynamicsWebApi.${request.functionName}`, "request.contentRange");
 			headers['Content-Range'] = request.contentRange;
+		}
+
+		if (request.range) {
+			ErrorHelper.stringParameterCheck(request.range, `DynamicsWebApi.${request.functionName}`, "request.range");
+			headers['Range'] = request.range;
 		}
 
         return headers;

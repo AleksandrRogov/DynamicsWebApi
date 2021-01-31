@@ -173,7 +173,15 @@ var dataStubs = {
             { name: "name1", subject: "subject1" },
             { name: "name2", subject: "subject2" }
         ]
-    },
+	},
+	downloadFileChunk1: {
+		"@odata.context": "context",
+		value: Buffer.from("Welcome to Dyna", "utf-8").toString("base64")
+	},
+	downloadFileChunk2: {
+		"@odata.context": "context",
+		value: Buffer.from("micsWebApi!", "utf-8").toString("base64")
+	},
     batch:
         '--dwa_batch_XXX\n' +
         'Content-Type: application/http\n' +
@@ -646,7 +654,36 @@ var responseStubs = {
     multipleWithDeltaLinkResponse: {
         status: 200,
         responseText: JSON.stringify(dataStubs.multipleWithDeltaLink)
-    },
+	},
+	uploadFileBeginResponse: {
+		status: 200,
+		responseHeaders: {
+			'x-ms-chunk-size': 15,
+			'Accept-Ranges': 'bytes',
+			'Location': webApiUrl + 'tests(904020fa-6213-43d4-a26a-5347b70095e8)/dwa_file?Token'
+		}
+	},
+	uploadFile1stResponse: {
+		status: 206
+	},
+	downloadFileResponseChunk1: {
+		status: 206,
+		responseHeaders: {
+			'Content-Disposition': 'attachment; filename="sample.txt"',
+			'x-ms-file-name': "sample.txt",
+			'x-ms-file-size': 26
+		},
+		responseText: JSON.stringify(dataStubs.downloadFileChunk1)
+	},
+	downloadFileResponseChunk2: {
+		status: 206,
+		responseHeaders: {
+			'Content-Disposition': 'attachment; filename="sample.txt"',
+			'x-ms-file-name': "sample.txt",
+			'x-ms-file-size': 26
+		},
+		responseText: JSON.stringify(dataStubs.downloadFileChunk2)
+	},
     batch: {
         status: 200,
         responseText:
@@ -1067,6 +1104,12 @@ var responseStubs = {
     }
 };
 
+var utils = {
+	toTypedArray: function (b) {
+		return new Uint8Array(b.buffer, b.byteOffset, b.byteLength / Uint8Array.BYTES_PER_ELEMENT);
+	}
+}
+
 module.exports = {
 	Xrm: Xrm,
 	data: dataStubs,
@@ -1075,5 +1118,6 @@ module.exports = {
 	webApiUrl81: webApiUrl81,
 	webApiUrl80: webApiUrl80,
 	webApiUrl90: webApiUrl90,
-	webApiUrl91: webApiUrl91
+	webApiUrl91: webApiUrl91,
+	utils: utils
 };

@@ -74,6 +74,7 @@ function httpRequest(options: Core.RequestOptions) {
 				case 200: // Success with content returned in response body.
 				case 201: // Success with content returned in response body.
 				case 204: // Success with no content returned in response body.
+				case 206: //Success with partial content
 				case 304: {// Success with Not Modified
 					let responseData = parseResponse(rawData, res.headers, responseParams[options.requestId]);
 

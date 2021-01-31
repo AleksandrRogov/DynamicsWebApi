@@ -2,6 +2,8 @@
 import { Utility } from "../../utilities/Utility";
 import { ErrorHelper } from "../../helpers/ErrorHelper";
 import { dateReviver } from "./dateReviver";
+import { DynamicsWebApi } from "../../dynamics-web-api";
+import { Core } from "../../types";
 
 ////string es6 polyfill
 //if (!String.prototype.endsWith || !String.prototype.startsWith) {
@@ -252,6 +254,51 @@ function parseBatchResponse(response: string, parseParams: any, requestNumber: n
 	return result;
 }
 
+function base64ToString(base64: string): string {
+	/* develblock:start */
+	if (typeof process !== "undefined") {
+		return Buffer.from(base64, "base64").toString("binary");
+	}
+	else if (typeof window !== "undefined")
+		/* develblock:end */
+		return window.atob(base64);
+}
+
+function parseFileResponse(response: any, responseHeaders: any, parseParams: any): Core.FileParseResult {
+	var data = response;
+
+	if (parseParams.hasOwnProperty('parse')) {
+		data = JSON.parse(data).value;
+		data = base64ToString(data);
+	}
+
+	var parseResult: Core.FileParseResult = {
+		value: data
+	};
+
+	if (responseHeaders['x-ms-file-name'])
+		parseResult.fileName = responseHeaders['x-ms-file-name'];
+
+	if (responseHeaders['x-ms-file-size'])
+		parseResult.fileSize = parseInt(responseHeaders['x-ms-file-size']);
+
+	if (hasHeader(responseHeaders, 'Location'))
+		parseResult.location = getHeader(responseHeaders, 'Location');
+
+	return parseResult;
+}
+
+function hasHeader(headers: any, name: string): boolean {
+	return headers.hasOwnProperty(name) || headers.hasOwnProperty(name.toLowerCase());
+}
+
+function getHeader(headers: any, name: string): string {
+	if (headers[name])
+		return headers[name];
+
+	return headers[name.toLowerCase()];
+}
+
 /**
  *
  * @param {string} response - response that needs to be parsed
@@ -270,7 +317,12 @@ export function parseResponse(response: string, responseHeaders: any, parseParam
 				: batch;
 		}
 		else {
-			parseResult = parseData(JSON.parse(response, dateReviver), parseParams[0]);
+			if (hasHeader(responseHeaders, 'Content-Disposition')) {
+				parseResult = parseFileResponse(response, responseHeaders, parseParams[0]);
+			}
+			else {
+				parseResult = parseData(JSON.parse(response, dateReviver), parseParams[0]);
+			}
 		}
 	}
 	else {
@@ -278,10 +330,8 @@ export function parseResponse(response: string, responseHeaders: any, parseParam
 			parseResult = parseParams[0].valueIfEmpty;
 		}
 		else
-			if (responseHeaders["OData-EntityId"] || responseHeaders["odata-entityid"]) {
-				var entityUrl = responseHeaders["OData-EntityId"]
-					? responseHeaders["OData-EntityId"]
-					: responseHeaders["odata-entityid"];
+			if (hasHeader(responseHeaders, 'OData-EntityId')) {
+				var entityUrl = getHeader(responseHeaders, 'OData-EntityId');
 
 				var guidResult = /([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})\)$/i.exec(entityUrl);
 
@@ -289,11 +339,13 @@ export function parseResponse(response: string, responseHeaders: any, parseParam
 					parseResult = guidResult[1];
 				}
 			}
-			else if (responseHeaders['x-ms-chunk-size'] && responseHeaders['Location']) {
+			else if (hasHeader(responseHeaders, 'Location')) {
 				parseResult = {
-					chunkSize: parseInt(responseHeaders['x-ms-chunk-size']),
-					location: responseHeaders['Location']
+					location: getHeader(responseHeaders, 'Location')
 				}
+
+				if (responseHeaders['x-ms-chunk-size'])
+					parseResult.chunkSize = parseInt(responseHeaders['x-ms-chunk-size']);
 			}
 	}
 

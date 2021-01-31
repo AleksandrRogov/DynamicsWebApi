@@ -79,7 +79,7 @@ export class RequestClient {
 		/* develblock:start */
 		if (typeof XMLHttpRequest !== "undefined") {
 			/* develblock:end */
-			executeRequest = require("./xhr");
+			executeRequest = require("./xhr").XhrWrapper.xhrRequest;
 			/* develblock:start */
 		}
 		else if (typeof process !== "undefined") {

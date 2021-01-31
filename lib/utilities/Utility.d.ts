@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { Core } from "../types";
 declare function isNodeEnv(): boolean;
 export declare class Utility {
@@ -17,6 +18,7 @@ export declare class Utility {
      */
     static getFetchXmlPagingCookie(pageCookies?: string, currentPageNumber?: number): Core.FetchXmlCookie;
     static isNodeEnv: typeof isNodeEnv;
+    static downloadChunkSize: number;
     /**
      * Converts a response to a reference object
      *
@@ -38,6 +40,8 @@ export declare class Utility {
     static initWebApiUrl(version: string): string;
     static isObject(obj: any): boolean;
     static copyObject<T = any>(src: any): T;
+    static setFileChunk(request: Core.InternalRequest, fileBuffer: Uint8Array | Buffer, chunkSize: number, offset: number): void;
+    static convertToFileBuffer(binaryString: string): Uint8Array | Buffer;
 }
 export {};
 //# sourceMappingURL=Utility.d.ts.map

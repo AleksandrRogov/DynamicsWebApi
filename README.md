@@ -1,31 +1,30 @@
-# DynamicsWebApi for Microsoft Dynamics 365 CE (CRM) / Common Data Service Web API
+# DynamicsWebApi for Microsoft Dynamics 365 CE (CRM) / Microsoft Dataverse Web API (formerly known as Microsoft Common Data Service Web API) 
 
 [![Travis](https://img.shields.io/travis/AleksandrRogov/DynamicsWebApi.svg?style=flat-square)](https://travis-ci.org/AleksandrRogov/DynamicsWebApi)
 [![Coveralls](https://img.shields.io/coveralls/AleksandrRogov/DynamicsWebApi.svg?style=flat-square)](https://coveralls.io/github/AleksandrRogov/DynamicsWebApi)
 ![npm](https://img.shields.io/npm/dm/dynamics-web-api?style=flat-square)
 ![npm](https://img.shields.io/npm/dt/dynamics-web-api?style=flat-square)
 
-DynamicsWebApi is a Microsoft Dynamics 365 CE (CRM) / Common Data Service Web API helper library written in JavaScript.
-It is compatible with: Common Data Service, Dynamics 365 CE (online), Dynamics 365 CE (on-premises), Dynamics CRM 2016, Dynamics CRM Online
+DynamicsWebApi is a Microsoft Dynamics 365 CE (CRM) / Microsoft Dataverse (formerly: Common Data Service) Web API helper library written in JavaScript.
+It is compatible with: Microsoft Dataverse (formerly: Microsoft Common Data Service), Microsoft Dynamics 365 CE (online), Microsoft Dynamics 365 CE (on-premises), 
+Microsoft Dynamics CRM 2016, Microsoft Dynamics CRM Online.
 
 Please check [DynamicsWebApi Wiki](../../wiki/) where you will find documentation to DynamicsWebApi API and more.
 
 Libraries for browsers can be found in [dist](/dist/) folder.
 
-If you feel that this project saved your time and you would like to support it, then please feel free to donate: [![PayPal.Me](/extra/paypal.png)](https://paypal.me/alexrogov)
+***
 
-Please check [suggestions and contributions](#contributions) section to learn more on how you can help to improve this project.
+I maintain this project in my free time and, to be honest with you, it takes a considerable amount of time to make sure that the library has all new features, 
+gets improved and all raised tickets have been answered and fixed in a short amount of time. If you feel that this project has saved your time and you would like to support it, 
+then please feel free to sponsor it through GitHub Sponsors or send a donation directly to my PayPal: [![PayPal.Me](/extra/paypal.png)](https://paypal.me/alexrogov). 
+GitHub button can be found on the project's page.
 
-**DynamicsWebApi v2 is coming!**
-There will be breaking changes between v1 and v2. One of them: v2 will not have simple requests, only the advanced ones, therefore I highly recommend using request objects for making requests.
-Also v2 will be written in TypeScript and include numerous optimizations. I am very excited to finally release the new version and I hope you too! Stay tuned!
+Also, please check [suggestions and contributions](#contributions) section to learn more on how you can help to improve this project.
 
-**Important!** For some reason, npm was not removing `.git` folder from a published package, 
-even though [it should have done it by default](https://docs.npmjs.com/misc/developers#keeping-files-out-of-your-package), therefore
-`npm update dynamics-web-api` was not working properly. If you see an error during an update of the package, 
-please go to `node_modules\dynamics-web-api` of your application and remove `.git` directory manually. This error has been fixed in `v.1.4.7`.
+***
 
-Please note, that "Dynamics 365" in this readme refers to Microsoft Dynamics 365 Customer Engagement / Common Data Service.
+Please note, that "Dynamics 365" in this readme refers to Microsoft Dynamics 365 Customer Engagement / Microsoft Dataverse (formerly known as Microsoft Common Data Service).
 
 ## Table of Contents
 
@@ -56,7 +55,7 @@ Please note, that "Dynamics 365" in this readme refers to Microsoft Dynamics 365
   * [Execute Web API functions](#execute-web-api-functions)
   * [Execute Web API actions](#execute-web-api-actions)
   * [Execute Batch Operations](#execute-batch-operations)
-  * [Working with Metadata Definitions](#working-with-metadata-definitions)
+  * [Work with Metadata Definitions](#work-with-metadata-definitions)
     * [Create Entity](#create-entity)
     * [Retrieve Entity](#retrieve-entity)
     * [Update Entity](#update-entity)
@@ -76,10 +75,15 @@ Please note, that "Dynamics 365" in this readme refers to Microsoft Dynamics 365
 	* [Delete Global Option Set](#delete-global-option-set)
 	* [Retrieve Global Option Set](#retrieve-global-option-set)
 	* [Retrieve Multiple Global Option Sets](#retrieve-multiple-global-option-sets)
+* [Work with File Fields](#work-with-file-fields)
+    * [Upload file](#upload-file)
+    * [Download file](#download-file)
+    * [Delete file](#delete-file)
 * [Formatted Values and Lookup Properties](#formatted-values-and-lookup-properties)
 * [Using Alternate Keys](#using-alternate-keys)
 * [Making requests using Entity Logical Names](#making-requests-using-entity-logical-names)
 * [Using TypeScript Declaration Files](#using-typescript-declaration-files)
+* [In Progress / Feature List](#in-progress--feature-list)
 * [JavaScript Promises](#javascript-promises)
 * [JavaScript Callbacks](#javascript-callbacks)
 * [Contributions](#contributions)
@@ -228,21 +232,22 @@ Property Name | Type | Operation(s) Supported | Description
 action | Object | `executeUnboundAction` | A JavaScript object that represents a Dynamics 365 Web API action.
 actionName | String | `executeUnboundAction` | Web API Action name.
 apply | String | `retrieveMultiple`, `retrieveAll` | Sets the $apply system query option to aggregate and group your data dynamically. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/query-data-web-api#aggregate-and-grouping-results)
-async | Boolean | All | **Important! XHR requests only!** Indicates whether the requests should be made synchronously or asynchronously. Default value is `true` (asynchronously).
+async | Boolean | All | **XHR requests only!** Indicates whether the requests should be made synchronously or asynchronously. Default value is `true` (asynchronously).
 collection | String | All | Entity Collection name.
 contentId | String | `create`, `update`, `upsert`, `deleteRecord` | **BATCH REQUESTS ONLY!** Sets Content-ID header or references request in a Change Set. [More Info](https://www.odata.org/documentation/odata-version-3-0/batch-processing/)
 count | Boolean | `retrieveMultiple`, `retrieveAll` | Boolean that sets the $count system query option with a value of true to include a count of entities that match the filter criteria up to 5000 (per page). Do not use $top with $count!
-data | Object | `create`, `update`, `upsert` | A JavaScript object that represents Dynamics 365 entity, action, metadata and etc. 
+data | Object or ArrayBuffer / Buffer (for node.js) | `create`, `update`, `upsert`, `uploadFile` | A JavaScript object that represents Dynamics 365 entity, action, metadata and etc. 
 duplicateDetection | Boolean | `create`, `update`, `upsert` | **Web API v9+ only!** Boolean that enables duplicate detection. [More Info](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/webapi/update-delete-entities-using-web-api#check-for-duplicate-records)
 expand | Array | `retrieve`, `retrieveMultiple`, `create`, `update`, `upsert` | An array of Expand Objects (described below the table) representing the $expand OData System Query Option value to control which related records are also returned.
 fetchXml | String | `fetch`, `fetchAll` | Property that sets FetchXML - a proprietary query language that provides capabilities to perform aggregation.
-filter | String | `retrieve`, `retrieveMultiple`, `retrieveAll` | Use the $filter system query option to set criteria for which entities will be returned.
+fieldName | String | `uploadFile`, `downloadFile`, `deleteRequest` | `v.1.7.0+` **Web API v9.1+ only!** Use this option to specify the name of the file attribute in Dynamics 365. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/file-attributes)
+fileName | String | `uploadFile` | `v.1.7.0+` **Web API v9.1+ only!** Specifies the name of the filefilter | String | `retrieve`, `retrieveMultiple`, `retrieveAll` | Use the $filter system query option to set criteria for which entities will be returned.
 ifmatch | String | `retrieve`, `update`, `upsert`, `deleteRecord` | Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests. [More Info](https://msdn.microsoft.com/en-us/library/mt607711.aspx)
 ifnonematch | String | `retrieve`, `upsert` | Sets If-None-Match header value that enables to use conditional retrieval in applicable requests. [More Info](https://msdn.microsoft.com/en-us/library/mt607711.aspx).
 impersonate | String | All | Impersonates a user based on their systemuserid by adding a "MSCRMCallerID" header. A String representing the GUID value for the Dynamics 365 systemuserid. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/impersonate-another-user-web-api)
 impersonateAAD | String | All | Impersonates a user based on their Azure Active Directory (AAD) object id by passing that value along with the header "CallerObjectId". A String should represent a GUID value. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/impersonate-another-user-web-api)
 includeAnnotations | String | `retrieve`, `retrieveMultiple`, `retrieveAll`, `create`, `update`, `upsert` | Sets Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
-key | String | `retrieve`, `create`, `update`, `upsert`, `deleteRecord` | A String representing collection record's Primary Key (GUID) or Alternate Key(s).
+key | String | `retrieve`, `create`, `update`, `upsert`, `deleteRecord`, `uploadFile`, `downloadFile` | A String representing collection record's Primary Key (GUID) or Alternate Key(s).
 maxPageSize | Number | `retrieveMultiple`, `retrieveAll` | Sets the odata.maxpagesize preference value to request the number of entities returned in the response.
 mergeLabels | Boolean | `update` | **Metadata Update only!** Sets `MSCRM.MergeLabels` header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is `false`. [More Info](https://msdn.microsoft.com/en-us/library/mt593078.aspx#bkmk_updateEntities)
 metadataAttributeType | String | `retrieve`, `update` | Casts the Attributes to a specific type. (Used in requests to Attribute Metadata) [More Info](https://msdn.microsoft.com/en-us/library/mt607522.aspx#Anchor_4)
@@ -1236,7 +1241,7 @@ There are also out of the box Web API limitations for batch operations:
 
 You can find an official documentation that covers Web API batch requests here: [Execute batch operations using the Web API](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/webapi/execute-batch-operations-using-web-api).
 
-## Working with Metadata Definitions
+## Work with Metadata Definitions
 
 `Version 1.4.3+`
 
@@ -1894,6 +1899,90 @@ dynamicsWebApi.retrieveGlobalOptionSets('Microsoft.Dynamics.CRM.OptionSetMetadat
 });
 ```
 
+## Work with File Fields
+
+`version 1.7.0+`
+
+Please make sure that you are connected to Dynamics 365 Web API with version 9.1+ to successfully use the functions. More information can be found [here](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/file-attributes)
+
+### Upload file
+
+**Browser**
+
+```js
+var fileElement = document.getElementById("upload");
+var fileName = fileElement.files[0].name;
+var fr = new FileReader();
+fr.onload = function(){
+    var fileData = new Uint8Array(this.result);
+	dynamicsWebApi.uploadFile({
+        collection: 'dwa_filestorages',
+        key: '00000000-0000-0000-0000-000000000001',
+        fieldName: 'dwa_file',
+        fileName: fileName,
+        data: fileData
+	}).then(function(){
+		//success
+	}).catch (function (error) {
+	    //catch error here
+    });
+}
+fr.readAsArrayBuffer(fileElement.files[0]);
+```
+
+**Node.JS**
+
+```js
+var fs = require('fs');
+var filename = 'logo.png';
+fs.readFile(filename, (err, data) => {
+    dynamicsWebApi.uploadFile({
+        collection: 'dwa_filestorages',
+        key: '00000000-0000-0000-0000-000000000001',
+        fieldName: 'dwa_file',
+        fileName: filename
+        data: data,
+    }).then(function() {
+        //success
+    }).catch(function (error) {
+        //catch error here	
+    });
+});
+```
+
+### Download file
+
+```js
+dynamicsWebApi.downloadFile({
+    collection: 'dwa_filestorages',
+    key: '00000000-0000-0000-0000-000000000001',
+    fieldName: 'dwa_file'
+}).then(function(result){
+    //Uint8Array for browser and Buffer for Node.js
+    var fileBinary = result.data; 
+    var fileName = result.fileName;
+    var fileSize = result.fileSize;
+})
+.catch(function (error) {
+    //catch an error
+});
+```
+
+### Delete file
+
+```js
+dynamicsWebApi.deleteRequest({
+    collection: 'dwa_filestorages',
+    key: '00000000-0000-0000-0000-000000000001',
+    fieldName: 'dwa_file'
+}).then(function(result){
+    //success
+})
+.catch(function (error) {
+    //catch an error
+});
+```
+
 ## Formatted Values and Lookup Properties
 
 Starting from version 1.3.0 it became easier to access formatted values for properties and lookup data in response objects. 
@@ -2092,7 +2181,7 @@ In my web resources project I usually put a declaration file under "./types/" fo
 ]
 ```
 
-### In Progress
+### In Progress / Feature List
 
 - [X] Overloaded functions with rich request options for all Web API operations.
 - [X] Get all pages requests, such as: countAll, retrieveMultipleAll, fetchXmlAll and etc. `Implemented in v.1.2.5`
@@ -2102,7 +2191,7 @@ Feature is very convenient for big Fetch XMLs. `Implemented in v.1.2.8`
 the config option "formatted" will enable developers to retrieve all information about such fields in a single requests and access it through DynamicsWebApi custom response objects.
 - [X] Simplified names for "Formatted" properties. `Implemented in v.1.3.0`
 - [X] RUD operations using Alternate Keys. `Implemented in v.1.3.4`
-- [X] Duplicate Detection for Web API v.9. `Implemented in v.1.3.4`
+- [X] Duplicate Detection for Web API v.9.0. `Implemented in v.1.3.4`
 - [X] Ability to use entity names instead of collection names. `Implemented in v.1.4.0`
 - [X] Entity and Attribute Metadata helpers. `Implemented in v.1.4.3`
 - [X] Entity Relationships and Global Option Sets helpers. `Implemented in v.1.4.6`
@@ -2110,6 +2199,10 @@ the config option "formatted" will enable developers to retrieve all information
 - [X] TypeScript declaration files `d.ts` `Added in v.1.5.3`.
 - [X] Implement `Content-ID` header to reference a request in a Change Set in a batch operation `Added in v.1.5.6`.
 - [X] Change Tracking `Added in v.1.5.11`.
+- [X] Support for Aggregate and Grouping results `Added in v1.6.4`.
+- [X] Support for Timeout option in the configuration `Added in v1.6.10`.
+- [X] Impersonate a user based on their Azure Active Directory (AAD) object id. `Added in v.1.6.12`.
+- [X] File upload/download/delete for a File Field. `Added in v.1.7.0`.
 - [ ] Refactoring and conversion to TypeScript - coming with `v.2.0`! Stay tuned!
 
 Many more features to come!
@@ -2117,12 +2210,12 @@ Many more features to come!
 Thank you for your patience and for using DynamcisWebApi!
 
 ## JavaScript Promises
-Please use the following library that implements [ES6 Promises](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise): [DynamicsWebApi with Promises](/scripts/dynamics-web-api.js).
+Please use the following library that implements [ES6 Promises](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise): [DynamicsWebApi with Promises](/dist/dynamics-web-api.js).
 
 It is highly recommended to use one of the Promise Polyfills (Yaku, ES6 Promise and etc.) if DynamicsWebApi is intended to be used in the browsers.
 
 ## JavaScript Callbacks
-Please use the following library that implements Callbacks : [DynamicsWebApi with Callbacks](/scripts/dynamics-web-api-callbacks.js).
+Please use the following library that implements Callbacks : [DynamicsWebApi with Callbacks](/dist/dynamics-web-api-callbacks.js).
 
 ## Contributions
 
@@ -2133,6 +2226,8 @@ And if you would like to contribute to the project you may do it in multiple way
 2. If you know the root of the issue please feel free to submit a pull request, just make sure that all tests pass and if the fix needs new unit tests, please add one.
 3. Let me and community know if you have any ideas or suggestions on how to improve the project by submitting an issue on GitHub, I will label it as a 'future enhancement'.
 4. Feel free to connect with me on [LinkedIn](https://www.linkedin.com/in/alexrogov/) and if you wish to let me know how you use `DynamicsWebApi` and what project you are working on, I will be happy to hear about it.
-5. If you feel that this project saved your time and you would like to support it, then please feel free to donate: [![PayPal.Me](/extra/paypal.png)](https://paypal.me/alexrogov)
+5. I maintain this project in my free time and, to be honest with you, it takes a considerable amount of time to make sure that the library has all new features, 
+gets improved and all raised tickets have been answered and fixed in a short amount of time. If you feel that this project has saved your time and you would like to support it, 
+then please feel free to use PayPal or GitHub Sponsors. My PayPal button: [![PayPal.Me](/extra/paypal.png)](https://paypal.me/alexrogov), GitHub button can be found on the project's page.
 
-Any contribution is greatly appreciated!
+All contributions are greatly appreciated!
