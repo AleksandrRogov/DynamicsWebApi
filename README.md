@@ -30,8 +30,6 @@ I am very excited to finally release the new version and I hope you too! Stay tu
 
 ***
 
-**Important!** starting from `v1.7.1` `dist` and `test` folders are no longer going to be a part of an npm package. That will shrink the size of the package from 1.7mb to around 300kb.
-
 Please note, that "Dynamics 365" in this readme refers to Microsoft Dynamics 365 Customer Engagement / Microsoft Dataverse (formerly known as Microsoft Common Data Service).
 
 ## Table of Contents
@@ -91,8 +89,9 @@ Please note, that "Dynamics 365" in this readme refers to Microsoft Dynamics 365
 * [Using Alternate Keys](#using-alternate-keys)
 * [Making requests using Entity Logical Names](#making-requests-using-entity-logical-names)
 * [Using TypeScript Declaration Files](#using-typescript-declaration-files)
-* [JavaScript Promises](#javascript-promises)
-* [JavaScript Callbacks](#javascript-callbacks)
+* [In Progress / Feature List](#in-progress--feature-list)
+  * [JavaScript Promises](#javascript-promises)
+  * [JavaScript Callbacks](#javascript-callbacks)
 * [Contributions](#contributions)
 
 ## Getting Started
@@ -2113,7 +2112,7 @@ In my web resources project I usually put a declaration file under "./types/" fo
 ]
 ```
 
-### In Progress / Feature List
+## In Progress / Feature List
 
 - [X] Overloaded functions with rich request options for all Web API operations.
 - [X] Get all pages requests, such as: countAll, retrieveMultipleAll, fetchXmlAll and etc. `Implemented in v.1.2.5`
@@ -2135,18 +2134,19 @@ the config option "formatted" will enable developers to retrieve all information
 - [X] Support for Timeout option in the configuration `Added in v1.6.10`.
 - [X] Impersonate a user based on their Azure Active Directory (AAD) object id. `Added in v.1.6.12`.
 - [X] File upload/download/delete for a File Field. `Added in v.1.7.0`.
+- [X] Shrink size of an NPM package. `Added in v.1.7.1`.
 - [ ] Refactoring and conversion to TypeScript - coming with `v.2.0`! Stay tuned!
 
 Many more features to come!
 
 Thank you for your patience and for using DynamcisWebApi!
 
-## JavaScript Promises
+### JavaScript Promises
 Please use the following library that implements [ES6 Promises](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise): [DynamicsWebApi with Promises](/scripts/dynamics-web-api.js).
 
 It is highly recommended to use one of the Promise Polyfills (Yaku, ES6 Promise and etc.) if DynamicsWebApi is intended to be used in the browsers.
 
-## JavaScript Callbacks
+### JavaScript Callbacks
 Please use the following library that implements Callbacks : [DynamicsWebApi with Callbacks](/scripts/dynamics-web-api-callbacks.js).
 
 ## Contributions

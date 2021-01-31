@@ -1,4 +1,4 @@
-﻿// Type definitions for dynamics-web-api v1.7.0
+﻿// Type definitions for dynamics-web-api v1.7.1
 // Project: https://github.com/AleksandrRogov/DynamicsWebApi/
 // Definitions by: Aleksandr Rogov https://github.com/AleksandrRogov/
 
@@ -153,7 +153,7 @@ declare class DynamicsWebApi {
      * @param filter - Use the $filter system query option to set criteria for which entities will be returned.
      * @param oDataLink - Use this parameter to pass @odata.nextLink or @odata.deltaLink to return a necessary response. Pass null to retrieveMultipleOptions.
      */
-	retrieveMultiple<T>(collection: string, select?: string[], filter?: string, oDataLink?: string): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
+	retrieveMultiple<T = any>(collection: string, select?: string[], filter?: string, oDataLink?: string): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
     /**
     * Sends an asynchronous request to retrieve all records.
     *
@@ -161,20 +161,20 @@ declare class DynamicsWebApi {
     * @param select - Use the $select system query option to limit the properties returned.
     * @param filter - Use the $filter system query option to set criteria for which entities will be returned.
     */
-	retrieveAll<T>(collection: string, select?: string[], filter?: string): Promise<DynamicsWebApi.AllResponse<T>>;
+	retrieveAll<T = any>(collection: string, select?: string[], filter?: string): Promise<DynamicsWebApi.AllResponse<T>>;
     /**
      * Sends an asynchronous request to retrieve records.
      *
      * @param request - An object that represents all possible options for a current request.
      * @param oDataLink - Use this parameter to pass @odata.nextLink or @odata.deltaLink to return a necessary response. Pass null to retrieveMultipleOptions
      */
-	retrieveMultipleRequest<T>(request: DynamicsWebApi.RetrieveMultipleRequest, oDataLink?: string): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
+	retrieveMultipleRequest<T = any>(request: DynamicsWebApi.RetrieveMultipleRequest, oDataLink?: string): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
     /**
      * Sends an asynchronous request to retrieve all records.
      *
      * @param request - An object that represents all possible options for a current request.
      */
-	retrieveAllRequest<T>(request: DynamicsWebApi.RetrieveMultipleRequest): Promise<DynamicsWebApi.AllResponse<T>>;
+	retrieveAllRequest<T = any>(request: DynamicsWebApi.RetrieveMultipleRequest): Promise<DynamicsWebApi.AllResponse<T>>;
     /**
      * Sends an asynchronous request to count records. Returns: DWA.Types.FetchXmlResponse
      *
@@ -185,7 +185,7 @@ declare class DynamicsWebApi {
      * @param pagingCookie - Paging cookie. For retrieving the first page, pagingCookie should be null.
      * @param impersonateUserId - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
-	executeFetchXml<T>(collection: string, fetchXml: string, includeAnnotations?: string, pageNumber?: number, pagingCookie?: string, impersonateUserId?: string): Promise<DynamicsWebApi.FetchXmlResponse<T>>;
+	executeFetchXml<T = any>(collection: string, fetchXml: string, includeAnnotations?: string, pageNumber?: number, pagingCookie?: string, impersonateUserId?: string): Promise<DynamicsWebApi.FetchXmlResponse<T>>;
     /**
      * Sends an asynchronous request to count records. Returns: DWA.Types.FetchXmlResponse
      *
@@ -196,7 +196,7 @@ declare class DynamicsWebApi {
      * @param pagingCookie - Paging cookie. For retrieving the first page, pagingCookie should be null.
      * @param impersonateUserId - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
-	fetch<T>(collection: string, fetchXml: string, includeAnnotations?: string, pageNumber?: number, pagingCookie?: string, impersonateUserId?: string): Promise<DynamicsWebApi.FetchXmlResponse<T>>;
+	fetch<T = any>(collection: string, fetchXml: string, includeAnnotations?: string, pageNumber?: number, pagingCookie?: string, impersonateUserId?: string): Promise<DynamicsWebApi.FetchXmlResponse<T>>;
     /**
      * Sends an asynchronous request to execute FetchXml to retrieve all records.
      *
@@ -205,7 +205,7 @@ declare class DynamicsWebApi {
      * @param includeAnnotations - Use this parameter to include annotations to a result. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie
      * @param impersonateUserId - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
-	executeFetchXmlAll<T>(collection: string, fetchXml: string, includeAnnotations?: string, impersonateUserId?: string): Promise<DynamicsWebApi.MultipleResponse<T>>;
+	executeFetchXmlAll<T = any>(collection: string, fetchXml: string, includeAnnotations?: string, impersonateUserId?: string): Promise<DynamicsWebApi.MultipleResponse<T>>;
     /**
      * Sends an asynchronous request to execute FetchXml to retrieve all records.
      *
@@ -214,7 +214,7 @@ declare class DynamicsWebApi {
      * @param includeAnnotations - Use this parameter to include annotations to a result. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie
      * @param impersonateUserId - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
-	fetchAll<T>(collection: string, fetchXml: string, includeAnnotations?: string, impersonateUserId?: string): Promise<DynamicsWebApi.MultipleResponse<T>>;
+	fetchAll<T = any>(collection: string, fetchXml: string, includeAnnotations?: string, impersonateUserId?: string): Promise<DynamicsWebApi.MultipleResponse<T>>;
 	/**
 	 * Uploads a file to a file attribute
 	 * @param request - An object that represents all possible options for a current request.
@@ -273,7 +273,7 @@ declare class DynamicsWebApi {
      * @param parameters - Function's input parameters. Example: { param1: "test", param2: 3 }.
      * @param impersonateUserId - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
-	executeUnboundFunction<T>(functionName: string, parameters?: Object, impersonateUserId?: string): Promise<T>;
+	executeUnboundFunction<T = any>(functionName: string, parameters?: Object, impersonateUserId?: string): Promise<T>;
     /**
      * Executes a bound function
      *
@@ -283,7 +283,7 @@ declare class DynamicsWebApi {
      * @param parameters - Function's input parameters. Example: { param1: "test", param2: 3 }.
      * @param impersonateUserId - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
-	executeBoundFunction<T>(id: string, collection: string, functionName: string, parameters?: Object, impersonateUserId?: string): Promise<T>;
+	executeBoundFunction<T = any>(id: string, collection: string, functionName: string, parameters?: Object, impersonateUserId?: string): Promise<T>;
     /**
      * Executes an unbound Web API action (not bound to a particular entity record)
      *
@@ -291,7 +291,7 @@ declare class DynamicsWebApi {
      * @param requestObject - Action request body object.
      * @param impersonateUserId - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
-	executeUnboundAction<T>(actionName: string, requestObject?: Object, impersonateUserId?: string): Promise<T>;
+	executeUnboundAction<T = any>(actionName: string, requestObject?: Object, impersonateUserId?: string): Promise<T>;
     /**
      * Executes a bound Web API action (bound to a particular entity record)
      *
@@ -301,20 +301,20 @@ declare class DynamicsWebApi {
      * @param requestObject - Action request body object.
      * @param impersonateUserId - A String representing the GUID value for the Dynamics 365 system user id. Impersonates the user.
      */
-	executeBoundAction<T>(id: string, collection: string, actionName: string, requestObject?: Object, impersonateUserId?: string): Promise<T>;
+	executeBoundAction<T = any>(id: string, collection: string, actionName: string, requestObject?: Object, impersonateUserId?: string): Promise<T>;
     /**
      * Sends an asynchronous request to create an entity definition.
      *
      * @param entityDefinition - Entity Definition.
      */
-	createEntity<T>(entityDefinition: Object): Promise<T>;
+	createEntity<T = any>(entityDefinition: Object): Promise<T>;
     /**
      * Sends an asynchronous request to update an entity definition.
      *
      * @param entityDefinition - Entity Definition.
      * @param mergeLabels - Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false.
      */
-	updateEntity<T>(entityDefinition: Object, mergeLabels?: boolean): Promise<T>;
+	updateEntity<T = any>(entityDefinition: Object, mergeLabels?: boolean): Promise<T>;
     /**
      * Sends an asynchronous request to retrieve a specific entity definition.
      *
@@ -322,21 +322,21 @@ declare class DynamicsWebApi {
      * @param select - Use the $select system query option to limit the properties returned.
      * @param expand - A String or Array of Expand Objects representing the $expand Query Option value to control which related records need to be returned.
      */
-	retrieveEntity<T>(entityKey: string, select?: string[], expand?: DynamicsWebApi.Expand[]): Promise<T>;
+	retrieveEntity<T = any>(entityKey: string, select?: string[], expand?: DynamicsWebApi.Expand[]): Promise<T>;
     /**
      * Sends an asynchronous request to retrieve entity definitions.
      *
      * @param select - Use the $select system query option to limit the properties returned.
      * @param filter - Use the $filter system query option to set criteria for which entity definitions will be returned.
      */
-	retrieveEntities<T>(select?: string[], filter?: string): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
+	retrieveEntities<T = any>(select?: string[], filter?: string): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
     /**
      * Sends an asynchronous request to create an attribute.
      *
      * @param entityKey - The Entity MetadataId or Alternate Key (such as LogicalName).
      * @param attributeDefinition - Object that describes the attribute.
      */
-	createAttribute<T>(entityKey: string, attributeDefinition: Object): Promise<T>;
+	createAttribute<T = any>(entityKey: string, attributeDefinition: Object): Promise<T>;
     /**
      * Sends an asynchronous request to update an attribute.
      *
@@ -345,7 +345,7 @@ declare class DynamicsWebApi {
      * @param attributeType - Use this parameter to cast the Attribute to a specific type.
      * @param mergeLabels - Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false.
      */
-	updateAttribute<T>(entityKey: string, attributeDefinition: Object, attributeType?: string, mergeLabels?: boolean): Promise<T>;
+	updateAttribute<T = any>(entityKey: string, attributeDefinition: Object, attributeType?: string, mergeLabels?: boolean): Promise<T>;
     /**
      * Sends an asynchronous request to retrieve attribute metadata for a specified entity definition.
      *
@@ -355,7 +355,7 @@ declare class DynamicsWebApi {
      * @param filter - Use the $filter system query option to set criteria for which attribute definitions will be returned.
      * @param expand - A String or Array of Expand Objects representing the $expand Query Option value to control which related records need to be returned.
      */
-	retrieveAttributes<T>(entityKey: string, attributeType?: string, select?: string[], filter?: string, expand?: DynamicsWebApi.Expand[]): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
+	retrieveAttributes<T = any>(entityKey: string, attributeType?: string, select?: string[], filter?: string, expand?: DynamicsWebApi.Expand[]): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
     /**
      * Sends an asynchronous request to retrieve a specific attribute metadata for a specified entity definition.
      *
@@ -365,13 +365,13 @@ declare class DynamicsWebApi {
      * @param select - Use the $select system query option to limit the properties returned.
      * @param expand - A String or Array of Expand Objects representing the $expand Query Option value to control which related records need to be returned.
      */
-	retrieveAttribute<T>(entityKey: string, attributeKey: string, attributeType?: string, select?: string[], expand?: DynamicsWebApi.Expand[]): Promise<T>;
+	retrieveAttribute<T = any>(entityKey: string, attributeKey: string, attributeType?: string, select?: string[], expand?: DynamicsWebApi.Expand[]): Promise<T>;
     /**
      * Sends an asynchronous request to create a relationship definition.
      *
      * @param relationshipDefinition - Relationship Definition.
      */
-	createRelationship<T>(relationshipDefinition: Object): Promise<T>;
+	createRelationship<T = any>(relationshipDefinition: Object): Promise<T>;
     /**
      * Sends an asynchronous request to update a relationship definition.
      *
@@ -379,7 +379,7 @@ declare class DynamicsWebApi {
      * @param relationshipType - Use this parameter to cast the Relationship to a specific type.
      * @param mergeLabels - Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false.
      */
-	updateRelationship<T>(relationshipDefinition: Object, relationshipType?: string, mergeLabels?: boolean): Promise<T>;
+	updateRelationship<T = any>(relationshipDefinition: Object, relationshipType?: string, mergeLabels?: boolean): Promise<T>;
     /**
      * Sends an asynchronous request to delete a relationship definition.
      *
@@ -393,7 +393,7 @@ declare class DynamicsWebApi {
      * @param select - Use the $select system query option to limit the properties returned.
      * @param filter - Use the $filter system query option to set criteria for which relationships will be returned.
      */
-	retrieveRelationships<T>(relationshipType?: string, select?: string[], filter?: string): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
+	retrieveRelationships<T = any>(relationshipType?: string, select?: string[], filter?: string): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
     /**
      * Sends an asynchronous request to retrieve a specific relationship definition.
      *
@@ -401,20 +401,20 @@ declare class DynamicsWebApi {
      * @param relationshipType - Use this parameter to cast a Relationship to a specific type: 1:M or M:M.
      * @param select - Use the $select system query option to limit the properties returned.
      */
-	retrieveRelationship<T>(metadataId: string, relationshipType?: string, select?: string[]): Promise<T>;
+	retrieveRelationship<T = any>(metadataId: string, relationshipType?: string, select?: string[]): Promise<T>;
     /**
      * Sends an asynchronous request to create a Global Option Set definition
      *
      * @param globalOptionSetDefinition - Global Option Set Definition.
      */
-	createGlobalOptionSet<T>(globalOptionSetDefinition: Object): Promise<T>;
+	createGlobalOptionSet<T = any>(globalOptionSetDefinition: Object): Promise<T>;
     /**
      * Sends an asynchronous request to update a Global Option Set.
      *
      * @param globalOptionSetDefinition - Global Option Set Definition.
      * @param mergeLabels - Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false.
      */
-	updateGlobalOptionSet<T>(globalOptionSetDefinition: Object, mergeLabels?: boolean): Promise<T>;
+	updateGlobalOptionSet<T = any>(globalOptionSetDefinition: Object, mergeLabels?: boolean): Promise<T>;
     /**
      * Sends an asynchronous request to delete a Global Option Set.
      *
@@ -428,14 +428,14 @@ declare class DynamicsWebApi {
      * @param castType - Use this parameter to cast a Global Option Set to a specific type.
      * @param select - Use the $select system query option to limit the properties returned
      */
-	retrieveGlobalOptionSet<T>(globalOptionSetKey: string, castType?: string, select?: string[]): Promise<T>;
+	retrieveGlobalOptionSet<T = any>(globalOptionSetKey: string, castType?: string, select?: string[]): Promise<T>;
     /**
      * Sends an asynchronous request to retrieve Global Option Set definitions.
      *
      * @param castType - Use this parameter to cast a Global Option Set to a specific type.
      * @param select - Use the $select system query option to limit the properties returned
      */
-	retrieveGlobalOptionSets<T>(castType?: string, select?: string[]): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
+	retrieveGlobalOptionSets<T = any>(castType?: string, select?: string[]): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
     /**
      * Starts a batch request.
      *
