@@ -38,7 +38,10 @@
     "webpack-cli": "^4.2.0",
     "webpack-strip-block": "^0.3.0"
   },
-  "dependencies": {},
+  "dependencies": {
+    "http-proxy-agent": "^4.0.1",
+    "https-proxy-agent": "^5.0.0"
+  },
   "license": "MIT",
   "scripts": {
     "test": "mocha tests/*-tests.js",
