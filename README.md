@@ -2074,7 +2074,7 @@ Please note, everything said above will happen only if you set `useEntityNames: 
 ## Using Proxy
 
 **Node.js Only.** Starting from v.1.7.2 DynamicsWebApi supports different types of connections through proxy. To make it possible, I added two dependencies in a `package.json`:
-(http-proxy-agent)[https://github.com/TooTallNate/node-https-proxy-agent] and (https-proxy-agent)[https://github.com/TooTallNate/node-http-proxy-agent], based on a type of a protocol, DynamicsWebApi
+[http-proxy-agent](https://github.com/TooTallNate/node-https-proxy-agent) and [https-proxy-agent](https://github.com/TooTallNate/node-http-proxy-agent), based on a type of a protocol, DynamicsWebApi
 will use one of those agents.
 
 In order to let DynamicsWebApi know that you are using proxy you have two options:
@@ -2083,16 +2083,16 @@ In order to let DynamicsWebApi know that you are using proxy you have two option
 
 ```js
 const dynamicsWebApi = new DynamicsWebApi({
-	webApiUrl: 'https://myorg.api.crm.dynamics.com/api/data/v9.1/',
+    webApiUrl: 'https://myorg.api.crm.dynamics.com/api/data/v9.1/',
     onTokenRefresh: acquireToken,
     proxy: {
         url: 'http://localhost:12345',
         //auth is optional, you can also provide authentication in the url
         auth: {
-	        username: 'john',
+            username: 'john',
             password: 'doe'
-		}
-	}
+        }
+    }
 });
 ```
 
