@@ -110,7 +110,10 @@ describe("xhr -", function () {
 			});
 
 			it("returns the correct response", function () {
-				expect(responseObject).to.deep.equal({ message: "message", status: 404, statusText: "Not Found", headers: { dummy: "header" } });
+				expect(responseObject.message).to.eql("message");
+				expect(responseObject.status).to.eql(404);
+				expect(responseObject.statusText).to.eql("Not Found");
+				expect(responseObject.headers).to.eql({ dummy: "header" });
 			});
 		});
 
@@ -158,7 +161,10 @@ describe("xhr -", function () {
 			});
 
 			it("returns the correct response", function () {
-				expect(responseObject).to.deep.equal({ message: "Unexpected Error", status: 404, statusText: "Not Found", headers: { dummy: "header" } });
+				expect(responseObject.message).to.eql("Unexpected Error");
+				expect(responseObject.status).to.eql(404);
+				expect(responseObject.statusText).to.eql("Not Found");
+				expect(responseObject.headers).to.eql({ dummy: "header" });
 			});
 		});
 
@@ -887,7 +893,10 @@ describe("xhr -", function () {
 		});
 
 		it("returns the correct response", function () {
-			expect(responseObject).to.deep.equal({ message: "Network Error", status: 0, statusText: "", headers: {} });
+			expect(responseObject.message).to.eql("Network Error");
+			expect(responseObject.status).to.eql(0);
+			expect(responseObject.statusText).to.eql("");
+			expect(responseObject.headers).to.eql({});
 		});
 	});
 
@@ -936,7 +945,10 @@ describe("xhr -", function () {
 		});
 
 		it("returns the correct response", function () {
-			expect(responseObject).to.deep.equal({ message: "Request Timed Out", status: 0, statusText: "", headers: {} });
+			expect(responseObject.message).to.eql("Request Timed Out");
+			expect(responseObject.status).to.eql(0);
+			expect(responseObject.statusText).to.eql("");
+			expect(responseObject.headers).to.eql({});
 		});
 	});
 
