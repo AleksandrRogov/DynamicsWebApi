@@ -254,6 +254,7 @@ ModelManifest.xml
 /coverage
 /tests/browser
 *.d.ts.map
+/.nyc_output
 
 # Webstorm
 .idea
