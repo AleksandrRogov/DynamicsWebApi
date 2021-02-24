@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.7.1 (c) 2021 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.7.2 (c) 2021 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -96,8 +96,6 @@ if (!String.prototype.endsWith || !String.prototype.startsWith) {
     __webpack_require__(200);
 }
 
-/* webpack-strip-block:removed */
-
 /**
  * Configuration object for DynamicsWebApi
  * @typedef {object} DWAConfig
@@ -109,6 +107,7 @@ if (!String.prototype.endsWith || !String.prototype.startsWith) {
  * @property {string} maxPageSize - Sets the odata.maxpagesize preference value to request the number of entities returned in the response.
  * @property {boolean} returnRepresentation - Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
  * @property {boolean} useEntityNames - Indicates whether to use Entity Logical Names instead of Collection Logical Names.
+ * @property {Object} proxy - Proxy configuration.
 */
 
 /**
@@ -166,7 +165,8 @@ function DynamicsWebApi(config) {
         onTokenRefresh: null,
         includeAnnotations: null,
         maxPageSize: null,
-        returnRepresentation: null
+		returnRepresentation: null,
+		proxy: null
     };
 
     var _isBatch = false;
@@ -232,7 +232,9 @@ function DynamicsWebApi(config) {
         if (config.useEntityNames) {
             ErrorHelper.boolParameterCheck(config.useEntityNames, 'DynamicsWebApi.setConfig', 'config.useEntityNames');
             _internalConfig.useEntityNames = config.useEntityNames;
-        }
+		}
+
+		/* webpack-strip-block:removed */
     };
 
     this.setConfig(config);
@@ -2747,6 +2749,7 @@ function sendRequest(method, path, config, data, additionalHeaders, responsePara
 			errorCallback: errorCallback,
 			isAsync: isAsync,
 			timeout: timeout,
+			/* webpack-strip-block:removed */
 			requestId: requestId
 		});
 	};
@@ -2928,6 +2931,7 @@ let xhrWrapper = {
 							var errorParsed = parseResponse(request.responseText, headers, responseParams[requestId]);
 
 							if (Array.isArray(errorParsed)) {
+								delete responseParams[requestId];
 								errorCallback(errorParsed);
 								break;
 							}
