@@ -6098,5 +6098,117 @@ describe("promises -", function () {
                 expect(scope.isDone()).to.be.true;
             });
         });
-    });
+	});
+
+	describe("dynamicsWebApi proxy -", function () {
+
+		describe("basic", function () {
+			var dynamicsWebApiProxy = new DynamicsWebApi({
+				webApiVersion: "8.2",
+				proxy: {
+					url: "http://localhost:1234"
+				}
+			});
+
+			var scope;
+			before(function () {
+				var response = mocks.responses.multipleResponse;
+				scope = nock(mocks.webApiUrl)
+					.get(mocks.responses.collectionUrl)
+					.reply(response.status, response.responseText, response.responseHeaders);
+			});
+
+			after(function () {
+				nock.cleanAll();
+			});
+
+			it("sends the request to the right end point", function (done) {
+				dynamicsWebApiProxy.retrieveMultipleRequest({ collection: "tests" })
+					.then(function (object) {
+						expect(object).to.deep.equal(mocks.responses.multiple());
+						done();
+					}).catch(function (object) {
+						done(object);
+					});
+			});
+
+			it("all requests have been made", function () {
+				expect(scope.isDone()).to.be.true;
+			});
+		});
+
+		describe("with auth", function () {
+			var dynamicsWebApiProxy = new DynamicsWebApi({
+				webApiVersion: "8.2",
+				proxy: {
+					url: "http://localhost:1235",
+					auth: {
+						username: "john",
+						password: "doe"
+					}
+				}
+			});
+
+			var scope;
+			before(function () {
+				var response = mocks.responses.multipleResponse;
+				scope = nock(mocks.webApiUrl)
+					.get(mocks.responses.collectionUrl)
+					.reply(response.status, response.responseText, response.responseHeaders);
+			});
+
+			after(function () {
+				nock.cleanAll();
+			});
+
+			it("sends the request to the right end point", function (done) {
+				dynamicsWebApiProxy.retrieveMultipleRequest({ collection: "tests" })
+					.then(function (object) {
+						expect(object).to.deep.equal(mocks.responses.multiple());
+						done();
+					}).catch(function (object) {
+						done(object);
+					});
+			});
+
+			it("all requests have been made", function () {
+				expect(scope.isDone()).to.be.true;
+			});
+		});
+
+		describe("with auth in url", function () {
+			var dynamicsWebApiProxy = new DynamicsWebApi({
+				webApiVersion: "8.2",
+				proxy: {
+					url: "http://john:doe@localhost:1235",
+				}
+			});
+
+			var scope;
+			before(function () {
+				var response = mocks.responses.multipleResponse;
+				scope = nock(mocks.webApiUrl)
+					.get(mocks.responses.collectionUrl)
+					.reply(response.status, response.responseText, response.responseHeaders);
+			});
+
+			after(function () {
+				nock.cleanAll();
+			});
+
+			it("sends the request to the right end point", function (done) {
+				dynamicsWebApiProxy.retrieveMultipleRequest({ collection: "tests" })
+					.then(function (object) {
+						expect(object).to.deep.equal(mocks.responses.multiple());
+						done();
+					}).catch(function (object) {
+						done(object);
+					});
+			});
+
+			it("all requests have been made", function () {
+				expect(scope.isDone()).to.be.true;
+			});
+		});
+	});
 });

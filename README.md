@@ -88,6 +88,7 @@ Please note, that "Dynamics 365" in this readme refers to Microsoft Dynamics 365
 * [Formatted Values and Lookup Properties](#formatted-values-and-lookup-properties)
 * [Using Alternate Keys](#using-alternate-keys)
 * [Making requests using Entity Logical Names](#making-requests-using-entity-logical-names)
+* [Using Proxy](#using-proxy)
 * [Using TypeScript Declaration Files](#using-typescript-declaration-files)
 * [In Progress / Feature List](#in-progress--feature-list)
   * [JavaScript Promises](#javascript-promises)
@@ -217,6 +218,7 @@ impersonateAAD | String | `v.1.6.12+` A String representing the GUID value for t
 includeAnnotations | String | Defaults Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
 maxPageSize | Number | Defaults the odata.maxpagesize preference. Use to set the number of entities returned in the response.
 onTokenRefresh | Function | A callback function that triggered when DynamicsWebApi requests a new OAuth token. (At this moment it is done before each call to Dynamics 365, as [recommended by Microsoft](https://msdn.microsoft.com/en-ca/library/gg327838.aspx#Anchor_2)).
+proxy | Object | `v.1.7.2+` Proxy configuration object. [More Info](#using-proxy)
 returnRepresentation | Boolean | Defaults Prefer header with value "return=representation". Use this property to return just created or updated entity in a single request.
 timeout | Number | Sets a number of milliseconds before a request times out.
 useEntityNames | Boolean | `v.1.4.0+` Indicates whether to use entity logical names instead of collection logical names during requests.
@@ -2069,6 +2071,31 @@ var collectionName = dynamicsWebApi.utility.getCollectionName('account');
 
 Please note, everything said above will happen only if you set `useEntityNames: true` in the DynamicsWebApi config.
 
+## Using Proxy
+
+**Node.js Only.** Starting from v.1.7.2 DynamicsWebApi supports different types of connections through proxy. To make it possible, I added two dependencies in a `package.json`:
+(http-proxy-agent)[https://github.com/TooTallNate/node-https-proxy-agent] and (https-proxy-agent)[https://github.com/TooTallNate/node-http-proxy-agent], based on a type of a protocol, DynamicsWebApi
+will use one of those agents.
+
+In order to let DynamicsWebApi know that you are using proxy you have two options:
+1. add environmental variables `http_proxy` or `https_proxy` in your .env file
+2. or pass parameters in DynamicsWebApi configuration, for example:
+
+```js
+const dynamicsWebApi = new DynamicsWebApi({
+	webApiUrl: 'https://myorg.api.crm.dynamics.com/api/data/v9.1/',
+    onTokenRefresh: acquireToken,
+    proxy: {
+        url: 'http://localhost:12345',
+        //auth is optional, you can also provide authentication in the url
+        auth: {
+	        username: 'john',
+            password: 'doe'
+		}
+	}
+});
+```
+
 ## Using TypeScript Declaration Files
 
 TypeScript declaration files `d.ts` added with v.1.5.3. 
@@ -2135,6 +2162,7 @@ the config option "formatted" will enable developers to retrieve all information
 - [X] Impersonate a user based on their Azure Active Directory (AAD) object id. `Added in v.1.6.12`.
 - [X] File upload/download/delete for a File Field. `Added in v.1.7.0`.
 - [X] Shrink size of an NPM package. `Added in v.1.7.1`.
+- [X] Full proxy support. `Added in v.1.7.2`.
 - [ ] Refactoring and conversion to TypeScript - coming with `v.2.0`! Stay tuned!
 
 Many more features to come!

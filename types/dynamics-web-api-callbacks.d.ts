@@ -1,4 +1,4 @@
-﻿// Type definitions for dynamics-web-api-callbacks v1.7.1
+﻿// Type definitions for dynamics-web-api-callbacks v1.7.2
 // Project: https://github.com/AleksandrRogov/DynamicsWebApi
 // Definitions by: Aleksandr Rogov https://github.com/AleksandrRogov/
 
@@ -719,8 +719,20 @@ declare namespace DynamicsWebApi {
 		fieldName: string;
 	}
 
+	interface ProxyConfig {
+		/**Proxy server url */
+		url: string;
+		/**Basic authentication credentials */
+		auth?: {
+			/**Username */
+			username: string;
+			/**Password */
+			password: string;
+		}
+	}
+
 	interface Config {
-		/**A String representing the GUID value for the Dynamics 365 system user id.Impersonates the user. */
+		/**A String representing a URL to Web API (webApiVersion not required if webApiUrl specified)[not used inside of CRM] */
 		webApiUrl?: string;
 		/**The version of Web API to use, for example: "8.1" */
 		webApiVersion?: string;
@@ -734,12 +746,14 @@ declare namespace DynamicsWebApi {
 		includeAnnotations?: string;
 		/**Sets the odata.maxpagesize preference value to request the number of entities returned in the response. */
 		maxPageSize?: string;
-		/**Sets Prefer header request with value "return=representation".Use this property to return just created or updated entity in a single request.*/
+		/**Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.*/
 		returnRepresentation?: boolean;
 		/**Indicates whether to use Entity Logical Names instead of Collection Logical Names.*/
 		useEntityNames?: boolean;
 		/**Sets a number of milliseconds before a request times out */
 		timeout?: number;
+		/**Proxy configuration */
+		proxy?: ProxyConfig;
 	}
 
 	/** Callback with an acquired token called by DynamicsWebApi; "token" argument can be a string or an object with a property {accessToken: <token>}  */

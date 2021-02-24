@@ -1,4 +1,4 @@
-﻿// Type definitions for dynamics-web-api v1.7.1
+﻿// Type definitions for dynamics-web-api v1.7.2
 // Project: https://github.com/AleksandrRogov/DynamicsWebApi/
 // Definitions by: Aleksandr Rogov https://github.com/AleksandrRogov/
 
@@ -620,6 +620,18 @@ declare namespace DynamicsWebApi {
 		fieldName: string;
 	}
 
+	interface ProxyConfig {
+		/**Proxy server url */
+		url: string;
+		/**Basic authentication credentials */
+		auth?: {
+			/**Username */
+			username: string;
+			/**Password */
+			password: string;
+		}
+	}
+
 	interface Config {
 		/**A String representing a URL to Web API(webApiVersion not required if webApiUrl specified)[not used inside of CRM] */
 		webApiUrl?: string;
@@ -641,6 +653,8 @@ declare namespace DynamicsWebApi {
 		useEntityNames?: boolean;
 		/**Sets a number of milliseconds before a request times out */
 		timeout?: number;
+		/**Proxy configuration */
+		proxy?: ProxyConfig;
 	}
 
 	/** Callback with an acquired token called by DynamicsWebApi; "token" argument can be a string or an object with a property {accessToken: <token>}  */
