@@ -2243,6 +2243,19 @@ describe("Request.sendRequest", function () {
 			expect(scope.isDone()).to.be.true;
 		});
 	});
+
+	describe("empty batch payload", function () {
+		it("throws an error", function (done) {
+			Request.sendRequest('POST', '$batch', { webApiUrl: mocks.webApiUrl }, null, null, null, function (object) {
+				done(object);
+			}, function (object) {
+				expect(object.length).to.be.eq(1);
+				expect(object[0].message)
+					.to.equal("Payload of the batch operation is empty. Please make that you have other operations in between startBatch() and executeBatch() to successfuly build a batch payload.");
+				done();
+			});
+		});
+	});
 });
 
 describe("parseResponse", function () {

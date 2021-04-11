@@ -4609,6 +4609,81 @@ describe("callbacks -", function () {
                 expect(scope.isDone()).to.be.true;
             });
         });
+
+        describe("next request has a new requestId", function () {
+            var scope;
+            //1st request body check
+            var rBody = mocks.data.batchRetrieveMultipleCreateRetrieveMultiple;
+            var rBodys = rBody.split('\n');
+            var checkBody = '';
+            for (var i = 0; i < rBodys.length; i++) {
+                checkBody += rBodys[i];
+            }
+
+            before(function () {
+                var response = mocks.responses.batchRetrieveMultipleCreateRetrieveMultiple;
+                var response2 = mocks.responses.createReturnId;
+                scope = nock(mocks.webApiUrl)
+
+                scope = nock(mocks.webApiUrl)
+                    .filteringRequestBody(function (body) {
+                        body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
+                        body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'changeset_XXX');
+                        var bodys = body.split('\n');
+
+                        var resultBody = '';
+                        for (var i = 0; i < bodys.length; i++) {
+                            resultBody += bodys[i];
+                        }
+                        return resultBody;
+                    })
+                    .post("/$batch", checkBody)
+                    .reply(response.status, response.responseText, response.responseHeaders)
+                    .post(mocks.responses.collectionUrl, mocks.data.testEntity)
+                    .reply(response2.status, response2.responseText, response2.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                var isDone = 0;
+                function doneCheck(object) {
+                    if (++isDone === 2)
+                        done(object);
+                }
+
+                dynamicsWebApiTest.startBatch();
+
+                dynamicsWebApiTest.retrieveMultiple('tests');
+                dynamicsWebApiTest.create({ firstname: "Test", lastname: "Batch!" }, 'records');
+                dynamicsWebApiTest.retrieveMultiple('morerecords');
+
+                dynamicsWebApiTest.executeBatch(function (object) {
+                        expect(object.length).to.be.eq(3);
+
+                        expect(object[0]).to.deep.equal(mocks.responses.multiple());
+                        expect(object[1]).to.deep.equal(mocks.data.testEntityId);
+                        expect(object[2]).to.deep.equal(mocks.responses.multiple2());
+
+                        doneCheck();
+                    }, function (object) {
+                        doneCheck(object);
+                    });
+
+                dynamicsWebApiTest.create(mocks.data.testEntity, "tests", function (object) {
+                        expect(object).to.deep.equal(mocks.data.testEntityId);
+                        doneCheck();
+                    }, function (object) {
+                        doneCheck(object);
+                    });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
 	});
 
 	describe("dynamicsWebApi.uploadFile -", function () {

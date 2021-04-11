@@ -2102,8 +2102,6 @@ TypeScript declaration files `d.ts` added with v.1.5.3.
 If you are not familiar with declaration files, these files are used to provide TypeScript type information about an API that's written in JavaScript.
 You want to consume those from your TypeScript code. [Quote](https://stackoverflow.com/a/21247316/2042071)
 
-At this moment, DynamicsWebApi declaration files do not exist in a [DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped) repository but it is in my plans to upload them there.
-
 ### Node.Js
 
 If you are using Node.Js with TypeScript, declarations will be fetched with an NPM package during an installation or an update process.
