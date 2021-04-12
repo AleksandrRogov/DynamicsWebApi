@@ -1,4 +1,4 @@
-/*! dynamics-web-api v1.7.2 (c) 2021 Aleksandr Rogov */
+/*! dynamics-web-api v1.7.3 (c) 2021 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -1546,12 +1546,12 @@ function DynamicsWebApi(config) {
 		request.collection = '$batch';
 
 		_isBatch = false;
-		return _makeRequest('POST', request, 'executeBatch')
+		const promise = _makeRequest('POST', request, 'executeBatch')
 			.then(function (response) {
 				return response.data;
-			}).finally(function () {
-				_batchRequestId = null;
 			});
+		_batchRequestId = null;
+		return promise;
 	};
 
     /**
@@ -1780,6 +1780,10 @@ var ErrorHelper = {
             throw new Error("Batch operation has not been started. Please call a DynamicsWebApi.startBatch() function prior to calling DynamicsWebApi.executeBatch() to perform a batch request correctly.");
         }
     },
+
+    batchIsEmpty: function () {
+        return [new Error("Payload of the batch operation is empty. Please make that you have other operations in between startBatch() and executeBatch() to successfuly build a batch payload.")];
+	},
 
     handleHttpError: function (parsedError, parameters) {
         var error = new Error();
@@ -2235,6 +2239,7 @@ module.exports = function parseResponseHeaders(headerStr) {
 
 var Utility = __webpack_require__(389);
 var RequestConverter = __webpack_require__(359);
+const ErrorHelper = __webpack_require__(535);
 
 var _entityNames;
 
@@ -2472,7 +2477,12 @@ function sendRequest(method, path, config, data, additionalHeaders, responsePara
 	var processedData = processData(data, config);
 
 	if (path === '$batch') {
-		var batchResult = _convertToBatch(_batchRequestCollection[requestId], config);
+		var batchRequest = _batchRequestCollection[requestId];
+
+		if (!batchRequest)
+			errorCallback(ErrorHelper.batchIsEmpty());
+
+		var batchResult = _convertToBatch(batchRequest, config);
 
 		processedData = batchResult.body;
 
@@ -3545,10 +3555,13 @@ module.exports = function getFetchXmlPagingCookie(pageCookies, currentPageNumber
 /******/ 	}
 /******/ 	
 /************************************************************************/
-/******/ 	// module exports must be returned from runtime so entry inlining is disabled
+/******/ 	
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(530);
+/******/ 	// This entry module is referenced by other modules so it can't be inlined
+/******/ 	var __webpack_exports__ = __webpack_require__(530);
+/******/ 	
+/******/ 	return __webpack_exports__;
 /******/ })()
 ;
 });
