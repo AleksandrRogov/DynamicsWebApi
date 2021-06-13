@@ -1,6 +1,7 @@
 import { Utility } from "../utilities/Utility";
 import { RequestUtility } from "../utilities/RequestUtility";
 import { DynamicsWebApi } from "../../ts/dynamics-web-api";
+import { ErrorHelper } from "../helpers/ErrorHelper";
 import { Core } from "../../ts/types";
 
 export class RequestClient {
@@ -42,11 +43,14 @@ export class RequestClient {
 		//stringify passed data
 		var processedData = null;
 
-		var batchResult;
 		let isBatchConverted = request.responseParameters != null && request.responseParameters.convertedToBatch;
 
 		if (request.path === "$batch" && !isBatchConverted) {
-			batchResult = RequestUtility.convertToBatch(RequestClient._batchRequestCollection[request.requestId], config);
+			const batchRequest = RequestClient._batchRequestCollection[request.requestId];
+
+			if (!batchRequest) errorCallback(ErrorHelper.batchIsEmpty());
+
+			const batchResult = RequestUtility.convertToBatch(batchRequest, config);
 
 			processedData = batchResult.body;
 			request.headers = { ...batchResult.headers, ...request.headers };

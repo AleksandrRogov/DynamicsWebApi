@@ -14,7 +14,7 @@ export declare namespace Core {
 		timeout: number;
 		isAsync?: boolean;
 		requestId?: string;
-		proxy?: DynamicsWebApi.ProxyOptions;
+		proxy?: DynamicsWebApi.ProxyConfig;
 	}
 
 	interface BatchRequestCollection {

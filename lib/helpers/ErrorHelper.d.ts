@@ -8,6 +8,7 @@ export declare class ErrorHelper {
     static arrayParameterCheck(parameter: any, functionName: string, parameterName: string): void;
     static stringOrArrayParameterCheck(parameter: any, functionName: string, parameterName: string): void;
     static numberParameterCheck(parameter: any, functionName: string, parameterName: string): void;
+    static batchIsEmpty(): Error[];
     static handleHttpError(parsedError: any, parameters?: any): DynamicsWebApiError;
     static boolParameterCheck(parameter: any, functionName: string, parameterName: string): void;
     static guidParameterCheck(parameter: any, functionName: string, parameterName: string): string;

@@ -1,10 +1,10 @@
-﻿var chai = require('chai');
+﻿var chai = require("chai");
 var expect = chai.expect;
 
-var sinon = require('sinon');
+var sinon = require("sinon");
 
-var base64 = require('Base64');
-var crypto = new (require('@peculiar/webcrypto').Crypto)();
+var base64 = require("Base64");
+var crypto = new (require("@peculiar/webcrypto").Crypto)();
 
 var mocks = require("./stubs");
 var { DWA } = require("../lib/dwa");
@@ -15,941 +15,997 @@ var { XhrWrapper } = require("../lib/requests/xhr");
 var { Utility } = require("../lib/utilities/Utility");
 Utility.downloadChunkSize = 15;
 
-describe("xhr -", function() {
-    describe("dynamicsWebApi.create -", function() {
-        describe("basic", function() {
-            var responseObject;
-            before(function(done) {
-                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-                var requests = this.requests = [];
-
-                global.XMLHttpRequest.onCreate = function(xhr) {
-                    requests.push(xhr);
-                };
-
-				dynamicsWebApiTest.create({ data: mocks.data.testEntity, collection: "tests" }).then(function(object) {
-                    responseObject = object;
-                    done();
-                }).catch(function(object) {
-                    responseObject = object;
-                    done();
-                });
-
-                var response = mocks.responses.createReturnId;
-                this.requests[0].respond(response.status, response.responseHeaders);
-            });
-
-            after(function() {
-                global.XMLHttpRequest.restore();
-                global.XMLHttpRequest = null;
-            });
-
-            it("sends the request to the right end point", function() {
-                expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ''));
-            });
-
-            it("uses the correct method", function() {
-                expect(this.requests[0].method).to.equal('POST');
-            });
-
-            it("sends the right data", function() {
-                expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
-            });
-
-            it("does not have Prefer header", function() {
-                expect(this.requests[0].requestHeaders['Prefer']).to.be.undefined;
-            });
-
-            it("returns the correct response", function() {
-                expect(responseObject).to.deep.equal(mocks.data.testEntityId);
-            });
-        });
-
-        describe("crm error", function () {
-            var responseObject;
-            before(function (done) {
-                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-                var requests = this.requests = [];
-
-                global.XMLHttpRequest.onCreate = function (xhr) {
-                    requests.push(xhr);
-                };
-
-				dynamicsWebApiTest.create({ data: mocks.data.testEntity, collection: "tests" }).then(function (object) {
-                    responseObject = object;
-                    done();
-                }).catch(function (object) {
-                    responseObject = object;
-                    done();
-                });
-
-                var response = mocks.responses.upsertPreventCreateResponse;
-                this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
-            });
-
-            after(function () {
-                global.XMLHttpRequest.restore();
-                global.XMLHttpRequest = null;
-            });
-
-            it("sends the request to the right end point", function () {
-                expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ''));
-            });
-
-            it("uses the correct method", function () {
-                expect(this.requests[0].method).to.equal('POST');
-            });
-
-            it("sends the right data", function () {
-                expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
-            });
-
-            it("does not have Prefer header", function () {
-                expect(this.requests[0].requestHeaders['Prefer']).to.be.undefined;
-            });
-
-            it("returns the correct response", function () {
-				expect(responseObject).to.deep.equal({ message: "message", status: 404, statusText: "Not Found", headers: { dummy: "header" } });
-            });
-        });
-
-        describe("unexpected error", function () {
-            var responseObject;
-            before(function (done) {
-                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-                var requests = this.requests = [];
-
-                global.XMLHttpRequest.onCreate = function (xhr) {
-                    requests.push(xhr);
-                };
-
-				dynamicsWebApiTest.create({ data: mocks.data.testEntity, collection: "tests" }).then(function (object) {
-                    responseObject = object;
-                    done();
-                }).catch(function (object) {
-                    responseObject = object;
-                    done();
-                });
-
-                var response = mocks.responses.upsertPreventCreateResponse;
-                this.requests[0].respond(response.status, response.responseHeaders);
-            });
-
-            after(function () {
-                global.XMLHttpRequest.restore();
-                global.XMLHttpRequest = null;
-            });
-
-            it("sends the request to the right end point", function () {
-                expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ''));
-            });
-
-            it("uses the correct method", function () {
-                expect(this.requests[0].method).to.equal('POST');
-            });
-
-            it("sends the right data", function () {
-                expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
-            });
-
-            it("does not have Prefer header", function () {
-                expect(this.requests[0].requestHeaders['Prefer']).to.be.undefined;
-            });
-
-            it("returns the correct response", function () {
-				expect(responseObject).to.deep.equal({ message: "Unexpected Error", status: 404, statusText: "Not Found", headers: { dummy: "header" } });
-            });
-        });
-
-        describe("not crm error", function () {
-            var responseObject;
-            before(function (done) {
-                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-                var requests = this.requests = [];
-
-                global.XMLHttpRequest.onCreate = function (xhr) {
-                    requests.push(xhr);
-                };
-
-				dynamicsWebApiTest.create({ data: mocks.data.testEntity, collection: "tests" }).then(function (object) {
-                    responseObject = object;
-                    done();
-                }).catch(function (object) {
-                    responseObject = object;
-                    done();
-                });
-
-                var response = mocks.responses.upsertPreventCreateResponse;
-                this.requests[0].respond(response.status, response.responseHeaders, 'something');
-            });
-
-            after(function () {
-                global.XMLHttpRequest.restore();
-                global.XMLHttpRequest = null;
-            });
-
-            it("sends the request to the right end point", function () {
-                expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ''));
-            });
-
-            it("uses the correct method", function () {
-                expect(this.requests[0].method).to.equal('POST');
-            });
-
-            it("sends the right data", function () {
-                expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
-            });
-
-            it("does not have Prefer header", function () {
-                expect(this.requests[0].requestHeaders['Prefer']).to.be.undefined;
-            });
-
-            it("returns the correct response", function () {
-                var error = new Error("something");
-                error.status = 404;
-                error.statusText = "Not Found";
-
-                expect(responseObject.message).to.equal(error.message);
-                expect(responseObject.status).to.equal(error.status);
-                expect(responseObject.statusText).to.equal(error.statusText);
-            });
-        });
-    });
-
-    describe("dynamicsWebApi.executeBatch - ", function () {
-        describe("update / delete - returns an error", function () {
-            var responseObject;
-            var rBody = mocks.data.batchUpdateDelete;
-            var rBodys = rBody.split('\n');
-            var checkBody = '';
-            for (var i = 0; i < rBodys.length; i++) {
-                checkBody += rBodys[i];
-            }
-            before(function (done) {
-                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-                var requests = this.requests = [];
-
-                global.XMLHttpRequest.onCreate = function (xhr) {
-                    requests.push(xhr);
-                };
-
-                dynamicsWebApiTest.startBatch();
-
-				dynamicsWebApiTest.update({ key: mocks.data.testEntityId2, collection: 'records', data: { firstname: "Test", lastname: "Batch!" } });
-				dynamicsWebApiTest.deleteRecord({ key: mocks.data.testEntityId2, collection: 'records', navigationProperty: 'firstname' });
-
-                dynamicsWebApiTest.executeBatch()
-                    .then(function (object) {
-                        responseObject = object;
-                        done();
-                    }).catch(function (object) {
-                        responseObject = object;
-                        done();
-                    });
-
-                var response = mocks.responses.batchError;
-                this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
-            });
-
-            after(function () {
-                global.XMLHttpRequest.restore();
-                global.XMLHttpRequest = null;
-            });
-
-            it("sends the request to the right end point", function () {
-                expect(this.requests[0].url).to.equal(mocks.webApiUrl + '$batch');
-            });
-
-            it("uses the correct method", function () {
-                expect(this.requests[0].method).to.equal('POST');
-            });
-
-            it("sends the right data", function () {
-                function filterBody(body) {
-                    body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
-                    body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'changeset_XXX');
-                    var bodys = body.split('\n');
-
-                    var resultBody = '';
-                    for (var i = 0; i < bodys.length; i++) {
-                        resultBody += bodys[i];
-                    }
-                    return resultBody;
-                }
-
-                expect(filterBody(this.requests[0].requestBody)).to.deep.equal(checkBody);
-            });
-
-            it("does not have Prefer header", function () {
-                expect(this.requests[0].requestHeaders['Prefer']).to.be.undefined;
-            });
-
-            it("returns the correct response", function () {
-                expect(responseObject.length).to.be.eq(1);
-
-                expect(responseObject[0].error).to.deep.equal({
-                    "code": "0x0", "message": "error", "innererror": { "message": "error", "type": "Microsoft.Crm.CrmHttpException", "stacktrace": "stack" }
-                });
-
-                expect(responseObject[0].status).to.equal(400);
-                expect(responseObject[0].statusMessage).to.equal("Bad Request");
-                expect(responseObject[0].statusText).to.equal("Bad Request");
-            });
-        });
-    });
-
-    describe("return representation", function() {
-        var responseObject;
-        before(function(done) {
-            global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-            var requests = this.requests = [];
-
-            global.XMLHttpRequest.onCreate = function(xhr) {
-                requests.push(xhr);
-            };
-
-            dynamicsWebApiTest
-				.create({ data: mocks.data.testEntity, collection: "tests", returnRepresentation: true })
-                .then(function(object) {
-                    responseObject = object;
-                    done();
-                }).catch(function(object) {
-                    responseObject = object;
-                    done();
-                });
-
-            var response = mocks.responses.createReturnRepresentation;
-            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
-        });
-
-        it("sends the request to the right end point", function() {
-            expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ''));
-        });
-
-        after(function() {
-            global.XMLHttpRequest.restore();
-            global.XMLHttpRequest = null;
-        });
-
-        it("uses the correct method", function() {
-            expect(this.requests[0].method).to.equal('POST');
-        });
-
-        it("sends the right data", function() {
-            expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
-        });
-
-        it("sends the Prefer header", function() {
-            expect(this.requests[0].requestHeaders['Prefer']).to.equal(DWA.Prefer.ReturnRepresentation);
-        });
-
-        it("returns the correct response", function() {
-            expect(responseObject).to.deep.equal(mocks.data.testEntity);
-        });
-    });
-    describe("dynamicsWebApi.update -", function() {
-        
-        describe("change if-match header", function() {
-            var dwaRequest = {
-                id: mocks.data.testEntityId,
-                collection: "tests",
-                data: mocks.data.testEntity
-            };
-
-            var responseObject;
-            var responseObject2;
-            var responseObject3;
-            before(function(done) {
-                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-                var requests = this.requests = [];
-
-                global.XMLHttpRequest.onCreate = function(xhr) {
-                    requests.push(xhr);
-                };
-
-                dwaRequest.select = ["fullname", "subject"];
-                dwaRequest.ifmatch = "match";
-                dwaRequest.returnRepresentation = false;
-                dynamicsWebApiTest
-                    .update(dwaRequest)
-                    .then(function(object) {
-                        responseObject = object;
-                    }).catch(function(object) {
-                        responseObject = object;
-                    });
-
-                var response = mocks.responses.basicEmptyResponseSuccess;
-                this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
-
-                dwaRequest.returnRepresentation = true;
-
-                dynamicsWebApiTest
-                    .update(dwaRequest)
-                    .then(function(object) {
-                        responseObject2 = object;
-                    }).catch(function(object) {
-                        responseObject2 = object;
-                    });
-
-                var response2 = mocks.responses.upsertPreventUpdateResponse;
-                this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
-
-                dynamicsWebApiTest
-                    .update(dwaRequest)
-                    .then(function(object) {
-                        responseObject3 = object;
-                        done();
-                    }).catch(function(object) {
-                        responseObject3 = object;
-                        done();
-                    });
-
-                var response3 = mocks.responses.upsertPreventCreateResponse;
-                this.requests[2].respond(response3.status, response3.responseHeaders, response3.responseText);
-            });
-
-            after(function() {
-                global.XMLHttpRequest.restore();
-                global.XMLHttpRequest = null;
-            });
-
-            it("sends the request to the right end point", function() {
-                expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, '') + "?$select=fullname,subject");
-                expect(this.requests[1].url).to.equal(mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, '') + "?$select=fullname,subject");
-                expect(this.requests[2].url).to.equal(mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, '') + "?$select=fullname,subject");
-            });
-
-            it("uses the correct method", function() {
-                expect(this.requests[0].method).to.equal('PATCH');
-                expect(this.requests[1].method).to.equal('PATCH');
-                expect(this.requests[2].method).to.equal('PATCH');
-            });
-
-            it("sends the right data", function() {
-                expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
-                expect(JSON.parse(this.requests[1].requestBody)).to.deep.equal(mocks.data.testEntity);
-                expect(JSON.parse(this.requests[2].requestBody)).to.deep.equal(mocks.data.testEntity);
-            });
-
-            it("sends the Prefer header", function() {
-                expect(this.requests[0].requestHeaders['Prefer']).to.be.undefined;
-                expect(this.requests[1].requestHeaders['Prefer']).to.equal(DWA.Prefer.ReturnRepresentation);
-                expect(this.requests[2].requestHeaders['Prefer']).to.equal(DWA.Prefer.ReturnRepresentation);
-            });
-
-            it("sends the right If-Match header", function() {
-                expect(this.requests[0].requestHeaders['If-Match']).to.equal("match");
-                expect(this.requests[1].requestHeaders['If-Match']).to.equal("match");
-                expect(this.requests[2].requestHeaders['If-Match']).to.equal("match");
-            });
-
-            it("returns the correct response", function() {
-                expect(responseObject).to.equal(true);
-                expect(responseObject2).to.equal(false);
-                expect(responseObject3.status).to.equal(404);
-            });
-        });
-    });
-
-    describe("dynamicsWebApi.retrieve -", function() {
-
-        describe("basic", function() {
-            var responseObject;
-            before(function(done) {
-                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-                var requests = this.requests = [];
-
-                global.XMLHttpRequest.onCreate = function(xhr) {
-                    requests.push(xhr);
-                };
-
-                var dwaRequest = {
-                    id: mocks.data.testEntityId,
-                    collection: "tests",
-                    expand: [{ property: "prop" }]
-                };
-
-                dynamicsWebApiTest.retrieve(dwaRequest)
-                    .then(function(object) {
-                        responseObject = object;
-                        done();
-                    }).catch(function(object) {
-                        responseObject = object;
-                        done();
-                    });
-
-                var response = mocks.responses.response200;
-                this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
-            });
-
-            after(function() {
-                global.XMLHttpRequest.restore();
-                global.XMLHttpRequest = null;
-            });
-
-            it("sends the request to the right end point", function() {
-                expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, '') + "?$expand=prop");
-            });
-
-            it("uses the correct method", function() {
-                expect(this.requests[0].method).to.equal('GET');
-            });
-
-			it("does not send data", function () {
-				expect(this.requests[0].requestBody).to.be.undefined;
-            });
-
-            it("sends the correct If-Match header", function() {
-                expect(this.requests[0].requestHeaders['If-Match']).to.be.undefined;
-            });
-
-            it("sends the correct MSCRMCallerID header", function() {
-                expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.be.undefined;
-            });
-
-            it("returns the correct response", function() {
-                expect(responseObject).to.deep.equal(mocks.data.testEntity);
-            });
-        });
-    });
-
-    describe("dynamicsWebApi.constructor -", function() {
-
-        describe("authentication", function() {
-            var responseObject;
-            before(function(done) {
-                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-                var requests = this.requests = [];
-
-                global.XMLHttpRequest.onCreate = function(xhr) {
-                    requests.push(xhr);
-                };
-
-                var dwaRequest = {
-                    id: mocks.data.testEntityId,
-                    collection: "tests",
-                    expand: [{ property: "prop" }]
-                };
-
-                var getToken = function (callback) { callback({ accessToken: "token001" }) };
-
-                var dynamicsWebApiAuth = new DynamicsWebApi({
-                    webApiVersion: "8.2", onTokenRefresh: getToken
-                });
-
-                dynamicsWebApiAuth.retrieve(dwaRequest)
-                    .then(function(object) {
-                        responseObject = object;
-                        done();
-                    }).catch(function(object) {
-                        responseObject = object;
-                        done();
-                    });
-
-                var response = mocks.responses.response200;
-                this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
-            });
-
-            after(function() {
-                global.XMLHttpRequest.restore();
-                global.XMLHttpRequest = null;
-            });
-
-            it("sends the request to the right end point", function() {
-                expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, '') + "?$expand=prop");
-            });
-
-            it("uses the correct method", function() {
-                expect(this.requests[0].method).to.equal('GET');
-            });
-
-            it("does not send data", function() {
-				expect(this.requests[0].requestBody).to.be.undefined;
-            });
-
-            it("sends the correct Authorization header", function() {
-                expect(this.requests[0].requestHeaders['Authorization']).to.equal("Bearer token001");
-            });
-
-            it("returns the correct response", function() {
-                expect(responseObject).to.deep.equal(mocks.data.testEntity);
-            });
-        });
-    });
-
-    describe("dynamicsWebApi.retrieveMultiple -", function() {
-
-        describe("basic", function() {
-            var responseObject;
-            before(function(done) {
-                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-                var requests = this.requests = [];
-
-                global.XMLHttpRequest.onCreate = function(xhr) {
-                    requests.push(xhr);
-                };
-
-				dynamicsWebApiTest.retrieveMultiple({ collection: "tests" })
-                    .then(function(object) {
-                        responseObject = object;
-                        done();
-                    }).catch(function(object) {
-                        responseObject = object;
-                        done();
-                    });
-
-                var response = mocks.responses.multipleResponse;
-                this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
-            });
-
-            it("sends the request to the right end point", function() {
-                expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ''));
-            });
-
-            after(function() {
-                global.XMLHttpRequest.restore();
-                global.XMLHttpRequest = null;
-            });
-
-            it("uses the correct method", function() {
-                expect(this.requests[0].method).to.equal('GET');
-            });
-
-            it("does not send data", function() {
-				expect(this.requests[0].requestBody).to.be.undefined;
-            });
-
-            it("does not send If-Match header", function() {
-                expect(this.requests[0].requestHeaders['If-Match']).to.be.undefined;
-            });
-
-            it("does not send MSCRMCallerID header", function() {
-                expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.be.undefined;
-            });
-
-            it("returns the correct response", function() {
-                expect(responseObject).to.deep.equal(mocks.responses.multiple());
-            });
-        });
-
-        describe("select", function() {
-            var responseObject;
-            var responseObject2;
-            before(function(done) {
-                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-                var requests = this.requests = [];
-
-                global.XMLHttpRequest.onCreate = function(xhr) {
-                    requests.push(xhr);
-                };
-
-				dynamicsWebApiTest.retrieveMultiple({ collection: "tests", select: ["fullname"] })
-                    .then(function(object) {
-                        responseObject = object;
-                    }).catch(function(object) {
-                        responseObject = object;
-                    });
-
-                var response = mocks.responses.multipleResponse;
-                this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
-
-				dynamicsWebApiTest.retrieveMultiple({ collection: "tests", select: ["fullname", "subject"] })
-                    .then(function(object) {
-                        responseObject2 = object;
-                        done();
-                    }).catch(function(object) {
-                        responseObject2 = object;
-                        done();
-                    });
-
-                var response2 = mocks.responses.multipleResponse;
-                this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
-            });
-
-            after(function() {
-                global.XMLHttpRequest.restore();
-                global.XMLHttpRequest = null;
-            });
-
-            it("sends the request to the right end point", function() {
-                expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, '') + "?$select=fullname");
-                expect(this.requests[1].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, '') + "?$select=fullname,subject");
-            });
-
-            it("uses the correct method", function() {
-                expect(this.requests[0].method).to.equal('GET');
-                expect(this.requests[1].method).to.equal('GET');
-            });
-
-            it("does not send data", function() {
-				expect(this.requests[0].requestBody).to.be.undefined;
-				expect(this.requests[1].requestBody).to.be.undefined;
-            });
-
-            it("does not send If-Match header", function() {
-                expect(this.requests[0].requestHeaders['If-Match']).to.be.undefined;
-                expect(this.requests[1].requestHeaders['If-Match']).to.be.undefined;
-            });
-
-            it("does not send MSCRMCallerID header", function() {
-                expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.be.undefined;
-                expect(this.requests[1].requestHeaders['MSCRMCallerID']).to.be.undefined;
-            });
-
-            it("returns the correct response", function() {
-                expect(responseObject).to.deep.equal(mocks.responses.multiple());
-                expect(responseObject2).to.deep.equal(mocks.responses.multiple());
-            });
-        });
-
-        describe("filter", function() {
-            var responseObject;
-            var responseObject2;
-            before(function(done) {
-                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-                var requests = this.requests = [];
-
-                global.XMLHttpRequest.onCreate = function(xhr) {
-                    requests.push(xhr);
-                };
-
-				dynamicsWebApiTest.retrieveMultiple({ collection: "tests", filter: "name eq 'name'" })
-                    .then(function(object) {
-                        responseObject = object;
-                    }).catch(function(object) {
-                        responseObject = object;
-                    });
-
-                var response = mocks.responses.multipleResponse;
-                this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
-
-				dynamicsWebApiTest.retrieveMultiple({ collection: "tests", select: ["fullname"], filter: "name eq 'name'"})
-                    .then(function(object) {
-                        responseObject2 = object;
-                        done();
-                    }).catch(function(object) {
-                        responseObject2 = object;
-                        done();
-                    });
-
-                var response2 = mocks.responses.multipleResponse;
-                this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
-            });
-
-            after(function() {
-                global.XMLHttpRequest.restore();
-                global.XMLHttpRequest = null;
-            });
-
-            it("sends the request to the right end point", function() {
-                expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, '') + "?$filter=name%20eq%20'name'");
-                expect(this.requests[1].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, '') + "?$select=fullname&$filter=name%20eq%20'name'");
-            });
-
-            it("uses the correct method", function() {
-                expect(this.requests[0].method).to.equal('GET');
-                expect(this.requests[1].method).to.equal('GET');
-            });
-
-            it("does not send data", function() {
-				expect(this.requests[0].requestBody).to.be.undefined;
-				expect(this.requests[1].requestBody).to.be.undefined;
-            });
-
-            it("does not send If-Match header", function() {
-                expect(this.requests[0].requestHeaders['If-Match']).to.be.undefined;
-                expect(this.requests[1].requestHeaders['If-Match']).to.be.undefined;
-            });
-
-            it("does not send MSCRMCallerID header", function() {
-                expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.be.undefined;
-                expect(this.requests[1].requestHeaders['MSCRMCallerID']).to.be.undefined;
-            });
-
-            it("returns the correct response", function() {
-                expect(responseObject).to.deep.equal(mocks.responses.multiple());
-                expect(responseObject2).to.deep.equal(mocks.responses.multiple());
-            });
-        });
-
-        describe("next page link", function() {
-            var responseObject;
-            var responseObject2;
-            before(function(done) {
-                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-                var requests = this.requests = [];
-
-                global.XMLHttpRequest.onCreate = function(xhr) {
-                    requests.push(xhr);
+describe("xhr -", function () {
+	describe("dynamicsWebApi.create -", function () {
+		describe("basic", function () {
+			var responseObject;
+			before(function (done) {
+				global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+				var requests = (this.requests = []);
+
+				global.XMLHttpRequest.onCreate = function (xhr) {
+					requests.push(xhr);
 				};
 
-				let dwaRequest = { collection: "tests" };
+				dynamicsWebApiTest
+					.create({ data: mocks.data.testEntity, collection: "tests" })
+					.then(function (object) {
+						responseObject = object;
+						done();
+					})
+					.catch(function (object) {
+						responseObject = object;
+						done();
+					});
 
-				dynamicsWebApiTest.retrieveMultiple(dwaRequest)
-                    .then(function(object) {
-                        responseObject = object;
-                    }).catch(function(object) {
-                        responseObject = object;
-                    });
+				var response = mocks.responses.createReturnId;
+				this.requests[0].respond(response.status, response.responseHeaders);
+			});
 
-                var response = mocks.responses.multipleWithLinkResponse;
-                this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+			after(function () {
+				global.XMLHttpRequest.restore();
+				global.XMLHttpRequest = null;
+			});
 
-				dynamicsWebApiTest.retrieveMultiple(dwaRequest, mocks.responses.multipleWithLink().oDataNextLink)
-                    .then(function(object) {
-                        responseObject2 = object;
-                        done();
-                    }).catch(function(object) {
-                        responseObject2 = object;
-                        done();
-                    });
+			it("sends the request to the right end point", function () {
+				expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ""));
+			});
 
-                var response2 = mocks.responses.multipleResponse;
-                this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
-            });
+			it("uses the correct method", function () {
+				expect(this.requests[0].method).to.equal("POST");
+			});
 
-            it("sends the request to the right end point", function() {
-                expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ''));
-                expect(this.requests[1].url).to.equal(mocks.responses.multipleWithLink().oDataNextLink);
-            });
+			it("sends the right data", function () {
+				expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
+			});
 
-            after(function() {
-                global.XMLHttpRequest.restore();
-                global.XMLHttpRequest = null;
-            });
+			it("does not have Prefer header", function () {
+				expect(this.requests[0].requestHeaders["Prefer"]).to.be.undefined;
+			});
 
-            it("uses the correct method", function() {
-                expect(this.requests[0].method).to.equal('GET');
-                expect(this.requests[1].method).to.equal('GET');
-            });
+			it("returns the correct response", function () {
+				expect(responseObject).to.deep.equal(mocks.data.testEntityId);
+			});
+		});
 
-            it("does not send data", function() {
-				expect(this.requests[0].requestBody).to.be.undefined;
-				expect(this.requests[1].requestBody).to.be.undefined;
-            });
+		describe("crm error", function () {
+			var responseObject;
+			before(function (done) {
+				global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+				var requests = (this.requests = []);
 
-            it("does not send If-Match header", function() {
-                expect(this.requests[0].requestHeaders['If-Match']).to.be.undefined;
-                expect(this.requests[1].requestHeaders['If-Match']).to.be.undefined;
-            });
+				global.XMLHttpRequest.onCreate = function (xhr) {
+					requests.push(xhr);
+				};
 
-            it("does not send MSCRMCallerID header", function() {
-                expect(this.requests[0].requestHeaders['MSCRMCallerID']).to.be.undefined;
-                expect(this.requests[1].requestHeaders['MSCRMCallerID']).to.be.undefined;
-            });
+				dynamicsWebApiTest
+					.create({ data: mocks.data.testEntity, collection: "tests" })
+					.then(function (object) {
+						responseObject = object;
+						done();
+					})
+					.catch(function (object) {
+						responseObject = object;
+						done();
+					});
 
-            it("returns the correct response", function() {
-                expect(responseObject).to.deep.equal(mocks.responses.multipleWithLink());
-                expect(responseObject2).to.deep.equal(mocks.responses.multiple());
-            });
-        });
-    });
+				var response = mocks.responses.upsertPreventCreateResponse;
+				this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+			});
 
-    describe("request error", function () {
-        var responseObject;
+			after(function () {
+				global.XMLHttpRequest.restore();
+				global.XMLHttpRequest = null;
+			});
+
+			it("sends the request to the right end point", function () {
+				expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ""));
+			});
+
+			it("uses the correct method", function () {
+				expect(this.requests[0].method).to.equal("POST");
+			});
+
+			it("sends the right data", function () {
+				expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
+			});
+
+			it("does not have Prefer header", function () {
+				expect(this.requests[0].requestHeaders["Prefer"]).to.be.undefined;
+			});
+
+			it("returns the correct response", function () {
+				expect(responseObject.message).to.eql("message");
+				expect(responseObject.status).to.eql(404);
+				expect(responseObject.statusText).to.eql("Not Found");
+				expect(responseObject.headers).to.eql({ dummy: "header" });
+			});
+		});
+
+		describe("unexpected error", function () {
+			var responseObject;
+			before(function (done) {
+				global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+				var requests = (this.requests = []);
+
+				global.XMLHttpRequest.onCreate = function (xhr) {
+					requests.push(xhr);
+				};
+
+				dynamicsWebApiTest
+					.create({ data: mocks.data.testEntity, collection: "tests" })
+					.then(function (object) {
+						responseObject = object;
+						done();
+					})
+					.catch(function (object) {
+						responseObject = object;
+						done();
+					});
+
+				var response = mocks.responses.upsertPreventCreateResponse;
+				this.requests[0].respond(response.status, response.responseHeaders);
+			});
+
+			after(function () {
+				global.XMLHttpRequest.restore();
+				global.XMLHttpRequest = null;
+			});
+
+			it("sends the request to the right end point", function () {
+				expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ""));
+			});
+
+			it("uses the correct method", function () {
+				expect(this.requests[0].method).to.equal("POST");
+			});
+
+			it("sends the right data", function () {
+				expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
+			});
+
+			it("does not have Prefer header", function () {
+				expect(this.requests[0].requestHeaders["Prefer"]).to.be.undefined;
+			});
+
+			it("returns the correct response", function () {
+				expect(responseObject.message).to.eql("Unexpected Error");
+				expect(responseObject.status).to.eql(404);
+				expect(responseObject.statusText).to.eql("Not Found");
+				expect(responseObject.headers).to.eql({ dummy: "header" });
+			});
+		});
+
+		describe("not crm error", function () {
+			var responseObject;
+			before(function (done) {
+				global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+				var requests = (this.requests = []);
+
+				global.XMLHttpRequest.onCreate = function (xhr) {
+					requests.push(xhr);
+				};
+
+				dynamicsWebApiTest
+					.create({ data: mocks.data.testEntity, collection: "tests" })
+					.then(function (object) {
+						responseObject = object;
+						done();
+					})
+					.catch(function (object) {
+						responseObject = object;
+						done();
+					});
+
+				var response = mocks.responses.upsertPreventCreateResponse;
+				this.requests[0].respond(response.status, response.responseHeaders, "something");
+			});
+
+			after(function () {
+				global.XMLHttpRequest.restore();
+				global.XMLHttpRequest = null;
+			});
+
+			it("sends the request to the right end point", function () {
+				expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ""));
+			});
+
+			it("uses the correct method", function () {
+				expect(this.requests[0].method).to.equal("POST");
+			});
+
+			it("sends the right data", function () {
+				expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
+			});
+
+			it("does not have Prefer header", function () {
+				expect(this.requests[0].requestHeaders["Prefer"]).to.be.undefined;
+			});
+
+			it("returns the correct response", function () {
+				var error = new Error("something");
+				error.status = 404;
+				error.statusText = "Not Found";
+
+				expect(responseObject.message).to.equal(error.message);
+				expect(responseObject.status).to.equal(error.status);
+				expect(responseObject.statusText).to.equal(error.statusText);
+			});
+		});
+	});
+
+	describe("dynamicsWebApi.executeBatch - ", function () {
+		describe("update / delete - returns an error", function () {
+			var responseObject;
+			var rBody = mocks.data.batchUpdateDelete;
+			var rBodys = rBody.split("\n");
+			var checkBody = "";
+			for (var i = 0; i < rBodys.length; i++) {
+				checkBody += rBodys[i];
+			}
+			before(function (done) {
+				global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+				var requests = (this.requests = []);
+
+				global.XMLHttpRequest.onCreate = function (xhr) {
+					requests.push(xhr);
+				};
+
+				dynamicsWebApiTest.startBatch();
+
+				dynamicsWebApiTest.update({ key: mocks.data.testEntityId2, collection: "records", data: { firstname: "Test", lastname: "Batch!" } });
+				dynamicsWebApiTest.deleteRecord({ key: mocks.data.testEntityId2, collection: "records", navigationProperty: "firstname" });
+
+				dynamicsWebApiTest
+					.executeBatch()
+					.then(function (object) {
+						responseObject = object;
+						done();
+					})
+					.catch(function (object) {
+						responseObject = object;
+						done();
+					});
+
+				var response = mocks.responses.batchError;
+				this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+			});
+
+			after(function () {
+				global.XMLHttpRequest.restore();
+				global.XMLHttpRequest = null;
+			});
+
+			it("sends the request to the right end point", function () {
+				expect(this.requests[0].url).to.equal(mocks.webApiUrl + "$batch");
+			});
+
+			it("uses the correct method", function () {
+				expect(this.requests[0].method).to.equal("POST");
+			});
+
+			it("sends the right data", function () {
+				function filterBody(body) {
+					body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
+					body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "changeset_XXX");
+					var bodys = body.split("\n");
+
+					var resultBody = "";
+					for (var i = 0; i < bodys.length; i++) {
+						resultBody += bodys[i];
+					}
+					return resultBody;
+				}
+
+				expect(filterBody(this.requests[0].requestBody)).to.deep.equal(checkBody);
+			});
+
+			it("does not have Prefer header", function () {
+				expect(this.requests[0].requestHeaders["Prefer"]).to.be.undefined;
+			});
+
+			it("returns the correct response", function () {
+				expect(responseObject.length).to.be.eq(1);
+
+				expect(responseObject[0].error).to.deep.equal({
+					code: "0x0",
+					message: "error",
+					innererror: { message: "error", type: "Microsoft.Crm.CrmHttpException", stacktrace: "stack" },
+				});
+
+				expect(responseObject[0].status).to.equal(400);
+				expect(responseObject[0].statusMessage).to.equal("Bad Request");
+				expect(responseObject[0].statusText).to.equal("Bad Request");
+			});
+		});
+	});
+
+	describe("return representation", function () {
+		var responseObject;
 		before(function (done) {
 			global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-			var requests = this.requests = [];
+			var requests = (this.requests = []);
 
 			global.XMLHttpRequest.onCreate = function (xhr) {
 				requests.push(xhr);
 			};
 
-			dynamicsWebApiTest.create({ data: mocks.data.testEntity, collection: "tests" }).then(function (object) {
-                responseObject = object;
-                done();
-            }).catch(function (object) {
-                responseObject = object;
-                done();
-            });
+			dynamicsWebApiTest
+				.create({ data: mocks.data.testEntity, collection: "tests", returnRepresentation: true })
+				.then(function (object) {
+					responseObject = object;
+					done();
+				})
+				.catch(function (object) {
+					responseObject = object;
+					done();
+				});
 
-            this.requests[0].onerror();
-        });
+			var response = mocks.responses.createReturnRepresentation;
+			this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+		});
 
-        after(function () {
-            global.XMLHttpRequest.restore();
-            global.XMLHttpRequest = null;
-        });
+		it("sends the request to the right end point", function () {
+			expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ""));
+		});
 
-        it("sends the request to the right end point", function () {
-            expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ''));
-        });
+		after(function () {
+			global.XMLHttpRequest.restore();
+			global.XMLHttpRequest = null;
+		});
 
-        it("uses the correct method", function () {
-            expect(this.requests[0].method).to.equal('POST');
-        });
+		it("uses the correct method", function () {
+			expect(this.requests[0].method).to.equal("POST");
+		});
 
-        it("sends the right data", function () {
-            expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
-        });
+		it("sends the right data", function () {
+			expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
+		});
 
-        it("does not have Prefer header", function () {
-            expect(this.requests[0].requestHeaders['Prefer']).to.be.undefined;
-        });
+		it("sends the Prefer header", function () {
+			expect(this.requests[0].requestHeaders["Prefer"]).to.equal(DWA.Prefer.ReturnRepresentation);
+		});
 
-        it("returns the correct response", function () {
-			expect(responseObject).to.deep.equal({ message: "Network Error", status: 0, statusText: "", headers: {} });
-        });
-    });
+		it("returns the correct response", function () {
+			expect(responseObject).to.deep.equal(mocks.data.testEntity);
+		});
+	});
+	describe("dynamicsWebApi.update -", function () {
+		describe("change if-match header", function () {
+			var dwaRequest = {
+				id: mocks.data.testEntityId,
+				collection: "tests",
+				data: mocks.data.testEntity,
+			};
 
-    describe("request timeout", function () {
-        var responseObject;
-        before(function (done) {
-            global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-            var requests = this.requests = [];
+			var responseObject;
+			var responseObject2;
+			var responseObject3;
+			before(function (done) {
+				global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+				var requests = (this.requests = []);
 
-            global.XMLHttpRequest.onCreate = function (xhr) {
-                requests.push(xhr);
-            };
+				global.XMLHttpRequest.onCreate = function (xhr) {
+					requests.push(xhr);
+				};
 
-            var dynamicsWebApiTimeout = new DynamicsWebApi({ webApiVersion: "8.2", timeout: 100 });
+				dwaRequest.select = ["fullname", "subject"];
+				dwaRequest.ifmatch = "match";
+				dwaRequest.returnRepresentation = false;
+				dynamicsWebApiTest
+					.update(dwaRequest)
+					.then(function (object) {
+						responseObject = object;
+					})
+					.catch(function (object) {
+						responseObject = object;
+					});
 
-			dynamicsWebApiTimeout.create({ data: mocks.data.testEntity, collection: "tests" }).then(function (object) {
-                responseObject = object;
-                done();
-            }).catch(function (object) {
-                responseObject = object;
-                done();
-            });
+				var response = mocks.responses.basicEmptyResponseSuccess;
+				this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
 
-            this.requests[0].ontimeout();
-        });
+				dwaRequest.returnRepresentation = true;
 
-        after(function () {
-            global.XMLHttpRequest.restore();
-            global.XMLHttpRequest = null;
-        });
+				dynamicsWebApiTest
+					.update(dwaRequest)
+					.then(function (object) {
+						responseObject2 = object;
+					})
+					.catch(function (object) {
+						responseObject2 = object;
+					});
 
-        it("sends the request to the right end point", function () {
-            expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ''));
-        });
+				var response2 = mocks.responses.upsertPreventUpdateResponse;
+				this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
 
-        it("uses the correct method", function () {
-            expect(this.requests[0].method).to.equal('POST');
-        });
+				dynamicsWebApiTest
+					.update(dwaRequest)
+					.then(function (object) {
+						responseObject3 = object;
+						done();
+					})
+					.catch(function (object) {
+						responseObject3 = object;
+						done();
+					});
 
-        it("sends the right data", function () {
-            expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
-        });
+				var response3 = mocks.responses.upsertPreventCreateResponse;
+				this.requests[2].respond(response3.status, response3.responseHeaders, response3.responseText);
+			});
 
-        it("does not have Prefer header", function () {
-            expect(this.requests[0].requestHeaders['Prefer']).to.be.undefined;
-        });
+			after(function () {
+				global.XMLHttpRequest.restore();
+				global.XMLHttpRequest = null;
+			});
 
-        it("returns the correct response", function () {
-			expect(responseObject).to.deep.equal({ message: "Request Timed Out", status: 0, statusText: "", headers: {} });
-        });
+			it("sends the request to the right end point", function () {
+				expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, "") + "?$select=fullname,subject");
+				expect(this.requests[1].url).to.equal(mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, "") + "?$select=fullname,subject");
+				expect(this.requests[2].url).to.equal(mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, "") + "?$select=fullname,subject");
+			});
+
+			it("uses the correct method", function () {
+				expect(this.requests[0].method).to.equal("PATCH");
+				expect(this.requests[1].method).to.equal("PATCH");
+				expect(this.requests[2].method).to.equal("PATCH");
+			});
+
+			it("sends the right data", function () {
+				expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
+				expect(JSON.parse(this.requests[1].requestBody)).to.deep.equal(mocks.data.testEntity);
+				expect(JSON.parse(this.requests[2].requestBody)).to.deep.equal(mocks.data.testEntity);
+			});
+
+			it("sends the Prefer header", function () {
+				expect(this.requests[0].requestHeaders["Prefer"]).to.be.undefined;
+				expect(this.requests[1].requestHeaders["Prefer"]).to.equal(DWA.Prefer.ReturnRepresentation);
+				expect(this.requests[2].requestHeaders["Prefer"]).to.equal(DWA.Prefer.ReturnRepresentation);
+			});
+
+			it("sends the right If-Match header", function () {
+				expect(this.requests[0].requestHeaders["If-Match"]).to.equal("match");
+				expect(this.requests[1].requestHeaders["If-Match"]).to.equal("match");
+				expect(this.requests[2].requestHeaders["If-Match"]).to.equal("match");
+			});
+
+			it("returns the correct response", function () {
+				expect(responseObject).to.equal(true);
+				expect(responseObject2).to.equal(false);
+				expect(responseObject3.status).to.equal(404);
+			});
+		});
+	});
+
+	describe("dynamicsWebApi.retrieve -", function () {
+		describe("basic", function () {
+			var responseObject;
+			before(function (done) {
+				global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+				var requests = (this.requests = []);
+
+				global.XMLHttpRequest.onCreate = function (xhr) {
+					requests.push(xhr);
+				};
+
+				var dwaRequest = {
+					id: mocks.data.testEntityId,
+					collection: "tests",
+					expand: [{ property: "prop" }],
+				};
+
+				dynamicsWebApiTest
+					.retrieve(dwaRequest)
+					.then(function (object) {
+						responseObject = object;
+						done();
+					})
+					.catch(function (object) {
+						responseObject = object;
+						done();
+					});
+
+				var response = mocks.responses.response200;
+				this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+			});
+
+			after(function () {
+				global.XMLHttpRequest.restore();
+				global.XMLHttpRequest = null;
+			});
+
+			it("sends the request to the right end point", function () {
+				expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, "") + "?$expand=prop");
+			});
+
+			it("uses the correct method", function () {
+				expect(this.requests[0].method).to.equal("GET");
+			});
+
+			it("does not send data", function () {
+				expect(this.requests[0].requestBody).to.be.undefined;
+			});
+
+			it("sends the correct If-Match header", function () {
+				expect(this.requests[0].requestHeaders["If-Match"]).to.be.undefined;
+			});
+
+			it("sends the correct MSCRMCallerID header", function () {
+				expect(this.requests[0].requestHeaders["MSCRMCallerID"]).to.be.undefined;
+			});
+
+			it("returns the correct response", function () {
+				expect(responseObject).to.deep.equal(mocks.data.testEntity);
+			});
+		});
+	});
+
+	describe("dynamicsWebApi.constructor -", function () {
+		describe("authentication", function () {
+			var responseObject;
+			before(function (done) {
+				global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+				var requests = (this.requests = []);
+
+				global.XMLHttpRequest.onCreate = function (xhr) {
+					requests.push(xhr);
+				};
+
+				var dwaRequest = {
+					id: mocks.data.testEntityId,
+					collection: "tests",
+					expand: [{ property: "prop" }],
+				};
+
+				var getToken = function (callback) {
+					callback({ accessToken: "token001" });
+				};
+
+				var dynamicsWebApiAuth = new DynamicsWebApi({
+					webApiVersion: "8.2",
+					onTokenRefresh: getToken,
+				});
+
+				dynamicsWebApiAuth
+					.retrieve(dwaRequest)
+					.then(function (object) {
+						responseObject = object;
+						done();
+					})
+					.catch(function (object) {
+						responseObject = object;
+						done();
+					});
+
+				var response = mocks.responses.response200;
+				this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+			});
+
+			after(function () {
+				global.XMLHttpRequest.restore();
+				global.XMLHttpRequest = null;
+			});
+
+			it("sends the request to the right end point", function () {
+				expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, "") + "?$expand=prop");
+			});
+
+			it("uses the correct method", function () {
+				expect(this.requests[0].method).to.equal("GET");
+			});
+
+			it("does not send data", function () {
+				expect(this.requests[0].requestBody).to.be.undefined;
+			});
+
+			it("sends the correct Authorization header", function () {
+				expect(this.requests[0].requestHeaders["Authorization"]).to.equal("Bearer token001");
+			});
+
+			it("returns the correct response", function () {
+				expect(responseObject).to.deep.equal(mocks.data.testEntity);
+			});
+		});
+	});
+
+	describe("dynamicsWebApi.retrieveMultiple -", function () {
+		describe("basic", function () {
+			var responseObject;
+			before(function (done) {
+				global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+				var requests = (this.requests = []);
+
+				global.XMLHttpRequest.onCreate = function (xhr) {
+					requests.push(xhr);
+				};
+
+				dynamicsWebApiTest
+					.retrieveMultiple({ collection: "tests" })
+					.then(function (object) {
+						responseObject = object;
+						done();
+					})
+					.catch(function (object) {
+						responseObject = object;
+						done();
+					});
+
+				var response = mocks.responses.multipleResponse;
+				this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+			});
+
+			it("sends the request to the right end point", function () {
+				expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ""));
+			});
+
+			after(function () {
+				global.XMLHttpRequest.restore();
+				global.XMLHttpRequest = null;
+			});
+
+			it("uses the correct method", function () {
+				expect(this.requests[0].method).to.equal("GET");
+			});
+
+			it("does not send data", function () {
+				expect(this.requests[0].requestBody).to.be.undefined;
+			});
+
+			it("does not send If-Match header", function () {
+				expect(this.requests[0].requestHeaders["If-Match"]).to.be.undefined;
+			});
+
+			it("does not send MSCRMCallerID header", function () {
+				expect(this.requests[0].requestHeaders["MSCRMCallerID"]).to.be.undefined;
+			});
+
+			it("returns the correct response", function () {
+				expect(responseObject).to.deep.equal(mocks.responses.multiple());
+			});
+		});
+
+		describe("select", function () {
+			var responseObject;
+			var responseObject2;
+			before(function (done) {
+				global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+				var requests = (this.requests = []);
+
+				global.XMLHttpRequest.onCreate = function (xhr) {
+					requests.push(xhr);
+				};
+
+				dynamicsWebApiTest
+					.retrieveMultiple({ collection: "tests", select: ["fullname"] })
+					.then(function (object) {
+						responseObject = object;
+					})
+					.catch(function (object) {
+						responseObject = object;
+					});
+
+				var response = mocks.responses.multipleResponse;
+				this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+
+				dynamicsWebApiTest
+					.retrieveMultiple({ collection: "tests", select: ["fullname", "subject"] })
+					.then(function (object) {
+						responseObject2 = object;
+						done();
+					})
+					.catch(function (object) {
+						responseObject2 = object;
+						done();
+					});
+
+				var response2 = mocks.responses.multipleResponse;
+				this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
+			});
+
+			after(function () {
+				global.XMLHttpRequest.restore();
+				global.XMLHttpRequest = null;
+			});
+
+			it("sends the request to the right end point", function () {
+				expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, "") + "?$select=fullname");
+				expect(this.requests[1].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, "") + "?$select=fullname,subject");
+			});
+
+			it("uses the correct method", function () {
+				expect(this.requests[0].method).to.equal("GET");
+				expect(this.requests[1].method).to.equal("GET");
+			});
+
+			it("does not send data", function () {
+				expect(this.requests[0].requestBody).to.be.undefined;
+				expect(this.requests[1].requestBody).to.be.undefined;
+			});
+
+			it("does not send If-Match header", function () {
+				expect(this.requests[0].requestHeaders["If-Match"]).to.be.undefined;
+				expect(this.requests[1].requestHeaders["If-Match"]).to.be.undefined;
+			});
+
+			it("does not send MSCRMCallerID header", function () {
+				expect(this.requests[0].requestHeaders["MSCRMCallerID"]).to.be.undefined;
+				expect(this.requests[1].requestHeaders["MSCRMCallerID"]).to.be.undefined;
+			});
+
+			it("returns the correct response", function () {
+				expect(responseObject).to.deep.equal(mocks.responses.multiple());
+				expect(responseObject2).to.deep.equal(mocks.responses.multiple());
+			});
+		});
+
+		describe("filter", function () {
+			var responseObject;
+			var responseObject2;
+			before(function (done) {
+				global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+				var requests = (this.requests = []);
+
+				global.XMLHttpRequest.onCreate = function (xhr) {
+					requests.push(xhr);
+				};
+
+				dynamicsWebApiTest
+					.retrieveMultiple({ collection: "tests", filter: "name eq 'name'" })
+					.then(function (object) {
+						responseObject = object;
+					})
+					.catch(function (object) {
+						responseObject = object;
+					});
+
+				var response = mocks.responses.multipleResponse;
+				this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+
+				dynamicsWebApiTest
+					.retrieveMultiple({ collection: "tests", select: ["fullname"], filter: "name eq 'name'" })
+					.then(function (object) {
+						responseObject2 = object;
+						done();
+					})
+					.catch(function (object) {
+						responseObject2 = object;
+						done();
+					});
+
+				var response2 = mocks.responses.multipleResponse;
+				this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
+			});
+
+			after(function () {
+				global.XMLHttpRequest.restore();
+				global.XMLHttpRequest = null;
+			});
+
+			it("sends the request to the right end point", function () {
+				expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, "") + "?$filter=name%20eq%20'name'");
+				expect(this.requests[1].url).to.equal(
+					mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, "") + "?$select=fullname&$filter=name%20eq%20'name'"
+				);
+			});
+
+			it("uses the correct method", function () {
+				expect(this.requests[0].method).to.equal("GET");
+				expect(this.requests[1].method).to.equal("GET");
+			});
+
+			it("does not send data", function () {
+				expect(this.requests[0].requestBody).to.be.undefined;
+				expect(this.requests[1].requestBody).to.be.undefined;
+			});
+
+			it("does not send If-Match header", function () {
+				expect(this.requests[0].requestHeaders["If-Match"]).to.be.undefined;
+				expect(this.requests[1].requestHeaders["If-Match"]).to.be.undefined;
+			});
+
+			it("does not send MSCRMCallerID header", function () {
+				expect(this.requests[0].requestHeaders["MSCRMCallerID"]).to.be.undefined;
+				expect(this.requests[1].requestHeaders["MSCRMCallerID"]).to.be.undefined;
+			});
+
+			it("returns the correct response", function () {
+				expect(responseObject).to.deep.equal(mocks.responses.multiple());
+				expect(responseObject2).to.deep.equal(mocks.responses.multiple());
+			});
+		});
+
+		describe("next page link", function () {
+			var responseObject;
+			var responseObject2;
+			before(function (done) {
+				global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+				var requests = (this.requests = []);
+
+				global.XMLHttpRequest.onCreate = function (xhr) {
+					requests.push(xhr);
+				};
+
+				let dwaRequest = { collection: "tests" };
+
+				dynamicsWebApiTest
+					.retrieveMultiple(dwaRequest)
+					.then(function (object) {
+						responseObject = object;
+					})
+					.catch(function (object) {
+						responseObject = object;
+					});
+
+				var response = mocks.responses.multipleWithLinkResponse;
+				this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+
+				dynamicsWebApiTest
+					.retrieveMultiple(dwaRequest, mocks.responses.multipleWithLink().oDataNextLink)
+					.then(function (object) {
+						responseObject2 = object;
+						done();
+					})
+					.catch(function (object) {
+						responseObject2 = object;
+						done();
+					});
+
+				var response2 = mocks.responses.multipleResponse;
+				this.requests[1].respond(response2.status, response2.responseHeaders, response2.responseText);
+			});
+
+			it("sends the request to the right end point", function () {
+				expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ""));
+				expect(this.requests[1].url).to.equal(mocks.responses.multipleWithLink().oDataNextLink);
+			});
+
+			after(function () {
+				global.XMLHttpRequest.restore();
+				global.XMLHttpRequest = null;
+			});
+
+			it("uses the correct method", function () {
+				expect(this.requests[0].method).to.equal("GET");
+				expect(this.requests[1].method).to.equal("GET");
+			});
+
+			it("does not send data", function () {
+				expect(this.requests[0].requestBody).to.be.undefined;
+				expect(this.requests[1].requestBody).to.be.undefined;
+			});
+
+			it("does not send If-Match header", function () {
+				expect(this.requests[0].requestHeaders["If-Match"]).to.be.undefined;
+				expect(this.requests[1].requestHeaders["If-Match"]).to.be.undefined;
+			});
+
+			it("does not send MSCRMCallerID header", function () {
+				expect(this.requests[0].requestHeaders["MSCRMCallerID"]).to.be.undefined;
+				expect(this.requests[1].requestHeaders["MSCRMCallerID"]).to.be.undefined;
+			});
+
+			it("returns the correct response", function () {
+				expect(responseObject).to.deep.equal(mocks.responses.multipleWithLink());
+				expect(responseObject2).to.deep.equal(mocks.responses.multiple());
+			});
+		});
+	});
+
+	describe("request error", function () {
+		var responseObject;
+		before(function (done) {
+			global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+			var requests = (this.requests = []);
+
+			global.XMLHttpRequest.onCreate = function (xhr) {
+				requests.push(xhr);
+			};
+
+			dynamicsWebApiTest
+				.create({ data: mocks.data.testEntity, collection: "tests" })
+				.then(function (object) {
+					responseObject = object;
+					done();
+				})
+				.catch(function (object) {
+					responseObject = object;
+					done();
+				});
+
+			this.requests[0].onerror();
+		});
+
+		after(function () {
+			global.XMLHttpRequest.restore();
+			global.XMLHttpRequest = null;
+		});
+
+		it("sends the request to the right end point", function () {
+			expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ""));
+		});
+
+		it("uses the correct method", function () {
+			expect(this.requests[0].method).to.equal("POST");
+		});
+
+		it("sends the right data", function () {
+			expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
+		});
+
+		it("does not have Prefer header", function () {
+			expect(this.requests[0].requestHeaders["Prefer"]).to.be.undefined;
+		});
+
+		it("returns the correct response", function () {
+			expect(responseObject.message).to.eql("Network Error");
+			expect(responseObject.status).to.eql(0);
+			expect(responseObject.statusText).to.eql("");
+			expect(responseObject.headers).to.eql({});
+		});
+	});
+
+	describe("request timeout", function () {
+		var responseObject;
+		before(function (done) {
+			global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+			var requests = (this.requests = []);
+
+			global.XMLHttpRequest.onCreate = function (xhr) {
+				requests.push(xhr);
+			};
+
+			var dynamicsWebApiTimeout = new DynamicsWebApi({ webApiVersion: "8.2", timeout: 100 });
+
+			dynamicsWebApiTimeout
+				.create({ data: mocks.data.testEntity, collection: "tests" })
+				.then(function (object) {
+					responseObject = object;
+					done();
+				})
+				.catch(function (object) {
+					responseObject = object;
+					done();
+				});
+
+			this.requests[0].ontimeout();
+		});
+
+		after(function () {
+			global.XMLHttpRequest.restore();
+			global.XMLHttpRequest = null;
+		});
+
+		it("sends the request to the right end point", function () {
+			expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ""));
+		});
+
+		it("uses the correct method", function () {
+			expect(this.requests[0].method).to.equal("POST");
+		});
+
+		it("sends the right data", function () {
+			expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
+		});
+
+		it("does not have Prefer header", function () {
+			expect(this.requests[0].requestHeaders["Prefer"]).to.be.undefined;
+		});
+
+		it("returns the correct response", function () {
+			expect(responseObject.message).to.eql("Request Timed Out");
+			expect(responseObject.status).to.eql(0);
+			expect(responseObject.statusText).to.eql("");
+			expect(responseObject.headers).to.eql({});
+		});
 	});
 
 	describe("dynamicsWebApi.uploadFile -", function () {
 		describe("file upload with 2 chunks", function () {
-
 			var dwaRequest = {
 				key: mocks.data.testEntityId,
 				collection: "tests",
 				fileName: "test.json",
 				fieldName: "dwa_file",
-				data: Buffer.from("Welcome to DynamicsWebApi!", "utf-8")
+				data: Buffer.from("Welcome to DynamicsWebApi!", "utf-8"),
 			};
 
 			var beginResponse = mocks.responses.uploadFileBeginResponse;
@@ -959,7 +1015,7 @@ describe("xhr -", function() {
 			before(function (done) {
 				global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
 
-				var requests = this.requests = [];
+				var requests = (this.requests = []);
 
 				var i = 0;
 				global.XMLHttpRequest.onCreate = function (xhr) {
@@ -977,19 +1033,21 @@ describe("xhr -", function() {
 					}
 
 					i++;
-				}
+				};
 
 				global.window = {
 					btoa: base64.btoa,
 					atob: base64.atob,
-					crypto: crypto
+					crypto: crypto,
 				};
 
-				dynamicsWebApiTest.uploadFile(dwaRequest)
+				dynamicsWebApiTest
+					.uploadFile(dwaRequest)
 					.then(function (object) {
 						responseObject = object;
 						done();
-					}).catch(function (object) {
+					})
+					.catch(function (object) {
 						responseObject = object;
 						done();
 					});
@@ -1003,29 +1061,39 @@ describe("xhr -", function() {
 			});
 
 			it("sends the request to the right end point", function () {
-				expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, '') + `/${dwaRequest.fieldName}?x-ms-file-name=${dwaRequest.fileName}`);
+				expect(this.requests[0].url).to.equal(
+					mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, "") + `/${dwaRequest.fieldName}?x-ms-file-name=${dwaRequest.fileName}`
+				);
 				expect(this.requests[1].url).to.equal(beginResponse.responseHeaders.Location);
 				expect(this.requests[2].url).to.equal(beginResponse.responseHeaders.Location);
 			});
 
 			it("uses the correct method", function () {
-				expect(this.requests[0].method).to.equal('PATCH');
-				expect(this.requests[1].method).to.equal('PATCH');
-				expect(this.requests[2].method).to.equal('PATCH');
+				expect(this.requests[0].method).to.equal("PATCH");
+				expect(this.requests[1].method).to.equal("PATCH");
+				expect(this.requests[2].method).to.equal("PATCH");
 			});
 
 			it("sends data", function () {
 				expect(this.requests[0].requestBody).to.be.undefined;
-				expect(this.requests[1].requestBody).to.deep.eq(mocks.utils.toTypedArray(dwaRequest.data.slice(0, beginResponse.responseHeaders["x-ms-chunk-size"])));
-				expect(this.requests[2].requestBody).to.deep.eq(mocks.utils.toTypedArray(dwaRequest.data.slice(beginResponse.responseHeaders["x-ms-chunk-size"], dwaRequest.data.length)));
+				expect(this.requests[1].requestBody).to.deep.eq(
+					mocks.utils.toTypedArray(dwaRequest.data.slice(0, beginResponse.responseHeaders["x-ms-chunk-size"]))
+				);
+				expect(this.requests[2].requestBody).to.deep.eq(
+					mocks.utils.toTypedArray(dwaRequest.data.slice(beginResponse.responseHeaders["x-ms-chunk-size"], dwaRequest.data.length))
+				);
 			});
 
 			it("sends correct headers", function () {
-				expect(this.requests[0].requestHeaders['x-ms-transfer-mode']).to.be.eq("chunked");
-				expect(this.requests[1].requestHeaders['Content-Range']).to.be.eq(`bytes 0-${beginResponse.responseHeaders["x-ms-chunk-size"] - 1}/${dwaRequest.data.length}`);
-				expect(this.requests[1].requestHeaders['Content-Type']).to.be.eq("application/octet-stream;charset=utf-8");
-				expect(this.requests[2].requestHeaders['Content-Range']).to.be.eq(`bytes ${beginResponse.responseHeaders["x-ms-chunk-size"]}-${dwaRequest.data.length - 1}/${dwaRequest.data.length}`);
-				expect(this.requests[2].requestHeaders['Content-Type']).to.be.eq("application/octet-stream;charset=utf-8");
+				expect(this.requests[0].requestHeaders["x-ms-transfer-mode"]).to.be.eq("chunked");
+				expect(this.requests[1].requestHeaders["Content-Range"]).to.be.eq(
+					`bytes 0-${beginResponse.responseHeaders["x-ms-chunk-size"] - 1}/${dwaRequest.data.length}`
+				);
+				expect(this.requests[1].requestHeaders["Content-Type"]).to.be.eq("application/octet-stream;charset=utf-8");
+				expect(this.requests[2].requestHeaders["Content-Range"]).to.be.eq(
+					`bytes ${beginResponse.responseHeaders["x-ms-chunk-size"]}-${dwaRequest.data.length - 1}/${dwaRequest.data.length}`
+				);
+				expect(this.requests[2].requestHeaders["Content-Type"]).to.be.eq("application/octet-stream;charset=utf-8");
 			});
 
 			it("does not have any response", function () {
@@ -1036,11 +1104,10 @@ describe("xhr -", function() {
 
 	describe("dynamicsWebApi.downloadFile -", function () {
 		describe("file download in 2 chunks", function () {
-
 			var dwaRequest = {
 				key: mocks.data.testEntityId,
 				collection: "tests",
-				fieldName: "dwa_file"
+				fieldName: "dwa_file",
 			};
 
 			var chunk1 = mocks.responses.downloadFileResponseChunk1;
@@ -1050,7 +1117,7 @@ describe("xhr -", function() {
 			before(function (done) {
 				global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
 
-				var requests = this.requests = [];
+				var requests = (this.requests = []);
 
 				global.XMLHttpRequest.onCreate = function (xhr) {
 					requests.push(xhr);
@@ -1068,19 +1135,21 @@ describe("xhr -", function() {
 					}
 
 					i++;
-				}
+				};
 
 				global.window = {
 					btoa: base64.btoa,
 					atob: base64.atob,
-					crypto: crypto
+					crypto: crypto,
 				};
 
-				dynamicsWebApiTest.downloadFile(dwaRequest)
+				dynamicsWebApiTest
+					.downloadFile(dwaRequest)
 					.then(function (object) {
 						responseObject = object;
 						done();
-					}).catch(function (object) {
+					})
+					.catch(function (object) {
 						responseObject = object;
 						done();
 					});
@@ -1094,13 +1163,17 @@ describe("xhr -", function() {
 			});
 
 			it("sends the request to the right end point", function () {
-				expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, '') + `/${dwaRequest.fieldName}?size=full`);
-				expect(this.requests[1].url).to.equal(mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, '') + `/${dwaRequest.fieldName}?size=full`);
+				expect(this.requests[0].url).to.equal(
+					mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, "") + `/${dwaRequest.fieldName}?size=full`
+				);
+				expect(this.requests[1].url).to.equal(
+					mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, "") + `/${dwaRequest.fieldName}?size=full`
+				);
 			});
 
 			it("uses the correct method", function () {
-				expect(this.requests[0].method).to.equal('GET');
-				expect(this.requests[1].method).to.equal('GET');
+				expect(this.requests[0].method).to.equal("GET");
+				expect(this.requests[1].method).to.equal("GET");
 			});
 
 			it("does not send data", function () {
@@ -1109,12 +1182,11 @@ describe("xhr -", function() {
 			});
 
 			it("sends correct headers", function () {
-				expect(this.requests[0].requestHeaders['Range']).to.be.eq(`bytes=0-${Utility.downloadChunkSize - 1}`);
-				expect(this.requests[1].requestHeaders['Range']).to.be.eq(`bytes=${Utility.downloadChunkSize}-${Utility.downloadChunkSize * 2 - 1}`);
+				expect(this.requests[0].requestHeaders["Range"]).to.be.eq(`bytes=0-${Utility.downloadChunkSize - 1}`);
+				expect(this.requests[1].requestHeaders["Range"]).to.be.eq(`bytes=${Utility.downloadChunkSize}-${Utility.downloadChunkSize * 2 - 1}`);
 			});
 
 			it("does not have any response", function () {
-
 				var text = Buffer.from(responseObject.data).toString();
 				expect(text).to.eq("Welcome to DynamicsWebApi!");
 				expect(responseObject.fileName).to.eq(chunk2.responseHeaders["x-ms-file-name"]);

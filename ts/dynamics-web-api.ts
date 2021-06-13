@@ -1179,13 +1179,13 @@ export class DynamicsWebApi {
 		internalRequest.functionName = "executeBatch";
 
 		this._isBatch = false;
-		return this._makeRequest(internalRequest)
-			.then(function (response) {
-				return response.data;
-			})
-			.finally(() => {
-				this._batchRequestId = null;
-			});
+		const promise = this._makeRequest(internalRequest).then(function (response) {
+			return response.data;
+		});
+
+		this._batchRequestId = null;
+
+		return promise;
 	};
 
 	/**

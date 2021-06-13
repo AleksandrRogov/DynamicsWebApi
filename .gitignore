@@ -253,4 +253,6 @@ ModelManifest.xml
 /scripts
 /coverage
 /tests/browser
+.nyc_output/
+
 *.d.ts.map

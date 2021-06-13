@@ -2143,7 +2143,7 @@ Please note, everything said above will happen only if you set `useEntityNames: 
 ## Using Proxy
 
 **Node.js Only.** Starting from v.1.7.2 DynamicsWebApi supports different types of connections through proxy. To make it possible, I added two dependencies in a `package.json`:
-(http-proxy-agent)[https://github.com/TooTallNate/node-https-proxy-agent] and (https-proxy-agent)[https://github.com/TooTallNate/node-http-proxy-agent], based on a type of a protocol, DynamicsWebApi will use one of those agents.
+[http-proxy-agent](https://github.com/TooTallNate/node-https-proxy-agent) and [https-proxy-agent](https://github.com/TooTallNate/node-http-proxy-agent), based on a type of a protocol, DynamicsWebApi, based on a type of a protocol, DynamicsWebApi will use one of those agents.
 
 In order to let DynamicsWebApi know that you are using proxy you have two options:
 1. add environmental variables `http_proxy` or `https_proxy` in your .env file
@@ -2169,8 +2169,6 @@ const dynamicsWebApi = new DynamicsWebApi({
 TypeScript declaration files `d.ts` added with v.1.5.3. 
 If you are not familiar with declaration files, these files are used to provide TypeScript type information about an API that's written in JavaScript.
 You want to consume those from your TypeScript code. [Quote](https://stackoverflow.com/a/21247316/2042071)
-
-At this moment, DynamicsWebApi declaration files do not exist in a [DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped) repository but it is in my plans to upload them there.
 
 ### Node.Js
 

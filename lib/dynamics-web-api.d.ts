@@ -25,22 +25,22 @@ export declare class DynamicsWebApi {
      * @param {DWARequest} request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api result
      * @example
-        *var lead = {
-        *    subject: "Test WebAPI",
-        *    firstname: "Test",
-        *    lastname: "WebAPI",
-        *    jobtitle: "Title"
-        *};
-        *
-        *var request = {
-        *    entity: lead,
-        *    collection: "leads",
-        *    returnRepresentation: true
-        *}
-        *
-        *dynamicsWebApi.createRequest(request).then(function (response) {
-        *}).catch(function (error) {
-        *});
+     *var lead = {
+     *    subject: "Test WebAPI",
+     *    firstname: "Test",
+     *    lastname: "WebAPI",
+     *    jobtitle: "Title"
+     *};
+     *
+     *var request = {
+     *    entity: lead,
+     *    collection: "leads",
+     *    returnRepresentation: true
+     *}
+     *
+     *dynamicsWebApi.createRequest(request).then(function (response) {
+     *}).catch(function (error) {
+     *});
      */
     create: <T = any>(request: DynamicsWebApi.CreateRequest) => Promise<T>;
     /**
@@ -49,19 +49,19 @@ export declare class DynamicsWebApi {
      * @param {DWARequest} request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api result
      * @example
-        *var request = {
-        *    key: '7d577253-3ef0-4a0a-bb7f-8335c2596e70',
-        *    collection: "leads",
-        *    select: ["fullname", "subject"],
-        *    ifnonematch: 'W/"468026"',
-        *    includeAnnotations: "OData.Community.Display.V1.FormattedValue"
-        *};
-        *
-        *dynamicsWebApi.retrieveRequest(request).then(function (response) {
-        *
-        *}).catch(function (error) {
-        *
-        *});
+     *var request = {
+     *    key: '7d577253-3ef0-4a0a-bb7f-8335c2596e70',
+     *    collection: "leads",
+     *    select: ["fullname", "subject"],
+     *    ifnonematch: 'W/"468026"',
+     *    includeAnnotations: "OData.Community.Display.V1.FormattedValue"
+     *};
+     *
+     *dynamicsWebApi.retrieveRequest(request).then(function (response) {
+     *
+     *}).catch(function (error) {
+     *
+     *});
      */
     retrieve: <T = any>(request: DynamicsWebApi.RetrieveRequest) => Promise<T>;
     /**
@@ -228,7 +228,7 @@ export declare class DynamicsWebApi {
      * Sends an asynchronous request to retrieve a specific entity definition.
      *
      * @param request - An object that represents all possible options for a current request.
-    * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api result
      */
     retrieveEntity: <T = any>(request: DynamicsWebApi.RetrieveEntityRequest) => Promise<T>;
     /**
@@ -765,8 +765,21 @@ export declare namespace DynamicsWebApi {
         returnRepresentation?: boolean;
         /**Indicates whether to use Entity Logical Names instead of Collection Logical Names.*/
         useEntityNames?: boolean;
-        /**Sets a number of milliseconds before a request times out */
+        /**Sets a number of milliseconds before a request times out. */
         timeout?: number;
+        /**Proxy configuration object. */
+        proxy?: ProxyConfig;
+    }
+    interface ProxyConfig {
+        /**Proxy server url */
+        url: string;
+        /**Basic authentication credentials */
+        auth?: {
+            /**Username */
+            username: string;
+            /**Password */
+            password: string;
+        };
     }
     /** Callback with an acquired token called by DynamicsWebApi; "token" argument can be a string or an object with a property {accessToken: <token>}  */
     interface OnTokenAcquiredCallback {

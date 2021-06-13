@@ -1,17 +1,17 @@
-﻿var chai = require('chai');
+﻿var chai = require("chai");
 var expect = chai.expect;
 
-var nock = require('nock');
-var sinon = require('sinon');
+var nock = require("nock");
+var sinon = require("sinon");
 
-var { DWA } = require('../lib/dwa');
-var { Utility } = require('../lib/utilities/Utility');
+var { DWA } = require("../lib/dwa");
+var { Utility } = require("../lib/utilities/Utility");
 var { RequestUtility } = require("../lib/utilities/RequestUtility");
-var { ErrorHelper } = require('../lib/helpers/ErrorHelper');
+var { ErrorHelper } = require("../lib/helpers/ErrorHelper");
 var mocks = require("./stubs");
-var { dateReviver } = require('../lib/requests/helpers/dateReviver');
-var { RequestClient } = require('../lib/requests/RequestClient');
-var { parseResponse } = require('../lib/requests/helpers/parseResponse');
+var { dateReviver } = require("../lib/requests/helpers/dateReviver");
+var { RequestClient } = require("../lib/requests/RequestClient");
+var { parseResponse } = require("../lib/requests/helpers/parseResponse");
 
 describe("Utility.", function () {
 	describe("buildFunctionParameters - ", function () {
@@ -32,8 +32,8 @@ describe("Utility.", function () {
 			expect(result).to.equal("(param1=@p1,param2=@p2,param3=@p3)?@p1='value1'&@p2=2&@p3='value2'");
 		});
 		it("object parameter", function () {
-			var result = Utility.buildFunctionParameters({ param1: { test1: "value", '@odata.type': 'account' } });
-			expect(result).to.equal("(param1=@p1)?@p1={\"test1\":\"value\",\"@odata.type\":\"account\"}");
+			var result = Utility.buildFunctionParameters({ param1: { test1: "value", "@odata.type": "account" } });
+			expect(result).to.equal('(param1=@p1)?@p1={"test1":"value","@odata.type":"account"}');
 		});
 		it("Microsoft.Dynamics.CRM namespace parameter", function () {
 			var result = Utility.buildFunctionParameters({ param1: "Microsoft.Dynamics.CRM.Enum'Type'", param2: 2, param3: "value2" });
@@ -47,7 +47,7 @@ describe("Utility.", function () {
 			expect(result).to.deep.equal({
 				cookie: "",
 				page: 2,
-				nextPage: 3
+				nextPage: 3,
 			});
 		});
 
@@ -56,14 +56,14 @@ describe("Utility.", function () {
 			expect(result).to.deep.equal({
 				cookie: "",
 				page: 2,
-				nextPage: 3
+				nextPage: 3,
 			});
 
 			result = Utility.getFetchXmlPagingCookie();
 			expect(result).to.deep.equal({
 				cookie: "",
 				page: 1,
-				nextPage: 2
+				nextPage: 2,
 			});
 		});
 
@@ -76,7 +76,6 @@ describe("Utility.", function () {
 
 			result = Utility.getFetchXmlPagingCookie(mocks.data.fetchXmls.cookiePage2);
 			expect(result).to.deep.equal(mocks.data.fetchXmls.fetchXmlResultPage2Cookie.PagingInfo);
-
 		});
 	});
 
@@ -105,9 +104,9 @@ describe("Utility.", function () {
 					return {
 						getClientUrl: function () {
 							return "Xrm.Utility";
-						}
+						},
 					};
-				}
+				},
 			};
 		});
 
@@ -133,9 +132,9 @@ describe("Utility.", function () {
 					context: {
 						getClientUrl: function () {
 							return "http://testorg.crm.dynamics.com";
-						}
-					}
-				}
+						},
+					},
+				},
 			};
 		});
 
@@ -156,8 +155,8 @@ describe("Utility.", function () {
 				context: {
 					getClientUrl: function () {
 						return "http://testorg.crm.dynamics.com";
-					}
-				}
+					},
+				},
 			};
 		});
 
@@ -177,7 +176,7 @@ describe("Utility.", function () {
 			global.Xrm.Page.context = {
 				getClientUrl: function () {
 					return "http://testorg.crm.dynamics.com";
-				}
+				},
 			};
 		});
 
@@ -213,7 +212,7 @@ describe("RequestUtility.composeUrl -", function () {
 	var stubUrl = mocks.webApiUrl + "tests";
 	it("request is empty", function () {
 		var dwaRequest = {
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl, "&");
@@ -224,13 +223,12 @@ describe("RequestUtility.composeUrl -", function () {
 
 		result = RequestUtility.composeUrl({}, null, stubUrl, "&");
 		expect(result).to.equal(stubUrl);
-
 	});
 
 	it("count=true", function () {
 		var dwaRequest = {
 			count: true,
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -240,7 +238,7 @@ describe("RequestUtility.composeUrl -", function () {
 	it("count=false", function () {
 		var dwaRequest = {
 			count: false,
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -250,7 +248,7 @@ describe("RequestUtility.composeUrl -", function () {
 	it("expand is empty", function () {
 		var dwaRequest = {
 			expand: undefined,
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -258,7 +256,7 @@ describe("RequestUtility.composeUrl -", function () {
 
 		dwaRequest = {
 			expand: null,
-			functionName: ""
+			functionName: "",
 		};
 
 		result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -266,7 +264,7 @@ describe("RequestUtility.composeUrl -", function () {
 
 		dwaRequest = {
 			expand: [],
-			functionName: ""
+			functionName: "",
 		};
 
 		result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -275,21 +273,25 @@ describe("RequestUtility.composeUrl -", function () {
 
 	it("expand - filter without expand.property", function () {
 		var dwaRequest = {
-			expand: [{
-				filter: "name eq 'name'"
-			}],
-			functionName: ""
+			expand: [
+				{
+					filter: "name eq 'name'",
+				},
+			],
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
 		expect(result).to.equal(stubUrl);
 
 		dwaRequest = {
-			expand: [{
-				filter: "name eq 'name'",
-				property: null
-			}],
-			functionName: ""
+			expand: [
+				{
+					filter: "name eq 'name'",
+					property: null,
+				},
+			],
+			functionName: "",
 		};
 
 		result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -298,10 +300,12 @@ describe("RequestUtility.composeUrl -", function () {
 
 	it("expand - property", function () {
 		var dwaRequest = {
-			expand: [{
-				property: "property"
-			}],
-			functionName: ""
+			expand: [
+				{
+					property: "property",
+				},
+			],
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -310,22 +314,26 @@ describe("RequestUtility.composeUrl -", function () {
 
 	it("expand - property,filter empty", function () {
 		var dwaRequest = {
-			expand: [{
-				property: "property",
-				filter: ""
-			}],
-			functionName: ""
+			expand: [
+				{
+					property: "property",
+					filter: "",
+				},
+			],
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
 		expect(result).to.equal(`${stubUrl}?$expand=property`);
 
 		dwaRequest = {
-			expand: [{
-				property: "property",
-				filter: null
-			}],
-			functionName: ""
+			expand: [
+				{
+					property: "property",
+					filter: null,
+				},
+			],
+			functionName: "",
 		};
 
 		result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -334,11 +342,13 @@ describe("RequestUtility.composeUrl -", function () {
 
 	it("expand - property,filter", function () {
 		var dwaRequest = {
-			expand: [{
-				property: "property",
-				filter: "name eq 'name'"
-			}],
-			functionName: ""
+			expand: [
+				{
+					property: "property",
+					filter: "name eq 'name'",
+				},
+			],
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -347,22 +357,26 @@ describe("RequestUtility.composeUrl -", function () {
 
 	it("expand - property,orderBy empty", function () {
 		var dwaRequest = {
-			expand: [{
-				property: "property",
-				orderBy: []
-			}],
-			functionName: ""
+			expand: [
+				{
+					property: "property",
+					orderBy: [],
+				},
+			],
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
 		expect(result).to.equal(`${stubUrl}?$expand=property`);
 
 		dwaRequest = {
-			expand: [{
-				property: "property",
-				orderBy: null
-			}],
-			functionName: ""
+			expand: [
+				{
+					property: "property",
+					orderBy: null,
+				},
+			],
+			functionName: "",
 		};
 
 		result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -371,22 +385,26 @@ describe("RequestUtility.composeUrl -", function () {
 
 	it("expand - property,orderBy", function () {
 		var dwaRequest = {
-			expand: [{
-				property: "property",
-				orderBy: ["name"]
-			}],
-			functionName: ""
+			expand: [
+				{
+					property: "property",
+					orderBy: ["name"],
+				},
+			],
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
 		expect(result).to.equal(`${stubUrl}?$expand=property($orderby=name)`);
 
 		dwaRequest = {
-			expand: [{
-				property: "property",
-				orderBy: ["name", "subject"]
-			}],
-			functionName: ""
+			expand: [
+				{
+					property: "property",
+					orderBy: ["name", "subject"],
+				},
+			],
+			functionName: "",
 		};
 
 		result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -395,22 +413,26 @@ describe("RequestUtility.composeUrl -", function () {
 
 	it("expand - property,select empty", function () {
 		var dwaRequest = {
-			expand: [{
-				property: "property",
-				select: []
-			}],
-			functionName: ""
+			expand: [
+				{
+					property: "property",
+					select: [],
+				},
+			],
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
 		expect(result).to.equal(`${stubUrl}?$expand=property`);
 
 		dwaRequest = {
-			expand: [{
-				property: "property",
-				select: null
-			}],
-			functionName: ""
+			expand: [
+				{
+					property: "property",
+					select: null,
+				},
+			],
+			functionName: "",
 		};
 
 		result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -419,22 +441,26 @@ describe("RequestUtility.composeUrl -", function () {
 
 	it("expand - property,select", function () {
 		var dwaRequest = {
-			expand: [{
-				property: "property",
-				select: ["name"]
-			}],
-			functionName: ""
+			expand: [
+				{
+					property: "property",
+					select: ["name"],
+				},
+			],
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
 		expect(result).to.equal(`${stubUrl}?$expand=property($select=name)`);
 
 		dwaRequest = {
-			expand: [{
-				property: "property",
-				select: ["name", "subject"]
-			}],
-			functionName: ""
+			expand: [
+				{
+					property: "property",
+					select: ["name", "subject"],
+				},
+			],
+			functionName: "",
 		};
 
 		result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -443,33 +469,39 @@ describe("RequestUtility.composeUrl -", function () {
 
 	it("expand - property,top empty or <=0", function () {
 		var dwaRequest = {
-			expand: [{
-				property: "property",
-				top: 0
-			}],
-			functionName: ""
+			expand: [
+				{
+					property: "property",
+					top: 0,
+				},
+			],
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
 		expect(result).to.equal(`${stubUrl}?$expand=property`);
 
 		dwaRequest = {
-			expand: [{
-				property: "property",
-				top: -1
-			}],
-			functionName: ""
+			expand: [
+				{
+					property: "property",
+					top: -1,
+				},
+			],
+			functionName: "",
 		};
 
 		result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
 		expect(result).to.equal(`${stubUrl}?$expand=property`);
 
 		dwaRequest = {
-			expand: [{
-				property: "property",
-				top: null
-			}],
-			functionName: ""
+			expand: [
+				{
+					property: "property",
+					top: null,
+				},
+			],
+			functionName: "",
 		};
 
 		result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -478,11 +510,13 @@ describe("RequestUtility.composeUrl -", function () {
 
 	it("expand - property,top", function () {
 		var dwaRequest = {
-			expand: [{
-				property: "property",
-				top: 3
-			}],
-			functionName: ""
+			expand: [
+				{
+					property: "property",
+					top: 3,
+				},
+			],
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -491,25 +525,29 @@ describe("RequestUtility.composeUrl -", function () {
 
 	it("expand - different properties", function () {
 		var dwaRequest = {
-			expand: [{
-				property: "property",
-				select: ["name", "subject"],
-				top: 3
-			}],
-			functionName: ""
+			expand: [
+				{
+					property: "property",
+					select: ["name", "subject"],
+					top: 3,
+				},
+			],
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
 		expect(result).to.equal(`${stubUrl}?$expand=property($select=name,subject;$top=3)`);
 
 		dwaRequest = {
-			expand: [{
-				property: "property",
-				select: ["name", "subject"],
-				orderBy: ["order"],
-				top: 3
-			}],
-			functionName: ""
+			expand: [
+				{
+					property: "property",
+					select: ["name", "subject"],
+					orderBy: ["order"],
+					top: 3,
+				},
+			],
+			functionName: "",
 		};
 
 		result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -519,7 +557,7 @@ describe("RequestUtility.composeUrl -", function () {
 	it("filter empty", function () {
 		var dwaRequest = {
 			filter: "",
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -527,7 +565,7 @@ describe("RequestUtility.composeUrl -", function () {
 
 		dwaRequest = {
 			filter: null,
-			functionName: ""
+			functionName: "",
 		};
 
 		result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -537,7 +575,7 @@ describe("RequestUtility.composeUrl -", function () {
 	it("filter", function () {
 		var dwaRequest = {
 			filter: "name eq 'name'",
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -547,7 +585,7 @@ describe("RequestUtility.composeUrl -", function () {
 	it("filter - special symbols encoded", function () {
 		var dwaRequest = {
 			filter: "email eq 'test+email@example.com'",
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -557,29 +595,37 @@ describe("RequestUtility.composeUrl -", function () {
 	it("filter - remove brackets from guid", function () {
 		var dwaRequest = {
 			filter: "name eq 'name' and testid1 eq {0000a000-0000-0000-0000-000000000001} and testid2 eq 0000a000-0000-0000-0000-000000000002 and teststring eq '{0000a000-0000-0000-0000-000000000003}'",
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
-		expect(result).to.equal(`${stubUrl}?$filter=${encodeURIComponent("name eq 'name' and testid1 eq 0000a000-0000-0000-0000-000000000001 and testid2 eq 0000a000-0000-0000-0000-000000000002 and teststring eq '{0000a000-0000-0000-0000-000000000003}'")}`);
+		expect(result).to.equal(
+			`${stubUrl}?$filter=${encodeURIComponent(
+				"name eq 'name' and testid1 eq 0000a000-0000-0000-0000-000000000001 and testid2 eq 0000a000-0000-0000-0000-000000000002 and teststring eq '{0000a000-0000-0000-0000-000000000003}'"
+			)}`
+		);
 	});
 
 	//test bug 2018-06-11
 	it("filter - grouping & remove brackets from guid ", function () {
 		var dwaRequest = {
 			filter: "name eq 'name' and (testid1 eq {0000a000-0000-0000-0000-000000000001} or testid2 eq {0000a000-0000-0000-0000-000000000002})",
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
-		expect(result).to.equal(`${stubUrl}?$filter=${encodeURIComponent("name eq 'name' and (testid1 eq 0000a000-0000-0000-0000-000000000001 or testid2 eq 0000a000-0000-0000-0000-000000000002)")}`);
+		expect(result).to.equal(
+			`${stubUrl}?$filter=${encodeURIComponent(
+				"name eq 'name' and (testid1 eq 0000a000-0000-0000-0000-000000000001 or testid2 eq 0000a000-0000-0000-0000-000000000002)"
+			)}`
+		);
 	});
 
 	//test bug 2018-06-11
 	it("filter - grouping & remove brackets from a single guid", function () {
 		var dwaRequest = {
 			filter: "name eq 'name' and (testid1 eq {0000a000-0000-0000-0000-000000000001})",
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -589,7 +635,7 @@ describe("RequestUtility.composeUrl -", function () {
 	it("ifmatch empty", function () {
 		var dwaRequest = {
 			ifmatch: "",
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -597,7 +643,7 @@ describe("RequestUtility.composeUrl -", function () {
 
 		dwaRequest = {
 			ifmatch: null,
-			functionName: ""
+			functionName: "",
 		};
 
 		result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -607,7 +653,7 @@ describe("RequestUtility.composeUrl -", function () {
 	it("navigationProperty empty", function () {
 		var dwaRequest = {
 			navigationProperty: "",
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -615,7 +661,7 @@ describe("RequestUtility.composeUrl -", function () {
 
 		dwaRequest = {
 			navigationProperty: null,
-			functionName: ""
+			functionName: "",
 		};
 
 		result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -625,7 +671,7 @@ describe("RequestUtility.composeUrl -", function () {
 	it("navigationProperty", function () {
 		var dwaRequest = {
 			navigationProperty: "nav",
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -635,7 +681,7 @@ describe("RequestUtility.composeUrl -", function () {
 	it("orderBy empty", function () {
 		var dwaRequest = {
 			orderBy: [],
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -643,7 +689,7 @@ describe("RequestUtility.composeUrl -", function () {
 
 		dwaRequest = {
 			orderBy: null,
-			functionName: ""
+			functionName: "",
 		};
 
 		result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -653,7 +699,7 @@ describe("RequestUtility.composeUrl -", function () {
 	it("orderBy", function () {
 		var dwaRequest = {
 			orderBy: ["name"],
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -661,7 +707,7 @@ describe("RequestUtility.composeUrl -", function () {
 
 		dwaRequest = {
 			orderBy: ["name", "subject"],
-			functionName: ""
+			functionName: "",
 		};
 
 		result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -671,7 +717,7 @@ describe("RequestUtility.composeUrl -", function () {
 	it("select empty", function () {
 		var dwaRequest = {
 			select: [],
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -679,7 +725,7 @@ describe("RequestUtility.composeUrl -", function () {
 
 		dwaRequest = {
 			select: null,
-			functionName: ""
+			functionName: "",
 		};
 
 		result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -689,7 +735,7 @@ describe("RequestUtility.composeUrl -", function () {
 	it("select", function () {
 		var dwaRequest = {
 			select: ["name"],
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -697,7 +743,7 @@ describe("RequestUtility.composeUrl -", function () {
 
 		dwaRequest = {
 			select: ["name", "subject"],
-			functionName: ""
+			functionName: "",
 		};
 
 		result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -707,7 +753,7 @@ describe("RequestUtility.composeUrl -", function () {
 	it("select navigation property", function () {
 		var dwaRequest = {
 			select: ["/nav"],
-			functionName: "retrieve"
+			functionName: "retrieve",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -715,7 +761,7 @@ describe("RequestUtility.composeUrl -", function () {
 
 		dwaRequest = {
 			select: ["/nav", "subject"],
-			functionName: "retrieve"
+			functionName: "retrieve",
 		};
 
 		result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -723,7 +769,7 @@ describe("RequestUtility.composeUrl -", function () {
 
 		dwaRequest = {
 			select: ["/nav", "subject", "fullname"],
-			functionName: "retrieve"
+			functionName: "retrieve",
 		};
 
 		result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -733,7 +779,7 @@ describe("RequestUtility.composeUrl -", function () {
 	it("select reference", function () {
 		var dwaRequest = {
 			select: ["nav/$ref"],
-			functionName: "retrieve"
+			functionName: "retrieve",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -743,7 +789,7 @@ describe("RequestUtility.composeUrl -", function () {
 	it("top empty or <=0", function () {
 		var dwaRequest = {
 			top: 0,
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -751,7 +797,7 @@ describe("RequestUtility.composeUrl -", function () {
 
 		dwaRequest = {
 			top: -1,
-			functionName: ""
+			functionName: "",
 		};
 
 		result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -759,7 +805,7 @@ describe("RequestUtility.composeUrl -", function () {
 
 		dwaRequest = {
 			top: null,
-			functionName: ""
+			functionName: "",
 		};
 
 		result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -769,7 +815,7 @@ describe("RequestUtility.composeUrl -", function () {
 	it("top", function () {
 		var dwaRequest = {
 			top: 3,
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -779,7 +825,7 @@ describe("RequestUtility.composeUrl -", function () {
 	it("savedQuery empty", function () {
 		var dwaRequest = {
 			savedQuery: "",
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -787,7 +833,7 @@ describe("RequestUtility.composeUrl -", function () {
 
 		dwaRequest = {
 			savedQuery: null,
-			functionName: ""
+			functionName: "",
 		};
 
 		result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -797,7 +843,7 @@ describe("RequestUtility.composeUrl -", function () {
 	it("savedQuery", function () {
 		var dwaRequest = {
 			savedQuery: mocks.data.testEntityId,
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -807,7 +853,7 @@ describe("RequestUtility.composeUrl -", function () {
 	it("userQuery empty", function () {
 		var dwaRequest = {
 			userQuery: "",
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -815,7 +861,7 @@ describe("RequestUtility.composeUrl -", function () {
 
 		dwaRequest = {
 			userQuery: null,
-			functionName: ""
+			functionName: "",
 		};
 
 		result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -825,7 +871,7 @@ describe("RequestUtility.composeUrl -", function () {
 	it("userQuery", function () {
 		var dwaRequest = {
 			userQuery: mocks.data.testEntityId,
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
@@ -837,24 +883,29 @@ describe("RequestUtility.composeUrl -", function () {
 			select: ["name", "subject"],
 			orderBy: ["order"],
 			top: 5,
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
 		expect(result).to.deep.equal(stubUrl + "?$select=name,subject&$top=5&$orderby=order");
 
-		dwaRequest.expand = [{
-			property: "property",
-			select: ["name"],
-			orderBy: ["order"]
-		}, {
-			property: "property2",
-			select: ["name3"]
-		}];
+		dwaRequest.expand = [
+			{
+				property: "property",
+				select: ["name"],
+				orderBy: ["order"],
+			},
+			{
+				property: "property2",
+				select: ["name3"],
+			},
+		];
 
 		result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
 
-		expect(result).to.deep.equal(stubUrl + "?$select=name,subject&$top=5&$orderby=order&$expand=property($select=name;$orderby=order),property2($select=name3)");
+		expect(result).to.deep.equal(
+			stubUrl + "?$select=name,subject&$top=5&$orderby=order&$expand=property($select=name;$orderby=order),property2($select=name3)"
+		);
 
 		//todo: move to compose
 		dwaRequest.collection = "tests";
@@ -868,7 +919,6 @@ describe("RequestUtility.composeUrl -", function () {
 		expectedObject.headers = { Prefer: DWA.Prefer.ReturnRepresentation };
 		expectedObject.async = true;
 
-		
 		expect(result).to.deep.equal(expectedObject);
 
 		dwaRequest.top = 0;
@@ -917,17 +967,17 @@ describe("RequestUtility.composeHeaders -", function () {
 	it("mergeLabels=true", function () {
 		var dwaRequest = {
 			mergeLabels: true,
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest);
-		expect(result).to.deep.equal({ 'MSCRM.MergeLabels': 'true' });
+		expect(result).to.deep.equal({ "MSCRM.MergeLabels": "true" });
 	});
 
 	it("mergeLabels=false", function () {
 		var dwaRequest = {
 			mergeLabels: false,
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest);
@@ -937,7 +987,7 @@ describe("RequestUtility.composeHeaders -", function () {
 	it("ifmatch", function () {
 		var dwaRequest = {
 			ifmatch: "*",
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest);
@@ -947,7 +997,7 @@ describe("RequestUtility.composeHeaders -", function () {
 	it("ifnonematch empty", function () {
 		var dwaRequest = {
 			ifnonematch: "",
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest);
@@ -955,7 +1005,7 @@ describe("RequestUtility.composeHeaders -", function () {
 
 		dwaRequest = {
 			ifnonematch: null,
-			functionName: ""
+			functionName: "",
 		};
 
 		result = RequestUtility.composeHeaders(dwaRequest);
@@ -965,7 +1015,7 @@ describe("RequestUtility.composeHeaders -", function () {
 	it("ifnonematch", function () {
 		var dwaRequest = {
 			ifnonematch: "*",
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest);
@@ -976,7 +1026,7 @@ describe("RequestUtility.composeHeaders -", function () {
 		var dwaRequest = {
 			ifmatch: "*",
 			ifnonematch: "*",
-			functionName: "fun"
+			functionName: "fun",
 		};
 
 		expect(function () {
@@ -987,7 +1037,7 @@ describe("RequestUtility.composeHeaders -", function () {
 	it("impersonate empty", function () {
 		var dwaRequest = {
 			impersonate: "",
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest);
@@ -995,7 +1045,7 @@ describe("RequestUtility.composeHeaders -", function () {
 
 		dwaRequest = {
 			impersonate: null,
-			functionName: ""
+			functionName: "",
 		};
 
 		result = RequestUtility.composeHeaders(dwaRequest);
@@ -1005,23 +1055,23 @@ describe("RequestUtility.composeHeaders -", function () {
 	it("impersonate", function () {
 		var dwaRequest = {
 			impersonate: mocks.data.testEntityId,
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest);
-		expect(result).to.deep.equal({ "MSCRMCallerID": mocks.data.testEntityId });
+		expect(result).to.deep.equal({ MSCRMCallerID: mocks.data.testEntityId });
 	});
 
 	it("impersonateAAD empty", function () {
 		var dwaRequest = {
-			impersonateAAD: ""
+			impersonateAAD: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest);
 		expect(result).to.deep.equal({});
 
 		dwaRequest = {
-			impersonateAAD: null
+			impersonateAAD: null,
 		};
 
 		result = RequestUtility.composeHeaders(dwaRequest);
@@ -1030,17 +1080,17 @@ describe("RequestUtility.composeHeaders -", function () {
 
 	it("impersonateAAD", function () {
 		var dwaRequest = {
-			impersonateAAD: mocks.data.testEntityId
+			impersonateAAD: mocks.data.testEntityId,
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest);
-		expect(result).to.deep.equal({ "CallerObjectId": mocks.data.testEntityId });
+		expect(result).to.deep.equal({ CallerObjectId: mocks.data.testEntityId });
 	});
 
 	it("includeAnnotations empty", function () {
 		var dwaRequest = {
 			includeAnnotations: "",
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest);
@@ -1048,7 +1098,7 @@ describe("RequestUtility.composeHeaders -", function () {
 
 		dwaRequest = {
 			includeAnnotations: null,
-			functionName: ""
+			functionName: "",
 		};
 
 		result = RequestUtility.composeHeaders(dwaRequest);
@@ -1058,7 +1108,7 @@ describe("RequestUtility.composeHeaders -", function () {
 	it("includeAnnotations", function () {
 		var dwaRequest = {
 			includeAnnotations: DWA.Prefer.Annotations.AssociatedNavigationProperty,
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest);
@@ -1068,7 +1118,7 @@ describe("RequestUtility.composeHeaders -", function () {
 	it("maxPageSize empty or <=0", function () {
 		var dwaRequest = {
 			maxPageSize: 0,
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest);
@@ -1076,7 +1126,7 @@ describe("RequestUtility.composeHeaders -", function () {
 
 		dwaRequest = {
 			maxPageSize: null,
-			functionName: ""
+			functionName: "",
 		};
 
 		result = RequestUtility.composeHeaders(dwaRequest);
@@ -1084,7 +1134,7 @@ describe("RequestUtility.composeHeaders -", function () {
 
 		dwaRequest = {
 			maxPageSize: -2,
-			functionName: ""
+			functionName: "",
 		};
 
 		result = RequestUtility.composeHeaders(dwaRequest);
@@ -1094,17 +1144,17 @@ describe("RequestUtility.composeHeaders -", function () {
 	it("maxPageSize", function () {
 		var dwaRequest = {
 			maxPageSize: 10,
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest);
-		expect(result).to.deep.equal({ Prefer: 'odata.maxpagesize=10' });
+		expect(result).to.deep.equal({ Prefer: "odata.maxpagesize=10" });
 	});
 
 	it("returnRepresentation empty", function () {
 		var dwaRequest = {
 			returnRepresentation: false,
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest);
@@ -1114,7 +1164,7 @@ describe("RequestUtility.composeHeaders -", function () {
 	it("returnRepresentation null", function () {
 		var dwaRequest = {
 			returnRepresentation: null,
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest);
@@ -1124,7 +1174,7 @@ describe("RequestUtility.composeHeaders -", function () {
 	it("returnRepresentation", function () {
 		var dwaRequest = {
 			returnRepresentation: true,
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest);
@@ -1134,7 +1184,7 @@ describe("RequestUtility.composeHeaders -", function () {
 	it("duplicateDetection empty", function () {
 		var dwaRequest = {
 			duplicateDetection: false,
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest);
@@ -1144,7 +1194,7 @@ describe("RequestUtility.composeHeaders -", function () {
 	it("duplicateDetection null", function () {
 		var dwaRequest = {
 			duplicateDetection: null,
-			functionName: ""
+			functionName: "",
 		};
 
 		result = result = RequestUtility.composeHeaders(dwaRequest);
@@ -1154,30 +1204,32 @@ describe("RequestUtility.composeHeaders -", function () {
 	it("duplicateDetection", function () {
 		var dwaRequest = {
 			duplicateDetection: true,
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest);
-		expect(result).to.deep.equal({ 'MSCRM.SuppressDuplicateDetection': 'false' });
+		expect(result).to.deep.equal({ "MSCRM.SuppressDuplicateDetection": "false" });
 	});
 
 	it("includeAnnotations & returnRepresentation", function () {
 		var dwaRequest = {
 			returnRepresentation: true,
 			includeAnnotations: DWA.Prefer.Annotations.AssociatedNavigationProperty,
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest);
-		expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="' + DWA.Prefer.Annotations.AssociatedNavigationProperty + '"' });
+		expect(result).to.deep.equal({
+			Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="' + DWA.Prefer.Annotations.AssociatedNavigationProperty + '"',
+		});
 	});
 
 	it("includeAnnotations & returnRepresentation & maxPageSize", function () {
 		var dwaRequest = {
 			returnRepresentation: true,
-			includeAnnotations: '*',
+			includeAnnotations: "*",
 			maxPageSize: 20,
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest);
@@ -1186,9 +1238,9 @@ describe("RequestUtility.composeHeaders -", function () {
 
 	it("includeAnnotations & maxPageSize", function () {
 		var dwaRequest = {
-			includeAnnotations: '*',
+			includeAnnotations: "*",
 			maxPageSize: 20,
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest);
@@ -1199,17 +1251,17 @@ describe("RequestUtility.composeHeaders -", function () {
 		var dwaRequest = {
 			returnRepresentation: true,
 			maxPageSize: 20,
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest);
-		expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation + ',odata.maxpagesize=20' });
+		expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation + ",odata.maxpagesize=20" });
 	});
 
 	it("prefer - return=representation", function () {
 		var dwaRequest = {
 			prefer: "return=representation",
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest);
@@ -1218,8 +1270,8 @@ describe("RequestUtility.composeHeaders -", function () {
 
 	it("prefer - odata.include-annotations", function () {
 		var dwaRequest = {
-			prefer: 'odata.include-annotations=*',
-			functionName: ""
+			prefer: "odata.include-annotations=*",
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest);
@@ -1228,28 +1280,30 @@ describe("RequestUtility.composeHeaders -", function () {
 
 	it("prefer - maxPageSize", function () {
 		var dwaRequest = {
-			prefer: 'odata.maxpagesize=20',
-			functionName: ""
+			prefer: "odata.maxpagesize=20",
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest);
-		expect(result).to.deep.equal({ Prefer: 'odata.maxpagesize=20' });
+		expect(result).to.deep.equal({ Prefer: "odata.maxpagesize=20" });
 	});
 
 	it("prefer - includeAnnotations & returnRepresentation", function () {
 		var dwaRequest = {
 			prefer: 'return=representation,odata.include-annotations="' + DWA.Prefer.Annotations.AssociatedNavigationProperty + '"',
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest);
-		expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="' + DWA.Prefer.Annotations.AssociatedNavigationProperty + '"' });
+		expect(result).to.deep.equal({
+			Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="' + DWA.Prefer.Annotations.AssociatedNavigationProperty + '"',
+		});
 	});
 
 	it("prefer - includeAnnotations & returnRepresentation & maxPageSize", function () {
 		var dwaRequest = {
 			prefer: 'return=representation,odata.include-annotations="*",odata.maxpagesize=20',
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest);
@@ -1258,8 +1312,8 @@ describe("RequestUtility.composeHeaders -", function () {
 
 	it("prefer - includeAnnotations & maxPageSize", function () {
 		var dwaRequest = {
-			prefer: 'odata.include-annotations=*,odata.maxpagesize=20',
-			functionName: ""
+			prefer: "odata.include-annotations=*,odata.maxpagesize=20",
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest);
@@ -1268,8 +1322,8 @@ describe("RequestUtility.composeHeaders -", function () {
 
 	it("prefer - SPACE - includeAnnotations & maxPageSize", function () {
 		var dwaRequest = {
-			prefer: 'odata.include-annotations=*, odata.maxpagesize=20',
-			functionName: ""
+			prefer: "odata.include-annotations=*, odata.maxpagesize=20",
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest);
@@ -1278,28 +1332,28 @@ describe("RequestUtility.composeHeaders -", function () {
 
 	it("prefer - returnRepresentation & maxPageSize", function () {
 		var dwaRequest = {
-			prefer: 'return=representation,odata.maxpagesize=20',
-			functionName: ""
+			prefer: "return=representation,odata.maxpagesize=20",
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest);
-		expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation + ',odata.maxpagesize=20' });
+		expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation + ",odata.maxpagesize=20" });
 	});
 
 	it("prefer - trackChanges & maxPageSize", function () {
 		var dwaRequest = {
-			prefer: 'odata.track-changes,odata.maxpagesize=20',
-			functionName: ""
+			prefer: "odata.track-changes,odata.maxpagesize=20",
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest);
-		expect(result).to.deep.equal({ Prefer: 'odata.maxpagesize=20,odata.track-changes' });
+		expect(result).to.deep.equal({ Prefer: "odata.maxpagesize=20,odata.track-changes" });
 	});
 
 	it("prefer - trackChanges & includeAnnotations", function () {
 		var dwaRequest = {
 			prefer: 'odata.track-changes,odata.include-annotations="' + DWA.Prefer.Annotations.AssociatedNavigationProperty + '"',
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest);
@@ -1309,7 +1363,7 @@ describe("RequestUtility.composeHeaders -", function () {
 	it("prefer - includeAnnotations & returnRepresentation & maxPageSize & trackChanges", function () {
 		var dwaRequest = {
 			prefer: 'return=representation,odata.include-annotations="*",odata.track-changes,odata.maxpagesize=20',
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest);
@@ -1318,12 +1372,12 @@ describe("RequestUtility.composeHeaders -", function () {
 
 	it("returnRepresentation: false & config.returnRepresentation: true", function () {
 		var config = {
-			returnRepresentation: true
+			returnRepresentation: true,
 		};
 
 		var dwaRequest = {
 			returnRepresentation: false,
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest, config);
@@ -1332,12 +1386,12 @@ describe("RequestUtility.composeHeaders -", function () {
 
 	it("returnRepresentation: false & config.returnRepresentation: true", function () {
 		var config = {
-			returnRepresentation: false
+			returnRepresentation: false,
 		};
 
 		var dwaRequest = {
 			returnRepresentation: true,
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest, config);
@@ -1346,11 +1400,11 @@ describe("RequestUtility.composeHeaders -", function () {
 
 	it("config.returnRepresentation: true", function () {
 		var config = {
-			returnRepresentation: true
+			returnRepresentation: true,
 		};
 
 		var dwaRequest = {
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest, config);
@@ -1359,11 +1413,11 @@ describe("RequestUtility.composeHeaders -", function () {
 
 	it("config.returnRepresentation: false", function () {
 		var config = {
-			returnRepresentation: false
+			returnRepresentation: false,
 		};
 
 		var dwaRequest = {
-			functionName: ""
+			functionName: "",
 		};
 
 		var result = RequestUtility.composeHeaders(dwaRequest, config);
@@ -1375,7 +1429,7 @@ describe("RequestUtility.compose -", function () {
 	//{ url: result.url, headers: result.headers }
 	it("collection", function () {
 		var dwaRequest = {
-			collection: "cols"
+			collection: "cols",
 		};
 
 		var result = RequestUtility.compose(dwaRequest);
@@ -1390,7 +1444,7 @@ describe("RequestUtility.compose -", function () {
 
 	it("collection - to lower case", function () {
 		var dwaRequest = {
-			collection: "Cols"
+			collection: "Cols",
 		};
 
 		var result = RequestUtility.compose(dwaRequest);
@@ -1405,7 +1459,7 @@ describe("RequestUtility.compose -", function () {
 
 	it("collection - to lower case exception", function () {
 		var dwaRequest = {
-			collection: "EntityDefinitions"
+			collection: "EntityDefinitions",
 		};
 
 		var result = RequestUtility.compose(dwaRequest);
@@ -1420,7 +1474,7 @@ describe("RequestUtility.compose -", function () {
 
 	it("collection empty - throw error", function () {
 		var dwaRequest = {
-			collection: ""
+			collection: "",
 		};
 
 		var test = function () {
@@ -1439,7 +1493,7 @@ describe("RequestUtility.compose -", function () {
 	it("collection, id empty", function () {
 		var dwaRequest = {
 			collection: "cols",
-			id: null
+			id: null,
 		};
 
 		var result = RequestUtility.compose(dwaRequest);
@@ -1459,14 +1513,14 @@ describe("RequestUtility.compose -", function () {
 		expected.path = "cols";
 		expected.headers = {};
 		expected.async = true;
-		
+
 		expect(result).to.deep.equal(expected);
 	});
 
 	it("collection, id - wrong format throw error", function () {
 		var dwaRequest = {
 			collection: "cols",
-			id: "sa"
+			id: "sa",
 		};
 
 		var test = function () {
@@ -1479,7 +1533,7 @@ describe("RequestUtility.compose -", function () {
 	it("collection, id", function () {
 		var dwaRequest = {
 			collection: "cols",
-			id: mocks.data.testEntityId
+			id: mocks.data.testEntityId,
 		};
 
 		var result = RequestUtility.compose(dwaRequest);
@@ -1495,7 +1549,7 @@ describe("RequestUtility.compose -", function () {
 	it("collection, id in brackets {} converted to id without brackets", function () {
 		var dwaRequest = {
 			collection: "cols",
-			id: '{' + mocks.data.testEntityId + '}'
+			id: "{" + mocks.data.testEntityId + "}",
 		};
 
 		var result = RequestUtility.compose(dwaRequest);
@@ -1513,7 +1567,7 @@ describe("RequestUtility.compose -", function () {
 			collection: "cols",
 			id: mocks.data.testEntityId,
 			select: ["name"],
-			returnRepresentation: true
+			returnRepresentation: true,
 		};
 
 		var result = RequestUtility.compose(dwaRequest);
@@ -1540,7 +1594,7 @@ describe("RequestUtility.compose -", function () {
 	it("async", function () {
 		var dwaRequest = {
 			collection: "cols",
-			async: false
+			async: false,
 		};
 
 		var result = RequestUtility.compose(dwaRequest);
@@ -1578,7 +1632,7 @@ describe("RequestUtility.compose -", function () {
 	it("async - throw error", function () {
 		var dwaRequest = {
 			collection: "some",
-			async: "something"
+			async: "something",
 		};
 
 		var test = function () {
@@ -1593,7 +1647,7 @@ describe("ErrorHelper.handleErrorResponse", function () {
 	it("returns a correct error object", function () {
 		var errorResponse = {
 			status: 500,
-			message: "Invalid"
+			message: "Invalid",
 		};
 
 		expect(function () {
@@ -1688,7 +1742,7 @@ describe("ErrorHelper.boolParameterCheck", function () {
 
 describe("ErrorHelper.callbackParameterCheck", function () {
 	it("does not return anything", function () {
-		var result = ErrorHelper.callbackParameterCheck(function () { }, "fun", "param");
+		var result = ErrorHelper.callbackParameterCheck(function () {}, "fun", "param");
 		expect(result).to.be.undefined;
 	});
 	it("when parameter is wrong it throws an error", function () {
@@ -1765,17 +1819,17 @@ describe("ErrorHelper.keyParameterCheck", function () {
 
 describe("dateReviver", function () {
 	it("returns date when a string matches exact 'YYYY-MM-DDTHH:MM:SSZ' teamplate", function () {
-		var result = dateReviver('any', '2016-12-22T23:22:12Z');
-		expect(result).to.deep.equal(new Date('2016-12-22T23:22:12Z'));
+		var result = dateReviver("any", "2016-12-22T23:22:12Z");
+		expect(result).to.deep.equal(new Date("2016-12-22T23:22:12Z"));
 	});
 
 	it("returns the same value when a string does not match exact 'YYYY-MM-DDTHH:MM:SSZ' teamplate", function () {
-		var result = dateReviver('any', 'other');
-		expect(result).to.equal('other');
+		var result = dateReviver("any", "other");
+		expect(result).to.equal("other");
 	});
 
 	it("returns the same value when its type is not String", function () {
-		var result = dateReviver('any', 54);
+		var result = dateReviver("any", 54);
 		expect(result).to.equal(54);
 	});
 });
@@ -1809,17 +1863,17 @@ describe("dateReviver", function () {
 //    });
 //});
 
-describe('RequestClient.makeRequest', function () {
-	describe('useEntityNames', function () {
+describe("RequestClient.makeRequest", function () {
+	describe("useEntityNames", function () {
 		var scope;
 		before(function () {
 			var response = mocks.responses.response200;
 			var response2 = mocks.responses.responseEntityDefinitions;
 			scope = nock(mocks.webApiUrl)
-				.get('/EntityDefinitions?$select=EntitySetName,LogicalName')
+				.get("/EntityDefinitions?$select=EntitySetName,LogicalName")
 				.once()
 				.reply(response2.status, response2.responseText, response2.responseHeaders)
-				.get('/tests(' + mocks.data.testEntityId + ')')
+				.get("/tests(" + mocks.data.testEntityId + ")")
 				.reply(response.status, response.responseText, response.responseHeaders);
 		});
 
@@ -1832,26 +1886,31 @@ describe('RequestClient.makeRequest', function () {
 			//{ webApiUrl: mocks.webApiUrl }
 			var request = {
 				method: "GET",
-				collection: 'test',
+				collection: "test",
 				key: mocks.data.testEntityId,
-				functionName: "any"
+				functionName: "any",
 			};
 			var config = {
 				webApiUrl: mocks.webApiUrl,
-				useEntityNames: true
+				useEntityNames: true,
 			};
-			RequestClient.makeRequest(request, config, function (object) {
-				var expectedO = {
-					status: 200,
-					headers: {},
-					data: mocks.data.testEntity
-				};
-				expect(object).to.deep.equal(expectedO);
-				done();
-			}, function (object) {
-				expect(object).to.be.undefined;
-				done();
-			});
+			RequestClient.makeRequest(
+				request,
+				config,
+				function (object) {
+					var expectedO = {
+						status: 200,
+						headers: {},
+						data: mocks.data.testEntity,
+					};
+					expect(object).to.deep.equal(expectedO);
+					done();
+				},
+				function (object) {
+					expect(object).to.be.undefined;
+					done();
+				}
+			);
 		});
 
 		it("all requests have been made", function () {
@@ -1859,16 +1918,16 @@ describe('RequestClient.makeRequest', function () {
 		});
 	});
 
-	describe('useEntityNames - entity metadata requested only once', function () {
+	describe("useEntityNames - entity metadata requested only once", function () {
 		var scope;
 		before(function () {
 			var response = mocks.responses.response200;
 			var response2 = mocks.responses.responseEntityDefinitions;
 			scope = nock(mocks.webApiUrl)
-				.get('/EntityDefinitions?$select=EntitySetName,LogicalName')
+				.get("/EntityDefinitions?$select=EntitySetName,LogicalName")
 				.once()
 				.reply(response2.status, response2.responseText, response2.responseHeaders)
-				.get('/tests(' + mocks.data.testEntityId + ')')
+				.get("/tests(" + mocks.data.testEntityId + ")")
 				.twice()
 				.reply(response.status, response.responseText, response.responseHeaders);
 		});
@@ -1881,13 +1940,13 @@ describe('RequestClient.makeRequest', function () {
 		it("returns a correct response", function (done) {
 			var request = {
 				method: "GET",
-				collection: 'test',
+				collection: "test",
 				key: mocks.data.testEntityId,
-				functionName: "any"
+				functionName: "any",
 			};
 			var config = {
 				webApiUrl: mocks.webApiUrl,
-				useEntityNames: true
+				useEntityNames: true,
 			};
 
 			var error = function (object) {
@@ -1895,31 +1954,41 @@ describe('RequestClient.makeRequest', function () {
 				done();
 			};
 
-			RequestClient.makeRequest(request, config, function (object) {
-				var expectedO = {
-					status: 200,
-					headers: {},
-					data: mocks.data.testEntity
-				};
-				expect(object).to.deep.equal(expectedO);
-
-				var request2 = {
-					method: "GET",
-					collection: 'test',
-					key: mocks.data.testEntityId,
-					functionName: "any"
-				};
-
-				RequestClient.makeRequest(request2, config, function (object1) {
-					var expectedO1 = {
+			RequestClient.makeRequest(
+				request,
+				config,
+				function (object) {
+					var expectedO = {
 						status: 200,
 						headers: {},
-						data: mocks.data.testEntity
+						data: mocks.data.testEntity,
 					};
-					expect(object1).to.deep.equal(expectedO1);
-					done();
-				}, error);
-			}, error);
+					expect(object).to.deep.equal(expectedO);
+
+					var request2 = {
+						method: "GET",
+						collection: "test",
+						key: mocks.data.testEntityId,
+						functionName: "any",
+					};
+
+					RequestClient.makeRequest(
+						request2,
+						config,
+						function (object1) {
+							var expectedO1 = {
+								status: 200,
+								headers: {},
+								data: mocks.data.testEntity,
+							};
+							expect(object1).to.deep.equal(expectedO1);
+							done();
+						},
+						error
+					);
+				},
+				error
+			);
 		});
 
 		it("all requests have been made", function () {
@@ -1927,16 +1996,16 @@ describe('RequestClient.makeRequest', function () {
 		});
 	});
 
-	describe('useEntityNames - request with collection name does not fail', function () {
+	describe("useEntityNames - request with collection name does not fail", function () {
 		var scope;
 		before(function () {
 			var response = mocks.responses.response200;
 			var response2 = mocks.responses.responseEntityDefinitions;
 			scope = nock(mocks.webApiUrl)
-				.get('/EntityDefinitions?$select=EntitySetName,LogicalName')
+				.get("/EntityDefinitions?$select=EntitySetName,LogicalName")
 				.once()
 				.reply(response2.status, response2.responseText, response2.responseHeaders)
-				.get('/tests(' + mocks.data.testEntityId + ')')
+				.get("/tests(" + mocks.data.testEntityId + ")")
 				.reply(response.status, response.responseText, response.responseHeaders);
 		});
 
@@ -1949,25 +2018,30 @@ describe('RequestClient.makeRequest', function () {
 			var request = {
 				method: "GET",
 				functionName: "any",
-				collection: 'tests',
-				key: mocks.data.testEntityId
+				collection: "tests",
+				key: mocks.data.testEntityId,
 			};
 			var config = {
 				webApiUrl: mocks.webApiUrl,
-				useEntityNames: true
+				useEntityNames: true,
 			};
-			RequestClient.makeRequest(request, config, function (object) {
-				var expectedO = {
-					status: 200,
-					headers: {},
-					data: mocks.data.testEntity
-				};
-				expect(object).to.deep.equal(expectedO);
-				done();
-			}, function (object) {
-				expect(object).to.be.undefined;
-				done();
-			});
+			RequestClient.makeRequest(
+				request,
+				config,
+				function (object) {
+					var expectedO = {
+						status: 200,
+						headers: {},
+						data: mocks.data.testEntity,
+					};
+					expect(object).to.deep.equal(expectedO);
+					done();
+				},
+				function (object) {
+					expect(object).to.be.undefined;
+					done();
+				}
+			);
 		});
 
 		it("all requests have been made", function () {
@@ -1975,16 +2049,16 @@ describe('RequestClient.makeRequest', function () {
 		});
 	});
 
-	describe('useEntityNames - $batch', function () {
+	describe("useEntityNames - $batch", function () {
 		var scope;
 		before(function () {
 			var response = mocks.responses.response200;
 			var response2 = mocks.responses.responseEntityDefinitions;
 			scope = nock(mocks.webApiUrl)
-				.get('/EntityDefinitions?$select=EntitySetName,LogicalName')
+				.get("/EntityDefinitions?$select=EntitySetName,LogicalName")
 				.once()
 				.reply(response2.status, response2.responseText, response2.responseHeaders)
-				.post('/$batch(' + mocks.data.testEntityId + ')')
+				.post("/$batch(" + mocks.data.testEntityId + ")")
 				.reply(response.status, response.responseText, response.responseHeaders);
 		});
 
@@ -1998,25 +2072,30 @@ describe('RequestClient.makeRequest', function () {
 			var request = {
 				method: "POST",
 				functionName: "any",
-				collection: '$batch',
-				key: mocks.data.testEntityId
+				collection: "$batch",
+				key: mocks.data.testEntityId,
 			};
 			var config = {
 				webApiUrl: mocks.webApiUrl,
-				useEntityNames: true
+				useEntityNames: true,
 			};
-			RequestClient.makeRequest(request, config, function (object) {
-				var expectedO = {
-					status: 200,
-					headers: {},
-					data: mocks.data.testEntity
-				};
-				expect(object).to.deep.equal(expectedO);
-				done();
-			}, function (object) {
-				expect(object).to.be.undefined;
-				done();
-			});
+			RequestClient.makeRequest(
+				request,
+				config,
+				function (object) {
+					var expectedO = {
+						status: 200,
+						headers: {},
+						data: mocks.data.testEntity,
+					};
+					expect(object).to.deep.equal(expectedO);
+					done();
+				},
+				function (object) {
+					expect(object).to.be.undefined;
+					done();
+				}
+			);
 		});
 
 		it("all requests have been made", function () {
@@ -2026,7 +2105,7 @@ describe('RequestClient.makeRequest', function () {
 
 	describe("timeout - socket (request timeout)", function () {
 		var scope;
-		var url = 'test';
+		var url = "test";
 		before(function () {
 			var response = mocks.responses.basicEmptyResponseSuccess;
 			scope = nock(mocks.webApiUrl)
@@ -2045,20 +2124,25 @@ describe('RequestClient.makeRequest', function () {
 				functionName: "any",
 				collection: url,
 				timeout: 500,
-				data: mocks.data.testEntityAdditionalAttributes
+				data: mocks.data.testEntityAdditionalAttributes,
 			};
 			var config = {
-				webApiUrl: mocks.webApiUrl
+				webApiUrl: mocks.webApiUrl,
 			};
 
-			RequestClient.makeRequest(request, config, function (object) {
-				expect(object).to.be.undefined;
-				done(object);
-			}, function (error) {
-				expect(error.message).to.be.eq("socket hang up");
-				expect(error.code).to.be.eq("ECONNRESET");
-				done();
-			});
+			RequestClient.makeRequest(
+				request,
+				config,
+				function (object) {
+					expect(object).to.be.undefined;
+					done(object);
+				},
+				function (error) {
+					expect(error.message).to.be.eq("socket hang up");
+					expect(error.code).to.be.eq("ECONNRESET");
+					done();
+				}
+			);
 		});
 
 		it("all requests have been made", function () {
@@ -2068,7 +2152,7 @@ describe('RequestClient.makeRequest', function () {
 
 	describe("timeout - socket (config)", function () {
 		var scope;
-		var url = 'test';
+		var url = "test";
 		before(function () {
 			var response = mocks.responses.basicEmptyResponseSuccess;
 			scope = nock(mocks.webApiUrl)
@@ -2086,21 +2170,26 @@ describe('RequestClient.makeRequest', function () {
 				method: "POST",
 				functionName: "any",
 				collection: url,
-				data: mocks.data.testEntityAdditionalAttributes
+				data: mocks.data.testEntityAdditionalAttributes,
 			};
 			var config = {
 				timeout: 500,
-				webApiUrl: mocks.webApiUrl
+				webApiUrl: mocks.webApiUrl,
 			};
 
-			RequestClient.makeRequest(request, config, function (object) {
-				expect(object).to.be.undefined;
-				done(object);
-			}, function (error) {
-				expect(error.message).to.be.eq("socket hang up");
-				expect(error.code).to.be.eq("ECONNRESET");
-				done();
-			});
+			RequestClient.makeRequest(
+				request,
+				config,
+				function (object) {
+					expect(object).to.be.undefined;
+					done(object);
+				},
+				function (error) {
+					expect(error.message).to.be.eq("socket hang up");
+					expect(error.code).to.be.eq("ECONNRESET");
+					done();
+				}
+			);
 		});
 
 		it("all requests have been made", function () {
@@ -2110,7 +2199,7 @@ describe('RequestClient.makeRequest', function () {
 
 	describe("timeout - connection delay (request timeout)", function () {
 		var scope;
-		var url = 'test';
+		var url = "test";
 		before(function () {
 			var response = mocks.responses.basicEmptyResponseSuccess;
 			scope = nock(mocks.webApiUrl)
@@ -2129,20 +2218,25 @@ describe('RequestClient.makeRequest', function () {
 				functionName: "any",
 				collection: url,
 				timeout: 500,
-				data: mocks.data.testEntityAdditionalAttributes
+				data: mocks.data.testEntityAdditionalAttributes,
 			};
 			var config = {
-				webApiUrl: mocks.webApiUrl
+				webApiUrl: mocks.webApiUrl,
 			};
 
-			RequestClient.makeRequest(request, config, function (object) {
-				expect(object).to.be.undefined;
-				done(object);
-			}, function (error) {
-				expect(error.message).to.be.eq("socket hang up");
-				expect(error.code).to.be.eq("ECONNRESET");
-				done();
-			});
+			RequestClient.makeRequest(
+				request,
+				config,
+				function (object) {
+					expect(object).to.be.undefined;
+					done(object);
+				},
+				function (error) {
+					expect(error.message).to.be.eq("socket hang up");
+					expect(error.code).to.be.eq("ECONNRESET");
+					done();
+				}
+			);
 		});
 
 		it("all requests have been made", function () {
@@ -2152,7 +2246,7 @@ describe('RequestClient.makeRequest', function () {
 
 	describe("timeout - connection delay (config)", function () {
 		var scope;
-		var url = 'test';
+		var url = "test";
 		before(function () {
 			var response = mocks.responses.basicEmptyResponseSuccess;
 			scope = nock(mocks.webApiUrl)
@@ -2170,21 +2264,26 @@ describe('RequestClient.makeRequest', function () {
 				method: "POST",
 				functionName: "any",
 				collection: url,
-				data: mocks.data.testEntityAdditionalAttributes
+				data: mocks.data.testEntityAdditionalAttributes,
 			};
 			var config = {
 				timeout: 500,
-				webApiUrl: mocks.webApiUrl
+				webApiUrl: mocks.webApiUrl,
 			};
 
-			RequestClient.makeRequest(request, config, function (object) {
-				expect(object).to.be.undefined;
-				done(object);
-			}, function (error) {
-				expect(error.message).to.be.eq("socket hang up");
-				expect(error.code).to.be.eq("ECONNRESET");
-				done();
-			});
+			RequestClient.makeRequest(
+				request,
+				config,
+				function (object) {
+					expect(object).to.be.undefined;
+					done(object);
+				},
+				function (error) {
+					expect(error.message).to.be.eq("socket hang up");
+					expect(error.code).to.be.eq("ECONNRESET");
+					done();
+				}
+			);
 		});
 
 		it("all requests have been made", function () {
@@ -2194,13 +2293,13 @@ describe('RequestClient.makeRequest', function () {
 
 	describe("when url is long, request is converted to batch", function () {
 		var scope;
-		var url = 'test';
+		var url = "test";
 		while (url.length < 2001) {
-			url += 'test';
+			url += "test";
 		}
-		var rBody = mocks.data.batch.replace('{0}', mocks.webApiUrl + url);
-		var rBodys = rBody.split('\n');
-		var checkBody = '';
+		var rBody = mocks.data.batch.replace("{0}", mocks.webApiUrl + url);
+		var rBodys = rBody.split("\n");
+		var checkBody = "";
 		for (var i = 0; i < rBodys.length; i++) {
 			checkBody += rBodys[i];
 		}
@@ -2209,10 +2308,10 @@ describe('RequestClient.makeRequest', function () {
 			var response = mocks.responses.batch;
 			scope = nock(mocks.webApiUrl)
 				.filteringRequestBody(function (body) {
-					body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, 'dwa_batch_XXX');
-					var bodys = body.split('\n');
+					body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
+					var bodys = body.split("\n");
 
-					var resultBody = '';
+					var resultBody = "";
 					for (var i = 0; i < bodys.length; i++) {
 						resultBody += bodys[i];
 					}
@@ -2230,22 +2329,27 @@ describe('RequestClient.makeRequest', function () {
 			var request = {
 				method: "GET",
 				functionName: "test",
-				collection: url
+				collection: url,
 			};
-			RequestClient.makeRequest(request, { webApiUrl: mocks.webApiUrl }, function (object) {
-				var multiple = mocks.responses.multiple();
-				//delete multiple.oDataContext;
-				var expectedO = {
-					status: 200,
-					headers: {},
-					data: multiple
-				};
-				expect(object).to.deep.equal(expectedO);
-				done();
-			}, function (object) {
-				expect(object).to.be.undefined;
-				done();
-			});
+			RequestClient.makeRequest(
+				request,
+				{ webApiUrl: mocks.webApiUrl },
+				function (object) {
+					var multiple = mocks.responses.multiple();
+					//delete multiple.oDataContext;
+					var expectedO = {
+						status: 200,
+						headers: {},
+						data: multiple,
+					};
+					expect(object).to.deep.equal(expectedO);
+					done();
+				},
+				function (object) {
+					expect(object).to.be.undefined;
+					done();
+				}
+			);
 		});
 
 		it("all requests have been made", function () {
@@ -2257,7 +2361,7 @@ describe('RequestClient.makeRequest', function () {
 describe("RequestClient.sendRequest", function () {
 	describe("removes additional properties set by DynamicsWebApi", function () {
 		var scope;
-		var url = 'test';
+		var url = "test";
 		before(function () {
 			var response = mocks.responses.basicEmptyResponseSuccess;
 			scope = nock(mocks.webApiUrl)
@@ -2270,18 +2374,23 @@ describe("RequestClient.sendRequest", function () {
 		});
 
 		it("returns a correct response", function (done) {
-			RequestClient.sendRequest({ method: 'PATCH', path: url, data: mocks.data.testEntityAdditionalAttributesWithExpand, async: true }, { webApiUrl: mocks.webApiUrl }, function (object) {
-				var expectedO = {
-					status: mocks.responses.basicEmptyResponseSuccess.status,
-					headers: {},
-					data: undefined
-				};
-				expect(object).to.deep.equal(expectedO);
-				done();
-			}, function (object) {
-				expect(object).to.be.undefined;
-				done();
-			});
+			RequestClient.sendRequest(
+				{ method: "PATCH", path: url, data: mocks.data.testEntityAdditionalAttributesWithExpand, async: true },
+				{ webApiUrl: mocks.webApiUrl },
+				function (object) {
+					var expectedO = {
+						status: mocks.responses.basicEmptyResponseSuccess.status,
+						headers: {},
+						data: undefined,
+					};
+					expect(object).to.deep.equal(expectedO);
+					done();
+				},
+				function (object) {
+					expect(object).to.be.undefined;
+					done();
+				}
+			);
 		});
 
 		it("all requests have been made", function () {
@@ -2291,11 +2400,9 @@ describe("RequestClient.sendRequest", function () {
 
 	describe("request error", function () {
 		var scope;
-		var url = 'test';
+		var url = "test";
 		before(function () {
-			scope = nock(mocks.webApiUrl)
-				.post("/test", mocks.data.testEntity)
-				.replyWithError({ code: 'Error' });
+			scope = nock(mocks.webApiUrl).post("/test", mocks.data.testEntity).replyWithError({ code: "Error" });
 		});
 
 		after(function () {
@@ -2303,13 +2410,18 @@ describe("RequestClient.sendRequest", function () {
 		});
 
 		it("returns a correct response", function (done) {
-			RequestClient.sendRequest({ method: 'POST', path: url, data: mocks.data.testEntityAdditionalAttributes, async: true }, { webApiUrl: mocks.webApiUrl }, function (object) {
-				expect(object).to.be.undefined;
-				done(object);
-			}, function (object) {
-				expect(object).to.be.deep.equal({ code: "Error" });
-				done();
-			});
+			RequestClient.sendRequest(
+				{ method: "POST", path: url, data: mocks.data.testEntityAdditionalAttributes, async: true },
+				{ webApiUrl: mocks.webApiUrl },
+				function (object) {
+					expect(object).to.be.undefined;
+					done(object);
+				},
+				function (object) {
+					expect(object).to.be.deep.equal({ code: "Error" });
+					done();
+				}
+			);
 		});
 
 		it("all requests have been made", function () {
@@ -2319,7 +2431,7 @@ describe("RequestClient.sendRequest", function () {
 
 	describe("timeout - socket", function () {
 		var scope;
-		var url = 'test';
+		var url = "test";
 		before(function () {
 			var response = mocks.responses.basicEmptyResponseSuccess;
 			scope = nock(mocks.webApiUrl)
@@ -2333,14 +2445,19 @@ describe("RequestClient.sendRequest", function () {
 		});
 
 		it("returns a correct response", function (done) {
-			RequestClient.sendRequest({ method: 'POST', path: url, data: mocks.data.testEntityAdditionalAttributes, async: true, timeout: 500 }, { webApiUrl: mocks.webApiUrl }, function (object) {
-				expect(object).to.be.undefined;
-				done(object);
-			}, function (error) {
-				expect(error.message).to.be.eq("socket hang up");
-				expect(error.code).to.be.eq("ECONNRESET");
-				done();
-			});
+			RequestClient.sendRequest(
+				{ method: "POST", path: url, data: mocks.data.testEntityAdditionalAttributes, async: true, timeout: 500 },
+				{ webApiUrl: mocks.webApiUrl },
+				function (object) {
+					expect(object).to.be.undefined;
+					done(object);
+				},
+				function (error) {
+					expect(error.message).to.be.eq("socket hang up");
+					expect(error.code).to.be.eq("ECONNRESET");
+					done();
+				}
+			);
 		});
 
 		it("all requests have been made", function () {
@@ -2350,7 +2467,7 @@ describe("RequestClient.sendRequest", function () {
 
 	describe("timeout - connection delay", function () {
 		var scope;
-		var url = 'test';
+		var url = "test";
 		before(function () {
 			var response = mocks.responses.basicEmptyResponseSuccess;
 			scope = nock(mocks.webApiUrl)
@@ -2364,19 +2481,43 @@ describe("RequestClient.sendRequest", function () {
 		});
 
 		it("returns a correct response", function (done) {
-			RequestClient.sendRequest({ method: 'POST', path: url, data: mocks.data.testEntityAdditionalAttributes, async: true, timeout: 500 }, { webApiUrl: mocks.webApiUrl }, function (object) {
-				expect(object).to.be.undefined;
-				done(object);
-			}, function (error) {
-				expect(error.message).to.be.eq("socket hang up");
-				expect(error.code).to.be.eq("ECONNRESET");
-				done();
-			});
+			RequestClient.sendRequest(
+				{ method: "POST", path: url, data: mocks.data.testEntityAdditionalAttributes, async: true, timeout: 500 },
+				{ webApiUrl: mocks.webApiUrl },
+				function (object) {
+					expect(object).to.be.undefined;
+					done(object);
+				},
+				function (error) {
+					expect(error.message).to.be.eq("socket hang up");
+					expect(error.code).to.be.eq("ECONNRESET");
+					done();
+				}
+			);
 		});
 
 		it("all requests have been made", function () {
 			expect(scope.isDone()).to.be.true;
 		});
+	});
+});
+
+describe("empty batch payload", function () {
+	it("throws an error", function (done) {
+		RequestClient.sendRequest(
+			{ method: "POST", path: "$batch", async: true, timeout: 500 },
+			{ webApiUrl: mocks.webApiUrl },
+			function (object) {
+				done(object);
+			},
+			function (object) {
+				expect(object.length).to.be.eq(1);
+				expect(object[0].message).to.equal(
+					"Payload of the batch operation is empty. Please make that you have other operations in between startBatch() and executeBatch() to successfuly build a batch payload."
+				);
+				done();
+			}
+		);
 	});
 });
 

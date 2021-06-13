@@ -11,13 +11,11 @@
 		"outDir": "lib",
 		"lib": ["ES6", "DOM"],
 		"declaration": true,
-		"declarationMap": true
+		"declarationMap": true,
+		"skipLibCheck": true
 		//"strict": true
 	},
-  "compileOnSave": true,
-  "include": ["./ts/**/*"],
-  "exclude": [
-    "node_modules",
-    "typesold"
-  ]
+	"compileOnSave": true,
+	"include": ["./ts/**/*"],
+	"exclude": ["node_modules", "typesold"]
 }

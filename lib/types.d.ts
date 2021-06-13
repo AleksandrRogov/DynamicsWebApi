@@ -13,6 +13,7 @@ export declare namespace Core {
         timeout: number;
         isAsync?: boolean;
         requestId?: string;
+        proxy?: DynamicsWebApi.ProxyConfig;
     }
     interface BatchRequestCollection {
         [key: string]: InternalRequest[];
