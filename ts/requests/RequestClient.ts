@@ -4,22 +4,17 @@ import { DynamicsWebApi } from "../../ts/dynamics-web-api";
 import { Core } from "../../ts/types";
 
 export class RequestClient {
-
 	private static _batchRequestCollection: Core.BatchRequestCollection = {};
 	private static _responseParseParams: { [key: string]: any[] } = {};
 
 	private static addResponseParams(requestId, responseParams) {
-		if (RequestClient._responseParseParams[requestId])
-			RequestClient._responseParseParams[requestId].push(responseParams);
-		else
-			RequestClient._responseParseParams[requestId] = [responseParams];
+		if (RequestClient._responseParseParams[requestId]) RequestClient._responseParseParams[requestId].push(responseParams);
+		else RequestClient._responseParseParams[requestId] = [responseParams];
 	}
 
 	private static addRequestToBatchCollection(requestId, request) {
-		if (RequestClient._batchRequestCollection[requestId])
-			RequestClient._batchRequestCollection[requestId].push(request);
-		else
-			RequestClient._batchRequestCollection[requestId] = [request];
+		if (RequestClient._batchRequestCollection[requestId]) RequestClient._batchRequestCollection[requestId].push(request);
+		else RequestClient._batchRequestCollection[requestId] = [request];
 	}
 
 	/**
@@ -37,7 +32,6 @@ export class RequestClient {
 	 * @param {boolean} [isAsync] - Indicates whether the request should be made synchronously or asynchronously.
 	 */
 	static sendRequest(request: Core.InternalRequest, config: DynamicsWebApi.Config, successCallback: Function, errorCallback: Function): void {
-
 		request.headers = request.headers || {};
 		request.responseParameters = request.responseParameters || {};
 		request.requestId = request.requestId || Utility.generateUUID();
@@ -59,20 +53,18 @@ export class RequestClient {
 
 			//clear an array of requests
 			delete RequestClient._batchRequestCollection[request.requestId];
-		}
-		else {
+		} else {
 			processedData = !isBatchConverted ? RequestUtility.processData(request.data, config) : request.data;
 
-			if (!isBatchConverted)
-				request.headers = RequestUtility.setStandardHeaders(request.headers);
+			if (!isBatchConverted) request.headers = RequestUtility.setStandardHeaders(request.headers);
 		}
 
 		if (config.impersonate && !request.headers["MSCRMCallerID"]) {
 			request.headers["MSCRMCallerID"] = config.impersonate;
 		}
 
-		if (config.impersonateAAD && !request.headers['CallerObjectId']) {
-			request.headers['CallerObjectId'] = config.impersonateAAD;
+		if (config.impersonateAAD && !request.headers["CallerObjectId"]) {
+			request.headers["CallerObjectId"] = config.impersonateAAD;
 		}
 
 		var executeRequest;
@@ -81,8 +73,7 @@ export class RequestClient {
 			/* develblock:end */
 			executeRequest = require("./xhr").XhrWrapper.xhrRequest;
 			/* develblock:start */
-		}
-		else if (typeof process !== "undefined") {
+		} else if (typeof process !== "undefined") {
 			executeRequest = require("./http");
 		}
 		/* develblock:end */
@@ -105,25 +96,30 @@ export class RequestClient {
 				errorCallback: errorCallback,
 				isAsync: request.async,
 				timeout: request.timeout || config.timeout,
-				requestId: request.requestId
+				/* develblock:start */
+				proxy: config.proxy,
+				/* develblock:end */
+				requestId: request.requestId,
 			});
 		};
 
 		//call a token refresh callback only if it is set and there is no "Authorization" header set yet
 		if (config.onTokenRefresh && (!request.headers || (request.headers && !request.headers["Authorization"]))) {
 			config.onTokenRefresh(sendInternalRequest);
-		}
-		else {
+		} else {
 			sendInternalRequest();
 		}
 	}
 
-	private static _getCollectionNames(entityName: string, config: DynamicsWebApi.Config, successCallback: (collection: string) => void, errorCallback: Function): void {
-
+	private static _getCollectionNames(
+		entityName: string,
+		config: DynamicsWebApi.Config,
+		successCallback: (collection: string) => void,
+		errorCallback: Function
+	): void {
 		if (!Utility.isNull(RequestUtility.entityNames)) {
 			successCallback(RequestUtility.findCollectionName(entityName) || entityName);
-		}
-		else {
+		} else {
 			var resolve = function (result) {
 				RequestUtility.entityNames = {};
 				for (var i = 0; i < result.data.value.length; i++) {
@@ -137,28 +133,33 @@ export class RequestClient {
 				errorCallback({ message: "Unable to fetch EntityDefinitions. Error: " + error.message });
 			};
 
-			let request = RequestUtility.compose({
-				method: "GET",
-				collection: "EntityDefinitions",
-				select: ["EntitySetName", "LogicalName"],
-				noCache: true,
-				functionName: "retrieveMultiple"
-			}, config);
+			let request = RequestUtility.compose(
+				{
+					method: "GET",
+					collection: "EntityDefinitions",
+					select: ["EntitySetName", "LogicalName"],
+					noCache: true,
+					functionName: "retrieveMultiple",
+				},
+				config
+			);
 
 			RequestClient.sendRequest(request, config, resolve, reject);
 		}
 	}
 
 	private static _isEntityNameException(entityName: string): boolean {
-		var exceptions = [
-			"EntityDefinitions", "$metadata", "RelationshipDefinitions",
-			"GlobalOptionSetDefinitions", "ManagedPropertyDefinitions"];
+		var exceptions = ["EntityDefinitions", "$metadata", "RelationshipDefinitions", "GlobalOptionSetDefinitions", "ManagedPropertyDefinitions"];
 
 		return exceptions.indexOf(entityName) > -1;
 	}
 
-	private static _checkCollectionName(entityName: string, config: DynamicsWebApi.Config, successCallback: (collection: string) => void, errorCallback: Function): void {
-
+	private static _checkCollectionName(
+		entityName: string,
+		config: DynamicsWebApi.Config,
+		successCallback: (collection: string) => void,
+		errorCallback: Function
+	): void {
 		if (RequestClient._isEntityNameException(entityName) || Utility.isNull(entityName)) {
 			successCallback(entityName);
 			return;
@@ -173,8 +174,7 @@ export class RequestClient {
 
 		try {
 			RequestClient._getCollectionNames(entityName, config, successCallback, errorCallback);
-		}
-		catch (error) {
+		} catch (error) {
 			errorCallback({ message: "Unable to fetch Collection Names. Error: " + error.message });
 		}
 	}
@@ -190,34 +190,42 @@ export class RequestClient {
 			RequestClient.addResponseParams(request.requestId, request.responseParameters);
 
 			RequestClient.addRequestToBatchCollection(request.requestId, request);
-		}
-		else {
-			RequestClient._checkCollectionName(request.collection, config, collectionName => {
-				request.collection = collectionName;
+		} else {
+			RequestClient._checkCollectionName(
+				request.collection,
+				config,
+				(collectionName) => {
+					request.collection = collectionName;
 
-				request = RequestUtility.compose(request, config);
+					request = RequestUtility.compose(request, config);
 
-				request.responseParameters.convertedToBatch = false;
+					request.responseParameters.convertedToBatch = false;
 
-				//if the URL contains more characters than max possible limit, convert the request to a batch request
-				if (request.path.length > 2000) {
-					let batchRequest = RequestUtility.convertToBatch([request], config);
+					//if the URL contains more characters than max possible limit, convert the request to a batch request
+					if (request.path.length > 2000) {
+						let batchRequest = RequestUtility.convertToBatch([request], config);
 
-					request.method = "POST";
-					request.path = "$batch";
-					request.data = batchRequest.body;
-					request.headers = batchRequest.headers;
-					request.responseParameters.convertedToBatch = true;
-				}
+						request.method = "POST";
+						request.path = "$batch";
+						request.data = batchRequest.body;
+						request.headers = batchRequest.headers;
+						request.responseParameters.convertedToBatch = true;
+					}
 
-				RequestClient.sendRequest(request, config, resolve, reject);
-			}, reject);
+					RequestClient.sendRequest(request, config, resolve, reject);
+				},
+				reject
+			);
 		}
 	}
 
 	/* develblock:start */
-	static _clearEntityNames(): void { RequestUtility.entityNames = null; }
+	static _clearEntityNames(): void {
+		RequestUtility.entityNames = null;
+	}
 	/* develblock:end */
 
-	static getCollectionName(entityName: string): string { return RequestUtility.findCollectionName(entityName); }
+	static getCollectionName(entityName: string): string {
+		return RequestUtility.findCollectionName(entityName);
+	}
 }

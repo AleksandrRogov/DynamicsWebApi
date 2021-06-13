@@ -32,14 +32,15 @@ export class XhrWrapper {
 					case 201: // Success with content returned in response body.
 					case 204: // Success with no content returned in response body.
 					case 206: // Success with partial content.
-					case 304: {// Success with Not Modified
+					case 304: {
+						// Success with Not Modified
 						let responseHeaders = parseResponseHeaders(request.getAllResponseHeaders());
 						let responseData = parseResponse(request.responseText, responseHeaders, responseParams[options.requestId]);
 
 						var response = {
 							data: responseData,
 							headers: responseHeaders,
-							status: request.status
+							status: request.status,
 						};
 
 						delete responseParams[options.requestId];
@@ -48,13 +49,19 @@ export class XhrWrapper {
 						successCallback(response);
 						break;
 					}
-					default: // All other statuses are error cases.
+					default:
+						// All other statuses are error cases.
 						var error;
 						try {
 							var headers = parseResponseHeaders(request.getAllResponseHeaders());
-							let errorParsed = parseResponse(request.responseText, parseResponseHeaders(request.getAllResponseHeaders()), responseParams[options.requestId]);
+							let errorParsed = parseResponse(
+								request.responseText,
+								parseResponseHeaders(request.getAllResponseHeaders()),
+								responseParams[options.requestId]
+							);
 
 							if (Array.isArray(errorParsed)) {
+								delete responseParams[options.requestId];
 								errorCallback(errorParsed);
 								break;
 							}
@@ -63,8 +70,7 @@ export class XhrWrapper {
 						} catch (e) {
 							if (request.response.length > 0) {
 								error = { message: request.response };
-							}
-							else {
+							} else {
 								error = { message: "Unexpected Error" };
 							}
 						}
@@ -72,8 +78,8 @@ export class XhrWrapper {
 						let errorParameters = {
 							status: request.status,
 							statusText: request.statusText,
-							headers: headers
-						}
+							headers: headers,
+						};
 
 						delete responseParams[options.requestId];
 						request = null;
@@ -91,34 +97,35 @@ export class XhrWrapper {
 
 		request.onerror = function () {
 			let headers = parseResponseHeaders(request.getAllResponseHeaders());
-			errorCallback(ErrorHelper.handleHttpError({
-				status: request.status,
-				statusText: request.statusText,
-				message: request.responseText || "Network Error",
-				headers: headers
-			}));
+			errorCallback(
+				ErrorHelper.handleHttpError({
+					status: request.status,
+					statusText: request.statusText,
+					message: request.responseText || "Network Error",
+					headers: headers,
+				})
+			);
 			delete responseParams[options.requestId];
 			request = null;
 		};
 
 		request.ontimeout = function () {
 			let headers = parseResponseHeaders(request.getAllResponseHeaders());
-			errorCallback(ErrorHelper.handleHttpError({
-				status: request.status,
-				statusText: request.statusText,
-				message: request.responseText || "Request Timed Out",
-				headers: headers
-			}));
+			errorCallback(
+				ErrorHelper.handleHttpError({
+					status: request.status,
+					statusText: request.statusText,
+					message: request.responseText || "Request Timed Out",
+					headers: headers,
+				})
+			);
 			delete responseParams[options.requestId];
 			request = null;
 		};
 
-		data
-			? request.send(data)
-			: request.send();
+		data ? request.send(data) : request.send();
 
 		//called for testing
-		if (XhrWrapper.afterSendEvent)
-			XhrWrapper.afterSendEvent();
+		if (XhrWrapper.afterSendEvent) XhrWrapper.afterSendEvent();
 	}
 }

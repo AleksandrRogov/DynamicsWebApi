@@ -39,8 +39,10 @@
 		"webpack-strip-block": "^0.3.0"
 	},
 	"dependencies": {
-		"@types/node": "^12.12.7",
-		"@types/xrm": "^9.0.17"
+		"@types/node": "^12.20.15",
+		"@types/xrm": "^9.0.17",
+		"http-proxy-agent": "^4.0.1",
+		"https-proxy-agent": "^5.0.0"
 	},
 	"license": "MIT",
 	"scripts": {

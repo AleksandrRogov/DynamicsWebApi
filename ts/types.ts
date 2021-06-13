@@ -2,38 +2,38 @@
 
 export declare namespace Core {
 	interface RequestOptions {
-		method: string,
-		uri: string,
-		data: string,
-		additionalHeaders: any,
+		method: string;
+		uri: string;
+		data: string;
+		additionalHeaders: any;
 		responseParams: {
-			[key: string]: any[]
-		},
-		successCallback: Function,
-		errorCallback: Function,
-		timeout: number,
-		isAsync?: boolean,
-		requestId?: string
+			[key: string]: any[];
+		};
+		successCallback: Function;
+		errorCallback: Function;
+		timeout: number;
+		isAsync?: boolean;
+		requestId?: string;
+		proxy?: DynamicsWebApi.ProxyOptions;
 	}
 
 	interface BatchRequestCollection {
-		[key: string]: InternalRequest[]
+		[key: string]: InternalRequest[];
 	}
 
 	interface ConvertedRequest {
-		path?: string,
-		headers?: any,
-		async?: boolean,
-		method?: string,
-		data?: any,
-		responseParams?: any,
-		isAsync?: boolean,
-
+		path?: string;
+		headers?: any;
+		async?: boolean;
+		method?: string;
+		data?: any;
+		responseParams?: any;
+		isAsync?: boolean;
 	}
 
 	interface InternalBatchRequest {
-		body?: any,
-		headers?: any
+		body?: any;
+		headers?: any;
 	}
 
 	interface InternalRequest {
@@ -125,29 +125,27 @@ export declare namespace Core {
 	}
 
 	interface FileParseResult {
-		value: any,
-		fileName?: string,
-		fileSize?: number,
-		location?: string
+		value: any;
+		fileName?: string;
+		fileSize?: number;
+		location?: string;
 	}
 
 	interface FetchXmlCookie {
-		cookie: string,
-		page: number,
-		nextPage: number
+		cookie: string;
+		page: number;
+		nextPage: number;
 	}
 
 	interface ReferenceObject {
-		id: string,
-		collection: string,
-		oDataContext: string
+		id: string;
+		collection: string;
+		oDataContext: string;
 	}
 
 	interface WebApiRequest {
-		requestUrl: string,
-		headers: any,
-		async?: boolean
+		requestUrl: string;
+		headers: any;
+		async?: boolean;
 	}
 }
-
-

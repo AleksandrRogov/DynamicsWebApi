@@ -13,3 +13,4 @@ obj
 /types/dynamics-web-api-callbacks.d.ts
 /tests
 /dist
+/.nyc_output
