@@ -1077,6 +1077,34 @@ describe("callbacks -", function () {
             });
         });
 
+        describe("with top", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.fetchXmlResponsePage1Cookie;
+                scope = nock(mocks.webApiUrl)
+                    .get(mocks.responses.collectionUrl + "?fetchXml=" + encodeURIComponent(mocks.data.fetchXmls.fetchXmlTop))
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("returns a correct response", function (done) {
+                dynamicsWebApiTest.executeFetchXml("tests", mocks.data.fetchXmls.fetchXmlTop, function (object) {
+                    expect(object).to.deep.equal(mocks.data.fetchXmls.fetchXmlResultPage1Cookie);
+                    done();
+                }, function (object) {
+                    expect(object).to.be.undefined;
+                    done();
+                });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+
         describe("with prefer", function () {
             var scope;
             before(function () {
