@@ -19,7 +19,9 @@
 	"main": "lib/dynamics-web-api.js",
 	"types": "lib/dynamics-web-api.d.ts",
 	"files": [
-		"lib/**/*",
+		"lib/**/*.js",
+		"lib/**/*.js.map",
+		"lib/**/*.d.ts",
 		"webpack.config.js"
 	],
 	"author": {
