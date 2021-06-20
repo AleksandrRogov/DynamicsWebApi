@@ -5,7 +5,7 @@
 		//"esModuleInterop": true,
 		"noEmitOnError": true,
 		"removeComments": false,
-		"sourceMap": false,
+		"sourceMap": true,
 		"target": "es6",
 		"allowJs": false,
 		"outDir": "lib",
@@ -15,7 +15,7 @@
 		"skipLibCheck": true
 		//"strict": true
 	},
-	"compileOnSave": true,
+	// "compileOnSave": true,
 	"include": ["./ts/**/*"],
 	"exclude": ["node_modules", "typesold"]
 }

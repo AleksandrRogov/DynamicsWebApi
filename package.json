@@ -18,6 +18,10 @@
 	],
 	"main": "lib/dynamics-web-api.js",
 	"types": "lib/dynamics-web-api.d.ts",
+	"files": [
+		"lib/**/*",
+		"webpack.config.js"
+	],
 	"author": {
 		"name": "Aleksandr Rogov"
 	},
@@ -34,6 +38,7 @@
 		"rimraf": "^2.7.1",
 		"sinon": "^9.2.4",
 		"terser-webpack-plugin": "^5.1.1",
+		"typescript": "^4.3.4",
 		"webpack": "^5.24.1",
 		"webpack-cli": "^4.5.0",
 		"webpack-strip-block": "^0.3.0"
@@ -46,7 +51,7 @@
 	},
 	"license": "MIT",
 	"scripts": {
-		"test": "mocha tests/*-tests.js",
+		"test": "tsc && mocha tests/*-tests.js",
 		"test-coverage": "rimraf coverage && nyc npm test && nyc report --reporter=lcov",
 		"build": "rimraf dist && rimraf coverage && webpack",
 		"release-patch": "npm version patch -m \"Release v%s\"",

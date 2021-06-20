@@ -246,13 +246,10 @@ ModelManifest.xml
 # Vim
 *.sw[a-p]
 
-/typings
-/gulpfile.js
-/typings.json
-/lib/test.js
-/scripts
-/coverage
-/tests/browser
+lib/
+coverage/
 .nyc_output/
+typesold/
 
 *.d.ts.map
+*.tgz
