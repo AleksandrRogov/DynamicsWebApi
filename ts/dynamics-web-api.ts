@@ -555,18 +555,21 @@ export class DynamicsWebApi {
 
 		ErrorHelper.stringParameterCheck(internalRequest.fetchXml, "DynamicsWebApi.fetch", "request.fetchXml");
 
-		internalRequest.pageNumber = internalRequest.pageNumber || 1;
+		//only add paging if there is no top
+		if (!/^<fetch.+top=/.test(internalRequest.fetchXml)) {
+			internalRequest.pageNumber = internalRequest.pageNumber || 1;
 
-		ErrorHelper.numberParameterCheck(internalRequest.pageNumber, "DynamicsWebApi.fetch", "request.pageNumber");
-		let replacementString = `$1 page="${internalRequest.pageNumber}"`;
+			ErrorHelper.numberParameterCheck(internalRequest.pageNumber, "DynamicsWebApi.fetch", "request.pageNumber");
+			let replacementString = `$1 page="${internalRequest.pageNumber}"`;
 
-		if (internalRequest.pagingCookie != null) {
-			ErrorHelper.stringParameterCheck(internalRequest.pagingCookie, "DynamicsWebApi.fetch", "request.pagingCookie");
-			replacementString += ` paging-cookie="${internalRequest.pagingCookie}"`;
+			if (internalRequest.pagingCookie != null) {
+				ErrorHelper.stringParameterCheck(internalRequest.pagingCookie, "DynamicsWebApi.fetch", "request.pagingCookie");
+				replacementString += ` paging-cookie="${internalRequest.pagingCookie}"`;
+			}
+
+			//add page number and paging cookie to fetch xml
+			internalRequest.fetchXml = internalRequest.fetchXml.replace(/^(<fetch)/, replacementString);
 		}
-
-		//add page number and paging cookie to fetch xml
-		internalRequest.fetchXml = internalRequest.fetchXml.replace(/^(<fetch)/, replacementString);
 
 		internalRequest.responseParameters = { pageNumber: internalRequest.pageNumber };
 
@@ -1305,11 +1308,11 @@ export declare namespace DynamicsWebApi {
 		pagingCookie?: string;
 	}
 
-	export interface CreateRequest extends CRUDRequest {
+	export interface CreateRequest<T = any> extends CRUDRequest {
 		/**Web API v9+ only! Boolean that enables duplicate detection. */
 		duplicateDetection?: boolean;
 		/**A JavaScript object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single-valued navigation properties). */
-		data?: any;
+		data?: T;
 		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
 		expand?: Expand[];
 		/**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types. */
@@ -1324,11 +1327,11 @@ export declare namespace DynamicsWebApi {
 		contentId?: string;
 	}
 
-	export interface UpdateRequestBase extends CRUDRequest {
+	export interface UpdateRequestBase<T = any> extends CRUDRequest {
 		/**Web API v9+ only! Boolean that enables duplicate detection. */
 		duplicateDetection?: boolean;
 		/**A JavaScript object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single-valued navigation properties). */
-		data?: any;
+		data?: T;
 		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
 		expand?: Expand[];
 		/**Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests.*/
@@ -1349,7 +1352,7 @@ export declare namespace DynamicsWebApi {
 		navigationPropertyKey?: string;
 	}
 
-	export interface UpdateRequest extends UpdateRequestBase {
+	export interface UpdateRequest<T = any> extends UpdateRequestBase<T> {
 		/**If set to 'true', DynamicsWebApi adds a request header 'MSCRM.MergeLabels: true'. Default value is 'false' */
 		mergeLabels?: boolean;
 	}
@@ -1371,7 +1374,7 @@ export declare namespace DynamicsWebApi {
 		contentId?: string;
 	}
 
-	export interface UpsertRequest extends UpdateRequestBase {
+	export interface UpsertRequest<T = any> extends UpdateRequestBase<T> {
 		/**Sets If-None-Match header value that enables to use conditional retrieval in applicable requests. */
 		ifnonematch?: string;
 	}

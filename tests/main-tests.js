@@ -1185,6 +1185,39 @@ describe("promises -", function () {
 				expect(scope.isDone()).to.be.true;
 			});
 		});
+
+		describe("with top attribute", function () {
+			var scope;
+			before(function () {
+				var response = mocks.responses.fetchXmlResponsePage1Cookie;
+				scope = nock(mocks.webApiUrl)
+					.get(mocks.responses.collectionUrl + "?fetchXml=" + encodeURIComponent(mocks.data.fetchXmls.fetchXmlTop))
+					.reply(response.status, response.responseText, response.responseHeaders);
+			});
+
+			after(function () {
+				nock.cleanAll();
+			});
+
+			it("returns a correct response", function (done) {
+				dynamicsWebApiTest
+					.fetch({
+						collection: "tests",
+						fetchXml: mocks.data.fetchXmls.fetchXmlTop,
+					})
+					.then(function (object) {
+						expect(object).to.deep.equal(mocks.data.fetchXmls.fetchXmlResultPage1Cookie);
+						done();
+					})
+					.catch(function (object) {
+						done(object);
+					});
+			});
+
+			it("all requests have been made", function () {
+				expect(scope.isDone()).to.be.true;
+			});
+		});
 	});
 
 	describe("dynamicsWebApi.fetchAll -", function () {

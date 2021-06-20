@@ -55,7 +55,7 @@
 	"scripts": {
 		"test": "tsc && mocha tests/*-tests.js",
 		"test-coverage": "rimraf coverage && nyc npm test && nyc report --reporter=lcov",
-		"build": "rimraf dist && rimraf coverage && webpack",
+		"build": "rimraf dist && rimraf lib && rimraf coverage && webpack",
 		"release-patch": "npm version patch -m \"Release v%s\"",
 		"release-minor": "npm version minor -m \"Release v%s\"",
 		"preversion": "npm test",
