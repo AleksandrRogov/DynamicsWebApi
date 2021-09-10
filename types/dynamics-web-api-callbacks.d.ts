@@ -1066,6 +1066,8 @@ declare namespace DynamicsWebApi {
 	interface MultipleResponse<T = any> {
 		/**Multiple respone entities */
 		value?: T[];
+		oDataCount?: number;
+		oDataContext?: string;
 	}
 
 	interface AllResponse<T> extends MultipleResponse<T> {
@@ -1081,6 +1083,8 @@ declare namespace DynamicsWebApi {
 	}
 
 	interface FetchXmlResponse<T> extends MultipleResponse<T> {
+		"@Microsoft.Dynamics.CRM.totalrecordcount"?: number;
+		"@Microsoft.Dynamics.CRM.totalrecordcountlimitexceeded"?: boolean;
 		/**Paging information */
 		PagingInfo?: {
 			/**Number of the next page */
