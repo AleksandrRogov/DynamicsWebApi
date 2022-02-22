@@ -1660,7 +1660,8 @@ dynamicsWebApi.retrieveRelationship(metadataId, relationshipType).then(function 
 ### Retrieve Multiple Relationships
 
 ```js
-dynamicsWebApi.retrieveRelationships(['SchemaName', 'MetadataId'], "ReferencedEntity eq 'account'")
+var relationshipType = 'Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata';
+dynamicsWebApi.retrieveRelationships(relationshipType, ['SchemaName', 'MetadataId'], "ReferencedEntity eq 'account'")
 .then(function (relationship) {
     //work with a retrieved relationship
 }).catch(function (error) {
