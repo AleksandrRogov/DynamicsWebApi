@@ -938,7 +938,25 @@ describe("RequestConverter.convertRequestOptions -", function () {
 		expect(result).to.deep.equal({ url: stubUrl, query: "", headers: { "MSCRM.SuppressDuplicateDetection": "false" } });
 	});
 
-	it("bypassCustomPluginExecution ", function () {
+	it("bypassCustomPluginExecution empty", function () {
+		var dwaRequest = {
+			bypassCustomPluginExecution: false,
+		};
+
+		var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
+		expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
+	});
+
+	it("bypassCustomPluginExecution null", function () {
+		var dwaRequest = {
+			bypassCustomPluginExecution: null,
+		};
+
+		var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
+		expect(result).to.deep.equal({ url: stubUrl, query: "", headers: {} });
+	});
+
+	it("bypassCustomPluginExecution true", function () {
 		var dwaRequest = {
 			bypassCustomPluginExecution: true,
 		};
