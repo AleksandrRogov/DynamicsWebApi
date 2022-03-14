@@ -1,4 +1,4 @@
-﻿// Type definitions for dynamics-web-api-callbacks v1.7.4
+﻿// Type definitions for dynamics-web-api-callbacks v1.7.5
 // Project: https://github.com/AleksandrRogov/DynamicsWebApi
 // Definitions by: Aleksandr Rogov https://github.com/AleksandrRogov/
 
@@ -869,7 +869,9 @@ declare namespace DynamicsWebApi {
 		key?: string;
 	}
 
-    interface CreateRequest<T = any> extends CRUDRequest {
+	interface CreateRequest<T = any> extends CRUDRequest {
+		/**v.1.7.5+ If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. */
+		bypassCustomPluginExecution?: boolean;
 		/**v.1.3.4+ Web API v9+ only! Boolean that enables duplicate detection. */
 		duplicateDetection?: boolean;
 		/**A JavaScript object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single - valued navigation properties). */
@@ -888,7 +890,9 @@ declare namespace DynamicsWebApi {
 		contentId?: string;
 	}
 
-    interface UpdateRequestBase<T = any> extends CRUDRequest {
+	interface UpdateRequestBase<T = any> extends CRUDRequest {
+		/**v.1.7.5+ If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. */
+		bypassCustomPluginExecution?: boolean;
 		/**v.1.3.4+ Web API v9+ only! Boolean that enables duplicate detection. */
 		duplicateDetection?: boolean;
 		/**A JavaScript object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single - valued navigation properties). */
@@ -913,17 +917,19 @@ declare namespace DynamicsWebApi {
 		navigationPropertyKey?: string;
 	}
 
-    interface UpdateRequest<T = any> extends UpdateRequestBase<T> {
+	interface UpdateRequest<T = any> extends UpdateRequestBase<T> {
 		/**If set to 'true', DynamicsWebApi adds a request header 'MSCRM.MergeLabels: true'. Default value is 'false' */
 		mergeLabels?: boolean;
 	}
 
-    interface UpsertRequest<T = any> extends UpdateRequestBase<T> {
+	interface UpsertRequest<T = any> extends UpdateRequestBase<T> {
 		/**Sets If-None-Match header value that enables to use conditional retrieval in applicable requests. */
 		ifnonematch?: string;
 	}
 
 	interface DeleteRequest extends CRUDRequest {
+		/**v.1.7.5+ If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. */
+		bypassCustomPluginExecution?: boolean;
 		/**Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests.*/
 		ifmatch?: string;
 		/**BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */
