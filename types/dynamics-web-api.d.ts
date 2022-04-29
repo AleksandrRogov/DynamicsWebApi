@@ -562,6 +562,8 @@ declare namespace DynamicsWebApi {
 		navigationProperty?: string;
 		/**v.1.4.3 + A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata). */
 		navigationPropertyKey?: string;
+		/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+		select?: string[];
 		/**Sets Prefer header request with value "return=representation".Use this property to return just created or updated entity in a single request. */
 		returnRepresentation?: boolean;
 		/**BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */

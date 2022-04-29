@@ -1789,7 +1789,7 @@ describe("ErrorHelper.keyParameterCheck", function () {
 
 	it("throws an error when alternate key is incorrect", function () {
 		expect(function () {
-			var alternateKey = "altKey='value, anotherKey='value2'";
+			var alternateKey = "altKey=";
 			ErrorHelper.keyParameterCheck(alternateKey, "fun", "param");
 		}).to.throw("fun requires the param parameter to be of type String representing GUID or Alternate Key");
 	});
