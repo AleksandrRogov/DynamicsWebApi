@@ -1781,6 +1781,12 @@ describe("ErrorHelper.keyParameterCheck", function () {
 		expect(result).to.eq("altKey='value',anotherKey='value2'");
 	});
 
+	it("checks correct alternate keys (replaces double quotes with single quotes)", function () {
+		var alternateKey = 'altKey="value", anotherKey="value2"';
+		var result = ErrorHelper.keyParameterCheck(alternateKey);
+		expect(result).to.eq("altKey='value',anotherKey='value2'");
+	});
+
 	it("checks correct alternate keys string and integer", function () {
 		var alternateKey = "altKey=123456,anotherKey='value2'";
 		var result = ErrorHelper.keyParameterCheck(alternateKey);

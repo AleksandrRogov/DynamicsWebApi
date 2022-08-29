@@ -104,7 +104,7 @@ Upload a script as a JavaScript Web Resource, place on the entity form or refer 
 
 ```js
 //DynamicsWebApi makes calls to Web API v8.0 if a configuration is not set
-var dynamicsWebApi = new DynamicsWebApi();
+const dynamicsWebApi = new DynamicsWebApi();
 
 dynamicsWebApi.executeUnboundFunction("WhoAmI").then(function (response) {
     Xrm.Navigation.openAlertDialog({ 
@@ -128,61 +128,66 @@ npm install dynamics-web-api --save
 Then include it in your file:
 
 ```js
-var DynamicsWebApi = require('dynamics-web-api');
+//CommonJS
+const DynamicsWebApi = require('dynamics-web-api');
+
+//ES6 Module
+import DynamicsWebApi from 'dynamics-web-api';
 ```
 
 At this moment DynamicsWebApi does not fetch authorization tokens, so you will need to acquire OAuth token in your code and pass it to the DynamicsWebApi.
-Token can be aquired using [ADAL for Node.js](https://github.com/AzureAD/azure-activedirectory-library-for-nodejs) or you can write your own functionality, as it is described [here](http://alexanderdevelopment.net/post/2016/11/23/dynamics-365-and-node-js-integration-using-the-web-api/).
+Token can be aquired using [MSAL for JS](https://github.com/AzureAD/microsoft-authentication-library-for-js) or you can write your own functionality, as it is described [here](http://alexanderdevelopment.net/post/2016/11/23/dynamics-365-and-node-js-integration-using-the-web-api/).
 
-Here is a sample using `adal-node`:
+Here is a sample using `@azure/msal-node`:
 
 ```js
-var DynamicsWebApi = require('dynamics-web-api');
-var AuthenticationContext = require('adal-node').AuthenticationContext;
+//app configuraiton must be stored in a safe place
+import Config from './config.js';
+import DynamicsWebApi from 'dynamics-web-api';
+import * as MSAL from '@azure/msal-node';
 
-//the following settings should be taken from Azure for your application
-//and stored in app settings file or in global variables
+//OAuth Token Endpoint (from your Azure App Registration)
+const authorityUrl = 'https://login.microsoftonline.com/<COPY A GUID HERE>';
 
-//OAuth Token Endpoint
-var authorityUrl = 'https://login.microsoftonline.com/00000000-0000-0000-0000-000000000011/oauth2/token';
-//CRM Organization URL
-var resource = 'https://myorg.crm.dynamics.com';
-//Dynamics 365 Client Id when registered in Azure
-var clientId = '00000000-0000-0000-0000-000000000001';
-var username = 'crm-user-name';
-var password = 'crm-user-password';
-
-var adalContext = new AuthenticationContext(authorityUrl);
-
-//add a callback as a parameter for your function
-function acquireToken(dynamicsWebApiCallback){
-    //a callback for adal-node
-    function adalCallback(error, token) {
-        if (!error){
-            //call DynamicsWebApi callback only when a token has been retrieved
-            dynamicsWebApiCallback(token);
-        }
-        else{
-            console.log('Token has not been retrieved. Error: ' + error.stack);
-        }
+const msalConfig = {
+    auth: {
+        authority: authorityUrl,
+        clientId: Config.clientId,
+        clientSecret: Config.secret,
+        knownAuthorities: ['login.microsoftonline.com']
     }
-
-    //call a necessary function in adal-node object to get a token
-    adalContext.acquireTokenWithUsernamePassword(resource, username, password, clientId, adalCallback);
 }
 
-//create DynamicsWebApi object
-var dynamicsWebApi = new DynamicsWebApi({
-    webApiUrl: 'https://myorg.api.crm.dynamics.com/api/data/v9.1/',
+const cca = new MSAL.ConfidentialClientApplication(msalConfig);
+const serverUrl = 'https://<YOUR ORG HERE>.api.crm.dynamics.com';
+
+//function that acquires a token and passes it to DynamicsWebApi
+const acquireToken = (dynamicsWebApiCallback) => {
+    cca.acquireTokenByClientCredential({
+        scopes: [`${serverUrl}/.default`],
+    }).then(response => {
+        //call DynamicsWebApi callback only when a token has been retrieved successfully
+        dynamicsWebApiCallback(response.accessToken);
+    }).catch((error) => {
+        console.log(JSON.stringify(error));
+    });
+}
+
+//create DynamicsWebApi
+const dynamicsWebApi = new DynamicsWebApi({
+    webApiUrl: `${serverUrl}/api/data/v9.2/`,
     onTokenRefresh: acquireToken
 });
 
-//call any function
-dynamicsWebApi.executeUnboundFunction("WhoAmI").then(function (response) {
-    console.log('Hello Dynamics 365! My id is: ' + response.UserId);
-}).catch(function(error){
-    console.log(error.message);
-});
+try{
+    //call any function
+    const reponse = await dynamicsWebApi.executeUnboundFunction('WhoAmI');
+    console.log(`Hello Dynamics 365! My id is: ${response.UserId}`);
+}
+catch (error){
+    console.log(error);
+}
+
 ```
 
 ### Configuration
@@ -1011,7 +1016,7 @@ Batch requests bundle multiple operations into a single one and have the followi
 * Provides a way to run multiple operations in a single transaction. If any operation that changes data (within a single changeset) fails all completed ones will be rolled back.
 * All operations within a batch request run consequently (FIFO).
 
-DynamicsWebApi provides a straightforward way to execute Batch operations which may not always simple to compose. 
+DynamicsWebApi provides a straightforward way to execute Batch operations which may not always be simple to compose. 
 The following example bundles 2 retrieve multiple operations and an update:
 
 ```js
@@ -1112,7 +1117,7 @@ dynamicsWebApi.executeBatch()
 
 ```
 
-Note that the second response does not have a returned value, it is a CRM Web API limitation.
+Note that if you are making a request to a navigation property (`collection: 'customerid_contact'`), the request won't have a response, it is an OOTB Web API limitation.
 
 **Important!** DynamicsWebApi automatically assigns value to a `Content-ID` if it is not provided, therefore, please set your `Content-ID` value less than 100000.
 
@@ -1150,6 +1155,9 @@ dynamicsWebApi.executeBatch()
     });
 
 ```
+
+**Important!** Web API seems to have a limitation (or a bug) where it does not return the response with `returnRepresentation` set to `true`. It happens only if you are trying to return a representation of an entity that is being
+linked to another one in a single request. [More Info and examples is in this issue.](https://github.com/AleksandrRogov/DynamicsWebApi/issues/112).
 
 #### Limitations
 

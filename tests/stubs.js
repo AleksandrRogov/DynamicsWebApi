@@ -355,6 +355,35 @@ var dataStubs = {
 		"--changeset_XXX--\n" +
 		"\n" +
 		"--dwa_batch_XXX--",
+	batchCreateContentIDURLReplace:
+		"--dwa_batch_XXX\n" +
+		"Content-Type: multipart/mixed;boundary=changeset_XXX\n" +
+		"\n" +
+		"--changeset_XXX\n" +
+		"Content-Type: application/http\n" +
+		"Content-Transfer-Encoding: binary\n" +
+		"Content-ID: 1\n" +
+		"\n" +
+		"POST " +
+		webApiUrl +
+		"records HTTP/1.1\n" +
+		"Content-Type: application/json\n" +
+		"\n" +
+		'{"firstname":"Test","lastname":"Batch!"}\n' +
+		"\n" +
+		"--changeset_XXX\n" +
+		"Content-Type: application/http\n" +
+		"Content-Transfer-Encoding: binary\n" +
+		"Content-ID: 100001\n" +
+		"\n" +
+		"POST $1 HTTP/1.1\n" +
+		"Content-Type: application/json\n" +
+		"\n" +
+		'{"firstname":"Test1","lastname":"Batch!"}\n' +
+		"\n" +
+		"--changeset_XXX--\n" +
+		"\n" +
+		"--dwa_batch_XXX--",
 	batchCreateContentIDPayload:
 		"--dwa_batch_XXX\n" +
 		"Content-Type: multipart/mixed;boundary=changeset_XXX\n" +
