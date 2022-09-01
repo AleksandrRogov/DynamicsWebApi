@@ -136,7 +136,7 @@ import DynamicsWebApi from 'dynamics-web-api';
 ```
 
 At this moment DynamicsWebApi does not fetch authorization tokens, so you will need to acquire OAuth token in your code and pass it to the DynamicsWebApi.
-Token can be aquired using [MSAL for JS](https://github.com/AzureAD/microsoft-authentication-library-for-js) or you can write your own functionality, as it is described [here](http://alexanderdevelopment.net/post/2016/11/23/dynamics-365-and-node-js-integration-using-the-web-api/).
+Token can be acquired using [MSAL for JS](https://github.com/AzureAD/microsoft-authentication-library-for-js) or you can write your own functionality, as it is described [here](http://alexanderdevelopment.net/post/2016/11/23/dynamics-365-and-node-js-integration-using-the-web-api/).
 
 Here is a sample using `@azure/msal-node`:
 
@@ -286,6 +286,8 @@ navigationProperty | String | `retrieveRequest`, `createRequest`, `updateRequest
 navigationPropertyKey | String | `retrieveRequest`, `createRequest`, `updateRequest` | `v.1.4.3+` A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata)
 noCache | Boolean | All | `v.1.4.0+` If set to `true`, DynamicsWebApi adds a request header `Cache-Control: no-cache`. Default value is `false`.
 orderBy | Array | `retrieveMultipleRequest`, `retrieveAllRequest` | An Array (of Strings) representing the order in which items are returned using the $orderby system query option. Use the asc or desc suffix to specify ascending or descending order respectively. The default is ascending if the suffix isn't applied.
+partitionId | String | `createRequest`, `updateRequest`, `upsertRequest`, `deleteRequest`, `retrieveRequest`, `retrieveMultipleRequest` | `v.1.7.7+` Sets a unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. [More Info](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/azure-storage-partitioning)
+queryParams | Array | `retrieveMultipleRequest`, `retrieveAllRequest` | `v.1.7.7+` Additional query parameters that either have not been implemented yet or they are [parameter aliases](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/query-data-web-api#use-parameter-aliases-with-system-query-options) for "$filter" and "$orderBy". **Important!** These parameters ARE NOT URI encoded!
 returnRepresentation | Boolean | `createRequest`, `updateRequest`, `upsertRequest` | Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
 savedQuery | String | `retrieveRequest` | A String representing the GUID value of the saved query.
 select | Array | `retrieveRequest`, `retrieveMultipleRequest`, `retrieveAllRequest`, `updateRequest`, `upsertRequest` | An Array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
@@ -2172,6 +2174,7 @@ the config option "formatted" will enable developers to retrieve all information
 - [X] Shrink size of an NPM package. `Added in v.1.7.1`.
 - [X] Full proxy support. `Added in v.1.7.2`.
 - [ ] Refactoring and conversion to TypeScript - coming with `v.2.0`! Stay tuned!
+- [ ] Implement [Dataverse Search API](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/relevance-search). 
 
 Many more features to come!
 

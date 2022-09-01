@@ -3,7 +3,6 @@ var chai = require("chai");
 var expect = chai.expect;
 
 var nock = require("nock");
-var sinon = require("sinon");
 
 var DWA = require("../lib/dwa");
 var Utility = require("../lib/utilities/Utility");
@@ -1111,6 +1110,25 @@ describe("RequestConverter.convertRequestOptions -", function () {
 		expect(result).to.deep.equal({ url: stubUrl, query: "userQuery=" + mocks.data.testEntityId, headers: {} });
 	});
 
+	it("partitionId", function () {
+		var dwaRequest = {
+			partitionId: "partition1",
+		};
+
+		var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
+		expect(result).to.deep.equal({ url: stubUrl, query: "partitionid='partition1'", headers: {} });
+	});
+
+	it("queryParams", function () {
+		var dwaRequest = {
+			filter: "something eq 2",
+			queryParams: ["p1=bla", "@p2=[22,23]"],
+		};
+
+		var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
+		expect(result).to.deep.equal({ url: stubUrl, query: "$filter=" + encodeURIComponent("something eq 2") + "&p1=bla&@p2=[22,23]", headers: {} });
+	});
+
 	it("multiple options", function () {
 		var dwaRequest = {
 			select: ["name", "subject"],
@@ -2112,7 +2130,7 @@ describe("Request.makeRequest", function () {
 			var response = mocks.responses.basicEmptyResponseSuccess;
 			scope = nock(mocks.webApiUrl)
 				.post("/test", mocks.data.testEntity)
-				.socketDelay(1000)
+				.delayConnection(1000)
 				.reply(response.status, response.responseText, response.responseHeaders);
 		});
 
@@ -2160,7 +2178,7 @@ describe("Request.makeRequest", function () {
 			var response = mocks.responses.basicEmptyResponseSuccess;
 			scope = nock(mocks.webApiUrl)
 				.post("/test", mocks.data.testEntity)
-				.socketDelay(1000)
+				.delayConnection(1000)
 				.reply(response.status, response.responseText, response.responseHeaders);
 		});
 
@@ -2447,7 +2465,7 @@ describe("Request.sendRequest", function () {
 			var response = mocks.responses.basicEmptyResponseSuccess;
 			scope = nock(mocks.webApiUrl)
 				.post("/test", mocks.data.testEntity)
-				.socketDelay(1000)
+				.delayConnection(1000)
 				.reply(response.status, response.responseText, response.responseHeaders);
 		});
 

@@ -1,4 +1,4 @@
-﻿// Type definitions for dynamics-web-api v1.7.5
+﻿// Type definitions for dynamics-web-api v1.7.7
 // Project: https://github.com/AleksandrRogov/DynamicsWebApi/
 // Definitions by: Aleksandr Rogov https://github.com/AleksandrRogov/
 
@@ -568,6 +568,8 @@ declare namespace DynamicsWebApi {
 		returnRepresentation?: boolean;
 		/**BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */
 		contentId?: string;
+		/**v.1.7.7+ A unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. */
+		partitionId?: string;
 	}
 
 	interface UpdateRequestBase<T = any> extends CRUDRequest {
@@ -595,6 +597,8 @@ declare namespace DynamicsWebApi {
 		navigationProperty?: string;
 		/**v.1.4.3 + A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata). */
 		navigationPropertyKey?: string;
+		/**v.1.7.7+ A unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. */
+		partitionId?: string;
 	}
 
 	interface UpdateRequest<T = any> extends UpdateRequestBase<T> {
@@ -616,6 +620,8 @@ declare namespace DynamicsWebApi {
 		contentId?: string;
 		/**Field name that needs to be cleared (for example File Field) */
 		fieldName?: string;
+		/**v.1.7.7+ A unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. */
+		partitionId?: string;
 	}
 
 	interface RetrieveRequest extends CRUDRequest {
@@ -639,6 +645,8 @@ declare namespace DynamicsWebApi {
 		select?: string[];
 		/**A String representing the GUID value of the user query. */
 		userQuery?: string;
+		/**v.1.7.7+ A unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. */
+		partitionId?: string;
 	}
 
 	interface RetrieveMultipleRequest extends Request {
@@ -662,6 +670,10 @@ declare namespace DynamicsWebApi {
 		top?: number;
 		/**Sets Prefer header with value 'odata.track-changes' to request that a delta link be returned which can subsequently be used to retrieve entity changes. */
 		trackChanges?: boolean;
+		/**v.1.7.7+ A unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. */
+		partitionId?: string;
+		/**v.1.7.7+ Additional query parameters that either have not been implemented yet or they are parameter aliases for "$filter" and "$orderBy". Important! These parameters ARE NOT URI encoded! */
+		queryParams?: string[];
 	}
 
 	interface UploadRequest extends CRUDRequest {
@@ -764,6 +776,8 @@ declare namespace DynamicsWebApi {
 	}
 
 	interface RetrieveMultipleResponse<T> extends MultipleResponse<T> {
+		"@Microsoft.Dynamics.CRM.totalrecordcount"?: number;
+		"@Microsoft.Dynamics.CRM.totalrecordcountlimitexceeded"?: boolean;
 		/**@odata.nextLink value */
 		oDataNextLink?: string;
 		/**@odata.deltaLink value */

@@ -3013,6 +3013,50 @@ describe("promises -", function () {
 				expect(scope.isDone()).to.be.true;
 			});
 		});
+
+		describe("filter & orderby parameter aliases", function () {
+			var scope;
+			before(function () {
+				var response = mocks.responses.multipleResponse;
+				scope = nock(mocks.webApiUrl, {
+					reqheaders: {
+						Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.FormattedValue + '"',
+					},
+				})
+					.get(
+						mocks.responses.collectionUrl +
+							'?$filter=Microsoft.Dynamics.CRM.In(PropertyName=@p1,PropertyValues=@p2)&@p1=\'lastname\'&@p2=["First", "Last\'s"]'
+					)
+					.reply(response.status, response.responseText, response.responseHeaders);
+			});
+
+			after(function () {
+				nock.cleanAll();
+			});
+
+			it("returns a correct response", function (done) {
+				var dwaRequest = {
+					collection: "tests",
+					includeAnnotations: DWA.Prefer.Annotations.FormattedValue,
+					filter: "Microsoft.Dynamics.CRM.In(PropertyName=@p1,PropertyValues=@p2)",
+					queryParams: ["@p1='lastname'", '@p2=["First", "Last\'s"]'],
+				};
+
+				dynamicsWebApiTest
+					.retrieveMultipleRequest(dwaRequest)
+					.then(function (object) {
+						expect(object).to.deep.equal(mocks.responses.multiple());
+						done();
+					})
+					.catch(function (object) {
+						done(object);
+					});
+			});
+
+			it("all requests have been made", function () {
+				expect(scope.isDone()).to.be.true;
+			});
+		});
 	});
 
 	describe("dynamicsWebApi.retrieveAllRequest -", function () {
@@ -5739,6 +5783,7 @@ describe("promises -", function () {
 						expect(text).to.eq("Welcome to DynamicsWebApi!");
 						expect(object.fileName).to.eq(chunk2.responseHeaders["x-ms-file-name"]);
 						expect(object.fileSize).to.eq(chunk2.responseHeaders["x-ms-file-size"]);
+						expect(object.location).to.eq(chunk2.responseHeaders["Location"]);
 
 						done();
 					})
