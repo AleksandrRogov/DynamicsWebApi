@@ -246,10 +246,8 @@ ModelManifest.xml
 # Vim
 *.sw[a-p]
 
-lib/
 coverage/
 .nyc_output/
 typesold/
 
-*.d.ts.map
 *.tgz
