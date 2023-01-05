@@ -181,7 +181,7 @@ const dynamicsWebApi = new DynamicsWebApi({
 
 try{
     //call any function
-    const reponse = await dynamicsWebApi.executeUnboundFunction('WhoAmI');
+    const response = await dynamicsWebApi.executeUnboundFunction('WhoAmI');
     console.log(`Hello Dynamics 365! My id is: ${response.UserId}`);
 }
 catch (error){
