@@ -9,12 +9,12 @@ declare class DynamicsWebApi {
 	 */
 	constructor(config?: DynamicsWebApi.Config);
 	/**
-     * Sets DynamicsWebApi configuration parameters.
-     *
-     * @param config - configuration object
-     * @example
-        dynamicsWebApi.setConfig({ webApiVersion: '9.1' });
-     */
+	 * Sets DynamicsWebApi configuration parameters.
+	 *
+	 * @param config - configuration object
+	 * @example
+		dynamicsWebApi.setConfig({ webApiVersion: '9.1' });
+	 */
 	setConfig(config: DynamicsWebApi.Config): void;
 	/**
 	 * Sends an asynchronous request to create a new record.
@@ -38,7 +38,7 @@ declare class DynamicsWebApi {
 	 *}.catch(function (error) {
 	 *});
 	 */
-	createRequest<T = any>(request: DynamicsWebApi.CreateRequest): Promise<T>;
+	createRequest<T = any>(request: DynamicsWebApi.CreateRequest<T>): Promise<T>;
 	/**
 	 * Sends an asynchronous request to create a new record.
 	 *
@@ -58,13 +58,13 @@ declare class DynamicsWebApi {
 	 *}.catch(function (error) {
 	 *});
 	 */
-	create<T = any>(object: Object, collection: string, prefer?: string | string[], select?: string[]): Promise<T>;
+	create<T = any>(object: T, collection: string, prefer?: string | string[], select?: string[]): Promise<T>;
 	/**
 	 * Sends an asynchronous request to update a record.
 	 *
 	 * @param request - An object that represents all possible options for a current request.
 	 */
-	updateRequest<T = any>(request: DynamicsWebApi.UpdateRequest): Promise<T>;
+	updateRequest<T = any>(request: DynamicsWebApi.UpdateRequest<T>): Promise<T>;
 	/**
 	 * Sends an asynchronous request to update a record.
 	 *
@@ -74,7 +74,7 @@ declare class DynamicsWebApi {
 	 * @param prefer - If set to "return=representation" the function will return an updated object
 	 * @param select - An Array representing the $select Query Option to control which attributes will be returned.
 	 */
-	update<T = any>(key: string, collection: string, object: Object, prefer?: string | string[], select?: string[]): Promise<T>;
+	update<T = any>(key: string, collection: string, object: T, prefer?: string | string[], select?: string[]): Promise<T>;
 	/**
 	 * Sends an asynchronous request to update a single value in the record.
 	 *
@@ -84,7 +84,13 @@ declare class DynamicsWebApi {
 	 * @param prefer - If set to "return=representation" the function will return an updated object
 	 * @param select - An Array representing the $select Query Option to control which attributes will be returned.
 	 */
-	updateSingleProperty<T = any>(key: string, collection: string, keyValuePair: Object, prefer?: string | string[], select?: string[]): Promise<T>;
+	updateSingleProperty<T = any>(
+		key: string,
+		collection: string,
+		keyValuePair: { [key: string]: any },
+		prefer?: string | string[],
+		select?: string[]
+	): Promise<T>;
 	/**
 	 * Sends an asynchronous request to delete a record.
 	 *
@@ -119,7 +125,7 @@ declare class DynamicsWebApi {
 	 *
 	 * @param request - An object that represents all possible options for a current request.
 	 */
-	upsertRequest<T = any>(request: DynamicsWebApi.UpsertRequest): Promise<T>;
+	upsertRequest<T = any>(request: DynamicsWebApi.UpsertRequest<T>): Promise<T>;
 	/**
 	 * Sends an asynchronous request to upsert a record.
 	 *
@@ -129,7 +135,7 @@ declare class DynamicsWebApi {
 	 * @param prefer - If set to "return=representation" the function will return an updated object
 	 * @param select - An Array representing the $select Query Option to control which attributes will be returned.
 	 */
-	upsert<T = any>(key: string, collection: string, object: Object, prefer?: string | string[], select?: string[]): Promise<T>;
+	upsert<T = any>(key: string, collection: string, object: T, prefer?: string | string[], select?: string[]): Promise<T>;
 	/**
 	 * Sends an asynchronous request to count records. IMPORTANT! The count value does not represent the total number of entities in the system. It is limited by the maximum number of entities that can be returned. Returns: Number
 	 *
@@ -765,7 +771,7 @@ declare namespace DynamicsWebApi {
 
 	interface MultipleResponse<T = any> {
 		/**Multiple respone entities */
-		value?: T[];
+		value: T[];
 		oDataCount?: number;
 		oDataContext?: string;
 	}

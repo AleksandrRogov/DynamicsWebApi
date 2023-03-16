@@ -41,7 +41,7 @@ declare class DynamicsWebApi {
 	 *});
 	 */
 	createRequest<T = any>(
-		request: DynamicsWebApi.CreateRequest,
+		request: DynamicsWebApi.CreateRequest<T>,
 		successCallback?: (result: T) => void,
 		errorCallback?: (error: DynamicsWebApi.RequestError) => void
 	): void;
@@ -67,7 +67,7 @@ declare class DynamicsWebApi {
 	 *});
 	 */
 	create<T = any>(
-		object: Object,
+		object: T,
 		collection: string,
 		successCallback?: (result: T) => void,
 		errorCallback?: (error: DynamicsWebApi.RequestError) => void,
@@ -82,7 +82,7 @@ declare class DynamicsWebApi {
 	 * @param errorCallback - The function that will be passed through and be called by a failed response.
 	 */
 	updateRequest<T = any>(
-		request: DynamicsWebApi.UpdateRequest,
+		request: DynamicsWebApi.UpdateRequest<T>,
 		successCallback?: (result: T) => void,
 		errorCallback?: (error: DynamicsWebApi.RequestError) => void
 	): void;
@@ -100,7 +100,7 @@ declare class DynamicsWebApi {
 	update<T = any>(
 		key: string,
 		collection: string,
-		object: Object,
+		object: T,
 		successCallback?: (result: T) => void,
 		errorCallback?: (error: DynamicsWebApi.RequestError) => void,
 		prefer?: string | string[],
@@ -120,7 +120,7 @@ declare class DynamicsWebApi {
 	updateSingleProperty(
 		key: string,
 		collection: string,
-		keyValuePair: Object,
+		keyValuePair: { [key: string]: any },
 		successCallback?: Function,
 		errorCallback?: (error: DynamicsWebApi.RequestError) => void,
 		prefer?: string | string[],
@@ -188,7 +188,7 @@ declare class DynamicsWebApi {
 	 * @param errorCallback - The function that will be passed through and be called by a failed response.
 	 */
 	upsertRequest<T = any>(
-		request: DynamicsWebApi.UpsertRequest,
+		request: DynamicsWebApi.UpsertRequest<T>,
 		successCallback?: (result: T) => void,
 		errorCallback?: (error: DynamicsWebApi.RequestError) => void
 	): void;
@@ -206,7 +206,7 @@ declare class DynamicsWebApi {
 	upsert<T = any>(
 		key: string,
 		collection: string,
-		object: Object,
+		object: T,
 		successCallback?: (result: T) => void,
 		errorCallback?: (error: DynamicsWebApi.RequestError) => void,
 		prefer?: string | string[],
