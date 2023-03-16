@@ -67,7 +67,7 @@ function httpRequest(options: Core.RequestOptions) {
 		headers[key] = additionalHeaders[key];
 	}
 	const parsedUrl = url.parse(options.uri);
-	const protocol = parsedUrl.protocol.slice(0, -1);
+	const protocol = parsedUrl.protocol?.slice(0, -1);
 	let protocolInterface = protocol === "http" ? http : https;
 
 	let internalOptions: http.RequestOptions = {
@@ -75,21 +75,22 @@ function httpRequest(options: Core.RequestOptions) {
 		port: parsedUrl.port,
 		path: parsedUrl.path,
 		method: options.method,
-		timeout: options.timeout,
+		timeout: options.timeout || 0,
 		headers: headers,
 	};
 
 	//support environment variables
 	if (!options.proxy && process.env[`${protocol}_proxy`]) {
 		options.proxy = {
-			url: process.env[`${protocol}_proxy`],
+			url: process.env[`${protocol}_proxy`]!,
 		};
 	}
 
 	internalOptions.agent = getAgent(options, protocol);
 
 	if (options.proxy) {
-		headers.host = url.parse(options.proxy.url).host;
+		const hostHeader = url.parse(options.proxy.url).host;
+		if (hostHeader) headers.host = hostHeader;
 	}
 
 	const request = protocolInterface.request(internalOptions, function (res) {

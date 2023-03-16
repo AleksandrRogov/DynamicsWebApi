@@ -36,7 +36,7 @@ export declare class RequestUtility {
     static composePreferHeader(request: Core.InternalRequest, config: DynamicsWebApi.Config): string;
     static convertToBatch(requests: Core.InternalRequest[], config: DynamicsWebApi.Config): Core.InternalBatchRequest;
     static entityNames: any;
-    static findCollectionName(entityName: string): string;
+    static findCollectionName(entityName: string): string | null;
     static processData(data: any, config: DynamicsWebApi.Config): any;
     static setStandardHeaders(headers?: any): any;
 }

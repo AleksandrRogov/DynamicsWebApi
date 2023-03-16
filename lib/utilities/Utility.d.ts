@@ -37,9 +37,9 @@ export declare class Utility {
     static getXrmContext(): any;
     static getXrmUtility(): any;
     static getClientUrl(): string;
-    static initWebApiUrl(version: string): string;
+    static initWebApiUrl(version: string | null | undefined): string;
     static isObject(obj: any): boolean;
-    static copyObject<T = any>(src: any): T;
+    static copyObject<T = any>(src: any, excludeProps?: string[]): T;
     static setFileChunk(request: Core.InternalRequest, fileBuffer: Uint8Array | Buffer, chunkSize: number, offset: number): void;
     static convertToFileBuffer(binaryString: string): Uint8Array | Buffer;
 }

@@ -127,7 +127,7 @@ export class Utility {
 	 */
 	static convertToReferenceObject(responseData: any): Core.ReferenceObject {
 		var result = /\/(\w+)\(([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})/i.exec(responseData["@odata.id"]);
-		return { id: result[2], collection: result[1], oDataContext: responseData["@odata.context"] };
+		return { id: result![2], collection: result![1], oDataContext: responseData["@odata.context"] };
 	}
 
 	/**
@@ -178,7 +178,8 @@ export class Utility {
 		return clientUrl;
 	}
 
-	static initWebApiUrl(version: string): string {
+	static initWebApiUrl(version: string | null | undefined): string {
+		//todo: add error check
 		return `${Utility.getClientUrl()}/api/data/v${version}/`;
 	}
 
@@ -187,10 +188,10 @@ export class Utility {
 		return type === "object" && !!obj;
 	}
 
-	static copyObject<T = any>(src: any): T {
+	static copyObject<T = any>(src: any, excludeProps: string[] = []): T {
 		let target = {};
 		for (var prop in src) {
-			if (src.hasOwnProperty(prop)) {
+			if (src.hasOwnProperty(prop) && !excludeProps.includes(prop)) {
 				// if the value is a nested object, recursively copy all its properties
 				if (Utility.isObject(src[prop]) && Object.prototype.toString.call(src[prop]) !== "[object Date]") {
 					if (!Array.isArray(src[prop])) {

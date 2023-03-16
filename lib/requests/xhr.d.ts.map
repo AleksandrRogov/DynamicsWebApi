@@ -1,1 +1,1 @@
-{"version":3,"file":"xhr.d.ts","sourceRoot":"","sources":["../../ts/requests/xhr.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,IAAI,EAAE,MAAM,UAAU,CAAC;AAKhC;;;GAGG;AACH,qBAAa,UAAU;IAEtB,MAAM,CAAC,cAAc,EAAE,QAAQ,CAAQ;IACvC,MAAM,CAAC,UAAU,CAAC,OAAO,EAAE,IAAI,CAAC,cAAc;CAsH9C"}
+{"version":3,"file":"xhr.d.ts","sourceRoot":"","sources":["../../ts/requests/xhr.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,IAAI,EAAE,MAAM,UAAU,CAAC;AAKhC;;;GAGG;AACH,qBAAa,UAAU;IAEtB,MAAM,CAAC,cAAc,EAAE,MAAM,IAAI,CAAC;IAClC,MAAM,CAAC,UAAU,CAAC,OAAO,EAAE,IAAI,CAAC,cAAc;CAsH9C"}

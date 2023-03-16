@@ -24,7 +24,7 @@ export class DynamicsWebApi {
 	};
 
 	private _isBatch = false;
-	private _batchRequestId: string;
+	private _batchRequestId: string | null = null;
 
 	constructor(config?: DynamicsWebApi.Config) {
 		if (!config) {
@@ -146,7 +146,7 @@ export class DynamicsWebApi {
 	 *}).catch(function (error) {
 	 *});
 	 */
-	create = <T = any>(request: DynamicsWebApi.CreateRequest): Promise<T> => {
+	create = <T = any>(request: DynamicsWebApi.CreateRequest<T>): Promise<T> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.create", "request");
 
 		let internalRequest: Core.InternalRequest;
@@ -154,7 +154,7 @@ export class DynamicsWebApi {
 		if (!(<Core.InternalRequest>request).functionName) {
 			internalRequest = Utility.copyObject<Core.InternalRequest>(request);
 			internalRequest.functionName = "create";
-		} else internalRequest = request;
+		} else internalRequest = <Core.InternalRequest>request;
 
 		internalRequest.method = "POST";
 
@@ -209,7 +209,7 @@ export class DynamicsWebApi {
 	 * @param {DWARequest} request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	update = <T = any>(request: DynamicsWebApi.UpdateRequest): Promise<T> => {
+	update = <T = any>(request: DynamicsWebApi.UpdateRequest<T>): Promise<T> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.update", "request");
 
 		let internalRequest: Core.InternalRequest;
@@ -221,7 +221,9 @@ export class DynamicsWebApi {
 
 		//Metadata definitions, cannot be updated using "PATCH" method
 		if (!internalRequest.method)
-			internalRequest.method = /EntityDefinitions|RelationshipDefinitions|GlobalOptionSetDefinitions/.test(internalRequest.collection) ? "PUT" : "PATCH";
+			internalRequest.method = /EntityDefinitions|RelationshipDefinitions|GlobalOptionSetDefinitions/.test(internalRequest.collection || "")
+				? "PUT"
+				: "PATCH";
 
 		internalRequest.responseParameters = { valueIfEmpty: true };
 
@@ -317,7 +319,7 @@ export class DynamicsWebApi {
 	 * @param {DWARequest} request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	upsert = <T = any>(request: DynamicsWebApi.UpsertRequest): Promise<T> => {
+	upsert = <T = any>(request: DynamicsWebApi.UpsertRequest<T>): Promise<T> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.upsert", "request");
 
 		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
@@ -344,8 +346,8 @@ export class DynamicsWebApi {
 			});
 	};
 
-	private _uploadFileChunk = (request: Core.InternalRequest, fileBytes: Uint8Array | Buffer, chunkSize: number, offset?: number): Promise<void> => {
-		offset = offset || 0;
+	private _uploadFileChunk = (request: Core.InternalRequest, fileBytes: Uint8Array | Buffer, chunkSize: number, offset: number = 0): Promise<void> => {
+		// offset = offset || 0;
 		Utility.setFileChunk(request, fileBytes, chunkSize, offset);
 
 		return this._makeRequest(request).then(() => {
@@ -364,16 +366,13 @@ export class DynamicsWebApi {
 	 * @param {any} request - An object that represents all possible options for a current request.
 	 */
 	uploadFile = (request: DynamicsWebApi.UploadRequest): Promise<void> => {
-		ErrorHelper.batchIncompatible("DynamicsWebApi.uploadFile", this._isBatch);
+		ErrorHelper.throwBatchIncompatible("DynamicsWebApi.uploadFile", this._isBatch);
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.uploadFile", "request");
 
-		const data = request.data;
-		delete request.data;
-		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		const internalRequest = Utility.copyObject<Core.InternalRequest>(request, ["data"]);
 		internalRequest.method = "PATCH";
 		internalRequest.functionName = "uploadFile";
 		internalRequest.transferMode = "chunked";
-		request.data = data;
 
 		return this._makeRequest(internalRequest).then((response) => {
 			internalRequest.url = response.data.location;
@@ -386,13 +385,13 @@ export class DynamicsWebApi {
 
 	private _downloadFileChunk = (
 		request: Core.InternalRequest,
-		bytesDownloaded?: number,
-		fileSize?: number,
-		data?: string
+		bytesDownloaded: number = 0,
+		// fileSize: number = 0,
+		data: string = ""
 	): Promise<DynamicsWebApi.DownloadResponse> => {
-		bytesDownloaded = bytesDownloaded || 0;
-		fileSize = fileSize || 0;
-		data = data || "";
+		// bytesDownloaded = bytesDownloaded || 0;
+		// fileSize = fileSize || 0;
+		// data = data || "";
 
 		request.range = "bytes=" + bytesDownloaded + "-" + (bytesDownloaded + Utility.downloadChunkSize - 1);
 		request.downloadSize = "full";
@@ -404,7 +403,7 @@ export class DynamicsWebApi {
 			bytesDownloaded += Utility.downloadChunkSize;
 
 			if (bytesDownloaded <= response.data.fileSize) {
-				return this._downloadFileChunk(request, bytesDownloaded, response.data.fileSize, data);
+				return this._downloadFileChunk(request, bytesDownloaded, data);
 			}
 
 			return {
@@ -420,10 +419,10 @@ export class DynamicsWebApi {
 	 * @param {any} request - An object that represents all possible options for a current request.
 	 */
 	downloadFile = (request: DynamicsWebApi.DownloadRequest): Promise<DynamicsWebApi.DownloadResponse> => {
-		ErrorHelper.batchIncompatible("DynamicsWebApi.downloadFile", this._isBatch);
+		ErrorHelper.throwBatchIncompatible("DynamicsWebApi.downloadFile", this._isBatch);
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.downloadFile", "request");
 
-		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
 		internalRequest.method = "GET";
 		internalRequest.functionName = "downloadFile";
 		internalRequest.responseParameters = { parse: true };
@@ -471,13 +470,13 @@ export class DynamicsWebApi {
 		return this.retrieveMultiple(request, nextPageLink).then((response) => {
 			records = records.concat(response.value);
 
-			let pageLink = response.oDataNextLink;
+			const pageLink = response.oDataNextLink;
 
 			if (pageLink) {
 				return this._retrieveAllRequest(request, pageLink, records);
 			}
 
-			let result: DynamicsWebApi.AllResponse<T> = { value: records };
+			const result: DynamicsWebApi.AllResponse<T> = { value: records };
 
 			if (response.oDataDeltaLink) {
 				result["@odata.deltaLink"] = response.oDataDeltaLink;
@@ -495,7 +494,7 @@ export class DynamicsWebApi {
 	 * @returns {Promise} D365 Web Api result
 	 */
 	retrieveAll = <T = any>(request: DynamicsWebApi.RetrieveMultipleRequest): Promise<DynamicsWebApi.AllResponse<T>> => {
-		ErrorHelper.batchIncompatible("DynamicsWebApi.retrieveAll", this._isBatch);
+		ErrorHelper.throwBatchIncompatible("DynamicsWebApi.retrieveAll", this._isBatch);
 		return this._retrieveAllRequest(request);
 	};
 
@@ -508,7 +507,7 @@ export class DynamicsWebApi {
 	count = (request: DynamicsWebApi.CountRequest): Promise<number> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.count", "request");
 
-		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
 		internalRequest.method = "GET";
 		internalRequest.functionName = "count";
 
@@ -532,7 +531,7 @@ export class DynamicsWebApi {
 	 * @returns {Promise} D365 Web Api result
 	 */
 	countAll = (request: DynamicsWebApi.CountAllRequest): Promise<number> => {
-		ErrorHelper.batchIncompatible("DynamicsWebApi.countAll", this._isBatch);
+		ErrorHelper.throwBatchIncompatible("DynamicsWebApi.countAll", this._isBatch);
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.countAll", "request");
 
 		return this._retrieveAllRequest(request).then(function (response) {
@@ -556,7 +555,7 @@ export class DynamicsWebApi {
 		ErrorHelper.stringParameterCheck(internalRequest.fetchXml, "DynamicsWebApi.fetch", "request.fetchXml");
 
 		//only add paging if there is no top
-		if (!/^<fetch.+top=/.test(internalRequest.fetchXml)) {
+		if (internalRequest.fetchXml && !/^<fetch.+top=/.test(internalRequest.fetchXml)) {
 			internalRequest.pageNumber = internalRequest.pageNumber || 1;
 
 			ErrorHelper.numberParameterCheck(internalRequest.pageNumber, "DynamicsWebApi.fetch", "request.pageNumber");
@@ -587,8 +586,8 @@ export class DynamicsWebApi {
 	fetchAll = <T = any>(request: DynamicsWebApi.FetchAllRequest): Promise<DynamicsWebApi.FetchXmlResponse<T>> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.fetchAll", "request");
 
-		let _executeFetchXmlAll = (request: DynamicsWebApi.FetchXmlRequest, records?: any[]): Promise<DynamicsWebApi.FetchXmlResponse<T>> => {
-			records = records || [];
+		let _executeFetchXmlAll = (request: DynamicsWebApi.FetchXmlRequest, records: any[] = []): Promise<DynamicsWebApi.FetchXmlResponse<T>> => {
+			// records = records || [];
 
 			return this.fetch(request).then(function (response) {
 				records = records.concat(response.value);
@@ -604,7 +603,7 @@ export class DynamicsWebApi {
 			});
 		};
 
-		ErrorHelper.batchIncompatible("DynamicsWebApi.fetchAll", this._isBatch);
+		ErrorHelper.throwBatchIncompatible("DynamicsWebApi.fetchAll", this._isBatch);
 		return _executeFetchXmlAll(request);
 	};
 
@@ -1173,7 +1172,7 @@ export class DynamicsWebApi {
 	 * @returns {Promise} D365 Web Api result
 	 */
 	executeBatch = (request?: DynamicsWebApi.BaseRequest): Promise<any[]> => {
-		ErrorHelper.batchNotStarted(this._isBatch);
+		ErrorHelper.throwBatchNotStarted(this._isBatch);
 
 		let internalRequest: Core.InternalRequest = !request ? {} : Utility.copyObject<Core.InternalRequest>(request);
 
@@ -1359,7 +1358,7 @@ export declare namespace DynamicsWebApi {
 
 	export interface UpdateSinglePropertyRequest extends CRUDRequest {
 		/**Object with a logical name of the field as a key and a value to update with. Example: {subject: "Update Record"} */
-		fieldValuePair: any;
+		fieldValuePair: { [key: string]: any };
 		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
 		expand?: Expand[];
 		/**Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests.*/
@@ -1660,27 +1659,27 @@ export declare namespace DynamicsWebApi {
 
 	export interface Config {
 		/**A String representing the GUID value for the Dynamics 365 system user id.Impersonates the user. */
-		webApiUrl?: string;
+		webApiUrl?: string | null;
 		/**Web API Version to use, for example: "8.1" */
-		webApiVersion?: string;
+		webApiVersion?: string | null;
 		/**Impersonates a user based on their systemuserid by adding "MSCRMCallerID" header. A String representing the GUID value for the Dynamics 365 systemuserid. */
-		impersonate?: string;
+		impersonate?: string | null;
 		/**Impersonates a user based on their Azure Active Directory (AAD) object id by passing that value along with the header "CallerObjectId". A String should represent a GUID value. */
-		impersonateAAD?: string;
+		impersonateAAD?: string | null;
 		/**A function that is called when a security token needs to be refreshed. */
-		onTokenRefresh?: (callback: OnTokenAcquiredCallback) => void;
+		onTokenRefresh?: ((callback: OnTokenAcquiredCallback) => void) | null;
 		/**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types.*/
-		includeAnnotations?: string;
+		includeAnnotations?: string | null;
 		/**Sets the odata.maxpagesize preference value to request the number of entities returned in the response. */
-		maxPageSize?: number;
+		maxPageSize?: number | null;
 		/**Sets Prefer header request with value "return=representation".Use this property to return just created or updated entity in a single request.*/
-		returnRepresentation?: boolean;
+		returnRepresentation?: boolean | null;
 		/**Indicates whether to use Entity Logical Names instead of Collection Logical Names.*/
-		useEntityNames?: boolean;
+		useEntityNames?: boolean | null;
 		/**Sets a number of milliseconds before a request times out. */
-		timeout?: number;
+		timeout?: number | null;
 		/**Proxy configuration object. */
-		proxy?: ProxyConfig;
+		proxy?: ProxyConfig | null;
 	}
 
 	interface ProxyConfig {

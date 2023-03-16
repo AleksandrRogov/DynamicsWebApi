@@ -42,7 +42,7 @@ export declare class DynamicsWebApi {
      *}).catch(function (error) {
      *});
      */
-    create: <T = any>(request: DynamicsWebApi.CreateRequest) => Promise<T>;
+    create: <T = any>(request: DynamicsWebApi.CreateRequest<T>) => Promise<T>;
     /**
      * Sends an asynchronous request to retrieve a record.
      *
@@ -70,7 +70,7 @@ export declare class DynamicsWebApi {
      * @param {DWARequest} request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api result
      */
-    update: <T = any>(request: DynamicsWebApi.UpdateRequest) => Promise<T>;
+    update: <T = any>(request: DynamicsWebApi.UpdateRequest<T>) => Promise<T>;
     /**
      * Sends an asynchronous request to update a single value in the record.
      *
@@ -95,7 +95,7 @@ export declare class DynamicsWebApi {
      * @param {DWARequest} request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api result
      */
-    upsert: <T = any>(request: DynamicsWebApi.UpsertRequest) => Promise<T>;
+    upsert: <T = any>(request: DynamicsWebApi.UpsertRequest<T>) => Promise<T>;
     private _uploadFileChunk;
     /**
      * Upload file to a File Attribute
@@ -116,7 +116,7 @@ export declare class DynamicsWebApi {
      * @param {string} [nextPageLink] - Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
      * @returns {Promise} D365 Web Api result
      */
-    retrieveMultiple: <T = any>(request: DynamicsWebApi.RetrieveMultipleRequest, nextPageLink?: string) => Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
+    retrieveMultiple: <T = any>(request: DynamicsWebApi.RetrieveMultipleRequest, nextPageLink?: string | undefined) => Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
     private _retrieveAllRequest;
     /**
      * Sends an asynchronous request to retrieve all records.
@@ -237,7 +237,7 @@ export declare class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api result
      */
-    retrieveEntities: <T = any>(request?: DynamicsWebApi.RetrieveEntitiesRequest) => Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
+    retrieveEntities: <T = any>(request?: DynamicsWebApi.RetrieveEntitiesRequest | undefined) => Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
     /**
      * Sends an asynchronous request to create an attribute.
      *
@@ -293,7 +293,7 @@ export declare class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api result
      */
-    retrieveRelationships: <T = any>(request?: DynamicsWebApi.RetrieveRelationshipsRequest) => Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
+    retrieveRelationships: <T = any>(request?: DynamicsWebApi.RetrieveRelationshipsRequest | undefined) => Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
     /**
      * Sends an asynchronous request to retrieve a specific relationship definition.
      *
@@ -335,7 +335,7 @@ export declare class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api result
      */
-    retrieveGlobalOptionSets: <T = any>(request?: DynamicsWebApi.RetrieveGlobalOptionSetsRequest) => Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
+    retrieveGlobalOptionSets: <T = any>(request?: DynamicsWebApi.RetrieveGlobalOptionSetsRequest | undefined) => Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
     /**
      * Starts a batch request.
      *
@@ -346,7 +346,7 @@ export declare class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api result
      */
-    executeBatch: (request?: DynamicsWebApi.BaseRequest) => Promise<any[]>;
+    executeBatch: (request?: DynamicsWebApi.BaseRequest | undefined) => Promise<any[]>;
     /**
      * Creates a new instance of DynamicsWebApi
      *
@@ -480,7 +480,9 @@ export declare namespace DynamicsWebApi {
     }
     interface UpdateSinglePropertyRequest extends CRUDRequest {
         /**Object with a logical name of the field as a key and a value to update with. Example: {subject: "Update Record"} */
-        fieldValuePair: any;
+        fieldValuePair: {
+            [key: string]: any;
+        };
         /**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
         expand?: Expand[];
         /**Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests.*/
@@ -748,27 +750,27 @@ export declare namespace DynamicsWebApi {
     }
     interface Config {
         /**A String representing the GUID value for the Dynamics 365 system user id.Impersonates the user. */
-        webApiUrl?: string;
+        webApiUrl?: string | null;
         /**Web API Version to use, for example: "8.1" */
-        webApiVersion?: string;
+        webApiVersion?: string | null;
         /**Impersonates a user based on their systemuserid by adding "MSCRMCallerID" header. A String representing the GUID value for the Dynamics 365 systemuserid. */
-        impersonate?: string;
+        impersonate?: string | null;
         /**Impersonates a user based on their Azure Active Directory (AAD) object id by passing that value along with the header "CallerObjectId". A String should represent a GUID value. */
-        impersonateAAD?: string;
+        impersonateAAD?: string | null;
         /**A function that is called when a security token needs to be refreshed. */
-        onTokenRefresh?: (callback: OnTokenAcquiredCallback) => void;
+        onTokenRefresh?: ((callback: OnTokenAcquiredCallback) => void) | null;
         /**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types.*/
-        includeAnnotations?: string;
+        includeAnnotations?: string | null;
         /**Sets the odata.maxpagesize preference value to request the number of entities returned in the response. */
-        maxPageSize?: number;
+        maxPageSize?: number | null;
         /**Sets Prefer header request with value "return=representation".Use this property to return just created or updated entity in a single request.*/
-        returnRepresentation?: boolean;
+        returnRepresentation?: boolean | null;
         /**Indicates whether to use Entity Logical Names instead of Collection Logical Names.*/
-        useEntityNames?: boolean;
+        useEntityNames?: boolean | null;
         /**Sets a number of milliseconds before a request times out. */
-        timeout?: number;
+        timeout?: number | null;
         /**Proxy configuration object. */
-        proxy?: ProxyConfig;
+        proxy?: ProxyConfig | null;
     }
     interface ProxyConfig {
         /**Proxy server url */

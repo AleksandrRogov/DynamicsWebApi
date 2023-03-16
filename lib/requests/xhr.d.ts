@@ -4,7 +4,7 @@ import { Core } from "../types";
  *
  */
 export declare class XhrWrapper {
-    static afterSendEvent: Function;
+    static afterSendEvent: () => void;
     static xhrRequest(options: Core.RequestOptions): void;
 }
 //# sourceMappingURL=xhr.d.ts.map

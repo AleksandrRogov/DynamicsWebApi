@@ -1,7 +1,7 @@
 import { Utility } from "../utilities/Utility";
 import { RequestUtility } from "../utilities/RequestUtility";
 import { DynamicsWebApi } from "../../ts/dynamics-web-api";
-import { ErrorHelper } from "../helpers/ErrorHelper";
+import { DynamicsWebApiError, ErrorHelper } from "../helpers/ErrorHelper";
 import { Core } from "../../ts/types";
 
 export class RequestClient {
@@ -71,7 +71,7 @@ export class RequestClient {
 			request.headers["CallerObjectId"] = config.impersonateAAD;
 		}
 
-		var executeRequest;
+		var executeRequest: (options: Core.RequestOptions) => void;
 		/* develblock:start */
 		if (typeof XMLHttpRequest !== "undefined") {
 			/* develblock:end */
@@ -91,8 +91,8 @@ export class RequestClient {
 			}
 
 			executeRequest({
-				method: request.method,
-				uri: config.webApiUrl + request.path,
+				method: request.method!,
+				uri: config.webApiUrl! + request.path,
 				data: processedData,
 				additionalHeaders: request.headers,
 				responseParams: RequestClient._responseParseParams,
@@ -103,7 +103,7 @@ export class RequestClient {
 				/* develblock:start */
 				proxy: config.proxy,
 				/* develblock:end */
-				requestId: request.requestId,
+				requestId: request.requestId!,
 			});
 		};
 
@@ -159,12 +159,12 @@ export class RequestClient {
 	}
 
 	private static _checkCollectionName(
-		entityName: string,
+		entityName: string | null | undefined,
 		config: DynamicsWebApi.Config,
-		successCallback: (collection: string) => void,
+		successCallback: (collection: string | null | undefined) => void,
 		errorCallback: Function
 	): void {
-		if (RequestClient._isEntityNameException(entityName) || Utility.isNull(entityName)) {
+		if (!entityName || RequestClient._isEntityNameException(entityName)) {
 			successCallback(entityName);
 			return;
 		}
@@ -179,7 +179,7 @@ export class RequestClient {
 		try {
 			RequestClient._getCollectionNames(entityName, config, successCallback, errorCallback);
 		} catch (error) {
-			errorCallback({ message: "Unable to fetch Collection Names. Error: " + error.message });
+			errorCallback({ message: "Unable to fetch Collection Names. Error: " + (error as DynamicsWebApiError).message });
 		}
 	}
 
@@ -206,7 +206,7 @@ export class RequestClient {
 					request.responseParameters.convertedToBatch = false;
 
 					//if the URL contains more characters than max possible limit, convert the request to a batch request
-					if (request.path.length > 2000) {
+					if (request.path!.length > 2000) {
 						let batchRequest = RequestUtility.convertToBatch([request], config);
 
 						request.method = "POST";
@@ -229,7 +229,7 @@ export class RequestClient {
 	}
 	/* develblock:end */
 
-	static getCollectionName(entityName: string): string {
+	static getCollectionName(entityName: string): string | null {
 		return RequestUtility.findCollectionName(entityName);
 	}
 }

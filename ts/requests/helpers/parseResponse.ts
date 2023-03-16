@@ -1,6 +1,6 @@
 ﻿import { DWA } from "../../dwa";
 import { Utility } from "../../utilities/Utility";
-import { ErrorHelper } from "../../helpers/ErrorHelper";
+import { ErrorHelper, DynamicsWebApiError } from "../../helpers/ErrorHelper";
 import { dateReviver } from "./dateReviver";
 import { DynamicsWebApi } from "../../dynamics-web-api";
 import { Core } from "../../types";
@@ -11,7 +11,7 @@ import { Core } from "../../types";
 //}
 
 function getFormattedKeyValue(keyName: string, value: any): any[] {
-	var newKey = null;
+	let newKey: string | null = null;
 	if (keyName.indexOf("@") !== -1) {
 		var format = keyName.split("@");
 		switch (format[1]) {
@@ -141,12 +141,12 @@ function parseBatchHeaders(text: string): any {
 }
 
 //partially taken from http://olingo.apache.org/doc/javascript/apidoc/batch.js.html
-function readLine(text: string, ctx: { position: number }): string {
+function readLine(text: string, ctx: { position: number }): string | null {
 	return readTo(text, ctx, "\r\n");
 }
 
 //partially taken from http://olingo.apache.org/doc/javascript/apidoc/batch.js.html
-function readTo(text: string, ctx: { position: number }, str: string): string {
+function readTo(text: string, ctx: { position: number }, str: string): string | null {
 	var start = ctx.position || 0;
 	var end = text.length;
 	if (str) {
@@ -170,31 +170,30 @@ function readTo(text: string, ctx: { position: number }, str: string): string {
  * @param {Number} [requestNumber] - number of the request
  * @returns {any} parsed batch response
  */
-function parseBatchResponse(response: string, parseParams: any, requestNumber: number = 0): any {
+function parseBatchResponse(response: string, parseParams: any, requestNumber: number = 0): (string | undefined | DynamicsWebApiError | Number)[] {
 	// Not the same delimiter in the response as we specify ourselves in the request,
 	// so we have to extract it.
-	var delimiter = response.substr(0, response.indexOf("\r\n"));
-	var batchResponseParts = response.split(delimiter);
+	const delimiter = response.substr(0, response.indexOf("\r\n"));
+	const batchResponseParts = response.split(delimiter);
 	// The first part will always be an empty string. Just remove it.
 	batchResponseParts.shift();
 	// The last part will be the "--". Just remove it.
 	batchResponseParts.pop();
 
-	//requestNumber = requestNumber || 0;
-
-	var result = [];
-	for (var i = 0; i < batchResponseParts.length; i++) {
-		var batchResponse = batchResponseParts[i];
+	let result: (string | undefined | DynamicsWebApiError | Number)[] = [];
+	for (let i = 0; i < batchResponseParts.length; i++) {
+		let batchResponse = batchResponseParts[i];
 		if (batchResponse.indexOf("--changesetresponse_") > -1) {
 			batchResponse = batchResponse.trim();
-			var batchToProcess = batchResponse.substring(batchResponse.indexOf("\r\n") + 1).trim();
+			const batchToProcess = batchResponse.substring(batchResponse.indexOf("\r\n") + 1).trim();
 
 			result = result.concat(parseBatchResponse(batchToProcess, parseParams, requestNumber));
 		} else {
 			//check http status
-			var httpStatusReg = /HTTP\/?\s*[\d.]*\s+(\d{3})\s+([\w\s]*)$/gm.exec(batchResponse);
-			var httpStatus = parseInt(httpStatusReg[1]);
-			var httpStatusMessage = httpStatusReg[2].trim();
+			const httpStatusReg = /HTTP\/?\s*[\d.]*\s+(\d{3})\s+([\w\s]*)$/gm.exec(batchResponse);
+			//todo: add error handler for httpStatus and httpStatusMessage; remove "!" operator
+			const httpStatus = parseInt(httpStatusReg![1]);
+			const httpStatusMessage = httpStatusReg![2].trim();
 
 			var responseData = batchResponse.substring(batchResponse.indexOf("{"), batchResponse.lastIndexOf("}") + 1);
 
@@ -225,7 +224,8 @@ function parseBatchResponse(response: string, parseParams: any, requestNumber: n
 
 				if (httpStatus >= 400) {
 					let responseHeaders = parseBatchHeaders(
-						batchResponse.substring(batchResponse.indexOf(httpStatusReg[0]) + httpStatusReg[0].length + 1, batchResponse.indexOf("{"))
+						//todo: add error handler for httpStatusReg; remove "!" operator
+						batchResponse.substring(batchResponse.indexOf(httpStatusReg![0]) + httpStatusReg![0].length + 1, batchResponse.indexOf("{"))
 					);
 
 					result.push(
@@ -248,13 +248,14 @@ function parseBatchResponse(response: string, parseParams: any, requestNumber: n
 	return result;
 }
 
-function base64ToString(base64: string): string {
+function base64ToString(base64: string): string | null {
 	/* develblock:start */
 	if (typeof process !== "undefined") {
 		return Buffer.from(base64, "base64").toString("binary");
 	} else if (typeof window !== "undefined")
 		/* develblock:end */
 		return window.atob(base64);
+	else return null;
 }
 
 function parseFileResponse(response: any, responseHeaders: any, parseParams: any): Core.FileParseResult {
@@ -295,8 +296,8 @@ function getHeader(headers: any, name: string): string {
  * @param {Array} parseParams - parameters for parsing the response
  * @returns {any} parsed response
  */
-export function parseResponse(response: string, responseHeaders: any, parseParams: any[]) {
-	var parseResult = undefined;
+export function parseResponse(response: string, responseHeaders: any, parseParams: any[]): any {
+	var parseResult: any = undefined;
 	if (response.length) {
 		if (response.indexOf("--batchresponse_") > -1) {
 			var batch = parseBatchResponse(response, parseParams);

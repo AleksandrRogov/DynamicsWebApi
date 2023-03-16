@@ -9,7 +9,7 @@ import { parseResponseHeaders } from "./helpers/parseResponseHeaders";
  */
 export class XhrWrapper {
 	//for testing
-	static afterSendEvent: Function = null;
+	static afterSendEvent: () => void;
 	static xhrRequest(options: Core.RequestOptions) {
 		const data = options.data;
 		const additionalHeaders = options.additionalHeaders;
@@ -17,8 +17,8 @@ export class XhrWrapper {
 		const successCallback = options.successCallback;
 		const errorCallback = options.errorCallback;
 
-		var request = new XMLHttpRequest();
-		request.open(options.method, options.uri, options.isAsync);
+		let request = new XMLHttpRequest();
+		request.open(options.method, options.uri, options.isAsync || false);
 
 		//set additional headers
 		for (var key in additionalHeaders) {
@@ -44,7 +44,7 @@ export class XhrWrapper {
 						};
 
 						delete responseParams[options.requestId];
-						request = null;
+						// request = null;
 
 						successCallback(response);
 						break;
@@ -82,7 +82,7 @@ export class XhrWrapper {
 						};
 
 						delete responseParams[options.requestId];
-						request = null;
+						// request = null;
 
 						errorCallback(ErrorHelper.handleHttpError(error, errorParameters));
 
@@ -106,7 +106,7 @@ export class XhrWrapper {
 				})
 			);
 			delete responseParams[options.requestId];
-			request = null;
+			// request = null;
 		};
 
 		request.ontimeout = function () {
@@ -120,7 +120,7 @@ export class XhrWrapper {
 				})
 			);
 			delete responseParams[options.requestId];
-			request = null;
+			// request = null;
 		};
 
 		data ? request.send(data) : request.send();

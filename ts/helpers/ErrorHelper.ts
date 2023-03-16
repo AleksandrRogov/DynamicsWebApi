@@ -1,8 +1,8 @@
-﻿declare interface DynamicsWebApiError extends Error {
+﻿export interface DynamicsWebApiError extends Error {
 	status: number;
 }
 
-function throwParameterError(functionName: string, parameterName: string, type: string): void {
+function throwParameterError(functionName: string, parameterName: string, type: string | null | undefined): void {
 	throw new Error(
 		type ? `${functionName} requires a ${parameterName} parameter to be of type ${type}.` : `${functionName} requires a ${parameterName} parameter.`
 	);
@@ -130,7 +130,7 @@ export class ErrorHelper {
 		}
 	}
 
-	static guidParameterCheck(parameter, functionName: string, parameterName: string): string {
+	static guidParameterCheck(parameter, functionName: string, parameterName: string): string | undefined {
 		///<summary>
 		/// Private function used to check whether required parameter is a valid GUID
 		///</summary>
@@ -143,15 +143,14 @@ export class ErrorHelper {
 		/// <returns type="String" />
 
 		try {
-			var match = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(parameter)[0];
-
+			var match = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(parameter)![0];
 			return match;
 		} catch (error) {
 			throwParameterError(functionName, parameterName, "GUID String");
 		}
 	}
 
-	static keyParameterCheck(parameter, functionName: string, parameterName: string): string {
+	static keyParameterCheck(parameter, functionName: string, parameterName: string): string | undefined {
 		try {
 			ErrorHelper.stringParameterCheck(parameter, functionName, parameterName);
 
@@ -167,7 +166,7 @@ export class ErrorHelper {
 			if (alternateKeys.length) {
 				for (var i = 0; i < alternateKeys.length; i++) {
 					alternateKeys[i] = alternateKeys[i].trim().replace('"', "'");
-					/^[\w\d\_]+\=('[^\'\r\n]+'|\d+)$/i.exec(alternateKeys[i])[0];
+					/^[\w\d\_]+\=('[^\'\r\n]+'|\d+)$/i.exec(alternateKeys[i])![0];
 				}
 			}
 
@@ -192,14 +191,14 @@ export class ErrorHelper {
 		}
 	}
 
-	static batchIncompatible(functionName: string, isBatch: boolean): void {
+	static throwBatchIncompatible(functionName: string, isBatch: boolean): void {
 		if (isBatch) {
 			isBatch = false;
 			throw new Error(functionName + " cannot be used in a BATCH request.");
 		}
 	}
 
-	static batchNotStarted(isBatch: boolean): void {
+	static throwBatchNotStarted(isBatch: boolean): void {
 		if (!isBatch) {
 			throw new Error(
 				"Batch operation has not been started. Please call a DynamicsWebApi.startBatch() function prior to calling DynamicsWebApi.executeBatch() to perform a batch request correctly."

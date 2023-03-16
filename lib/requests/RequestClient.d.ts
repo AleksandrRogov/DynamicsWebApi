@@ -25,6 +25,6 @@ export declare class RequestClient {
     private static _checkCollectionName;
     static makeRequest(request: Core.InternalRequest, config: DynamicsWebApi.Config, resolve: Function, reject: Function): void;
     static _clearEntityNames(): void;
-    static getCollectionName(entityName: string): string;
+    static getCollectionName(entityName: string): string | null;
 }
 //# sourceMappingURL=RequestClient.d.ts.map

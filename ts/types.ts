@@ -4,17 +4,17 @@ export declare namespace Core {
 	interface RequestOptions {
 		method: string;
 		uri: string;
-		data: string;
+		data: string | null;
 		additionalHeaders: any;
 		responseParams: {
 			[key: string]: any[];
 		};
 		successCallback: Function;
 		errorCallback: Function;
-		timeout: number;
+		timeout?: number | null;
 		isAsync?: boolean;
-		requestId?: string;
-		proxy?: DynamicsWebApi.ProxyConfig;
+		requestId: string;
+		proxy?: DynamicsWebApi.ProxyConfig | null;
 	}
 
 	interface BatchRequestCollection {
@@ -42,7 +42,7 @@ export declare namespace Core {
 		/**Sets the $apply system query option to aggregate and group your data dynamically. */
 		apply?: string;
 		/**The name of the Entity Collection or Entity Logical name. */
-		collection?: string;
+		collection?: string | null;
 		/**Impersonates a user based on their systemuserid by adding "MSCRMCallerID" header. A String representing the GUID value for the Dynamics 365 systemuserid. */
 		impersonate?: string;
 		/**Impersonates a user based on their Azure Active Directory (AAD) object id by passing that value along with the header "CallerObjectId". A String should represent a GUID value. */
@@ -118,7 +118,7 @@ export declare namespace Core {
 		headers?: any;
 		pageNumber?: number;
 		pagingCookie?: string;
-		requestId?: string;
+		requestId?: string | null;
 		transferMode?: string;
 		range?: string;
 		downloadSize?: string;

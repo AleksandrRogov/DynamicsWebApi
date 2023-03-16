@@ -71,7 +71,7 @@ export class RequestUtility {
 			}
 		} else {
 			ErrorHelper.stringParameterCheck(request.url, `DynamicsWebApi.${request.functionName}`, "request.url");
-			request.path = request.url.replace(config.webApiUrl, "");
+			request.path = request.url.replace(config.webApiUrl!, "");
 			request.path = RequestUtility.composeUrl(request, config, request.path);
 		}
 
@@ -97,7 +97,7 @@ export class RequestUtility {
 	 * @returns {ConvertedRequestOptions} Additional options in request
 	 */
 	static composeUrl(request: Core.InternalRequest, config: DynamicsWebApi.Config, url: string = "", joinSymbol: string = "&"): string {
-		let queryArray = [];
+		const queryArray: string[] = [];
 
 		joinSymbol = joinSymbol || "&";
 		url = url || "";
@@ -155,7 +155,7 @@ export class RequestUtility {
 				let filterResult = request.filter;
 
 				//fix bug 2018-06-11
-				let m: RegExpExecArray = null;
+				let m: RegExpExecArray | null = null;
 				while ((m = removeBracketsFromGuidReg.exec(filterResult)) !== null) {
 					if (m.index === removeBracketsFromGuidReg.lastIndex) {
 						removeBracketsFromGuidReg.lastIndex++;
@@ -236,12 +236,12 @@ export class RequestUtility {
 				if (typeof request.expand === "string") {
 					queryArray.push("$expand=" + request.expand);
 				} else {
-					let expandQueryArray = [];
+					const expandQueryArray: string[] = [];
 					for (let i = 0; i < request.expand.length; i++) {
 						if (request.expand[i].property) {
-							let expand = <Core.InternalRequest>request.expand[i];
+							const expand = <Core.InternalRequest>request.expand[i];
 							expand.functionName = `${request.functionName} $expand`;
-							let expandConverted = RequestUtility.composeUrl(expand, config, null, ";");
+							let expandConverted = RequestUtility.composeUrl(expand, config, "", ";");
 							if (expandConverted) {
 								expandConverted = `(${expandConverted.substr(1)})`;
 							}
@@ -342,12 +342,12 @@ export class RequestUtility {
 	}
 
 	static composePreferHeader(request: Core.InternalRequest, config: DynamicsWebApi.Config): string {
-		let returnRepresentation = request.returnRepresentation;
-		let includeAnnotations = request.includeAnnotations;
-		let maxPageSize = request.maxPageSize;
-		let trackChanges = request.trackChanges;
+		let returnRepresentation: boolean | null | undefined = request.returnRepresentation;
+		let includeAnnotations: string | null | undefined = request.includeAnnotations;
+		let maxPageSize: number | null | undefined = request.maxPageSize;
+		let trackChanges: boolean | null | undefined = request.trackChanges;
 
-		let prefer: string[];
+		let prefer: string[] = [];
 
 		if (request.prefer && request.prefer.length) {
 			ErrorHelper.stringOrArrayParameterCheck(request.prefer, `DynamicsWebApi.${request.functionName}`, "request.prefer");
@@ -405,8 +405,8 @@ export class RequestUtility {
 	static convertToBatch(requests: Core.InternalRequest[], config: DynamicsWebApi.Config): Core.InternalBatchRequest {
 		let batchBoundary = `dwa_batch_${Utility.generateUUID()}`;
 
-		let batchBody = [];
-		let currentChangeSet = null;
+		const batchBody: string[] = [];
+		let currentChangeSet: string | null = null;
 		let contentId = 100000;
 
 		requests.forEach((internalRequest) => {
@@ -443,7 +443,7 @@ export class RequestUtility {
 				batchBody.push(`Content-ID: ${contentIdValue}`);
 			}
 
-			if (!internalRequest.path.startsWith("$")) {
+			if (!internalRequest.path?.startsWith("$")) {
 				batchBody.push(`\n${internalRequest.method} ${config.webApiUrl}${internalRequest.path} HTTP/1.1`);
 			} else {
 				batchBody.push(`\n${internalRequest.method} ${internalRequest.path} HTTP/1.1`);
@@ -482,7 +482,7 @@ export class RequestUtility {
 
 	static entityNames: any = null;
 
-	static findCollectionName(entityName: string): string {
+	static findCollectionName(entityName: string): string | null {
 		let collectionName = null;
 
 		if (!Utility.isNull(RequestUtility.entityNames)) {
@@ -514,10 +514,10 @@ export class RequestUtility {
 
 						if (config.useEntityNames) {
 							//replace entity name with collection name
-							let regularExpression = /([\w_]+)(\([\d\w-]+\))$/;
-							let valueParts = regularExpression.exec(value);
-							if (valueParts.length > 2) {
-								let collectionName = RequestUtility.findCollectionName(valueParts[1]);
+							const regularExpression = /([\w_]+)(\([\d\w-]+\))$/;
+							const valueParts = regularExpression.exec(value);
+							if (valueParts && valueParts.length > 2) {
+								const collectionName = RequestUtility.findCollectionName(valueParts[1]);
 
 								if (!Utility.isNull(collectionName)) {
 									value = value.replace(regularExpression, collectionName + "$2");

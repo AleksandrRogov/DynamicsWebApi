@@ -1,4 +1,4 @@
-declare interface DynamicsWebApiError extends Error {
+export interface DynamicsWebApiError extends Error {
     status: number;
 }
 export declare class ErrorHelper {
@@ -11,11 +11,10 @@ export declare class ErrorHelper {
     static batchIsEmpty(): Error[];
     static handleHttpError(parsedError: any, parameters?: any): DynamicsWebApiError;
     static boolParameterCheck(parameter: any, functionName: string, parameterName: string): void;
-    static guidParameterCheck(parameter: any, functionName: string, parameterName: string): string;
-    static keyParameterCheck(parameter: any, functionName: string, parameterName: string): string;
+    static guidParameterCheck(parameter: any, functionName: string, parameterName: string): string | undefined;
+    static keyParameterCheck(parameter: any, functionName: string, parameterName: string): string | undefined;
     static callbackParameterCheck(callbackParameter: any, functionName: string, parameterName: string): void;
     static batchIncompatible(functionName: string, isBatch: boolean): void;
     static batchNotStarted(isBatch: boolean): void;
 }
-export {};
 //# sourceMappingURL=ErrorHelper.d.ts.map

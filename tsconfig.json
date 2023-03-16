@@ -12,8 +12,8 @@
 		"lib": ["ES6", "DOM"],
 		"declaration": true,
 		"declarationMap": true,
-		"skipLibCheck": true
-		//"strict": true
+		"skipLibCheck": true,
+		"strict": true
 	},
 	// "compileOnSave": true,
 	"include": ["./ts/**/*"],
