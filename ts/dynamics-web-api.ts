@@ -42,7 +42,7 @@ export class DynamicsWebApi {
 	   dynamicsWebApi.setConfig({ webApiVersion: '9.1' });
 	 */
 	setConfig = (config: DynamicsWebApi.Config): void => {
-		var isVersionDiffer = (config.webApiVersion || this._internalConfig.webApiVersion) !== this._internalConfig.webApiVersion;
+		const isVersionDiffer = (config.webApiVersion || this._internalConfig.webApiVersion) !== this._internalConfig.webApiVersion;
 
 		if (config.webApiVersion) {
 			ErrorHelper.stringParameterCheck(config.webApiVersion, "DynamicsWebApi.setConfig", "config.webApiVersion");
@@ -264,7 +264,7 @@ export class DynamicsWebApi {
 		var field = Object.keys(request.fieldValuePair)[0];
 		var fieldValue = request.fieldValuePair[field];
 
-		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
 		internalRequest.navigationProperty = field;
 		internalRequest.data = { value: fieldValue };
 		internalRequest.functionName = "updateSingleProperty";
@@ -297,7 +297,7 @@ export class DynamicsWebApi {
 		internalRequest.responseParameters = { valueIfEmpty: true };
 
 		//copy locally
-		var ifmatch = internalRequest.ifmatch;
+		const ifmatch = internalRequest.ifmatch;
 		return this._makeRequest(internalRequest)
 			.then(function (response) {
 				return response.data;
@@ -322,13 +322,13 @@ export class DynamicsWebApi {
 	upsert = <T = any>(request: DynamicsWebApi.UpsertRequest<T>): Promise<T> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.upsert", "request");
 
-		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
 		internalRequest.method = "PATCH";
 		internalRequest.functionName = "upsert";
 
 		//copy locally
-		var ifnonematch = internalRequest.ifnonematch;
-		var ifmatch = internalRequest.ifmatch;
+		const ifnonematch = internalRequest.ifnonematch;
+		const ifmatch = internalRequest.ifmatch;
 		return this._makeRequest(internalRequest)
 			.then(function (response) {
 				return response.data;
@@ -548,7 +548,7 @@ export class DynamicsWebApi {
 	fetch = <T = any>(request: DynamicsWebApi.FetchXmlRequest): Promise<DynamicsWebApi.FetchXmlResponse<T>> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.fetch", "request");
 
-		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
 		internalRequest.method = "GET";
 		internalRequest.functionName = "fetch";
 
@@ -556,10 +556,14 @@ export class DynamicsWebApi {
 
 		//only add paging if there is no top
 		if (internalRequest.fetchXml && !/^<fetch.+top=/.test(internalRequest.fetchXml)) {
-			internalRequest.pageNumber = internalRequest.pageNumber || 1;
+			let replacementString: string = "";
 
-			ErrorHelper.numberParameterCheck(internalRequest.pageNumber, "DynamicsWebApi.fetch", "request.pageNumber");
-			let replacementString = `$1 page="${internalRequest.pageNumber}"`;
+			if (!/^<fetch.+page=/.test(internalRequest.fetchXml)) {
+				internalRequest.pageNumber = internalRequest.pageNumber || 1;
+
+				ErrorHelper.numberParameterCheck(internalRequest.pageNumber, "DynamicsWebApi.fetch", "request.pageNumber");
+				replacementString = `$1 page="${internalRequest.pageNumber}"`;
+			}
 
 			if (internalRequest.pagingCookie != null) {
 				ErrorHelper.stringParameterCheck(internalRequest.pagingCookie, "DynamicsWebApi.fetch", "request.pagingCookie");
@@ -567,7 +571,7 @@ export class DynamicsWebApi {
 			}
 
 			//add page number and paging cookie to fetch xml
-			internalRequest.fetchXml = internalRequest.fetchXml.replace(/^(<fetch)/, replacementString);
+			if (replacementString) internalRequest.fetchXml = internalRequest.fetchXml.replace(/^(<fetch)/, replacementString);
 		}
 
 		internalRequest.responseParameters = { pageNumber: internalRequest.pageNumber };
@@ -586,7 +590,7 @@ export class DynamicsWebApi {
 	fetchAll = <T = any>(request: DynamicsWebApi.FetchAllRequest): Promise<DynamicsWebApi.FetchXmlResponse<T>> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.fetchAll", "request");
 
-		let _executeFetchXmlAll = (request: DynamicsWebApi.FetchXmlRequest, records: any[] = []): Promise<DynamicsWebApi.FetchXmlResponse<T>> => {
+		const _executeFetchXmlAll = (request: DynamicsWebApi.FetchXmlRequest, records: any[] = []): Promise<DynamicsWebApi.FetchXmlResponse<T>> => {
 			// records = records || [];
 
 			return this.fetch(request).then(function (response) {
@@ -616,14 +620,14 @@ export class DynamicsWebApi {
 	associate = (request: DynamicsWebApi.AssociateRequest): Promise<void> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.associate", "request");
 
-		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
 		internalRequest.method = "POST";
 		internalRequest.functionName = "associate";
 
 		ErrorHelper.stringParameterCheck(request.relatedCollection, "DynamicsWebApi.associate", "request.relatedcollection");
 		ErrorHelper.stringParameterCheck(request.relationshipName, "DynamicsWebApi.associate", "request.relationshipName");
-		let primaryKey = ErrorHelper.keyParameterCheck(request.primaryKey, "DynamicsWebApi.associate", "request.primaryKey");
-		let relatedKey = ErrorHelper.keyParameterCheck(request.relatedKey, "DynamicsWebApi.associate", "request.relatedKey");
+		const primaryKey = ErrorHelper.keyParameterCheck(request.primaryKey, "DynamicsWebApi.associate", "request.primaryKey");
+		const relatedKey = ErrorHelper.keyParameterCheck(request.relatedKey, "DynamicsWebApi.associate", "request.relatedKey");
 
 		internalRequest.navigationProperty = request.relationshipName + "/$ref";
 		internalRequest.key = primaryKey;
@@ -643,13 +647,13 @@ export class DynamicsWebApi {
 	disassociate = (request: DynamicsWebApi.DisassociateRequest): Promise<void> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.disassociate", "request");
 
-		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
 		internalRequest.method = "DELETE";
 		internalRequest.functionName = "disassociate";
 
 		ErrorHelper.stringParameterCheck(request.relationshipName, "DynamicsWebApi.disassociate", "request.relationshipName");
-		let primaryKey = ErrorHelper.keyParameterCheck(request.primaryKey, "DynamicsWebApi.disassociate", "request.primaryKey");
-		let relatedKey = ErrorHelper.keyParameterCheck(request.relatedKey, "DynamicsWebApi.disassociate", "request.relatedId");
+		const primaryKey = ErrorHelper.keyParameterCheck(request.primaryKey, "DynamicsWebApi.disassociate", "request.primaryKey");
+		const relatedKey = ErrorHelper.keyParameterCheck(request.relatedKey, "DynamicsWebApi.disassociate", "request.relatedId");
 
 		internalRequest.key = primaryKey;
 		internalRequest.navigationProperty = `${request.relationshipName}(${relatedKey})/$ref`;
@@ -668,12 +672,12 @@ export class DynamicsWebApi {
 	associateSingleValued = (request: DynamicsWebApi.AssociateSingleValuedRequest): Promise<void> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.associateSingleValued", "request");
 
-		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
 		internalRequest.method = "PUT";
 		internalRequest.functionName = "associateSingleValued";
 
-		let primaryKey = ErrorHelper.keyParameterCheck(request.primaryKey, "DynamicsWebApi.associateSingleValued", "request.primaryKey");
-		let relatedKey = ErrorHelper.keyParameterCheck(request.relatedKey, "DynamicsWebApi.associateSingleValued", "request.relatedKey");
+		const primaryKey = ErrorHelper.keyParameterCheck(request.primaryKey, "DynamicsWebApi.associateSingleValued", "request.primaryKey");
+		const relatedKey = ErrorHelper.keyParameterCheck(request.relatedKey, "DynamicsWebApi.associateSingleValued", "request.relatedKey");
 		ErrorHelper.stringParameterCheck(request.navigationProperty, "DynamicsWebApi.associateSingleValued", "request.navigationProperty");
 		ErrorHelper.stringParameterCheck(request.relatedCollection, "DynamicsWebApi.associateSingleValued", "request.relatedcollection");
 
@@ -695,11 +699,11 @@ export class DynamicsWebApi {
 	disassociateSingleValued = (request: DynamicsWebApi.DisassociateSingleValuedRequest): Promise<void> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.disassociateSingleValued", "request");
 
-		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
 		internalRequest.method = "DELETE";
 		internalRequest.functionName = "disassociateSingleValued";
 
-		let primaryKey = ErrorHelper.keyParameterCheck(request.primaryKey, "DynamicsWebApi.disassociateSingleValued", "request.primaryKey");
+		const primaryKey = ErrorHelper.keyParameterCheck(request.primaryKey, "DynamicsWebApi.disassociateSingleValued", "request.primaryKey");
 		ErrorHelper.stringParameterCheck(request.navigationProperty, "DynamicsWebApi.disassociateSingleValued", "request.navigationProperty");
 
 		internalRequest.navigationProperty += "/$ref";
@@ -736,7 +740,7 @@ export class DynamicsWebApi {
 		ErrorHelper.parameterCheck(request, `DynamicsWebApi.${functionName}`, "request");
 		ErrorHelper.stringParameterCheck(request.functionName, `DynamicsWebApi.${functionName}`, "request.functionName");
 
-		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
 		internalRequest.method = "GET";
 		internalRequest.functionName = functionName;
 
@@ -775,7 +779,7 @@ export class DynamicsWebApi {
 		ErrorHelper.parameterCheck(request, `DynamicsWebApi.${functionName}`, "request");
 		ErrorHelper.stringParameterCheck(request.actionName, `DynamicsWebApi.${functionName}`, "request.actionName");
 
-		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
 		internalRequest.method = "POST";
 		internalRequest.functionName = functionName;
 
@@ -799,7 +803,7 @@ export class DynamicsWebApi {
 		ErrorHelper.parameterCheck(request, `DynamicsWebApi.createEntity`, "request");
 		ErrorHelper.parameterCheck(request.data, "DynamicsWebApi.createEntity", "request.data");
 
-		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
 		internalRequest.collection = "EntityDefinitions";
 		internalRequest.functionName = "createEntity";
 
@@ -817,7 +821,7 @@ export class DynamicsWebApi {
 		ErrorHelper.parameterCheck(request.data, "DynamicsWebApi.updateEntity", "request.data");
 		ErrorHelper.guidParameterCheck(request.data.MetadataId, "DynamicsWebApi.updateEntity", "request.data.MetadataId");
 
-		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
 		internalRequest.collection = "EntityDefinitions";
 		internalRequest.key = internalRequest.data.MetadataId;
 		internalRequest.functionName = "updateEntity";
@@ -836,7 +840,7 @@ export class DynamicsWebApi {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieveEntity", "request");
 		ErrorHelper.keyParameterCheck(request.key, "DynamicsWebApi.retrieveEntity", "request.key");
 
-		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
 		internalRequest.collection = "EntityDefinitions";
 		internalRequest.functionName = "retrieveEntity";
 
@@ -850,7 +854,7 @@ export class DynamicsWebApi {
 	 * @returns {Promise} D365 Web Api result
 	 */
 	retrieveEntities = <T = any>(request?: DynamicsWebApi.RetrieveEntitiesRequest): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>> => {
-		let internalRequest: Core.InternalRequest = !request ? {} : Utility.copyObject<Core.InternalRequest>(request);
+		const internalRequest: Core.InternalRequest = !request ? {} : Utility.copyObject<Core.InternalRequest>(request);
 
 		internalRequest.collection = "EntityDefinitions";
 		internalRequest.functionName = "retrieveEntities";
@@ -869,7 +873,7 @@ export class DynamicsWebApi {
 		ErrorHelper.parameterCheck(request.data, "DynamicsWebApi.createAttribute", "request.data");
 		ErrorHelper.keyParameterCheck(request.entityKey, "DynamicsWebApi.createAttribute", "request.entityKey");
 
-		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
 		internalRequest.collection = "EntityDefinitions";
 		internalRequest.functionName = "retrieveEntity";
 		internalRequest.navigationProperty = "Attributes";
@@ -894,7 +898,7 @@ export class DynamicsWebApi {
 			ErrorHelper.stringParameterCheck(request.castType, "DynamicsWebApi.updateAttribute", "request.castType");
 		}
 
-		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
 		internalRequest.collection = "EntityDefinitions";
 		internalRequest.navigationProperty = "Attributes";
 		internalRequest.navigationPropertyKey = request.data.MetadataId;
@@ -920,7 +924,7 @@ export class DynamicsWebApi {
 			ErrorHelper.stringParameterCheck(request.castType, "DynamicsWebApi.retrieveAttributes", "request.castType");
 		}
 
-		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
 		internalRequest.collection = "EntityDefinitions";
 		internalRequest.navigationProperty = "Attributes";
 		internalRequest.metadataAttributeType = request.castType;
@@ -945,7 +949,7 @@ export class DynamicsWebApi {
 			ErrorHelper.stringParameterCheck(request.castType, "DynamicsWebApi.retrieveAttribute", "request.castType");
 		}
 
-		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
 		internalRequest.collection = "EntityDefinitions";
 		internalRequest.navigationProperty = "Attributes";
 		internalRequest.navigationPropertyKey = request.attributeKey;
@@ -966,7 +970,7 @@ export class DynamicsWebApi {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.createRelationship", "request");
 		ErrorHelper.parameterCheck(request.data, "DynamicsWebApi.createRelationship", "request.data");
 
-		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
 		internalRequest.collection = "RelationshipDefinitions";
 		internalRequest.functionName = "createRelationship";
 
@@ -988,7 +992,7 @@ export class DynamicsWebApi {
 			ErrorHelper.stringParameterCheck(request.castType, "DynamicsWebApi.updateRelationship", "request.castType");
 		}
 
-		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
 		internalRequest.collection = "RelationshipDefinitions";
 		internalRequest.key = request.data.MetadataId;
 		internalRequest.navigationProperty = request.castType;
@@ -1008,7 +1012,7 @@ export class DynamicsWebApi {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.deleteRelationship", "request");
 		ErrorHelper.keyParameterCheck(request.key, "DynamicsWebApi.deleteRelationship", "request.key");
 
-		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
 		internalRequest.collection = "RelationshipDefinitions";
 		internalRequest.functionName = "deleteRelationship";
 
@@ -1022,7 +1026,7 @@ export class DynamicsWebApi {
 	 * @returns {Promise} D365 Web Api result
 	 */
 	retrieveRelationships = <T = any>(request?: DynamicsWebApi.RetrieveRelationshipsRequest): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>> => {
-		let internalRequest: Core.InternalRequest = !request ? {} : Utility.copyObject<Core.InternalRequest>(request);
+		const internalRequest: Core.InternalRequest = !request ? {} : Utility.copyObject<Core.InternalRequest>(request);
 
 		internalRequest.collection = "RelationshipDefinitions";
 		internalRequest.functionName = "retrieveRelationships";
@@ -1051,7 +1055,7 @@ export class DynamicsWebApi {
 			ErrorHelper.stringParameterCheck(request.castType, "DynamicsWebApi.retrieveRelationship", "request.castType");
 		}
 
-		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
 		internalRequest.collection = "RelationshipDefinitions";
 		internalRequest.navigationProperty = request.castType;
 		internalRequest.functionName = "retrieveRelationship";
@@ -1069,7 +1073,7 @@ export class DynamicsWebApi {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.createGlobalOptionSet", "request");
 		ErrorHelper.parameterCheck(request.data, "DynamicsWebApi.createGlobalOptionSet", "request.data");
 
-		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
 		internalRequest.collection = "GlobalOptionSetDefinitions";
 		internalRequest.functionName = "createGlobalOptionSet";
 
@@ -1091,7 +1095,7 @@ export class DynamicsWebApi {
 			ErrorHelper.stringParameterCheck(request.castType, "DynamicsWebApi.updateGlobalOptionSet", "request.castType");
 		}
 
-		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
 		internalRequest.collection = "GlobalOptionSetDefinitions";
 		internalRequest.key = request.data.MetadataId;
 		internalRequest.functionName = "updateGlobalOptionSet";
@@ -1109,7 +1113,7 @@ export class DynamicsWebApi {
 	deleteGlobalOptionSet = (request: DynamicsWebApi.DeleteGlobalOptionSetRequest): Promise<any> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.deleteGlobalOptionSet", "request");
 
-		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
 		internalRequest.collection = "GlobalOptionSetDefinitions";
 		internalRequest.functionName = "deleteGlobalOptionSet";
 
@@ -1129,7 +1133,7 @@ export class DynamicsWebApi {
 			ErrorHelper.stringParameterCheck(request.castType, "DynamicsWebApi.retrieveGlobalOptionSet", "request.castType");
 		}
 
-		let internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
 		internalRequest.collection = "GlobalOptionSetDefinitions";
 		internalRequest.navigationProperty = request.castType;
 		internalRequest.functionName = "retrieveGlobalOptionSet";
@@ -1144,7 +1148,7 @@ export class DynamicsWebApi {
 	 * @returns {Promise} D365 Web Api result
 	 */
 	retrieveGlobalOptionSets = <T = any>(request?: DynamicsWebApi.RetrieveGlobalOptionSetsRequest): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>> => {
-		let internalRequest: Core.InternalRequest = !request ? {} : Utility.copyObject<Core.InternalRequest>(request);
+		const internalRequest: Core.InternalRequest = !request ? {} : Utility.copyObject<Core.InternalRequest>(request);
 
 		internalRequest.collection = "GlobalOptionSetDefinitions";
 		internalRequest.functionName = "retrieveGlobalOptionSets";
@@ -1174,7 +1178,7 @@ export class DynamicsWebApi {
 	executeBatch = (request?: DynamicsWebApi.BaseRequest): Promise<any[]> => {
 		ErrorHelper.throwBatchNotStarted(this._isBatch);
 
-		let internalRequest: Core.InternalRequest = !request ? {} : Utility.copyObject<Core.InternalRequest>(request);
+		const internalRequest: Core.InternalRequest = !request ? {} : Utility.copyObject<Core.InternalRequest>(request);
 
 		internalRequest.collection = "$batch";
 		internalRequest.method = "POST";
@@ -1308,6 +1312,8 @@ export declare namespace DynamicsWebApi {
 	}
 
 	export interface CreateRequest<T = any> extends CRUDRequest {
+		/**v.1.7.5+ If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. */
+		bypassCustomPluginExecution?: boolean;
 		/**Web API v9+ only! Boolean that enables duplicate detection. */
 		duplicateDetection?: boolean;
 		/**A JavaScript object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single-valued navigation properties). */
@@ -1320,13 +1326,19 @@ export declare namespace DynamicsWebApi {
 		navigationProperty?: string;
 		/**A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata). */
 		navigationPropertyKey?: string;
+		/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+		select?: string[];
 		/**Sets Prefer header request with value "return=representation".Use this property to return just created or updated entity in a single request. */
 		returnRepresentation?: boolean;
 		/**BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */
 		contentId?: string;
+		/**v.1.7.7+ A unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. */
+		partitionId?: string;
 	}
 
 	export interface UpdateRequestBase<T = any> extends CRUDRequest {
+		/**v.1.7.5+ If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. */
+		bypassCustomPluginExecution?: boolean;
 		/**Web API v9+ only! Boolean that enables duplicate detection. */
 		duplicateDetection?: boolean;
 		/**A JavaScript object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single-valued navigation properties). */
@@ -1349,6 +1361,8 @@ export declare namespace DynamicsWebApi {
 		navigationProperty?: string;
 		/**A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata). */
 		navigationPropertyKey?: string;
+		/**v.1.7.7+ A unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. */
+		partitionId?: string;
 	}
 
 	export interface UpdateRequest<T = any> extends UpdateRequestBase<T> {
@@ -1379,6 +1393,8 @@ export declare namespace DynamicsWebApi {
 	}
 
 	export interface DeleteRequest extends CRUDRequest {
+		/**v.1.7.5+ If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. */
+		bypassCustomPluginExecution?: boolean;
 		/**Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests.*/
 		ifmatch?: string;
 		/**BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */
@@ -1408,6 +1424,8 @@ export declare namespace DynamicsWebApi {
 		select?: string[];
 		/**A String representing the GUID value of the user query. */
 		userQuery?: string;
+		/**v.1.7.7+ A unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. */
+		partitionId?: string;
 	}
 
 	export interface RetrieveMultipleRequest extends Request {
@@ -1431,6 +1449,10 @@ export declare namespace DynamicsWebApi {
 		top?: number;
 		/**Sets Prefer header with value 'odata.track-changes' to request that a delta link be returned which can subsequently be used to retrieve entity changes. */
 		trackChanges?: boolean;
+		/**v.1.7.7+ A unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. */
+		partitionId?: string;
+		/**v.1.7.7+ Additional query parameters that either have not been implemented yet or they are parameter aliases for "$filter" and "$orderBy". Important! These parameters ARE NOT URI encoded! */
+		queryParams?: string[];
 	}
 
 	export interface AssociateRequest extends Request {
@@ -1732,7 +1754,9 @@ export declare namespace DynamicsWebApi {
 
 	export interface MultipleResponse<T = any> {
 		/**Multiple respone entities */
-		value?: T[];
+		value: T[];
+		oDataCount?: number;
+		oDataContext?: string;
 	}
 
 	export interface AllResponse<T> extends MultipleResponse<T> {
@@ -1741,6 +1765,8 @@ export declare namespace DynamicsWebApi {
 	}
 
 	export interface RetrieveMultipleResponse<T> extends MultipleResponse<T> {
+		"@Microsoft.Dynamics.CRM.totalrecordcount"?: number;
+		"@Microsoft.Dynamics.CRM.totalrecordcountlimitexceeded"?: boolean;
 		/**@odata.nextLink value */
 		oDataNextLink?: string;
 		/**@odata.deltaLink value */
@@ -1748,6 +1774,8 @@ export declare namespace DynamicsWebApi {
 	}
 
 	export interface FetchXmlResponse<T> extends MultipleResponse<T> {
+		"@Microsoft.Dynamics.CRM.totalrecordcount"?: number;
+		"@Microsoft.Dynamics.CRM.totalrecordcountlimitexceeded"?: boolean;
 		/**Paging information */
 		PagingInfo?: {
 			/**Number of the next page */

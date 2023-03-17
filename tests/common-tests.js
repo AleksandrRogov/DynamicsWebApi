@@ -878,6 +878,26 @@ describe("RequestUtility.composeUrl -", function () {
 		expect(result).to.deep.equal(stubUrl + "?userQuery=" + mocks.data.testEntityId);
 	});
 
+	it("partitionId", function () {
+		var dwaRequest = {
+			partitionId: "partition1",
+			functionName: "",
+		};
+
+		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+		expect(result).to.deep.equal(stubUrl + "?partitionid='partition1'");
+	});
+
+	it("queryParams", function () {
+		var dwaRequest = {
+			filter: "something eq 2",
+			queryParams: ["p1=bla", "@p2=[22,23]"],
+		};
+
+		var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+		expect(result).to.deep.equal(stubUrl + "?$filter=" + encodeURIComponent("something eq 2") + "&p1=bla&@p2=[22,23]");
+	});
+
 	it("multiple options", function () {
 		var dwaRequest = {
 			select: ["name", "subject"],
@@ -1209,6 +1229,36 @@ describe("RequestUtility.composeHeaders -", function () {
 
 		var result = RequestUtility.composeHeaders(dwaRequest);
 		expect(result).to.deep.equal({ "MSCRM.SuppressDuplicateDetection": "false" });
+	});
+
+	it("bypassCustomPluginExecution empty", function () {
+		var dwaRequest = {
+			bypassCustomPluginExecution: false,
+			functionName: "",
+		};
+
+		var result = RequestUtility.composeHeaders(dwaRequest);
+		expect(result).to.deep.equal({});
+	});
+
+	it("bypassCustomPluginExecution null", function () {
+		var dwaRequest = {
+			bypassCustomPluginExecution: null,
+			functionName: "",
+		};
+
+		var result = RequestUtility.composeHeaders(dwaRequest);
+		expect(result).to.deep.equal({});
+	});
+
+	it("bypassCustomPluginExecution true", function () {
+		var dwaRequest = {
+			bypassCustomPluginExecution: true,
+			functionName: "",
+		};
+
+		var result = RequestUtility.composeHeaders(dwaRequest);
+		expect(result).to.deep.equal({ "MSCRM.BypassCustomPluginExecution": "true" });
 	});
 
 	it("includeAnnotations & returnRepresentation", function () {
@@ -1791,6 +1841,12 @@ describe("ErrorHelper.keyParameterCheck", function () {
 		expect(result).to.eq("altKey='value',anotherKey='value2'");
 	});
 
+	it("checks correct alternate keys (replaces double quotes with single quotes)", function () {
+		var alternateKey = 'altKey="value", anotherKey="value2"';
+		var result = ErrorHelper.keyParameterCheck(alternateKey);
+		expect(result).to.eq("altKey='value',anotherKey='value2'");
+	});
+
 	it("checks correct alternate keys string and integer", function () {
 		var alternateKey = "altKey=123456,anotherKey='value2'";
 		var result = ErrorHelper.keyParameterCheck(alternateKey);
@@ -1799,7 +1855,7 @@ describe("ErrorHelper.keyParameterCheck", function () {
 
 	it("throws an error when alternate key is incorrect", function () {
 		expect(function () {
-			var alternateKey = "altKey='value, anotherKey='value2'";
+			var alternateKey = "altKey=";
 			ErrorHelper.keyParameterCheck(alternateKey, "fun", "param");
 		}).to.throw("fun requires a param parameter to be of type String representing GUID or Alternate Key");
 	});

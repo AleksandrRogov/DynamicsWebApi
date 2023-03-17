@@ -2951,6 +2951,50 @@ describe("promises -", function () {
 				expect(scope.isDone()).to.be.true;
 			});
 		});
+
+		describe("filter & queryParams parameters", function () {
+			var scope;
+			before(function () {
+				var response = mocks.responses.multipleResponse;
+				scope = nock(mocks.webApiUrl, {
+					reqheaders: {
+						Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.FormattedValue + '"',
+					},
+				})
+					.get(
+						mocks.responses.collectionUrl +
+							'?$filter=Microsoft.Dynamics.CRM.In(PropertyName=@p1,PropertyValues=@p2)&@p1=\'lastname\'&@p2=["First", "Last\'s"]'
+					)
+					.reply(response.status, response.responseText, response.responseHeaders);
+			});
+
+			after(function () {
+				nock.cleanAll();
+			});
+
+			it("returns a correct response", function (done) {
+				var dwaRequest = {
+					collection: "tests",
+					includeAnnotations: DWA.Prefer.Annotations.FormattedValue,
+					filter: "Microsoft.Dynamics.CRM.In(PropertyName=@p1,PropertyValues=@p2)",
+					queryParams: ["@p1='lastname'", '@p2=["First", "Last\'s"]'],
+				};
+
+				dynamicsWebApiTest
+					.retrieveMultiple(dwaRequest)
+					.then(function (object) {
+						expect(object).to.deep.equal(mocks.responses.multiple());
+						done();
+					})
+					.catch(function (object) {
+						done(object);
+					});
+			});
+
+			it("all requests have been made", function () {
+				expect(scope.isDone()).to.be.true;
+			});
+		});
 	});
 
 	describe("dynamicsWebApi.retrieveAll -", function () {
@@ -5098,6 +5142,62 @@ describe("promises -", function () {
 			});
 		});
 
+		describe("create / create with Content-ID - URL Replacement", function () {
+			var scope;
+			var rBody = mocks.data.batchCreateContentIDURLReplace;
+			var rBodys = rBody.split("\n");
+			var checkBody = "";
+			for (var i = 0; i < rBodys.length; i++) {
+				checkBody += rBodys[i];
+			}
+			before(function () {
+				var response = mocks.responses.batchUpdateDelete;
+				scope = nock(mocks.webApiUrl)
+					.filteringRequestBody(function (body) {
+						body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
+						body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "changeset_XXX");
+						var bodys = body.split("\n");
+
+						var resultBody = "";
+						for (var i = 0; i < bodys.length; i++) {
+							resultBody += bodys[i];
+						}
+						return resultBody;
+					})
+					.post("/$batch", checkBody)
+					.reply(response.status, response.responseText, response.responseHeaders);
+			});
+
+			after(function () {
+				nock.cleanAll();
+			});
+
+			it("returns a correct response", function (done) {
+				dynamicsWebApiTest.startBatch();
+
+				dynamicsWebApiTest.create({ collection: "records", data: { firstname: "Test", lastname: "Batch!" }, contentId: "1" });
+				dynamicsWebApiTest.create({ collection: "$1", data: { firstname: "Test1", lastname: "Batch!" } });
+
+				dynamicsWebApiTest
+					.executeBatch()
+					.then(function (object) {
+						expect(object.length).to.be.eq(2);
+
+						expect(object[0]).to.be.eq(mocks.data.testEntityId);
+						expect(object[1]).to.be.undefined;
+
+						done();
+					})
+					.catch(function (object) {
+						done(object);
+					});
+			});
+
+			it("all requests have been made", function () {
+				expect(scope.isDone()).to.be.true;
+			});
+		});
+
 		describe("create / create with Content-ID in a payload", function () {
 			var scope;
 			var rBody = mocks.data.batchCreateContentIDPayload;
@@ -5393,6 +5493,7 @@ describe("promises -", function () {
 						expect(text).to.eq("Welcome to DynamicsWebApi!");
 						expect(object.fileName).to.eq(chunk2.responseHeaders["x-ms-file-name"]);
 						expect(object.fileSize).to.eq(chunk2.responseHeaders["x-ms-file-size"]);
+						expect(object.location).to.eq(chunk2.responseHeaders["Location"]);
 
 						done();
 					})

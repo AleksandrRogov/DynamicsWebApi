@@ -165,8 +165,8 @@ export class ErrorHelper {
 
 			if (alternateKeys.length) {
 				for (var i = 0; i < alternateKeys.length; i++) {
-					alternateKeys[i] = alternateKeys[i].trim().replace('"', "'");
-					/^[\w\d\_]+\=('[^\'\r\n]+'|\d+)$/i.exec(alternateKeys[i])![0];
+					alternateKeys[i] = alternateKeys[i].trim().replace(/"/g, "'");
+					/^[\w\d\_]+\=(.+)$/i.exec(alternateKeys[i])![0];
 				}
 			}
 

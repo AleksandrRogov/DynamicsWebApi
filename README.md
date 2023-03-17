@@ -100,7 +100,7 @@ Upload a script as a JavaScript Web Resource, place on the entity form or refer 
 //DynamicsWebApi makes calls to Web API v9.1 if a configuration not set
 const dynamicsWebApi = new DynamicsWebApi();
 
-let response = await dynamicsWebApi.executeUnboundFunction("WhoAmI");
+const response = await dynamicsWebApi.executeUnboundFunction("WhoAmI");
 Xrm.Navigation.openAlertDialog({ text: `Hello Dynamics 365! My id is: ${response.UserId}` });
 ```
 
@@ -116,61 +116,67 @@ npm install dynamics-web-api --save
 Then include it in your file:
 
 ```js
-var DynamicsWebApi = require('dynamics-web-api');
+//CommonJS
+const DynamicsWebApi = require("dynamics-web-api");
+
+//ES6 Module
+import DynamicsWebApi from "dynamics-web-api";
 ```
 
-At this moment DynamicsWebApi does not fetch authorization tokens, so you will need to acquire OAuth token in your code and pass it to the DynamicsWebApi.
-Token can be aquired using [ADAL for Node.js](https://github.com/AzureAD/azure-activedirectory-library-for-nodejs) or you can write your own functionality, as it is described [here](http://alexanderdevelopment.net/post/2016/11/23/dynamics-365-and-node-js-integration-using-the-web-api/).
+DynamicsWebApi does not fetch authorization tokens, so you will need to acquire OAuth token in your code and pass it to the DynamicsWebApi.
+Token can be acquired using [MSAL for JS](https://github.com/AzureAD/microsoft-authentication-library-for-js) or you can write your own functionality, as it is described [here](http://alexanderdevelopment.net/post/2016/11/23/dynamics-365-and-node-js-integration-using-the-web-api/).
 
-Here is a sample using `adal-node`:
+Here is an example using `@azure/msal-node`:
 
 ```js
-var DynamicsWebApi = require('dynamics-web-api');
-var AuthenticationContext = require('adal-node').AuthenticationContext;
+//app configuraiton must be stored in a safe place
+import Config from './config.js';
+import DynamicsWebApi from 'dynamics-web-api';
+import * as MSAL from '@azure/msal-node';
 
-//the following settings should be taken from Azure for your application
-//and stored in app settings file or in global variables
+//OAuth Token Endpoint (from your Azure App Registration)
+const authorityUrl = 'https://login.microsoftonline.com/<COPY A GUID HERE>';
 
-//OAuth Token Endpoint
-var authorityUrl = 'https://login.microsoftonline.com/00000000-0000-0000-0000-000000000011/oauth2/token';
-//CRM Organization URL
-var resource = 'https://myorg.crm.dynamics.com';
-//Dynamics 365 Client Id when registered in Azure
-var clientId = '00000000-0000-0000-0000-000000000001';
-var username = 'crm-user-name';
-var password = 'crm-user-password';
-
-var adalContext = new AuthenticationContext(authorityUrl);
-
-//add a callback as a parameter for your function
-function acquireToken(dynamicsWebApiCallback){
-    //a callback for adal-node
-    function adalCallback(error, token) {
-        if (!error){
-            //call DynamicsWebApi callback only when a token has been retrieved
-            dynamicsWebApiCallback(token);
-        }
-        else{
-            console.log('Token has not been retrieved. Error: ' + error.stack);
-        }
+const msalConfig = {
+    auth: {
+        authority: authorityUrl,
+        clientId: Config.clientId,
+        clientSecret: Config.secret,
+        knownAuthorities: ['login.microsoftonline.com']
     }
-
-    //call a necessary function in adal-node object to get a token
-    adalContext.acquireTokenWithUsernamePassword(resource, username, password, clientId, adalCallback);
 }
 
-//create DynamicsWebApi object
-var dynamicsWebApi = new DynamicsWebApi({
-    webApiUrl: 'https://myorg.api.crm.dynamics.com/api/data/v9.1/',
+const cca = new MSAL.ConfidentialClientApplication(msalConfig);
+const serverUrl = 'https://<YOUR ORG HERE>.api.crm.dynamics.com';
+
+//function that acquires a token and passes it to DynamicsWebApi
+const acquireToken = (dynamicsWebApiCallback) => {
+    cca.acquireTokenByClientCredential({
+        scopes: [`${serverUrl}/.default`],
+    }).then(response => {
+        //call DynamicsWebApi callback only when a token has been retrieved successfully
+        dynamicsWebApiCallback(response.accessToken);
+    }).catch((error) => {
+        console.log(JSON.stringify(error));
+    });
+}
+
+//create DynamicsWebApi
+const dynamicsWebApi = new DynamicsWebApi({
+    webApiUrl: `${serverUrl}/api/data/v9.2/`,
     onTokenRefresh: acquireToken
 });
 
-//call any function
-dynamicsWebApi.executeUnboundFunction("WhoAmI").then(function (response) {
-    console.log('Hello Dynamics 365! My id is: ' + response.UserId);
-}).catch(function(error){
-    console.log(error.message);
-});
+try{
+    //call any function
+    const response = await dynamicsWebApi.executeUnboundFunction({
+        functionName: "WhoAmI"
+    });
+    console.log(`Hello from Dynamics 365! My id is: ${response.UserId}`);
+}
+catch (error){
+    console.log(error);
+}
 ```
 
 ### Configuration
@@ -179,13 +185,13 @@ To initialize a new instance of DynamicsWebApi with a configuration object, plea
 #### Web browser
 
 ```js
-var dynamicsWebApi = new DynamicsWebApi({ webApiVersion: '9.1' });
+const dynamicsWebApi = new DynamicsWebApi({ webApiVersion: '9.1' });
 ```
 
 #### Node.js
 
 ```js
-var dynamicsWebApi = new DynamicsWebApi({
+const dynamicsWebApi = new DynamicsWebApi({
     webApiUrl: 'https://myorg.api.crm.dynamics.com/api/data/v9.1/',
     onTokenRefresh: acquireToken
 });
@@ -234,6 +240,7 @@ action | Object | `executeUnboundAction` | A JavaScript object that represents a
 actionName | String | `executeUnboundAction` | Web API Action name.
 apply | String | `retrieveMultiple`, `retrieveAll` | Sets the $apply system query option to aggregate and group your data dynamically. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/query-data-web-api#aggregate-and-grouping-results)
 async | Boolean | All | **XHR requests only!** Indicates whether the requests should be made synchronously or asynchronously. Default value is `true` (asynchronously).
+bypassCustomPluginExecution | Boolean | `create`, `update`, `upsert`, `delete` | `v1.7.5+` If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/data-platform/bypass-custom-business-logic)
 collection | String | All | Entity Collection name.
 contentId | String | `create`, `update`, `upsert`, `deleteRecord` | **BATCH REQUESTS ONLY!** Sets Content-ID header or references request in a Change Set. [More Info](https://www.odata.org/documentation/odata-version-3-0/batch-processing/)
 count | Boolean | `retrieveMultiple`, `retrieveAll` | Boolean that sets the $count system query option with a value of true to include a count of entities that match the filter criteria up to 5000 (per page). Do not use $top with $count!
@@ -258,7 +265,9 @@ noCache | Boolean | All | If set to `true`, DynamicsWebApi adds a request header
 orderBy | Array | `retrieveMultiple`, `retrieveAll` | An Array (of Strings) representing the order in which items are returned using the $orderby system query option. Use the asc or desc suffix to specify ascending or descending order respectively. The default is ascending if the suffix isn't applied.
 pageNumber | Number | `fetch` | Sets a page number for Fetch XML request ONLY!
 pagingCookie | String | `fetch` | Sets a paging cookie for Fetch XML request ONLY!
+partitionId | String | `create`, `update`, `upsert`, `delete`, `retrieve`, `retrieveMultiple` | `v.1.7.7+` Sets a unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. [More Info](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/azure-storage-partitioning)
 proxy | Object | Proxy configuration object. [More Info](#using-proxy)
+queryParams | Array | `retrieveMultiple`, `retrieveAll` | `v.1.7.7+` Additional query parameters that either have not been implemented yet or they are [parameter aliases](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/query-data-web-api#use-parameter-aliases-with-system-query-options) for "$filter" and "$orderBy". **Important!** These parameters ARE NOT URI encoded!
 returnRepresentation | Boolean | `create`, `update`, `upsert` | Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
 savedQuery | String | `retrieve` | A String representing the GUID value of the saved query.
 select | Array | `retrieve`, `retrieveMultiple`, `retrieveAll`, `update`, `upsert` | An Array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
@@ -1087,7 +1096,7 @@ Batch requests bundle multiple operations into a single one and have the followi
 * Provides a way to run multiple operations in a single transaction. If any operation that changes data (within a single changeset) fails all completed ones will be rolled back.
 * All operations within a batch request run consequently (FIFO).
 
-DynamicsWebApi provides a straightforward way to execute Batch operations which may not always simple to compose. 
+DynamicsWebApi provides a straightforward way to execute Batch operations which may not always be simple to compose. 
 The following example bundles 2 retrieve multiple operations and an update:
 
 ```js
@@ -1188,7 +1197,7 @@ dynamicsWebApi.executeBatch()
 
 ```
 
-Note that the second response does not have a returned value, it is a CRM Web API limitation.
+Note that if you are making a request to a navigation property (`collection: 'customerid_contact'`), the request won't have a response, it is an OOTB Web API limitation.
 
 **Important!** DynamicsWebApi automatically assigns value to a `Content-ID` if it is not provided, therefore, please set your `Content-ID` value less than 100000.
 
@@ -1200,12 +1209,12 @@ Another option to make the same request is to use `Content-ID` reference inside 
 
 ```js
 
-var contact = {
+const contact = {
     firstname: 'John',
     lastname: 'Doe'
 };
 
-var order = {
+const order = {
     name: '1 year membership',
     //reference a request in a navigation property
     'customerid_contact@odata.bind': '$1'
@@ -1219,13 +1228,16 @@ dynamicsWebApi.executeBatch()
     .then(function (responses) {
         //in this case both ids exist in a response
         //which makes it a preferred method
-        var contactId = responses[0];
-        var salesorderId = responses[1];
+        const contactId = responses[0];
+        const salesorderId = responses[1];
     }).catch(function (error) {
         //catch error here
     });
 
 ```
+
+**Important!** Web API seems to have a limitation (or a bug) where it does not return the response with `returnRepresentation` set to `true`. It happens only if you are trying to return a representation of an entity that is being
+linked to another one in a single request. [More Info and examples is in this issue.](https://github.com/AleksandrRogov/DynamicsWebApi/issues/112).
 
 #### Limitations
 
@@ -1737,7 +1749,8 @@ dynamicsWebApi.retrieveRelationship(metadataId, relationshipType).then(function 
 ### Retrieve Multiple Relationships
 
 ```js
-dynamicsWebApi.retrieveRelationships(['SchemaName', 'MetadataId'], "ReferencedEntity eq 'account'")
+const relationshipType = 'Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata';
+dynamicsWebApi.retrieveRelationships(relationshipType, ['SchemaName', 'MetadataId'], "ReferencedEntity eq 'account'")
 .then(function (relationship) {
     //work with a retrieved relationship
 }).catch(function (error) {
@@ -2229,6 +2242,7 @@ the config option "formatted" will enable developers to retrieve all information
 - [X] File upload/download/delete for a File Field. `Added in v.1.7.0`.
 - [X] Full proxy support. `Added in v.1.7.2`.
 - [ ] Refactoring and conversion to TypeScript - coming with `v.2.0`! Stay tuned!
+- [ ] Implement [Dataverse Search API](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/relevance-search). 
 
 Many more features to come!
 

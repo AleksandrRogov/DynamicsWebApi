@@ -50,6 +50,8 @@ export declare namespace Core {
         id?: string;
         /**A String representing collection record's Primary Key (GUID) or Alternate Key(s). */
         key?: string;
+        /**v.1.7.5+ If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. */
+        bypassCustomPluginExecution?: boolean;
         /**v.1.3.4+ Web API v9+ only! Boolean that enables duplicate detection. */
         duplicateDetection?: boolean;
         /**A String representing the name of a single - valued navigation property.Useful when needed to retrieve information about a related record in a single request. */
@@ -98,6 +100,10 @@ export declare namespace Core {
         fieldName?: string;
         /**v.1.7.0+ Web API v9.1+ only! Specifies the name of the file */
         fileName?: string;
+        /**v.1.7.7+ A unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. */
+        partitionId?: string;
+        /**v.1.7.7+ Additional query parameters that either have not been implemented yet or they are parameter aliases for "$filter" and "$orderBy". Important! These parameters ARE NOT URI encoded! */
+        queryParams?: string[];
         contentRange?: string;
         url?: string;
         _isUnboundRequest?: boolean;

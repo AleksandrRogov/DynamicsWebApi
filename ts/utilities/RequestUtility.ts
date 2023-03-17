@@ -99,8 +99,8 @@ export class RequestUtility {
 	static composeUrl(request: Core.InternalRequest, config: DynamicsWebApi.Config, url: string = "", joinSymbol: string = "&"): string {
 		const queryArray: string[] = [];
 
-		joinSymbol = joinSymbol || "&";
-		url = url || "";
+		// joinSymbol = joinSymbol || "&";
+		// url = url || "";
 
 		if (request) {
 			if (request.navigationProperty) {
@@ -128,7 +128,7 @@ export class RequestUtility {
 				}
 			}
 
-			if (request.select != null && request.select.length) {
+			if (request.select?.length) {
 				ErrorHelper.arrayParameterCheck(request.select, `DynamicsWebApi.${request.functionName}`, "request.select");
 
 				if (request.functionName == "retrieve" && request.select.length == 1 && request.select[0].endsWith("/$ref")) {
@@ -205,9 +205,19 @@ export class RequestUtility {
 				queryArray.push("$orderby=" + request.orderBy.join(","));
 			}
 
+			if (request.partitionId) {
+				ErrorHelper.stringParameterCheck(request.partitionId, `DynamicsWebApi.${request.functionName}`, "request.partitionId");
+				queryArray.push("partitionid='" + request.partitionId + "'");
+			}
+
 			if (request.downloadSize) {
 				ErrorHelper.stringParameterCheck(request.downloadSize, `DynamicsWebApi.${request.functionName}`, "request.downloadSize");
 				queryArray.push("size=" + request.downloadSize);
+			}
+
+			if (request.queryParams?.length) {
+				ErrorHelper.arrayParameterCheck(request.queryParams, `DynamicsWebApi.${request.functionName}`, "request.queryParams");
+				queryArray.push(request.queryParams.join("&"));
 			}
 
 			if (request.fileName) {
@@ -231,7 +241,7 @@ export class RequestUtility {
 				ErrorHelper.numberParameterCheck(request.timeout, `DynamicsWebApi.${request.functionName}`, "request.timeout");
 			}
 
-			if (request.expand && request.expand.length) {
+			if (request.expand?.length) {
 				ErrorHelper.stringOrArrayParameterCheck(request.expand, `DynamicsWebApi.${request.functionName}`, "request.expand");
 				if (typeof request.expand === "string") {
 					queryArray.push("$expand=" + request.expand);
@@ -309,6 +319,15 @@ export class RequestUtility {
 		if (request.duplicateDetection) {
 			ErrorHelper.boolParameterCheck(request.duplicateDetection, `DynamicsWebApi.${request.functionName}`, "request.duplicateDetection");
 			headers["MSCRM.SuppressDuplicateDetection"] = "false";
+		}
+
+		if (request.bypassCustomPluginExecution) {
+			ErrorHelper.boolParameterCheck(
+				request.bypassCustomPluginExecution,
+				`DynamicsWebApi.${request.functionName}`,
+				"request.bypassCustomPluginExecution"
+			);
+			headers["MSCRM.BypassCustomPluginExecution"] = "true";
 		}
 
 		if (request.noCache) {

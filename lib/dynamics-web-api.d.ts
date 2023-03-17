@@ -433,6 +433,8 @@ export declare namespace DynamicsWebApi {
         pagingCookie?: string;
     }
     interface CreateRequest<T = any> extends CRUDRequest {
+        /**v.1.7.5+ If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. */
+        bypassCustomPluginExecution?: boolean;
         /**Web API v9+ only! Boolean that enables duplicate detection. */
         duplicateDetection?: boolean;
         /**A JavaScript object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single-valued navigation properties). */
@@ -445,12 +447,18 @@ export declare namespace DynamicsWebApi {
         navigationProperty?: string;
         /**A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata). */
         navigationPropertyKey?: string;
+        /**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+        select?: string[];
         /**Sets Prefer header request with value "return=representation".Use this property to return just created or updated entity in a single request. */
         returnRepresentation?: boolean;
         /**BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */
         contentId?: string;
+        /**v.1.7.7+ A unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. */
+        partitionId?: string;
     }
     interface UpdateRequestBase<T = any> extends CRUDRequest {
+        /**v.1.7.5+ If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. */
+        bypassCustomPluginExecution?: boolean;
         /**Web API v9+ only! Boolean that enables duplicate detection. */
         duplicateDetection?: boolean;
         /**A JavaScript object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single-valued navigation properties). */
@@ -473,6 +481,8 @@ export declare namespace DynamicsWebApi {
         navigationProperty?: string;
         /**A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata). */
         navigationPropertyKey?: string;
+        /**v.1.7.7+ A unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. */
+        partitionId?: string;
     }
     interface UpdateRequest<T = any> extends UpdateRequestBase<T> {
         /**If set to 'true', DynamicsWebApi adds a request header 'MSCRM.MergeLabels: true'. Default value is 'false' */
@@ -501,6 +511,8 @@ export declare namespace DynamicsWebApi {
         ifnonematch?: string;
     }
     interface DeleteRequest extends CRUDRequest {
+        /**v.1.7.5+ If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. */
+        bypassCustomPluginExecution?: boolean;
         /**Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests.*/
         ifmatch?: string;
         /**BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */
@@ -529,6 +541,8 @@ export declare namespace DynamicsWebApi {
         select?: string[];
         /**A String representing the GUID value of the user query. */
         userQuery?: string;
+        /**v.1.7.7+ A unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. */
+        partitionId?: string;
     }
     interface RetrieveMultipleRequest extends Request {
         /**Use the $apply to aggregate and group your data dynamically */
@@ -551,6 +565,10 @@ export declare namespace DynamicsWebApi {
         top?: number;
         /**Sets Prefer header with value 'odata.track-changes' to request that a delta link be returned which can subsequently be used to retrieve entity changes. */
         trackChanges?: boolean;
+        /**v.1.7.7+ A unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. */
+        partitionId?: string;
+        /**v.1.7.7+ Additional query parameters that either have not been implemented yet or they are parameter aliases for "$filter" and "$orderBy". Important! These parameters ARE NOT URI encoded! */
+        queryParams?: string[];
     }
     interface AssociateRequest extends Request {
         /**Primary entity record id/key. */
@@ -819,18 +837,24 @@ export declare namespace DynamicsWebApi {
     interface MultipleResponse<T = any> {
         /**Multiple respone entities */
         value?: T[];
+        oDataCount?: number;
+        oDataContext?: string;
     }
     interface AllResponse<T> extends MultipleResponse<T> {
         /**@odata.deltaLink value */
         oDataDeltaLink?: string;
     }
     interface RetrieveMultipleResponse<T> extends MultipleResponse<T> {
+        "@Microsoft.Dynamics.CRM.totalrecordcount"?: number;
+        "@Microsoft.Dynamics.CRM.totalrecordcountlimitexceeded"?: boolean;
         /**@odata.nextLink value */
         oDataNextLink?: string;
         /**@odata.deltaLink value */
         oDataDeltaLink?: string;
     }
     interface FetchXmlResponse<T> extends MultipleResponse<T> {
+        "@Microsoft.Dynamics.CRM.totalrecordcount"?: number;
+        "@Microsoft.Dynamics.CRM.totalrecordcountlimitexceeded"?: boolean;
         /**Paging information */
         PagingInfo?: {
             /**Number of the next page */
