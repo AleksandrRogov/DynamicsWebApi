@@ -116,7 +116,7 @@ export declare class DynamicsWebApi {
      * @param {string} [nextPageLink] - Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
      * @returns {Promise} D365 Web Api result
      */
-    retrieveMultiple: <T = any>(request: DynamicsWebApi.RetrieveMultipleRequest, nextPageLink?: string | undefined) => Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
+    retrieveMultiple: <T = any>(request: DynamicsWebApi.RetrieveMultipleRequest, nextPageLink?: string) => Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
     private _retrieveAllRequest;
     /**
      * Sends an asynchronous request to retrieve all records.
@@ -237,7 +237,7 @@ export declare class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api result
      */
-    retrieveEntities: <T = any>(request?: DynamicsWebApi.RetrieveEntitiesRequest | undefined) => Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
+    retrieveEntities: <T = any>(request?: DynamicsWebApi.RetrieveEntitiesRequest) => Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
     /**
      * Sends an asynchronous request to create an attribute.
      *
@@ -293,7 +293,7 @@ export declare class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api result
      */
-    retrieveRelationships: <T = any>(request?: DynamicsWebApi.RetrieveRelationshipsRequest | undefined) => Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
+    retrieveRelationships: <T = any>(request?: DynamicsWebApi.RetrieveRelationshipsRequest) => Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
     /**
      * Sends an asynchronous request to retrieve a specific relationship definition.
      *
@@ -335,7 +335,7 @@ export declare class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api result
      */
-    retrieveGlobalOptionSets: <T = any>(request?: DynamicsWebApi.RetrieveGlobalOptionSetsRequest | undefined) => Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
+    retrieveGlobalOptionSets: <T = any>(request?: DynamicsWebApi.RetrieveGlobalOptionSetsRequest) => Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
     /**
      * Starts a batch request.
      *
@@ -346,7 +346,7 @@ export declare class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api result
      */
-    executeBatch: (request?: DynamicsWebApi.BaseRequest | undefined) => Promise<any[]>;
+    executeBatch: (request?: DynamicsWebApi.BaseRequest) => Promise<any[]>;
     /**
      * Creates a new instance of DynamicsWebApi
      *
@@ -836,7 +836,7 @@ export declare namespace DynamicsWebApi {
     }
     interface MultipleResponse<T = any> {
         /**Multiple respone entities */
-        value?: T[];
+        value: T[];
         oDataCount?: number;
         oDataContext?: string;
     }

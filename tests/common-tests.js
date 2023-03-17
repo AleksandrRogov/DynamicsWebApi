@@ -2166,7 +2166,7 @@ describe("RequestClient.makeRequest", function () {
 			var response = mocks.responses.basicEmptyResponseSuccess;
 			scope = nock(mocks.webApiUrl)
 				.post("/test", mocks.data.testEntity)
-				.socketDelay(1000)
+				.delayConnection(1000)
 				.reply(response.status, response.responseText, response.responseHeaders);
 		});
 
@@ -2213,7 +2213,7 @@ describe("RequestClient.makeRequest", function () {
 			var response = mocks.responses.basicEmptyResponseSuccess;
 			scope = nock(mocks.webApiUrl)
 				.post("/test", mocks.data.testEntity)
-				.socketDelay(1000)
+				.delayConnection(1000)
 				.reply(response.status, response.responseText, response.responseHeaders);
 		});
 
@@ -2492,7 +2492,7 @@ describe("RequestClient.sendRequest", function () {
 			var response = mocks.responses.basicEmptyResponseSuccess;
 			scope = nock(mocks.webApiUrl)
 				.post("/test", mocks.data.testEntity)
-				.socketDelay(1000)
+				.delayConnection(1000)
 				.reply(response.status, response.responseText, response.responseHeaders);
 		});
 
