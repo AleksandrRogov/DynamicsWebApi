@@ -1,6 +1,7 @@
 ﻿//"use strict";
 
-import { Utility } from "./utilities/Utility";
+import { ConfigurationUtility, InternalConfig } from "./utils/Config";
+import { Utility } from "./utils/Utility";
 import { ErrorHelper } from "./helpers/ErrorHelper";
 import { RequestClient } from "./requests/RequestClient";
 import { Core } from "./types";
@@ -11,115 +12,28 @@ import { Core } from "./types";
  * @module dynamics-web-api
  */
 export class DynamicsWebApi {
-	private _internalConfig: DynamicsWebApi.Config = {
-		webApiVersion: "9.1",
-		webApiUrl: null,
-		impersonate: null,
-		impersonateAAD: null,
-		onTokenRefresh: null,
-		includeAnnotations: null,
-		maxPageSize: null,
-		returnRepresentation: null,
-		proxy: null,
-	};
-
+	private _config: InternalConfig = ConfigurationUtility.default();
 	private _isBatch = false;
 	private _batchRequestId: string | null = null;
 
 	constructor(config?: DynamicsWebApi.Config) {
-		if (!config) {
-			config = this._internalConfig;
-		}
-
-		this.setConfig(config);
+		ConfigurationUtility.merge(this._config, config);
 	}
 
 	/**
 	 * Sets the configuration parameters for DynamicsWebApi helper.
 	 *
-	 * @param {DWAConfig} config - configuration object
+	 * @param {DynamicsWebApi.Config} config - Configuration
 	 * @example
-	   dynamicsWebApi.setConfig({ webApiVersion: '9.1' });
+	   dynamicsWebApi.setConfig({ organizationUrl: 'https://contoso.api.dynamics.com/' });
 	 */
-	setConfig = (config: DynamicsWebApi.Config): void => {
-		const isVersionDiffer = (config.webApiVersion || this._internalConfig.webApiVersion) !== this._internalConfig.webApiVersion;
-
-		if (config.webApiVersion) {
-			ErrorHelper.stringParameterCheck(config.webApiVersion, "DynamicsWebApi.setConfig", "config.webApiVersion");
-			this._internalConfig.webApiVersion = config.webApiVersion;
-		}
-
-		if (config.webApiUrl) {
-			ErrorHelper.stringParameterCheck(config.webApiUrl, "DynamicsWebApi.setConfig", "config.webApiUrl");
-			this._internalConfig.webApiUrl = config.webApiUrl;
-		} else {
-			if (!this._internalConfig.webApiUrl || isVersionDiffer) {
-				this._internalConfig.webApiUrl = Utility.initWebApiUrl(this._internalConfig.webApiVersion);
-			}
-		}
-
-		if (config.impersonate) {
-			this._internalConfig.impersonate = ErrorHelper.guidParameterCheck(config.impersonate, "DynamicsWebApi.setConfig", "config.impersonate");
-		}
-
-		if (config.impersonateAAD) {
-			this._internalConfig.impersonateAAD = ErrorHelper.guidParameterCheck(config.impersonateAAD, "DynamicsWebApi.setConfig", "config.impersonateAAD");
-		}
-
-		if (config.onTokenRefresh) {
-			ErrorHelper.callbackParameterCheck(config.onTokenRefresh, "DynamicsWebApi.setConfig", "config.onTokenRefresh");
-			this._internalConfig.onTokenRefresh = config.onTokenRefresh;
-		}
-
-		if (config.includeAnnotations) {
-			ErrorHelper.stringParameterCheck(config.includeAnnotations, "DynamicsWebApi.setConfig", "config.includeAnnotations");
-			this._internalConfig.includeAnnotations = config.includeAnnotations;
-		}
-
-		if (config.timeout) {
-			ErrorHelper.numberParameterCheck(config.timeout, "DynamicsWebApi.setConfig", "config.timeout");
-			this._internalConfig.timeout = config.timeout;
-		}
-
-		if (config.maxPageSize) {
-			ErrorHelper.numberParameterCheck(config.maxPageSize, "DynamicsWebApi.setConfig", "config.maxPageSize");
-			this._internalConfig.maxPageSize = config.maxPageSize;
-		}
-
-		if (config.returnRepresentation) {
-			ErrorHelper.boolParameterCheck(config.returnRepresentation, "DynamicsWebApi.setConfig", "config.returnRepresentation");
-			this._internalConfig.returnRepresentation = config.returnRepresentation;
-		}
-
-		if (config.useEntityNames) {
-			ErrorHelper.boolParameterCheck(config.useEntityNames, "DynamicsWebApi.setConfig", "config.useEntityNames");
-			this._internalConfig.useEntityNames = config.useEntityNames;
-		}
-
-		/* develblock:start */
-		if (config.proxy) {
-			ErrorHelper.parameterCheck(config.proxy, "DynamicsWebApi.setConfig", "config.proxy");
-
-			if (config.proxy.url) {
-				ErrorHelper.stringParameterCheck(config.proxy.url, "DynamicsWebApi.setConfig", "config.proxy.url");
-
-				if (config.proxy.auth) {
-					ErrorHelper.parameterCheck(config.proxy.auth, "DynamicsWebApi.setConfig", "config.proxy.auth");
-					ErrorHelper.stringParameterCheck(config.proxy.auth.username, "DynamicsWebApi.setConfig", "config.proxy.auth.username");
-					ErrorHelper.stringParameterCheck(config.proxy.auth.password, "DynamicsWebApi.setConfig", "config.proxy.auth.password");
-				}
-			}
-
-			this._internalConfig.proxy = config.proxy;
-		}
-		/* develblock:end */
-	};
+	setConfig = (config: DynamicsWebApi.Config) => ConfigurationUtility.merge(this._config, config);
 
 	private _makeRequest = (request: Core.InternalRequest): Promise<any> => {
 		request.isBatch = this._isBatch;
 		request.requestId = this._batchRequestId;
 		return new Promise((resolve, reject) => {
-			RequestClient.makeRequest(request, this._internalConfig, resolve, reject);
+			RequestClient.makeRequest(request, this._config, resolve, reject);
 		});
 	};
 
@@ -1200,13 +1114,7 @@ export class DynamicsWebApi {
 	 * @param {DWAConfig} [config] - configuration object.
 	 * @returns {DynamicsWebApi} The new instance of a DynamicsWebApi
 	 */
-	initializeInstance = (config) => {
-		if (!config) {
-			config = this._internalConfig;
-		}
-
-		return new DynamicsWebApi(config);
-	};
+	initializeInstance = (config) => new DynamicsWebApi(config || this._config);
 
 	utility = {
 		/**
@@ -1679,11 +1587,20 @@ export declare namespace DynamicsWebApi {
 		fieldName: string;
 	}
 
+	interface ApiConfig {
+		/** API Version to use, for example: "9.2" or "1.0" */
+		version?: string;
+		/** API Path, for example: "data" or "search" */
+		path?: string;
+	}
+
 	export interface Config {
-		/**A String representing the GUID value for the Dynamics 365 system user id.Impersonates the user. */
-		webApiUrl?: string | null;
-		/**Web API Version to use, for example: "8.1" */
-		webApiVersion?: string | null;
+		/**A complete URL string to Web API. Example of the URL: "https://myorg.api.crm.dynamics.com/api/data/v9.1/". If it is specified then webApiVersion property will not be used even if it is not empty.*/
+		// webApiUrl?: string | null;
+		// /**Web API Version to use, for example: "8.1" */
+		// webApiVersion?: string | null;
+
+		organizationUrl?: string | null;
 		/**Impersonates a user based on their systemuserid by adding "MSCRMCallerID" header. A String representing the GUID value for the Dynamics 365 systemuserid. */
 		impersonate?: string | null;
 		/**Impersonates a user based on their Azure Active Directory (AAD) object id by passing that value along with the header "CallerObjectId". A String should represent a GUID value. */
@@ -1702,6 +1619,10 @@ export declare namespace DynamicsWebApi {
 		timeout?: number | null;
 		/**Proxy configuration object. */
 		proxy?: ProxyConfig | null;
+
+		dataApi?: ApiConfig;
+
+		searchApi?: ApiConfig;
 	}
 
 	interface ProxyConfig {

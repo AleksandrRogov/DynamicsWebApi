@@ -1,4 +1,4 @@
-import { DynamicsWebApi } from "../../ts/dynamics-web-api";
+import { InternalConfig } from "../utils/Config";
 import { Core } from "../../ts/types";
 export declare class RequestClient {
     private static _batchRequestCollection;
@@ -19,11 +19,11 @@ export declare class RequestClient {
      * @param {boolean} [isBatch] - Indicates whether the request is a Batch request or not. Default: false
      * @param {boolean} [isAsync] - Indicates whether the request should be made synchronously or asynchronously.
      */
-    static sendRequest(request: Core.InternalRequest, config: DynamicsWebApi.Config, successCallback: Function, errorCallback: Function): void;
+    static sendRequest(request: Core.InternalRequest, config: InternalConfig, successCallback: Function, errorCallback: Function): void;
     private static _getCollectionNames;
     private static _isEntityNameException;
     private static _checkCollectionName;
-    static makeRequest(request: Core.InternalRequest, config: DynamicsWebApi.Config, resolve: Function, reject: Function): void;
+    static makeRequest(request: Core.InternalRequest, config: InternalConfig, resolve: Function, reject: Function): void;
     static _clearEntityNames(): void;
     static getCollectionName(entityName: string): string | null;
 }

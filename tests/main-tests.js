@@ -7,10 +7,10 @@ var mocks = require("./stubs");
 var { DWA } = require("../lib/dwa");
 var { DynamicsWebApi } = require("../lib/dynamics-web-api");
 
-var { Utility } = require("../lib/utilities/Utility");
+var { Utility } = require("../lib/utils/Utility");
 Utility.downloadChunkSize = 15;
 
-var dynamicsWebApiTest = new DynamicsWebApi({ webApiVersion: "8.2" });
+var dynamicsWebApiTest = new DynamicsWebApi({ dataApi: { version: "8.2" } });
 
 describe("promises -", function () {
 	describe("dynamicsWebApi.create -", function () {
@@ -1315,7 +1315,7 @@ describe("promises -", function () {
 			});
 
 			it("returns a correct response", function (done) {
-				var dynamicsWebApiE = dynamicsWebApiTest.initializeInstance({ webApiVersion: "8.2", useEntityNames: true });
+				var dynamicsWebApiE = dynamicsWebApiTest.initializeInstance({ dataApi: { version: "8.2" }, useEntityNames: true });
 				dynamicsWebApiE
 					.associate({
 						collection: "test",
@@ -5510,12 +5510,12 @@ describe("promises -", function () {
 	});
 
 	describe("dynamicsWebApi.constructor -", function () {
-		describe("webApiVersion", function () {
-			var dynamicsWebApi91 = new DynamicsWebApi();
+		describe("dataApi.version", function () {
+			var dynamicsWebApi92 = new DynamicsWebApi();
 			var scope;
 			before(function () {
 				var response = mocks.responses.createReturnId;
-				scope = nock(mocks.webApiUrl91).post("/tests", mocks.data.testEntity).reply(response.status, response.responseText, response.responseHeaders);
+				scope = nock(mocks.webApiUrl92).post("/tests", mocks.data.testEntity).reply(response.status, response.responseText, response.responseHeaders);
 			});
 
 			after(function () {
@@ -5523,7 +5523,7 @@ describe("promises -", function () {
 			});
 
 			it("it makes a correct request and returns a correct response", function (done) {
-				dynamicsWebApi91
+				dynamicsWebApi92
 					.create({ data: mocks.data.testEntity, collection: "tests" })
 					.then(function (object) {
 						expect(object).to.equal(mocks.data.testEntityId);
@@ -5540,11 +5540,11 @@ describe("promises -", function () {
 		});
 
 		describe("impersonate", function () {
-			var dynamicsWebApi91 = new DynamicsWebApi({ impersonate: mocks.data.testEntityId2 });
+			var dynamicsWebApi92 = new DynamicsWebApi({ impersonate: mocks.data.testEntityId2 });
 			var scope;
 			before(function () {
 				var response = mocks.responses.createReturnId;
-				scope = nock(mocks.webApiUrl91, {
+				scope = nock(mocks.webApiUrl92, {
 					reqheaders: {
 						MSCRMCallerID: mocks.data.testEntityId2,
 					},
@@ -5558,7 +5558,7 @@ describe("promises -", function () {
 			});
 
 			it("it makes a correct request and returns a correct response", function (done) {
-				dynamicsWebApi91
+				dynamicsWebApi92
 					.create({ data: mocks.data.testEntity, collection: "tests" })
 					.then(function (object) {
 						expect(object).to.equal(mocks.data.testEntityId);
@@ -5600,7 +5600,7 @@ describe("promises -", function () {
 					adalCallback({ accessToken: "token001" });
 				};
 
-				var dynamicsWebApiAuth = new DynamicsWebApi({ onTokenRefresh: getToken, webApiUrl: mocks.webApiUrl });
+				var dynamicsWebApiAuth = new DynamicsWebApi({ onTokenRefresh: getToken, dataApi: { version: "8.2" } });
 				dynamicsWebApiAuth
 					.retrieveMultiple({ collection: "tests" })
 					.then(function (object) {
@@ -5643,7 +5643,7 @@ describe("promises -", function () {
 					adalCallback("token001");
 				};
 
-				var dynamicsWebApiAuth = new DynamicsWebApi({ onTokenRefresh: getToken, webApiUrl: mocks.webApiUrl });
+				var dynamicsWebApiAuth = new DynamicsWebApi({ onTokenRefresh: getToken, dataApi: { version: "8.2" } });
 				dynamicsWebApiAuth
 					.retrieveMultiple({ collection: "tests" })
 					.then(function (object) {
@@ -5696,7 +5696,7 @@ describe("promises -", function () {
 			};
 
 			it("sends the request to the right end point and returns a response", function (done) {
-				var dynamicsWebApiAuth = new DynamicsWebApi({ onTokenRefresh: getToken, webApiUrl: mocks.webApiUrl });
+				var dynamicsWebApiAuth = new DynamicsWebApi({ onTokenRefresh: getToken, dataApi: { version: "8.2" } });
 				dynamicsWebApiAuth
 					.retrieveMultiple({ collection: "tests" })
 					.then(function (object) {
@@ -5745,7 +5745,7 @@ describe("promises -", function () {
 			});
 
 			it("sends the request to the right end point and returns a response", function (done) {
-				var dynamicsWebApiAuth = new DynamicsWebApi({ onTokenRefresh: getToken, webApiUrl: mocks.webApiUrl });
+				var dynamicsWebApiAuth = new DynamicsWebApi({ onTokenRefresh: getToken, dataApi: { version: "8.2" } });
 				dynamicsWebApiAuth
 					.retrieveMultiple({ collection: "tests", token: "overriden" })
 					.then(function (object) {
@@ -5767,7 +5767,7 @@ describe("promises -", function () {
 		});
 
 		describe("prefer - include annotations added to request if set in the config", function () {
-			var dynamicsWebApi82 = new DynamicsWebApi({ webApiVersion: "8.2", includeAnnotations: "some-annotations" });
+			var dynamicsWebApi82 = new DynamicsWebApi({ dataApi: { version: "8.2" }, includeAnnotations: "some-annotations" });
 			var scope;
 			before(function () {
 				var response = mocks.responses.response200;
@@ -5802,7 +5802,7 @@ describe("promises -", function () {
 		});
 
 		describe("prefer - include annotations overriden if set in the request", function () {
-			var dynamicsWebApi82 = new DynamicsWebApi({ webApiVersion: "8.2", includeAnnotations: "some-annotations" });
+			var dynamicsWebApi82 = new DynamicsWebApi({ dataApi: { version: "8.2" }, includeAnnotations: "some-annotations" });
 			var scope;
 			before(function () {
 				var response = mocks.responses.multipleResponse;
@@ -5843,7 +5843,7 @@ describe("promises -", function () {
 		});
 
 		describe("prefer - return representation added to request if set in the config", function () {
-			var dynamicsWebApi82 = new DynamicsWebApi({ webApiVersion: "8.2", returnRepresentation: true });
+			var dynamicsWebApi82 = new DynamicsWebApi({ dataApi: { version: "8.2" }, returnRepresentation: true });
 			var scope;
 			before(function () {
 				var response = mocks.responses.createReturnRepresentation;
@@ -5878,7 +5878,7 @@ describe("promises -", function () {
 		});
 
 		describe("prefer - return representation overriden if set in the request", function () {
-			var dynamicsWebApi82 = new DynamicsWebApi({ webApiVersion: "8.2", returnRepresentation: true });
+			var dynamicsWebApi82 = new DynamicsWebApi({ dataApi: { version: "8.2" }, returnRepresentation: true });
 			var scope;
 			var scope2;
 			before(function () {
@@ -5934,7 +5934,7 @@ describe("promises -", function () {
 		});
 
 		describe("prefer - maxPageSize added to request if set in the config", function () {
-			var dynamicsWebApi82 = new DynamicsWebApi({ webApiVersion: "8.2", maxPageSize: 10 });
+			var dynamicsWebApi82 = new DynamicsWebApi({ dataApi: { version: "8.2" }, maxPageSize: 10 });
 			var scope;
 			before(function () {
 				var response = mocks.responses.multipleResponse;
@@ -5969,7 +5969,7 @@ describe("promises -", function () {
 		});
 
 		describe("prefer - maxPageSize overriden if set in the request", function () {
-			var dynamicsWebApi82 = new DynamicsWebApi({ webApiVersion: "8.2", maxPageSize: 10 });
+			var dynamicsWebApi82 = new DynamicsWebApi({ dataApi: { version: "8.2" }, maxPageSize: 10 });
 			var scope;
 			before(function () {
 				var response = mocks.responses.multipleWithLinkResponse;
@@ -6012,9 +6012,9 @@ describe("promises -", function () {
 	});
 
 	describe("dynamicsWebApi.setConfig -", function () {
-		describe("webApiVersion and impersonate", function () {
+		describe("dataApi.version and impersonate", function () {
 			var dynamicsWebApi81 = new DynamicsWebApi();
-			dynamicsWebApi81.setConfig({ webApiVersion: "8.1", impersonate: mocks.data.testEntityId2 });
+			dynamicsWebApi81.setConfig({ dataApi: { version: "8.1" }, impersonate: mocks.data.testEntityId2 });
 
 			var scope;
 			before(function () {
@@ -6069,7 +6069,7 @@ describe("promises -", function () {
 			});
 
 			it("sends the request to the right end point with a correct MSCRMCallerID header", function (done) {
-				dynamicsWebApi81.setConfig({ webApiVersion: "8.1", impersonate: mocks.data.testEntityId2 });
+				dynamicsWebApi81.setConfig({ dataApi: { version: "8.1" }, impersonate: mocks.data.testEntityId2 });
 				dynamicsWebApi81
 					.retrieveMultiple({ collection: "tests", impersonate: mocks.data.testEntityId3 })
 					.then(function (object) {
@@ -6086,9 +6086,9 @@ describe("promises -", function () {
 			});
 		});
 
-		describe("webApiVersion and impersonateAAD", function () {
+		describe("dataApi.version and impersonateAAD", function () {
 			var dynamicsWebApi90 = new DynamicsWebApi();
-			dynamicsWebApi90.setConfig({ webApiVersion: "9.0", impersonateAAD: mocks.data.testEntityId2 });
+			dynamicsWebApi90.setConfig({ dataApi: { version: "9.0" }, impersonateAAD: mocks.data.testEntityId2 });
 
 			var scope;
 			before(function () {
@@ -6143,7 +6143,7 @@ describe("promises -", function () {
 			});
 
 			it("sends the request to the right end point with a correct CallerObjectId header", function (done) {
-				dynamicsWebApi90.setConfig({ webApiVersion: "9.0", impersonateAAD: mocks.data.testEntityId2 });
+				dynamicsWebApi90.setConfig({ dataApi: { version: "9.0" }, impersonateAAD: mocks.data.testEntityId2 });
 				dynamicsWebApi90
 					.retrieveMultiple({ collection: "tests", impersonateAAD: mocks.data.testEntityId3 })
 					.then(function (object) {
@@ -6160,8 +6160,8 @@ describe("promises -", function () {
 			});
 		});
 
-		describe("webApiVersion is overriden by url set in setConfig", function () {
-			var dynamicsWebApi81 = new DynamicsWebApi({ webApiVersion: "8.1", impersonate: mocks.data.testEntityId2 });
+		describe("dataApi.version is overriden by version set in setConfig", function () {
+			var dynamicsWebApi81 = new DynamicsWebApi({ dataApi: { version: "8.1" }, impersonate: mocks.data.testEntityId2 });
 
 			var scope;
 			before(function () {
@@ -6180,7 +6180,7 @@ describe("promises -", function () {
 			});
 
 			it("sends the request to the right end point and returns a response", function (done) {
-				dynamicsWebApi81.setConfig({ webApiUrl: mocks.webApiUrl });
+				dynamicsWebApi81.setConfig({ dataApi: { version: "8.2" } });
 				dynamicsWebApi81
 					.retrieveMultiple({ collection: "tests" })
 					.then(function (object) {
@@ -6198,7 +6198,7 @@ describe("promises -", function () {
 		});
 
 		describe("impersonate uses the same url as original instance", function () {
-			var dynamicsWebApi82 = new DynamicsWebApi({ webApiVersion: "8.2" });
+			var dynamicsWebApi82 = new DynamicsWebApi({ dataApi: { version: "8.2" } });
 
 			var scope;
 			before(function () {
@@ -6234,8 +6234,8 @@ describe("promises -", function () {
 			});
 		});
 
-		describe("webApiVersion is overriden by the new config set", function () {
-			var dynamicsWebApi81 = new DynamicsWebApi({ webApiVersion: "8.1" });
+		describe("dataApi.version is overriden by the new config set", function () {
+			var dynamicsWebApi81 = new DynamicsWebApi({ dataApi: { version: "8.1" } });
 
 			var scope;
 			before(function () {
@@ -6254,7 +6254,7 @@ describe("promises -", function () {
 			});
 
 			it("sends the request to the right end point and returns a response", function (done) {
-				dynamicsWebApi81.setConfig({ webApiVersion: "8.2", impersonate: mocks.data.testEntityId2 });
+				dynamicsWebApi81.setConfig({ dataApi: { version: "8.2" }, impersonate: mocks.data.testEntityId2 });
 				dynamicsWebApi81
 					.retrieveMultiple({ collection: "tests" })
 					.then(function (object) {
@@ -6275,7 +6275,7 @@ describe("promises -", function () {
 	describe("dynamicsWebApi.initializeInstance -", function () {
 		describe("current instance copied with its config", function () {
 			var dynamicsWebApi81 = new DynamicsWebApi();
-			dynamicsWebApi81.setConfig({ webApiVersion: "8.1", impersonate: mocks.data.testEntityId2 });
+			dynamicsWebApi81.setConfig({ dataApi: { version: "8.1" }, impersonate: mocks.data.testEntityId2 });
 
 			var scope;
 			before(function () {
@@ -6313,7 +6313,7 @@ describe("promises -", function () {
 
 		describe("config changed", function () {
 			var dynamicsWebApi81 = new DynamicsWebApi();
-			dynamicsWebApi81.setConfig({ webApiVersion: "8.1", impersonate: mocks.data.testEntityId2 });
+			dynamicsWebApi81.setConfig({ dataApi: { version: "8.1" }, impersonate: mocks.data.testEntityId2 });
 
 			var scope;
 			before(function () {
@@ -6326,7 +6326,7 @@ describe("promises -", function () {
 			});
 
 			it("sends the request to the right end point", function (done) {
-				dynamicsWebApiCopy = dynamicsWebApi81.initializeInstance({ webApiVersion: "8.2" });
+				dynamicsWebApiCopy = dynamicsWebApi81.initializeInstance({ dataApi: { version: "8.2" } });
 				dynamicsWebApiCopy
 					.retrieveMultiple({ collection: "tests" })
 					.then(function (object) {
@@ -6347,7 +6347,7 @@ describe("promises -", function () {
 	describe("dynamicsWebApi proxy -", function () {
 		describe("basic", function () {
 			var dynamicsWebApiProxy = new DynamicsWebApi({
-				webApiVersion: "8.2",
+				dataApi: { version: "8.2" },
 				proxy: {
 					url: "http://localhost:1234",
 				},
@@ -6382,7 +6382,7 @@ describe("promises -", function () {
 
 		describe("with auth", function () {
 			var dynamicsWebApiProxy = new DynamicsWebApi({
-				webApiVersion: "8.2",
+				dataApi: { version: "8.2" },
 				proxy: {
 					url: "http://localhost:1235",
 					auth: {
@@ -6421,7 +6421,7 @@ describe("promises -", function () {
 
 		describe("with auth in url", function () {
 			var dynamicsWebApiProxy = new DynamicsWebApi({
-				webApiVersion: "8.2",
+				dataApi: { version: "8.2" },
 				proxy: {
 					url: "http://john:doe@localhost:1235",
 				},

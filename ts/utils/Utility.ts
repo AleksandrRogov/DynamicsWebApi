@@ -37,7 +37,7 @@ function generateRandomBytes() {
 	/* develblock:end */
 }
 
-let downloadChunkSize = 4194304;
+const downloadChunkSize = 4194304;
 
 export class Utility {
 	/**
@@ -176,11 +176,6 @@ export class Utility {
 			clientUrl = clientUrl.substring(0, clientUrl.length - 1);
 		}
 		return clientUrl;
-	}
-
-	static initWebApiUrl(version: string | null | undefined): string {
-		//todo: add error check
-		return `${Utility.getClientUrl()}/api/data/v${version}/`;
 	}
 
 	static isObject(obj: any): boolean {

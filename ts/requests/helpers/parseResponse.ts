@@ -1,5 +1,5 @@
 ﻿import { DWA } from "../../dwa";
-import { Utility } from "../../utilities/Utility";
+import { Utility } from "../../utils/Utility";
 import { ErrorHelper, DynamicsWebApiError } from "../../helpers/ErrorHelper";
 import { dateReviver } from "./dateReviver";
 import { DynamicsWebApi } from "../../dynamics-web-api";

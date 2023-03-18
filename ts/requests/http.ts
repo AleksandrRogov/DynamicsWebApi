@@ -68,9 +68,9 @@ function httpRequest(options: Core.RequestOptions) {
 	}
 	const parsedUrl = url.parse(options.uri);
 	const protocol = parsedUrl.protocol?.slice(0, -1);
-	let protocolInterface = protocol === "http" ? http : https;
+	const protocolInterface = protocol === "http" ? http : https;
 
-	let internalOptions: http.RequestOptions = {
+	const internalOptions: http.RequestOptions = {
 		hostname: parsedUrl.hostname,
 		port: parsedUrl.port,
 		path: parsedUrl.path,

@@ -5,8 +5,8 @@ var nock = require("nock");
 var sinon = require("sinon");
 
 var { DWA } = require("../lib/dwa");
-var { Utility } = require("../lib/utilities/Utility");
-var { RequestUtility } = require("../lib/utilities/RequestUtility");
+var { Utility } = require("../lib/utils/Utility");
+var { RequestUtility } = require("../lib/utils/Request");
 var { ErrorHelper } = require("../lib/helpers/ErrorHelper");
 var mocks = require("./stubs");
 var { dateReviver } = require("../lib/requests/helpers/dateReviver");
@@ -1947,7 +1947,7 @@ describe("RequestClient.makeRequest", function () {
 				functionName: "any",
 			};
 			var config = {
-				webApiUrl: mocks.webApiUrl,
+				dataApi: { url: mocks.webApiUrl },
 				useEntityNames: true,
 			};
 			RequestClient.makeRequest(
@@ -2001,7 +2001,7 @@ describe("RequestClient.makeRequest", function () {
 				functionName: "any",
 			};
 			var config = {
-				webApiUrl: mocks.webApiUrl,
+				dataApi: { url: mocks.webApiUrl },
 				useEntityNames: true,
 			};
 
@@ -2078,7 +2078,7 @@ describe("RequestClient.makeRequest", function () {
 				key: mocks.data.testEntityId,
 			};
 			var config = {
-				webApiUrl: mocks.webApiUrl,
+				dataApi: { url: mocks.webApiUrl },
 				useEntityNames: true,
 			};
 			RequestClient.makeRequest(
@@ -2132,7 +2132,7 @@ describe("RequestClient.makeRequest", function () {
 				key: mocks.data.testEntityId,
 			};
 			var config = {
-				webApiUrl: mocks.webApiUrl,
+				dataApi: { url: mocks.webApiUrl },
 				useEntityNames: true,
 			};
 			RequestClient.makeRequest(
@@ -2183,7 +2183,7 @@ describe("RequestClient.makeRequest", function () {
 				data: mocks.data.testEntityAdditionalAttributes,
 			};
 			var config = {
-				webApiUrl: mocks.webApiUrl,
+				dataApi: { url: mocks.webApiUrl },
 			};
 
 			RequestClient.makeRequest(
@@ -2230,7 +2230,7 @@ describe("RequestClient.makeRequest", function () {
 			};
 			var config = {
 				timeout: 500,
-				webApiUrl: mocks.webApiUrl,
+				dataApi: { url: mocks.webApiUrl },
 			};
 
 			RequestClient.makeRequest(
@@ -2277,7 +2277,7 @@ describe("RequestClient.makeRequest", function () {
 				data: mocks.data.testEntityAdditionalAttributes,
 			};
 			var config = {
-				webApiUrl: mocks.webApiUrl,
+				dataApi: { url: mocks.webApiUrl },
 			};
 
 			RequestClient.makeRequest(
@@ -2324,7 +2324,7 @@ describe("RequestClient.makeRequest", function () {
 			};
 			var config = {
 				timeout: 500,
-				webApiUrl: mocks.webApiUrl,
+				dataApi: { url: mocks.webApiUrl },
 			};
 
 			RequestClient.makeRequest(
@@ -2389,7 +2389,7 @@ describe("RequestClient.makeRequest", function () {
 			};
 			RequestClient.makeRequest(
 				request,
-				{ webApiUrl: mocks.webApiUrl },
+				{ dataApi: { url: mocks.webApiUrl } },
 				function (object) {
 					var multiple = mocks.responses.multiple();
 					//delete multiple.oDataContext;
@@ -2432,7 +2432,7 @@ describe("RequestClient.sendRequest", function () {
 		it("returns a correct response", function (done) {
 			RequestClient.sendRequest(
 				{ method: "PATCH", path: url, data: mocks.data.testEntityAdditionalAttributesWithExpand, async: true },
-				{ webApiUrl: mocks.webApiUrl },
+				{ dataApi: { url: mocks.webApiUrl } },
 				function (object) {
 					var expectedO = {
 						status: mocks.responses.basicEmptyResponseSuccess.status,
@@ -2468,7 +2468,7 @@ describe("RequestClient.sendRequest", function () {
 		it("returns a correct response", function (done) {
 			RequestClient.sendRequest(
 				{ method: "POST", path: url, data: mocks.data.testEntityAdditionalAttributes, async: true },
-				{ webApiUrl: mocks.webApiUrl },
+				{ dataApi: { url: mocks.webApiUrl } },
 				function (object) {
 					expect(object).to.be.undefined;
 					done(object);
@@ -2503,7 +2503,7 @@ describe("RequestClient.sendRequest", function () {
 		it("returns a correct response", function (done) {
 			RequestClient.sendRequest(
 				{ method: "POST", path: url, data: mocks.data.testEntityAdditionalAttributes, async: true, timeout: 500 },
-				{ webApiUrl: mocks.webApiUrl },
+				{ dataApi: { url: mocks.webApiUrl } },
 				function (object) {
 					expect(object).to.be.undefined;
 					done(object);
@@ -2539,7 +2539,7 @@ describe("RequestClient.sendRequest", function () {
 		it("returns a correct response", function (done) {
 			RequestClient.sendRequest(
 				{ method: "POST", path: url, data: mocks.data.testEntityAdditionalAttributes, async: true, timeout: 500 },
-				{ webApiUrl: mocks.webApiUrl },
+				{ dataApi: { url: mocks.webApiUrl } },
 				function (object) {
 					expect(object).to.be.undefined;
 					done(object);
@@ -2562,7 +2562,7 @@ describe("empty batch payload", function () {
 	it("throws an error", function (done) {
 		RequestClient.sendRequest(
 			{ method: "POST", path: "$batch", async: true, timeout: 500 },
-			{ webApiUrl: mocks.webApiUrl },
+			{ dataApi: { url: mocks.webApiUrl } },
 			function (object) {
 				done(object);
 			},

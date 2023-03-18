@@ -9,10 +9,10 @@ var crypto = new (require("@peculiar/webcrypto").Crypto)();
 var mocks = require("./stubs");
 var { DWA } = require("../lib/dwa");
 var { DynamicsWebApi } = require("../lib/dynamics-web-api");
-var dynamicsWebApiTest = new DynamicsWebApi({ webApiVersion: "8.2" });
+var dynamicsWebApiTest = new DynamicsWebApi({ dataApi: { version: "8.2" } });
 
 var { XhrWrapper } = require("../lib/requests/xhr");
-var { Utility } = require("../lib/utilities/Utility");
+var { Utility } = require("../lib/utils/Utility");
 Utility.downloadChunkSize = 15;
 
 describe("xhr -", function () {
@@ -561,7 +561,7 @@ describe("xhr -", function () {
 				};
 
 				var dynamicsWebApiAuth = new DynamicsWebApi({
-					webApiVersion: "8.2",
+					dataApi: { version: "8.2" },
 					onTokenRefresh: getToken,
 				});
 
@@ -953,7 +953,7 @@ describe("xhr -", function () {
 				requests.push(xhr);
 			};
 
-			var dynamicsWebApiTimeout = new DynamicsWebApi({ webApiVersion: "8.2", timeout: 100 });
+			var dynamicsWebApiTimeout = new DynamicsWebApi({ dataApi: { version: "8.2" }, timeout: 100 });
 
 			dynamicsWebApiTimeout
 				.create({ data: mocks.data.testEntity, collection: "tests" })

@@ -6,16 +6,16 @@ import { RequestClient } from "./requests/RequestClient";
  * @module dynamics-web-api
  */
 export declare class DynamicsWebApi {
-    private _internalConfig;
+    private _config;
     private _isBatch;
     private _batchRequestId;
     constructor(config?: DynamicsWebApi.Config);
     /**
      * Sets the configuration parameters for DynamicsWebApi helper.
      *
-     * @param {DWAConfig} config - configuration object
+     * @param {DynamicsWebApi.Config} config - Configuration
      * @example
-       dynamicsWebApi.setConfig({ webApiVersion: '9.1' });
+       dynamicsWebApi.setConfig({ organizationUrl: 'https://contoso.api.dynamics.com/' });
      */
     setConfig: (config: DynamicsWebApi.Config) => void;
     private _makeRequest;
@@ -766,11 +766,15 @@ export declare namespace DynamicsWebApi {
         /**File Field Name */
         fieldName: string;
     }
+    interface ApiConfig {
+        /** API Version to use, for example: "9.2" or "1.0" */
+        version?: string;
+        /** API Path, for example: "data" or "search" */
+        path?: string;
+    }
     interface Config {
-        /**A String representing the GUID value for the Dynamics 365 system user id.Impersonates the user. */
-        webApiUrl?: string | null;
-        /**Web API Version to use, for example: "8.1" */
-        webApiVersion?: string | null;
+        /**A complete URL string to Web API. Example of the URL: "https://myorg.api.crm.dynamics.com/api/data/v9.1/". If it is specified then webApiVersion property will not be used even if it is not empty.*/
+        organizationUrl?: string | null;
         /**Impersonates a user based on their systemuserid by adding "MSCRMCallerID" header. A String representing the GUID value for the Dynamics 365 systemuserid. */
         impersonate?: string | null;
         /**Impersonates a user based on their Azure Active Directory (AAD) object id by passing that value along with the header "CallerObjectId". A String should represent a GUID value. */
@@ -789,6 +793,8 @@ export declare namespace DynamicsWebApi {
         timeout?: number | null;
         /**Proxy configuration object. */
         proxy?: ProxyConfig | null;
+        dataApi?: ApiConfig;
+        searchApi?: ApiConfig;
     }
     interface ProxyConfig {
         /**Proxy server url */

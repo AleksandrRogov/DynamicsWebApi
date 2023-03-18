@@ -17,11 +17,11 @@ export class XhrWrapper {
 		const successCallback = options.successCallback;
 		const errorCallback = options.errorCallback;
 
-		let request = new XMLHttpRequest();
+		const request = new XMLHttpRequest();
 		request.open(options.method, options.uri, options.isAsync || false);
 
 		//set additional headers
-		for (var key in additionalHeaders) {
+		for (let key in additionalHeaders) {
 			request.setRequestHeader(key, additionalHeaders[key]);
 		}
 
@@ -34,10 +34,10 @@ export class XhrWrapper {
 					case 206: // Success with partial content.
 					case 304: {
 						// Success with Not Modified
-						let responseHeaders = parseResponseHeaders(request.getAllResponseHeaders());
-						let responseData = parseResponse(request.responseText, responseHeaders, responseParams[options.requestId]);
+						const responseHeaders = parseResponseHeaders(request.getAllResponseHeaders());
+						const responseData = parseResponse(request.responseText, responseHeaders, responseParams[options.requestId]);
 
-						var response = {
+						const response = {
 							data: responseData,
 							headers: responseHeaders,
 							status: request.status,
@@ -51,10 +51,11 @@ export class XhrWrapper {
 					}
 					default:
 						// All other statuses are error cases.
-						var error;
+						let error;
+						let headers;
 						try {
-							var headers = parseResponseHeaders(request.getAllResponseHeaders());
-							let errorParsed = parseResponse(
+							headers = parseResponseHeaders(request.getAllResponseHeaders());
+							const errorParsed = parseResponse(
 								request.responseText,
 								parseResponseHeaders(request.getAllResponseHeaders()),
 								responseParams[options.requestId]
@@ -75,7 +76,7 @@ export class XhrWrapper {
 							}
 						}
 
-						let errorParameters = {
+						const errorParameters = {
 							status: request.status,
 							statusText: request.statusText,
 							headers: headers,
@@ -96,7 +97,7 @@ export class XhrWrapper {
 		}
 
 		request.onerror = function () {
-			let headers = parseResponseHeaders(request.getAllResponseHeaders());
+			const headers = parseResponseHeaders(request.getAllResponseHeaders());
 			errorCallback(
 				ErrorHelper.handleHttpError({
 					status: request.status,
@@ -110,7 +111,7 @@ export class XhrWrapper {
 		};
 
 		request.ontimeout = function () {
-			let headers = parseResponseHeaders(request.getAllResponseHeaders());
+			const headers = parseResponseHeaders(request.getAllResponseHeaders());
 			errorCallback(
 				ErrorHelper.handleHttpError({
 					status: request.status,

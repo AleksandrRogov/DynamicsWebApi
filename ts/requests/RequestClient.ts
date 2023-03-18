@@ -1,5 +1,6 @@
-import { Utility } from "../utilities/Utility";
-import { RequestUtility } from "../utilities/RequestUtility";
+import { Utility } from "../utils/Utility";
+import { ConfigurationUtility, InternalConfig } from "../utils/Config";
+import { RequestUtility } from "../utils/Request";
 import { DynamicsWebApi } from "../../ts/dynamics-web-api";
 import { DynamicsWebApiError, ErrorHelper } from "../helpers/ErrorHelper";
 import { Core } from "../../ts/types";
@@ -32,7 +33,7 @@ export class RequestClient {
 	 * @param {boolean} [isBatch] - Indicates whether the request is a Batch request or not. Default: false
 	 * @param {boolean} [isAsync] - Indicates whether the request should be made synchronously or asynchronously.
 	 */
-	static sendRequest(request: Core.InternalRequest, config: DynamicsWebApi.Config, successCallback: Function, errorCallback: Function): void {
+	static sendRequest(request: Core.InternalRequest, config: InternalConfig, successCallback: Function, errorCallback: Function): void {
 		request.headers = request.headers || {};
 		request.responseParameters = request.responseParameters || {};
 		request.requestId = request.requestId || Utility.generateUUID();
@@ -41,7 +42,7 @@ export class RequestClient {
 		RequestClient.addResponseParams(request.requestId, request.responseParameters);
 
 		//stringify passed data
-		var processedData = null;
+		let processedData = null;
 
 		let isBatchConverted = request.responseParameters != null && request.responseParameters.convertedToBatch;
 
@@ -92,7 +93,7 @@ export class RequestClient {
 
 			executeRequest({
 				method: request.method!,
-				uri: config.webApiUrl! + request.path,
+				uri: config.dataApi.url + request.path,
 				data: processedData,
 				additionalHeaders: request.headers,
 				responseParams: RequestClient._responseParseParams,
@@ -117,14 +118,14 @@ export class RequestClient {
 
 	private static _getCollectionNames(
 		entityName: string,
-		config: DynamicsWebApi.Config,
+		config: InternalConfig,
 		successCallback: (collection: string) => void,
 		errorCallback: Function
 	): void {
 		if (!Utility.isNull(RequestUtility.entityNames)) {
 			successCallback(RequestUtility.findCollectionName(entityName) || entityName);
 		} else {
-			var resolve = function (result) {
+			const resolve = function (result) {
 				RequestUtility.entityNames = {};
 				for (var i = 0; i < result.data.value.length; i++) {
 					RequestUtility.entityNames[result.data.value[i].LogicalName] = result.data.value[i].EntitySetName;
@@ -133,11 +134,11 @@ export class RequestClient {
 				successCallback(RequestUtility.findCollectionName(entityName) || entityName);
 			};
 
-			var reject = function (error) {
+			const reject = function (error) {
 				errorCallback({ message: "Unable to fetch EntityDefinitions. Error: " + error.message });
 			};
 
-			let request = RequestUtility.compose(
+			const request = RequestUtility.compose(
 				{
 					method: "GET",
 					collection: "EntityDefinitions",
@@ -153,14 +154,14 @@ export class RequestClient {
 	}
 
 	private static _isEntityNameException(entityName: string): boolean {
-		var exceptions = ["EntityDefinitions", "$metadata", "RelationshipDefinitions", "GlobalOptionSetDefinitions", "ManagedPropertyDefinitions"];
+		const exceptions = ["EntityDefinitions", "$metadata", "RelationshipDefinitions", "GlobalOptionSetDefinitions", "ManagedPropertyDefinitions"];
 
 		return exceptions.indexOf(entityName) > -1;
 	}
 
 	private static _checkCollectionName(
 		entityName: string | null | undefined,
-		config: DynamicsWebApi.Config,
+		config: InternalConfig,
 		successCallback: (collection: string | null | undefined) => void,
 		errorCallback: Function
 	): void {
@@ -183,7 +184,7 @@ export class RequestClient {
 		}
 	}
 
-	static makeRequest(request: Core.InternalRequest, config: DynamicsWebApi.Config, resolve: Function, reject: Function): void {
+	static makeRequest(request: Core.InternalRequest, config: InternalConfig, resolve: Function, reject: Function): void {
 		request.responseParameters = request.responseParameters || {};
 
 		//no need to make a request to web api if it's a part of batch

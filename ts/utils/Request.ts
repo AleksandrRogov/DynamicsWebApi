@@ -2,6 +2,7 @@ import { Utility } from "./Utility";
 import { DynamicsWebApi } from "../dynamics-web-api";
 import { ErrorHelper } from "../helpers/ErrorHelper";
 import { Core } from "../types";
+import { InternalConfig } from "./Config";
 
 /**
  * @typedef {Object} ConvertedRequestOptions
@@ -25,7 +26,7 @@ export class RequestUtility {
 	 * @param {Object} [config] - DynamicsWebApi config
 	 * @returns {ConvertedRequest} Converted request
 	 */
-	static compose(request: Core.InternalRequest, config: DynamicsWebApi.Config): Core.InternalRequest {
+	static compose(request: Core.InternalRequest, config: InternalConfig): Core.InternalRequest {
 		request.path = request.path || "";
 		request.functionName = request.functionName || "";
 		if (!request.url) {
@@ -71,7 +72,7 @@ export class RequestUtility {
 			}
 		} else {
 			ErrorHelper.stringParameterCheck(request.url, `DynamicsWebApi.${request.functionName}`, "request.url");
-			request.path = request.url.replace(config.webApiUrl!, "");
+			request.path = request.url.replace(config.dataApi.url, "");
 			request.path = RequestUtility.composeUrl(request, config, request.path);
 		}
 
@@ -421,7 +422,7 @@ export class RequestUtility {
 		return prefer.join(",");
 	}
 
-	static convertToBatch(requests: Core.InternalRequest[], config: DynamicsWebApi.Config): Core.InternalBatchRequest {
+	static convertToBatch(requests: Core.InternalRequest[], config: InternalConfig): Core.InternalBatchRequest {
 		let batchBoundary = `dwa_batch_${Utility.generateUUID()}`;
 
 		const batchBody: string[] = [];
@@ -463,7 +464,7 @@ export class RequestUtility {
 			}
 
 			if (!internalRequest.path?.startsWith("$")) {
-				batchBody.push(`\n${internalRequest.method} ${config.webApiUrl}${internalRequest.path} HTTP/1.1`);
+				batchBody.push(`\n${internalRequest.method} ${config.dataApi.url}${internalRequest.path} HTTP/1.1`);
 			} else {
 				batchBody.push(`\n${internalRequest.method} ${internalRequest.path} HTTP/1.1`);
 			}
@@ -518,7 +519,7 @@ export class RequestUtility {
 		return collectionName;
 	}
 
-	static processData(data: any, config: DynamicsWebApi.Config): any {
+	static processData(data: any, config: InternalConfig): any {
 		let stringifiedData;
 		if (data) {
 			if (data instanceof Uint8Array || data instanceof Uint16Array || data instanceof Uint32Array) return data;
@@ -544,14 +545,14 @@ export class RequestUtility {
 							}
 						}
 
-						if (!value.startsWith(config.webApiUrl)) {
+						if (!value.startsWith(config.dataApi.url)) {
 							//add full web api url if it's not set
 							if (key.endsWith("@odata.bind")) {
 								if (!value.startsWith("/")) {
 									value = "/" + value;
 								}
 							} else {
-								value = config.webApiUrl + value.replace(/^\//, "");
+								value = config.dataApi.url + value.replace(/^\//, "");
 							}
 						}
 					}
