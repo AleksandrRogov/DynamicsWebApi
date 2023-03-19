@@ -1,7 +1,7 @@
 ﻿import { Core } from "../types";
 
-declare let GetGlobalContext: any;
-declare let Xrm: any;
+declare var GetGlobalContext: any;
+declare var Xrm: any;
 
 function isNodeEnv(): boolean {
 	// tslint:disable:strict-type-predicates
@@ -25,7 +25,7 @@ function getCrypto() {
 }
 
 function generateRandomBytes() {
-	var uCrypto = getCrypto();
+	const uCrypto = getCrypto();
 	/* develblock:start */
 	if (typeof uCrypto.getRandomValues !== "undefined") {
 		/* develblock:end */
@@ -48,13 +48,13 @@ export class Utility {
 	 */
 	static buildFunctionParameters(parameters?: any): string {
 		if (parameters) {
-			var parameterNames = Object.keys(parameters);
-			var functionParameters = "";
-			var urlQuery = "";
+			const parameterNames = Object.keys(parameters);
+			let functionParameters = "";
+			let urlQuery = "";
 
 			for (var i = 1; i <= parameterNames.length; i++) {
-				var parameterName = parameterNames[i - 1];
-				var value = parameters[parameterName];
+				const parameterName = parameterNames[i - 1];
+				let value = parameters[parameterName];
 
 				if (value === null) continue;
 
@@ -90,12 +90,12 @@ export class Utility {
 	 */
 	static getFetchXmlPagingCookie(pageCookies: string = "", currentPageNumber: number = 1): Core.FetchXmlCookie {
 		//get the page cokies
-		pageCookies = unescape(unescape(pageCookies));
+		pageCookies = decodeURIComponent(decodeURIComponent(pageCookies));
 
-		var info = /pagingcookie="(<cookie page="(\d+)".+<\/cookie>)/.exec(pageCookies);
+		const info = /pagingcookie="(<cookie page="(\d+)".+<\/cookie>)/.exec(pageCookies);
 
 		if (info != null) {
-			var page = parseInt(info[2]);
+			let page = parseInt(info[2]);
 			return {
 				cookie: info[1]
 					.replace(/</g, "&lt;")
@@ -126,7 +126,7 @@ export class Utility {
 	 * @returns {ReferenceObject}
 	 */
 	static convertToReferenceObject(responseData: any): Core.ReferenceObject {
-		var result = /\/(\w+)\(([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})/i.exec(responseData["@odata.id"]);
+		const result = /\/(\w+)\(([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})/i.exec(responseData["@odata.id"]);
 		return { id: result![2], collection: result![1], oDataContext: responseData["@odata.context"] };
 	}
 
@@ -168,9 +168,9 @@ export class Utility {
 	}
 
 	static getClientUrl(): string {
-		var context = Utility.getXrmContext();
+		const context = Utility.getXrmContext();
 
-		var clientUrl = context.getClientUrl();
+		let clientUrl = context.getClientUrl();
 
 		if (clientUrl.match(/\/$/)) {
 			clientUrl = clientUrl.substring(0, clientUrl.length - 1);
@@ -185,7 +185,7 @@ export class Utility {
 
 	static copyObject<T = any>(src: any, excludeProps: string[] = []): T {
 		let target = {};
-		for (var prop in src) {
+		for (let prop in src) {
 			if (src.hasOwnProperty(prop) && !excludeProps.includes(prop)) {
 				// if the value is a nested object, recursively copy all its properties
 				if (Utility.isObject(src[prop]) && Object.prototype.toString.call(src[prop]) !== "[object Date]") {
@@ -205,9 +205,9 @@ export class Utility {
 	static setFileChunk(request: Core.InternalRequest, fileBuffer: Uint8Array | Buffer, chunkSize: number, offset: number): void {
 		offset = offset || 0;
 
-		var count = offset + chunkSize > fileBuffer.length ? fileBuffer.length % chunkSize : chunkSize;
+		const count = offset + chunkSize > fileBuffer.length ? fileBuffer.length % chunkSize : chunkSize;
 
-		var content;
+		let content;
 
 		/* develblock:start */
 		if (typeof window === "undefined") {
@@ -215,7 +215,7 @@ export class Utility {
 		} else {
 			/* develblock:end */
 			content = new Uint8Array(count);
-			for (var i = 0; i < count; i++) {
+			for (let i = 0; i < count; i++) {
 				content[i] = fileBuffer[offset + i];
 			}
 			/* develblock:start */
@@ -232,7 +232,7 @@ export class Utility {
 			return Buffer.from(binaryString, "binary");
 		} else {
 			/* develblock:end */
-			var bytes = new Uint8Array(binaryString.length);
+			const bytes = new Uint8Array(binaryString.length);
 			for (var i = 0; i < binaryString.length; i++) {
 				bytes[i] = binaryString.charCodeAt(i);
 			}

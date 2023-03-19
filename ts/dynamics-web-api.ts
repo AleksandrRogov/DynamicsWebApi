@@ -60,7 +60,7 @@ export class DynamicsWebApi {
 	 *}).catch(function (error) {
 	 *});
 	 */
-	create = <T = any>(request: DynamicsWebApi.CreateRequest<T>): Promise<T> => {
+	create = <TData = any>(request: DynamicsWebApi.CreateRequest<TData>): Promise<TData> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.create", "request");
 
 		let internalRequest: Core.InternalRequest;
@@ -109,7 +109,7 @@ export class DynamicsWebApi {
 
 		internalRequest.method = "GET";
 		internalRequest.responseParameters = {
-			isRef: internalRequest.select != null && internalRequest.select.length === 1 && internalRequest.select[0].endsWith("/$ref"),
+			isRef: internalRequest.select?.length === 1 && internalRequest.select[0].endsWith("/$ref"),
 		};
 
 		return this._makeRequest(internalRequest).then(function (response) {
@@ -123,7 +123,7 @@ export class DynamicsWebApi {
 	 * @param {DWARequest} request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	update = <T = any>(request: DynamicsWebApi.UpdateRequest<T>): Promise<T> => {
+	update = <TData = any>(request: DynamicsWebApi.UpdateRequest<TData>): Promise<TData> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.update", "request");
 
 		let internalRequest: Core.InternalRequest;
@@ -233,7 +233,7 @@ export class DynamicsWebApi {
 	 * @param {DWARequest} request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	upsert = <T = any>(request: DynamicsWebApi.UpsertRequest<T>): Promise<T> => {
+	upsert = <TData = any>(request: DynamicsWebApi.UpsertRequest<TData>): Promise<TData> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.upsert", "request");
 
 		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);

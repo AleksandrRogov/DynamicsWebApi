@@ -42,7 +42,7 @@ export declare class DynamicsWebApi {
      *}).catch(function (error) {
      *});
      */
-    create: <T = any>(request: DynamicsWebApi.CreateRequest<T>) => Promise<T>;
+    create: <TData = any>(request: DynamicsWebApi.CreateRequest<TData>) => Promise<TData>;
     /**
      * Sends an asynchronous request to retrieve a record.
      *
@@ -70,7 +70,7 @@ export declare class DynamicsWebApi {
      * @param {DWARequest} request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api result
      */
-    update: <T = any>(request: DynamicsWebApi.UpdateRequest<T>) => Promise<T>;
+    update: <TData = any>(request: DynamicsWebApi.UpdateRequest<TData>) => Promise<TData>;
     /**
      * Sends an asynchronous request to update a single value in the record.
      *
@@ -95,7 +95,7 @@ export declare class DynamicsWebApi {
      * @param {DWARequest} request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api result
      */
-    upsert: <T = any>(request: DynamicsWebApi.UpsertRequest<T>) => Promise<T>;
+    upsert: <TData = any>(request: DynamicsWebApi.UpsertRequest<TData>) => Promise<TData>;
     private _uploadFileChunk;
     /**
      * Upload file to a File Attribute

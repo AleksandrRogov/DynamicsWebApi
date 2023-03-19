@@ -10,56 +10,22 @@ function throwParameterError(functionName: string, parameterName: string, type: 
 
 export class ErrorHelper {
 	static handleErrorResponse(req): void {
-		///<summary>
-		/// Private function return an Error object to the errorCallback
-		///</summary>
-		///<param name="req" type="XMLHttpRequest">
-		/// The XMLHttpRequest response that returned an error.
-		///</param>
-		///<returns>Error</returns>
 		throw new Error(`Error: ${req.status}: ${req.message}`);
 	}
 
 	static parameterCheck(parameter, functionName: string, parameterName: string, type?: string): void {
-		///<summary>
-		/// Private function used to check whether required parameters are null or undefined
-		///</summary>
-		///<param name="parameter" type="Object">
-		/// The parameter to check;
-		///</param>
-		///<param name="message" type="String">
-		/// The error message text to include when the error is thrown.
-		///</param>
 		if (typeof parameter === "undefined" || parameter === null || parameter === "") {
 			throwParameterError(functionName, parameterName, type);
 		}
 	}
 
 	static stringParameterCheck(parameter, functionName: string, parameterName: string): void {
-		///<summary>
-		/// Private function used to check whether required parameters are null or undefined
-		///</summary>
-		///<param name="parameter" type="String">
-		/// The string parameter to check;
-		///</param>
-		///<param name="message" type="String">
-		/// The error message text to include when the error is thrown.
-		///</param>
 		if (typeof parameter !== "string") {
 			throwParameterError(functionName, parameterName, "String");
 		}
 	}
 
 	static arrayParameterCheck(parameter, functionName: string, parameterName: string): void {
-		///<summary>
-		/// Private function used to check whether required parameters are null or undefined
-		///</summary>
-		///<param name="parameter" type="String">
-		/// The string parameter to check;
-		///</param>
-		///<param name="message" type="String">
-		/// The error message text to include when the error is thrown.
-		///</param>
 		if (parameter.constructor !== Array) {
 			throwParameterError(functionName, parameterName, "Array");
 		}
@@ -72,15 +38,6 @@ export class ErrorHelper {
 	}
 
 	static numberParameterCheck(parameter, functionName: string, parameterName: string): void {
-		///<summary>
-		/// Private function used to check whether required parameters are null or undefined
-		///</summary>
-		///<param name="parameter" type="Number">
-		/// The string parameter to check;
-		///</param>
-		///<param name="message" type="String">
-		/// The error message text to include when the error is thrown.
-		///</param>
 		if (typeof parameter != "number") {
 			if (typeof parameter === "string" && parameter) {
 				if (!isNaN(parseInt(parameter))) {
@@ -100,7 +57,7 @@ export class ErrorHelper {
 	}
 
 	static handleHttpError(parsedError: any, parameters?: any): DynamicsWebApiError {
-		var error = new Error();
+		const error = new Error();
 
 		Object.keys(parsedError).forEach((k) => {
 			error[k] = parsedError[k];
@@ -116,34 +73,21 @@ export class ErrorHelper {
 	}
 
 	static boolParameterCheck(parameter, functionName: string, parameterName: string): void {
-		///<summary>
-		/// Private function used to check whether required parameters are null or undefined
-		///</summary>
-		///<param name="parameter" type="Boolean">
-		/// The string parameter to check;
-		///</param>
-		///<param name="message" type="String">
-		/// The error message text to include when the error is thrown.
-		///</param>
 		if (typeof parameter != "boolean") {
 			throwParameterError(functionName, parameterName, "Boolean");
 		}
 	}
 
+	/**
+	 * Private function used to check whether required parameter is a valid GUID
+	 * @param parameter The GUID parameter to check
+	 * @param functionName
+	 * @param parameterName
+	 * @returns
+	 */
 	static guidParameterCheck(parameter, functionName: string, parameterName: string): string | undefined {
-		///<summary>
-		/// Private function used to check whether required parameter is a valid GUID
-		///</summary>
-		///<param name="parameter" type="String">
-		/// The GUID parameter to check;
-		///</param>
-		///<param name="message" type="String">
-		/// The error message text to include when the error is thrown.
-		///</param>
-		/// <returns type="String" />
-
 		try {
-			var match = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(parameter)![0];
+			const match = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(parameter)![0];
 			return match;
 		} catch (error) {
 			throwParameterError(functionName, parameterName, "GUID String");
@@ -155,16 +99,16 @@ export class ErrorHelper {
 			ErrorHelper.stringParameterCheck(parameter, functionName, parameterName);
 
 			//check if the param is a guid
-			var match = /^{?([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})}?$/i.exec(parameter);
+			const match = /^{?([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})}?$/i.exec(parameter);
 			if (match) {
 				return match[1];
 			}
 
 			//check the alternate key
-			var alternateKeys = parameter.split(",");
+			const alternateKeys = parameter.split(",");
 
 			if (alternateKeys.length) {
-				for (var i = 0; i < alternateKeys.length; i++) {
+				for (let i = 0; i < alternateKeys.length; i++) {
 					alternateKeys[i] = alternateKeys[i].trim().replace(/"/g, "'");
 					/^[\w\d\_]+\=(.+)$/i.exec(alternateKeys[i])![0];
 				}
@@ -177,15 +121,6 @@ export class ErrorHelper {
 	}
 
 	static callbackParameterCheck(callbackParameter, functionName: string, parameterName: string): void {
-		///<summary>
-		/// Private function used to check whether required callback parameters are functions
-		///</summary>
-		///<param name="callbackParameter" type="Function">
-		/// The callback parameter to check;
-		///</param>
-		///<param name="message" type="String">
-		/// The error message text to include when the error is thrown.
-		///</param>
 		if (typeof callbackParameter != "function") {
 			throwParameterError(functionName, parameterName, "Function");
 		}

@@ -2,18 +2,12 @@
 import { Utility } from "../../utils/Utility";
 import { ErrorHelper, DynamicsWebApiError } from "../../helpers/ErrorHelper";
 import { dateReviver } from "./dateReviver";
-import { DynamicsWebApi } from "../../dynamics-web-api";
 import { Core } from "../../types";
-
-////string es6 polyfill
-//if (!String.prototype.endsWith || !String.prototype.startsWith) {
-//    import "../../polyfills/string-es6";
-//}
 
 function getFormattedKeyValue(keyName: string, value: any): any[] {
 	let newKey: string | null = null;
 	if (keyName.indexOf("@") !== -1) {
-		var format = keyName.split("@");
+		const format = keyName.split("@");
 		switch (format[1]) {
 			case "odata.context":
 				newKey = "oDataContext";
@@ -60,10 +54,10 @@ function parseData(object: any, parseParams?: any): any {
 		}
 	}
 
-	var keys = Object.keys(object);
+	const keys = Object.keys(object);
 
-	for (var i = 0; i < keys.length; i++) {
-		var currentKey = keys[i];
+	for (let i = 0; i < keys.length; i++) {
+		const currentKey = keys[i];
 
 		if (object[currentKey] != null) {
 			if (object[currentKey].constructor === Array) {
@@ -76,14 +70,14 @@ function parseData(object: any, parseParams?: any): any {
 		}
 
 		//parse formatted values
-		var formattedKeyValue = getFormattedKeyValue(currentKey, object[currentKey]);
+		let formattedKeyValue = getFormattedKeyValue(currentKey, object[currentKey]);
 		if (formattedKeyValue[0]) {
 			object[formattedKeyValue[0]] = formattedKeyValue[1];
 		}
 
 		//parse aliased values
 		if (currentKey.indexOf("_x002e_") !== -1) {
-			var aliasKeys = currentKey.split("_x002e_");
+			const aliasKeys = currentKey.split("_x002e_");
 
 			if (!object.hasOwnProperty(aliasKeys[0])) {
 				object[aliasKeys[0]] = { _dwaType: "alias" };
@@ -119,11 +113,11 @@ const responseHeaderRegex = /^([^()<>@,;:\\"\/[\]?={} \t]+)\s?:\s?(.*)/;
 
 //partially taken from http://olingo.apache.org/doc/javascript/apidoc/batch.js.html
 function parseBatchHeaders(text: string): any {
-	var headers = {};
-	var parts;
-	var line;
-	var ctx = { position: 0 };
-	var pos;
+	const ctx = { position: 0 };
+	const headers = {};
+	let parts;
+	let line;
+	let pos;
 
 	do {
 		pos = ctx.position;
@@ -147,8 +141,8 @@ function readLine(text: string, ctx: { position: number }): string | null {
 
 //partially taken from http://olingo.apache.org/doc/javascript/apidoc/batch.js.html
 function readTo(text: string, ctx: { position: number }, str: string): string | null {
-	var start = ctx.position || 0;
-	var end = text.length;
+	const start = ctx.position || 0;
+	let end = text.length;
 	if (str) {
 		end = text.indexOf(str, start);
 		if (end === -1) {
@@ -195,12 +189,12 @@ function parseBatchResponse(response: string, parseParams: any, requestNumber: n
 			const httpStatus = parseInt(httpStatusReg![1]);
 			const httpStatusMessage = httpStatusReg![2].trim();
 
-			var responseData = batchResponse.substring(batchResponse.indexOf("{"), batchResponse.lastIndexOf("}") + 1);
+			const responseData = batchResponse.substring(batchResponse.indexOf("{"), batchResponse.lastIndexOf("}") + 1);
 
 			if (!responseData) {
 				if (/Content-Type: text\/plain/i.test(batchResponse)) {
-					var plainContentReg = /\w+$/gi.exec(batchResponse.trim());
-					var plainContent = plainContentReg && plainContentReg.length ? plainContentReg[0] : undefined;
+					const plainContentReg = /\w+$/gi.exec(batchResponse.trim());
+					const plainContent = plainContentReg && plainContentReg.length ? plainContentReg[0] : undefined;
 
 					//check if a plain content is a number or not
 					result.push(isNaN(Number(plainContent)) ? plainContent : Number(plainContent));
@@ -208,10 +202,10 @@ function parseBatchResponse(response: string, parseParams: any, requestNumber: n
 					if (parseParams.length && parseParams[requestNumber] && parseParams[requestNumber].hasOwnProperty("valueIfEmpty")) {
 						result.push(parseParams[requestNumber].valueIfEmpty);
 					} else {
-						var entityUrl = /OData-EntityId.+/i.exec(batchResponse);
+						const entityUrl = /OData-EntityId.+/i.exec(batchResponse);
 
 						if (entityUrl && entityUrl.length) {
-							var guidResult = /([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})\)$/i.exec(entityUrl[0]);
+							const guidResult = /([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})\)$/i.exec(entityUrl[0]);
 
 							result.push(guidResult ? guidResult[1] : undefined);
 						} else {
@@ -220,10 +214,10 @@ function parseBatchResponse(response: string, parseParams: any, requestNumber: n
 					}
 				}
 			} else {
-				var parsedResponse = parseData(JSON.parse(responseData, dateReviver), parseParams[requestNumber]);
+				const parsedResponse = parseData(JSON.parse(responseData, dateReviver), parseParams[requestNumber]);
 
 				if (httpStatus >= 400) {
-					let responseHeaders = parseBatchHeaders(
+					const responseHeaders = parseBatchHeaders(
 						//todo: add error handler for httpStatusReg; remove "!" operator
 						batchResponse.substring(batchResponse.indexOf(httpStatusReg![0]) + httpStatusReg![0].length + 1, batchResponse.indexOf("{"))
 					);
@@ -259,7 +253,7 @@ function base64ToString(base64: string): string | null {
 }
 
 function parseFileResponse(response: any, responseHeaders: any, parseParams: any): Core.FileParseResult {
-	var data = response;
+	let data = response;
 
 	if (parseParams.hasOwnProperty("parse")) {
 		data = JSON.parse(data).value;
@@ -297,10 +291,10 @@ function getHeader(headers: any, name: string): string {
  * @returns {any} parsed response
  */
 export function parseResponse(response: string, responseHeaders: any, parseParams: any[]): any {
-	var parseResult: any = undefined;
+	let parseResult: any = undefined;
 	if (response.length) {
 		if (response.indexOf("--batchresponse_") > -1) {
-			var batch = parseBatchResponse(response, parseParams);
+			const batch = parseBatchResponse(response, parseParams);
 
 			parseResult = parseParams.length === 1 && parseParams[0].convertedToBatch ? batch[0] : batch;
 		} else {
@@ -314,9 +308,9 @@ export function parseResponse(response: string, responseHeaders: any, parseParam
 		if (parseParams.length && parseParams[0].hasOwnProperty("valueIfEmpty")) {
 			parseResult = parseParams[0].valueIfEmpty;
 		} else if (hasHeader(responseHeaders, "OData-EntityId")) {
-			var entityUrl = getHeader(responseHeaders, "OData-EntityId");
+			const entityUrl = getHeader(responseHeaders, "OData-EntityId");
 
-			var guidResult = /([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})\)$/i.exec(entityUrl);
+			const guidResult = /([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})\)$/i.exec(entityUrl);
 
 			if (guidResult) {
 				parseResult = guidResult[1];

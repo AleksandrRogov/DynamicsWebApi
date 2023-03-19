@@ -100,9 +100,6 @@ export class RequestUtility {
 	static composeUrl(request: Core.InternalRequest, config: DynamicsWebApi.Config, url: string = "", joinSymbol: string = "&"): string {
 		const queryArray: string[] = [];
 
-		// joinSymbol = joinSymbol || "&";
-		// url = url || "";
-
 		if (request) {
 			if (request.navigationProperty) {
 				ErrorHelper.stringParameterCheck(request.navigationProperty, `DynamicsWebApi.${request.functionName}`, "request.navigationProperty");
@@ -270,9 +267,8 @@ export class RequestUtility {
 	}
 
 	static composeHeaders(request: Core.InternalRequest, config: DynamicsWebApi.Config): any {
-		let headers: any = {};
-
-		let prefer = RequestUtility.composePreferHeader(request, config);
+		const headers: any = {};
+		const prefer = RequestUtility.composePreferHeader(request, config);
 
 		if (prefer.length) {
 			headers["Prefer"] = prefer;
@@ -423,7 +419,7 @@ export class RequestUtility {
 	}
 
 	static convertToBatch(requests: Core.InternalRequest[], config: InternalConfig): Core.InternalBatchRequest {
-		let batchBoundary = `dwa_batch_${Utility.generateUUID()}`;
+		const batchBoundary = `dwa_batch_${Utility.generateUUID()}`;
 
 		const batchBody: string[] = [];
 		let currentChangeSet: string | null = null;
@@ -458,7 +454,7 @@ export class RequestUtility {
 			batchBody.push("Content-Transfer-Encoding: binary");
 
 			if (!isGet) {
-				let contentIdValue = internalRequest.headers.hasOwnProperty("Content-ID") ? internalRequest.headers["Content-ID"] : ++contentId;
+				const contentIdValue = internalRequest.headers.hasOwnProperty("Content-ID") ? internalRequest.headers["Content-ID"] : ++contentId;
 
 				batchBody.push(`Content-ID: ${contentIdValue}`);
 			}
@@ -494,7 +490,7 @@ export class RequestUtility {
 
 		batchBody.push(`\n--${batchBoundary}--`);
 
-		let headers = RequestUtility.setStandardHeaders();
+		const headers = RequestUtility.setStandardHeaders();
 		headers["Content-Type"] = `multipart/mixed;boundary=${batchBoundary}`;
 
 		return { headers: headers, body: batchBody.join("\n") };

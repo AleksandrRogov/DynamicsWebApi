@@ -44,7 +44,7 @@ export class RequestClient {
 		//stringify passed data
 		let processedData = null;
 
-		let isBatchConverted = request.responseParameters != null && request.responseParameters.convertedToBatch;
+		const isBatchConverted = request.responseParameters != null && request.responseParameters.convertedToBatch;
 
 		if (request.path === "$batch" && !isBatchConverted) {
 			const batchRequest = RequestClient._batchRequestCollection[request.requestId];
@@ -208,7 +208,7 @@ export class RequestClient {
 
 					//if the URL contains more characters than max possible limit, convert the request to a batch request
 					if (request.path!.length > 2000) {
-						let batchRequest = RequestUtility.convertToBatch([request], config);
+						const batchRequest = RequestUtility.convertToBatch([request], config);
 
 						request.method = "POST";
 						request.path = "$batch";

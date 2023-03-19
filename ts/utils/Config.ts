@@ -5,27 +5,6 @@ import { DynamicsWebApi } from "../dynamics-web-api";
 
 type ApiType = "dataApi" | "searchApi";
 
-// const internalConfig: InternalConfig = {
-// 	organizationUrl: "", //todo: remove orgUrl // make it null
-// 	impersonate: null,
-// 	impersonateAAD: null,
-// 	onTokenRefresh: null,
-// 	includeAnnotations: null,
-// 	maxPageSize: null,
-// 	returnRepresentation: null,
-// 	proxy: null,
-// 	dataApi: {
-// 		path: "data",
-// 		version: "9.2",
-// 		url: "",
-// 	},
-// 	searchApi: {
-// 		path: "search",
-// 		version: "1.0",
-// 		url: "",
-// 	},
-// };
-
 export interface InternalApiConfig extends DynamicsWebApi.ApiConfig {
 	url: string;
 }
