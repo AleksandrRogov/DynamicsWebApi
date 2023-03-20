@@ -274,6 +274,10 @@ export class RequestUtility {
 			headers["Prefer"] = prefer;
 		}
 
+		if (request.collection === "$metadata") {
+			headers["Accept"] = "application/xml";
+		}
+
 		if (request.transferMode) {
 			headers["x-ms-transfer-mode"] = request.transferMode;
 		}
@@ -568,8 +572,7 @@ export class RequestUtility {
 	}
 
 	static setStandardHeaders(headers: any = {}): any {
-		headers = headers || {};
-		headers["Accept"] = "application/json";
+		if (!headers["Accept"]) headers["Accept"] = "application/json";
 		headers["OData-MaxVersion"] = "4.0";
 		headers["OData-Version"] = "4.0";
 		headers["Content-Type"] = headers["Content-Range"] ? "application/octet-stream" : "application/json; charset=utf-8";

@@ -336,6 +336,7 @@ export declare class DynamicsWebApi {
      * @returns {Promise} D365 Web Api result
      */
     retrieveGlobalOptionSets: <T = any>(request?: DynamicsWebApi.RetrieveGlobalOptionSetsRequest) => Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
+    retrieveCsdlMetadata: () => Promise<any>;
     /**
      * Starts a batch request.
      *

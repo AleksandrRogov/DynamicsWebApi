@@ -301,7 +301,12 @@ export function parseResponse(response: string, responseHeaders: any, parseParam
 			if (hasHeader(responseHeaders, "Content-Disposition")) {
 				parseResult = parseFileResponse(response, responseHeaders, parseParams[0]);
 			} else {
-				parseResult = parseData(JSON.parse(response, dateReviver), parseParams[0]);
+				const contentType = getHeader(responseHeaders, "Content-Type");
+				if (contentType !== "application/xml") {
+					parseResult = parseData(JSON.parse(response, dateReviver), parseParams[0]);
+				} else {
+					parseResult = response;
+				}
 			}
 		}
 	} else {

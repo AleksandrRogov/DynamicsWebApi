@@ -96,11 +96,12 @@ In order to use DynamicsWebApi inside Dynamics 365 you need to download a browse
 
 Upload a script as a JavaScript Web Resource, place on the entity form or refer to it in your HTML Web Resource and then initialize the main object:
 
-```js
-//DynamicsWebApi makes calls to Web API v9.1 if a configuration not set
+```ts
+//DynamicsWebApi makes calls to Data API v9.2 if a configuration not set
+//and to Search API v1.0 if a configuration not set
 const dynamicsWebApi = new DynamicsWebApi();
 
-const response = await dynamicsWebApi.executeUnboundFunction("WhoAmI");
+const response = await dynamicsWebApi.executeUnboundFunction<WhoAmIResponse>("WhoAmI");
 Xrm.Navigation.openAlertDialog({ text: `Hello Dynamics 365! My id is: ${response.UserId}` });
 ```
 
@@ -163,7 +164,10 @@ const acquireToken = (dynamicsWebApiCallback) => {
 
 //create DynamicsWebApi
 const dynamicsWebApi = new DynamicsWebApi({
-    webApiUrl: `${serverUrl}/api/data/v9.2/`,
+    organizationUrl: serverUrl,
+    dataApi: {
+        version: "9.2"
+    },
     onTokenRefresh: acquireToken
 });
 
@@ -182,17 +186,20 @@ catch (error){
 ### Configuration
 To initialize a new instance of DynamicsWebApi with a configuration object, please use the following code:
 
-#### Web browser
+#### Dynamics 365 Web Resource
 
 ```js
-const dynamicsWebApi = new DynamicsWebApi({ webApiVersion: '9.1' });
+const dynamicsWebApi = new DynamicsWebApi({ dataApi: { version: "9.2" } });
 ```
 
 #### Node.js
 
 ```js
 const dynamicsWebApi = new DynamicsWebApi({
-    webApiUrl: 'https://myorg.api.crm.dynamics.com/api/data/v9.1/',
+    organizationUrl: "https://myorg.api.crm.dynamics.com",
+    dataApi: {
+        version: "9.1"
+    },
     onTokenRefresh: acquireToken
 });
 ```
@@ -201,92 +208,89 @@ You can set a configuration dynamically if needed:
 
 ```js
 //or can be set dynamically
-dynamicsWebApi.setConfig({ webApiVersion: '9.1' });
+dynamicsWebApi.setConfig({ dataApi: { version: "9.1" } });
 ```
 
 #### Configuration Parameters
 Property Name | Type | Description
 ------------ | ------------- | -------------
-impersonate | String | Impersonates a user based on their systemuserid by adding a "MSCRMCallerID" header. A String representing the GUID value for the Dynamics 365 systemuserid. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/impersonate-another-user-web-api)
-impersonateAAD | String | Impersonates a user based on their Azure Active Directory (AAD) object id by passing that value along with the header "CallerObjectId". A String should represent a GUID value. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/impersonate-another-user-web-api)
-includeAnnotations | String | Defaults Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
-maxPageSize | Number | Defaults the odata.maxpagesize preference. Use to set the number of entities returned in the response.
-onTokenRefresh | Function | A callback function that triggered when DynamicsWebApi requests a new OAuth token. (At this moment it is done before each call to Dynamics 365, as [recommended by Microsoft](https://msdn.microsoft.com/en-ca/library/gg327838.aspx#Anchor_2)).
-returnRepresentation | Boolean | Defaults Prefer header with value "return=representation". Use this property to return just created or updated entity in a single request.
-timeout | Number | Sets a number of milliseconds before a request times out.
-useEntityNames | Boolean | Indicates whether to use entity logical names instead of collection logical names during requests.
-webApiUrl | String | A complete URL string to Web API. Example of the URL: "https://myorg.api.crm.dynamics.com/api/data/v9.1/". If it is specified then webApiVersion property will not be used even if it is not empty. 
-webApiVersion | String | Version of the Web API. Default version is "9.1".
+impersonate | `String` | Impersonates a user based on their systemuserid by adding a "MSCRMCallerID" header. A String representing the GUID value for the Dynamics 365 systemuserid. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/impersonate-another-user-web-api)
+impersonateAAD | `String` | Impersonates a user based on their Azure Active Directory (AAD) object id by passing that value along with the header "CallerObjectId". A String should represent a GUID value. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/impersonate-another-user-web-api)
+includeAnnotations | `String` | Defaults Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
+maxPageSize | `Number` | Defaults the odata.maxpagesize preference. Use to set the number of entities returned in the response.
+onTokenRefresh | `Function` | A callback function that triggered when DynamicsWebApi requests a new OAuth token. (At this moment it is done before each call to Dynamics 365, as [recommended by Microsoft](https://msdn.microsoft.com/en-ca/library/gg327838.aspx#Anchor_2)).
+organizationUrl | `String` | Dynamics 365 Web Api organization URL. It is required when used in Node.js application (outside web resource). Example: "https://myorg.api.crm.dynamics.com/".
+returnRepresentation | `Boolean` | Defaults Prefer header with value "return=representation". Use this property to return just created or updated entity in a single request.
+timeout | `Number` | Sets a number of milliseconds before a request times out.
+useEntityNames | `Boolean` | Indicates whether to use entity logical names instead of collection logical names during requests.
 
-Configuration property `webApiVersion` is required only when DynamicsWebApi used inside CRM. 
-Property `webApiUrl` is required when DynamicsWebApi used externally.
+> **Note!**
+> Property `organizationUrl` is required when DynamicsWebApi used externally (in Node.js application).
 
-**Important!** If both configuration properties set then `webApiUrl` will have a higher priority than `webApiVersion`, so the last one will be skipped.
-
-**Important!** Please note, if you are using `DynamicsWebApi` **outside Microsoft Dynamics 365** and set `useEntityNames` to `true` **the first request** to Web Api 
-will fetch `LogicalCollectionName` and `LogicalName` from entity metadata for all entities. It does not happen when `DynamicsWebApi`
-is used in Microsoft Dynamics 365 Web Resources (there is no additional request, no impact on perfomance).
+> **Important!** 
+> If you are using `DynamicsWebApi` **outside Microsoft Dynamics 365** and set `useEntityNames` to `true` **the first request** to Web Api will fetch `LogicalCollectionName` and `LogicalName` from entity metadata for all entities. It does not happen when `DynamicsWebApi` is used in Microsoft Dynamics 365 Web Resources (there is no additional request, no impact on perfomance).
 
 ## Request Examples
 
 For the object reference please use [DynamicsWebApi Wiki](../../wiki/).
 
-The following table describes all __possible__ properties that can be set for `request` object. __Please note,__ not all operaions accept all properties and if 
+The following table describes all __possible__ properties that can be set for `request` object. 
+> __Please note!__ Not all operaions accept all properties and if 
 by mistake an invalid property has been specified you will receive either an error saying that the request is invalid or the response will not have expected results.
 
 Property Name | Type | Operation(s) Supported | Description
 ------------ | ------------- | ------------- | -------------
-action | Object | `executeUnboundAction` | A JavaScript object that represents a Dynamics 365 Web API action.
-actionName | String | `executeUnboundAction` | Web API Action name.
-apply | String | `retrieveMultiple`, `retrieveAll` | Sets the $apply system query option to aggregate and group your data dynamically. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/query-data-web-api#aggregate-and-grouping-results)
-async | Boolean | All | **XHR requests only!** Indicates whether the requests should be made synchronously or asynchronously. Default value is `true` (asynchronously).
-bypassCustomPluginExecution | Boolean | `create`, `update`, `upsert`, `delete` | `v1.7.5+` If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/data-platform/bypass-custom-business-logic)
-collection | String | All | Entity Collection name.
-contentId | String | `create`, `update`, `upsert`, `deleteRecord` | **BATCH REQUESTS ONLY!** Sets Content-ID header or references request in a Change Set. [More Info](https://www.odata.org/documentation/odata-version-3-0/batch-processing/)
-count | Boolean | `retrieveMultiple`, `retrieveAll` | Boolean that sets the $count system query option with a value of true to include a count of entities that match the filter criteria up to 5000 (per page). Do not use $top with $count!
-data | Object or ArrayBuffer / Buffer (for node.js) | `create`, `update`, `upsert`, `uploadFile` | A JavaScript object that represents Dynamics 365 entity, action, metadata and etc. 
-duplicateDetection | Boolean | `create`, `update`, `upsert` | **Web API v9+ only!** Boolean that enables duplicate detection. [More Info](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/webapi/update-delete-entities-using-web-api#check-for-duplicate-records)
-expand | Array | `retrieve`, `retrieveMultiple`, `create`, `update`, `upsert` | An array of Expand Objects (described below the table) representing the $expand OData System Query Option value to control which related records are also returned.
-fetchXml | String | `fetch`, `fetchAll` | Property that sets FetchXML - a proprietary query language that provides capabilities to perform aggregation.
-fieldName | String | `uploadFile`, `downloadFile`, `deleteRequest` | `v.1.7.0+` **Web API v9.1+ only!** Use this option to specify the name of the file attribute in Dynamics 365. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/file-attributes)
-fileName | String | `uploadFile` | `v.1.7.0+` **Web API v9.1+ only!** Specifies the name of the filefilter | String | `retrieve`, `retrieveMultiple`, `retrieveAll` | Use the $filter system query option to set criteria for which entities will be returned.
-ifmatch | String | `retrieve`, `update`, `upsert`, `deleteRecord` | Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests. [More Info](https://msdn.microsoft.com/en-us/library/mt607711.aspx)
-ifnonematch | String | `retrieve`, `upsert` | Sets If-None-Match header value that enables to use conditional retrieval in applicable requests. [More Info](https://msdn.microsoft.com/en-us/library/mt607711.aspx).
-impersonate | String | All | Impersonates a user based on their systemuserid by adding a "MSCRMCallerID" header. A String representing the GUID value for the Dynamics 365 systemuserid. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/impersonate-another-user-web-api)
-impersonateAAD | String | All | Impersonates a user based on their Azure Active Directory (AAD) object id by passing that value along with the header "CallerObjectId". A String should represent a GUID value. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/impersonate-another-user-web-api)
-includeAnnotations | String | `retrieve`, `retrieveMultiple`, `retrieveAll`, `create`, `update`, `upsert` | Sets Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
-key | String | `retrieve`, `create`, `update`, `upsert`, `deleteRecord`, `uploadFile`, `downloadFile` | A String representing collection record's Primary Key (GUID) or Alternate Key(s).
-maxPageSize | Number | `retrieveMultiple`, `retrieveAll` | Sets the odata.maxpagesize preference value to request the number of entities returned in the response.
-mergeLabels | Boolean | `update` | **Metadata Update only!** Sets `MSCRM.MergeLabels` header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is `false`. [More Info](https://msdn.microsoft.com/en-us/library/mt593078.aspx#bkmk_updateEntities)
-metadataAttributeType | String | `retrieve`, `update` | Casts the Attributes to a specific type. (Used in requests to Attribute Metadata) [More Info](https://msdn.microsoft.com/en-us/library/mt607522.aspx#Anchor_4)
-navigationProperty | String | `retrieve`, `create`, `update` | A String representing the name of a single-valued navigation property. Useful when needed to retrieve information about a related record in a single request.
-navigationPropertyKey | String | `retrieve`, `create`, `update` | A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata)
-noCache | Boolean | All | If set to `true`, DynamicsWebApi adds a request header `Cache-Control: no-cache`. Default value is `false`.
-orderBy | Array | `retrieveMultiple`, `retrieveAll` | An Array (of Strings) representing the order in which items are returned using the $orderby system query option. Use the asc or desc suffix to specify ascending or descending order respectively. The default is ascending if the suffix isn't applied.
-pageNumber | Number | `fetch` | Sets a page number for Fetch XML request ONLY!
-pagingCookie | String | `fetch` | Sets a paging cookie for Fetch XML request ONLY!
-partitionId | String | `create`, `update`, `upsert`, `delete`, `retrieve`, `retrieveMultiple` | `v.1.7.7+` Sets a unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. [More Info](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/azure-storage-partitioning)
-proxy | Object | Proxy configuration object. [More Info](#using-proxy)
-queryParams | Array | `retrieveMultiple`, `retrieveAll` | `v.1.7.7+` Additional query parameters that either have not been implemented yet or they are [parameter aliases](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/query-data-web-api#use-parameter-aliases-with-system-query-options) for "$filter" and "$orderBy". **Important!** These parameters ARE NOT URI encoded!
-returnRepresentation | Boolean | `create`, `update`, `upsert` | Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
-savedQuery | String | `retrieve` | A String representing the GUID value of the saved query.
-select | Array | `retrieve`, `retrieveMultiple`, `retrieveAll`, `update`, `upsert` | An Array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
-timeout | Number | All | Sets a number of milliseconds before a request times out.
-token | String | All | Authorization Token. If set, onTokenRefresh will not be called.
-top | Number | `retrieveMultiple`, `retrieveAll` | Limit the number of results returned by using the $top system query option. Do not use $top with $count!
-trackChanges | Boolean | `retrieveMultiple`, `retrieveAll` | Sets Prefer header with value 'odata.track-changes' to request that a delta link be returned which can subsequently be used to retrieve entity changes. __Important!__ Change Tracking must be enabled for the entity. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/use-change-tracking-synchronize-data-external-systems#enable-change-tracking-for-an-entity)
-userQuery | String | `retrieve` | A String representing the GUID value of the user query.
+action | `Object` | `executeUnboundAction` | A JavaScript object that represents a Dynamics 365 Web API action.
+actionName | `String` | `executeUnboundAction` | Web API Action name.
+apply | `String` | `retrieveMultiple`, `retrieveAll` | Sets the $apply system query option to aggregate and group your data dynamically. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/query-data-web-api#aggregate-and-grouping-results)
+async | `Boolean` | All | **XHR requests only!** Indicates whether the requests should be made synchronously or asynchronously. Default value is `true` (asynchronously).
+bypassCustomPluginExecution | `Boolean` | `create`, `update`, `upsert`, `delete` | `v1.7.5+` If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/data-platform/bypass-custom-business-logic)
+collection | `String` | All | Entity Collection name.
+contentId | `String` | `create`, `update`, `upsert`, `deleteRecord` | **BATCH REQUESTS ONLY!** Sets Content-ID header or references request in a Change Set. [More Info](https://www.odata.org/documentation/odata-version-3-0/batch-processing/)
+count | `Boolean` | `retrieveMultiple`, `retrieveAll` | Boolean that sets the $count system query option with a value of true to include a count of entities that match the filter criteria up to 5000 (per page). Do not use $top with $count!
+data | `Object` or `ArrayBuffer` / `Buffer` (for node.js) | `create`, `update`, `upsert`, `uploadFile` | A JavaScript object that represents Dynamics 365 entity, action, metadata and etc. 
+duplicateDetection | `Boolean` | `create`, `update`, `upsert` | **Web API v9+ only!** Boolean that enables duplicate detection. [More Info](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/webapi/update-delete-entities-using-web-api#check-for-duplicate-records)
+expand | `Array` | `retrieve`, `retrieveMultiple`, `create`, `update`, `upsert` | An array of Expand Objects (described below the table) representing the $expand OData System Query Option value to control which related records are also returned.
+fetchXml | `String` | `fetch`, `fetchAll` | Property that sets FetchXML - a proprietary query language that provides capabilities to perform aggregation.
+fieldName | `String` | `uploadFile`, `downloadFile`, `deleteRequest` | `v.1.7.0+` **Web API v9.1+ only!** Use this option to specify the name of the file attribute in Dynamics 365. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/file-attributes)
+fileName | `String` | `uploadFile` | `v.1.7.0+` **Web API v9.1+ only!** Specifies the name of the filefilter | String | `retrieve`, `retrieveMultiple`, `retrieveAll` | Use the $filter system query option to set criteria for which entities will be returned.
+ifmatch | `String` | `retrieve`, `update`, `upsert`, `deleteRecord` | Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests. [More Info](https://msdn.microsoft.com/en-us/library/mt607711.aspx)
+ifnonematch | `String` | `retrieve`, `upsert` | Sets If-None-Match header value that enables to use conditional retrieval in applicable requests. [More Info](https://msdn.microsoft.com/en-us/library/mt607711.aspx).
+impersonate | `String` | All | Impersonates a user based on their systemuserid by adding a "MSCRMCallerID" header. A String representing the GUID value for the Dynamics 365 systemuserid. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/impersonate-another-user-web-api)
+impersonateAAD | `String` | All | Impersonates a user based on their Azure Active Directory (AAD) object id by passing that value along with the header "CallerObjectId". A String should represent a GUID value. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/impersonate-another-user-web-api)
+includeAnnotations | `String` | `retrieve`, `retrieveMultiple`, `retrieveAll`, `create`, `update`, `upsert` | Sets Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
+key | `String` | `retrieve`, `create`, `update`, `upsert`, `deleteRecord`, `uploadFile`, `downloadFile` | A String representing collection record's Primary Key (GUID) or Alternate Key(s).
+maxPageSize | `Number` | `retrieveMultiple`, `retrieveAll` | Sets the odata.maxpagesize preference value to request the number of entities returned in the response.
+mergeLabels | `Boolean` | `update` | **Metadata Update only!** Sets `MSCRM.MergeLabels` header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is `false`. [More Info](https://msdn.microsoft.com/en-us/library/mt593078.aspx#bkmk_updateEntities)
+metadataAttributeType | `String` | `retrieve`, `update` | Casts the Attributes to a specific type. (Used in requests to Attribute Metadata) [More Info](https://msdn.microsoft.com/en-us/library/mt607522.aspx#Anchor_4)
+navigationProperty | `String` | `retrieve`, `create`, `update` | A String representing the name of a single-valued navigation property. Useful when needed to retrieve information about a related record in a single request.
+navigationPropertyKey | `String` | `retrieve`, `create`, `update` | A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata)
+noCache | `Boolean` | All | If set to `true`, DynamicsWebApi adds a request header `Cache-Control: no-cache`. Default value is `false`.
+orderBy | `Array` | `retrieveMultiple`, `retrieveAll` | An Array (of Strings) representing the order in which items are returned using the $orderby system query option. Use the asc or desc suffix to specify ascending or descending order respectively. The default is ascending if the suffix isn't applied.
+pageNumber | `Number` | `fetch` | Sets a page number for Fetch XML request ONLY!
+pagingCookie | `String` | `fetch` | Sets a paging cookie for Fetch XML request ONLY!
+partitionId | `String` | `create`, `update`, `upsert`, `delete`, `retrieve`, `retrieveMultiple` | `v.1.7.7+` Sets a unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. [More Info](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/azure-storage-partitioning)
+proxy | `Object` | Proxy configuration object. [More Info](#using-proxy)
+queryParams | `Array` | `retrieveMultiple`, `retrieveAll` | `v.1.7.7+` Additional query parameters that either have not been implemented yet or they are [parameter aliases](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/query-data-web-api#use-parameter-aliases-with-system-query-options) for "$filter" and "$orderBy". **Important!** These parameters ARE NOT URI encoded!
+returnRepresentation | `Boolean` | `create`, `update`, `upsert` | Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
+savedQuery | `String` | `retrieve` | A String representing the GUID value of the saved query.
+select | `Array` | `retrieve`, `retrieveMultiple`, `retrieveAll`, `update`, `upsert` | An Array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
+timeout | `Number` | All | Sets a number of milliseconds before a request times out.
+token | `String` | All | Authorization Token. If set, onTokenRefresh will not be called.
+top | `Number` | `retrieveMultiple`, `retrieveAll` | Limit the number of results returned by using the $top system query option. Do not use $top with $count!
+trackChanges | `Boolean` | `retrieveMultiple`, `retrieveAll` | Sets Prefer header with value 'odata.track-changes' to request that a delta link be returned which can subsequently be used to retrieve entity changes. __Important!__ Change Tracking must be enabled for the entity. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/use-change-tracking-synchronize-data-external-systems#enable-change-tracking-for-an-entity)
+userQuery | `String` | `retrieve` | A String representing the GUID value of the user query.
 
 The following table describes Expand Object properties:
 
 Property Name | Type | Description
 ------------ | ------------- | -------------
-expand | Array | An array of Expand Objects representing the $expand OData System Query Option value to control which related records are also returned.
-filter | String | Use the $filter system query option to set criteria for which related entities will be returned.
-orderBy | Array | An Array (of Strings) representing the order in which related items are returned using the $orderby system query option. Use the asc or desc suffix to specify ascending or descending order respectively. The default is ascending if the suffix isn't applied.
-property | String | A name of a single-valued navigation property which needs to be expanded.
-select | Array | An Array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
-top | Number | Limit the number of results returned by using the $top system query option.
+expand | `Array` | An array of Expand Objects representing the $expand OData System Query Option value to control which related records are also returned.
+filter | `String` | Use the $filter system query option to set criteria for which related entities will be returned.
+orderBy | `Array` | An Array (of Strings) representing the order in which related items are returned using the $orderby system query option. Use the asc or desc suffix to specify ascending or descending order respectively. The default is ascending if the suffix isn't applied.
+property | `String` | A name of a single-valued navigation property which needs to be expanded.
+select | `Array` | An Array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
+top | `Number` | Limit the number of results returned by using the $top system query option.
 
 All requests to Web API that have long URLs (more than 2000 characters) are automatically converted to a Batch Request.
 This feature is very convenient when you make a call with big Fetch XMLs. No special parameters needed to do a convertation.
@@ -306,7 +310,7 @@ interface Lead {
 }
 
 //init an object representing Dynamics 365 entity
-let lead: Lead = {
+const lead: Lead = {
     subject: "Test WebAPI",
     firstname: "Test",
     lastname: "WebAPI",
@@ -314,7 +318,7 @@ let lead: Lead = {
 };
 
 //init DynamicsWebApi request
-let request: DynamicsWebApi.CreateRequest = {
+const request: DynamicsWebApi.CreateRequest = {
     collection: "leads",
     data: lead,
     returnRepresentation: true
@@ -323,17 +327,17 @@ let request: DynamicsWebApi.CreateRequest = {
 //call dynamicsWebApi.create function
 //let's use Lead here because we set returnRepresentation to `true`
 //if the type was ommitted here then the result would be of type `any`
-let result = await dynamicsWebApi.create<Lead>(request);
+const result = await dynamicsWebApi.create<Lead>(request);
 
 //do something with a record here
-let leadId = result.leadid;
+const leadId = result.leadid;
 ```
 
 #### JavaScript
 
 ```js
 //init an object representing Dynamics 365 entity
-let lead = {
+const lead = {
     subject: "Test WebAPI",
     firstname: "Test",
     lastname: "WebAPI",
@@ -341,17 +345,17 @@ let lead = {
 };
 
 //init DynamicsWebApi request
-let request = {
+const request = {
     collection: "leads",
     data: lead,
     returnRepresentation: true
 }
 
 //call dynamicsWebApi.create function
-let result = await dynamicsWebApi.create(request);
+const result = await dynamicsWebApi.create(request);
 
 //do something with a record here
-let subject = result.subject;
+const subject = result.subject;
 ```
 
 ### Update a record
@@ -368,7 +372,7 @@ interface Lead {
 }
 
 //init DynamicsWebApi request
-let request: DynamicsWebApi.UpdateRequest = {
+const request: DynamicsWebApi.UpdateRequest = {
     key: "7d577253-3ef0-4a0a-bb7f-8335c2596e70",
     collection: "leads",
     data: {
@@ -382,17 +386,17 @@ let request: DynamicsWebApi.UpdateRequest = {
 //call dynamicsWebApi.update function
 //let's use Lead here because we set returnRepresentation to `true`
 //if the type was ommitted here then the result would be of type `any`
-let result = await dynamicsWebApi.update<Lead>(request);
+const result = await dynamicsWebApi.update<Lead>(request);
 
 //do something with a fullname of a recently updated entity record
-let fullname = result.fullname;
+const fullname = result.fullname;
 ```
 
 #### JavaScript
 
 ```js
 //init DynamicsWebApi request
-let request = {
+const request = {
     key: '7d577253-3ef0-4a0a-bb7f-8335c2596e70',
     collection: "leads",
     data: {
@@ -403,10 +407,10 @@ let request = {
     select: ["fullname"]
 };
 
-let result = await dynamicsWebApi.update(request);
+const result = await dynamicsWebApi.update(request);
 
 //do something with a fullname of a recently updated entity record
-let fullname = result.fullname;
+const fullname = result.fullname;
 ```
 
 ### Update a single property value
@@ -415,7 +419,7 @@ let fullname = result.fullname;
 
 ```ts
 //initialize key value pair object
-let request: DynamicsWebApi.UpdateSinglePropertyRequest = {
+const request: DynamicsWebApi.UpdateSinglePropertyRequest = {
     collection: "leads",
     key: "7d577253-3ef0-4a0a-bb7f-8335c2596e70",
     fieldValuePair: { subject: "Update Single" }
@@ -431,7 +435,7 @@ await dynamicsWebApi.updateSingleProperty(request);
 
 ```js
 //initialize key value pair object
-let request = {
+const request = {
     collection: "leads",
     key: "7d577253-3ef0-4a0a-bb7f-8335c2596e70",
     fieldValuePair: { subject: "Update Single" }
@@ -450,7 +454,7 @@ await dynamicsWebApi.updateSingleProperty(request);
 ```ts
 const leadId = "7d577253-3ef0-4a0a-bb7f-8335c2596e70";
 
-let request: DynamicsWebApi.UpsertRequest = {
+const request: DynamicsWebApi.UpsertRequest = {
     key: leadId,
     collection: "leads",
     returnRepresentation: true,
@@ -461,7 +465,7 @@ let request: DynamicsWebApi.UpsertRequest = {
     ifnonematch: "*" //to prevent update
 };
 
-let result = dynamicsWebApi.upsert<Lead>(request);
+const result = dynamicsWebApi.upsert<Lead>(request);
 if (result != null) {
     //record created
 }
@@ -476,7 +480,7 @@ else {
 ```js
 const leadId = "7d577253-3ef0-4a0a-bb7f-8335c2596e70";
 
-let request = {
+const request = {
     key: leadId,
     collection: "leads",
     returnRepresentation: true,
@@ -487,7 +491,7 @@ let request = {
     ifnonematch: "*" //to prevent update
 };
 
-let result = dynamicsWebApi.upsert(request);
+const result = dynamicsWebApi.upsert(request);
 if (result != null) {
     //record created
 }
@@ -502,13 +506,13 @@ else {
 
 ```ts
 //delete with optimistic concurrency
-let request: DynamicsWebApi.DeleteRequest = {
+const request: DynamicsWebApi.DeleteRequest = {
     key: recordId,
     collection: "leads",
     ifmatch: 'W/"470867"'
 }
 
-let isDeleted = await dynamicsWebApi.deleteRecord(request);
+const isDeleted = await dynamicsWebApi.deleteRecord(request);
 if (isDeleted){
     //record has been deleted
 }
@@ -521,13 +525,13 @@ else{
 
 ```js
 //delete with optimistic concurrency
-let request = {
+const request = {
     key: recordId,
     collection: "leads",
     ifmatch: 'W/"470867"'
 }
 
-let isDeleted = await dynamicsWebApi.deleteRecord(request);
+const isDeleted = await dynamicsWebApi.deleteRecord(request);
 if (isDeleted){
     //record has been deleted
 }
@@ -548,7 +552,7 @@ interface Lead {
     jobtitle?: string
 }
 
-let request: DynamicsWebApi.RetrieveRequest = {
+const request: DynamicsWebApi.RetrieveRequest = {
     key: "7d577253-3ef0-4a0a-bb7f-8335c2596e70",
     collection: "leads",
     select: ["fullname", "subject"],
@@ -563,7 +567,7 @@ let request: DynamicsWebApi.RetrieveRequest = {
 
 //call dynamicsWebApi.retrieve function
 //if the Lead type was ommitted here then the result would be of type `any`
-let result = await dynamicsWebApi.retrieve<Lead>(request);
+const result = await dynamicsWebApi.retrieve<Lead>(request);
 
 //do something with a retrieved record
 ```
@@ -571,7 +575,7 @@ let result = await dynamicsWebApi.retrieve<Lead>(request);
 #### JavaScript
 
 ```js
-let request = {
+const request = {
     key: "7d577253-3ef0-4a0a-bb7f-8335c2596e70",
     collection: "leads",
     select: ["fullname", "subject"],
@@ -585,7 +589,7 @@ let request = {
 };
 
 //do something with a retrieved record
-let result = await dynamicsWebApi.retrieve(request);
+const result = await dynamicsWebApi.retrieve(request);
 ```
 
 #### Retrieve a reference to related record using a single-valued navigation property
@@ -597,16 +601,16 @@ and it must have a suffix `/$ref` attached to it. Example:
 ```ts
 const leadId = "7d577253-3ef0-4a0a-bb7f-8335c2596e70";
 
-let request: DynamicsWebApi.RetrieveRequest = {
+const request: DynamicsWebApi.RetrieveRequest = {
     collection: "leads",
     key: leadId,
     select: ["onwerid/$ref"]
 }
 
 //perform a retrieve operaion
-let reference = await dynamicsWebApi.retrieve(request);
-let ownerId = reference.id;
-let collectionName = reference.collection; // systemusers or teams
+const reference = await dynamicsWebApi.retrieve(request);
+const ownerId = reference.id;
+const collectionName = reference.collection; // systemusers or teams
 ```
 
 #### Retrieve a related record data using a single-valued navigation property
@@ -618,23 +622,23 @@ and it must contain a prefix "/"; all other elements in a `select` array will re
 ```ts
 const recordId = "7d577253-3ef0-4a0a-bb7f-8335c2596e70";
 
-let request: DynamicsWebApi.RetrieveRequest = {
+const request: DynamicsWebApi.RetrieveRequest = {
     key: recordId,
     collection: "new_tests",
     select: ["/new_ParentLead", "fullname", "subject"]
 }
 
 //perform a retrieve operaion
-let parentLead = await dynamicsWebApi.retrieve<Lead>(request);
+const parentLead = await dynamicsWebApi.retrieve<Lead>(request);
 
-let fullname = parentLead.fullname;
+const fullname = parentLead.fullname;
 //... and etc
 ```
 
 Same result can be achieved by setting `request.navigationProperty`:
 
 ```ts
-var request: DynamicsWebApi.RetrieveRequest = {
+const request: DynamicsWebApi.RetrieveRequest = {
     key: recordId,
     collection: "new_tests",
     navigationProperty: "new_ParentLead", //use request.navigationProperty
@@ -642,9 +646,9 @@ var request: DynamicsWebApi.RetrieveRequest = {
 }
 
 //perform a retrieve operaion
-let parentLead = await dynamicsWebApi.retrieve<Lead>(request);
+const parentLead = await dynamicsWebApi.retrieve<Lead>(request);
 
-let fullname = parentLead.fullname;
+const fullname = parentLead.fullname;
 //... and etc
 ```
 
@@ -660,7 +664,7 @@ interface Lead {
     fullname?: string
 }
 
-let request: DynamicsWebApi.RetrieveMultipleRequest = {
+const request: DynamicsWebApi.RetrieveMultipleRequest = {
     collection: "leads",
     select: ["fullname", "subject"],
     filter: "statecode eq 0",
@@ -668,17 +672,17 @@ let request: DynamicsWebApi.RetrieveMultipleRequest = {
     count: true
 }
 
-let response = await dynamicsWebApi.retrieveMultiple<Lead>(request);
+const response = await dynamicsWebApi.retrieveMultiple<Lead>(request);
 
-let count = response.oDataCount;
-let nextLink = response.oDataNextLink;
-let records = response.value;
+const count = response.oDataCount;
+const nextLink = response.oDataNextLink;
+const records = response.value;
 ```
 
 #### JavaScript
 
 ```js
-let request = {
+const request = {
     collection: "leads",
     select: ["fullname", "subject"],
     filter: "statecode eq 0",
@@ -686,11 +690,11 @@ let request = {
     count: true
 }
 
-let result = await dynamicsWebApi.retrieveMultiple(request);
+const result = await dynamicsWebApi.retrieveMultiple(request);
 
-let count = response.oDataCount;
-let nextLink = response.oDataNextLink;
-let records = response.value;
+const count = response.oDataCount;
+const nextLink = response.oDataNextLink;
+const records = response.value;
 //do something else with a records array. Access a record: records[0].subject;
 ```
 
@@ -698,20 +702,20 @@ let records = response.value;
 
 ```ts
 //set the request parameters
-var request: DynamicsWebApi.RetrieveMultipleRequest = {
+const request: DynamicsWebApi.RetrieveMultipleRequest = {
     collection: "leads",
     select: ["fullname", "subject"],
     trackChanges: true
 };
 
 //perform a multiple records retrieve operation (1)
-let response1 = await dynamicsWebApi.retrieveMultiple<Lead>(request).then(function (response) {
+const response1 = await dynamicsWebApi.retrieveMultiple<Lead>(request).then(function (response) {
 
-let deltaLink = response1.oDataDeltaLink;
+const deltaLink = response1.oDataDeltaLink;
 //make other requests to Web API
 //...
 //(2) only retrieve changes:
-let response2 = await dynamicsWebApi.retrieveMultiple<Lead>(request, deltaLink);
+const response2 = await dynamicsWebApi.retrieveMultiple<Lead>(request, deltaLink);
 //response2 contains only changed records between the first retrieveMultiple (1) and the second one (2)
 ```
 
@@ -721,13 +725,13 @@ The following function retrieves records and goes through all pages automaticall
 
 ```ts
 //perform a multiple records retrieve operation
-let response = await dynamicsWebApi.retrieveAll<Lead>({ 
+const response = await dynamicsWebApi.retrieveAll<Lead>({ 
     collection: "leads", 
     select: ["fullname", "subject"], 
     filter: "statecode eq 0"
 });
 
-let records = response.value;
+const records = response.value;
 //do something else with a records array. Access a record: records[0].subject;
 ```
 
@@ -735,10 +739,10 @@ let records = response.value;
 
 It is possible to count records separately from RetrieveMultiple call. In order to do that use the following snippet:
 
-IMPORTANT! The count value does not represent the total number of entities in the system. It is limited by the maximum number of entities that can be returned.
+> **IMPORTANT!** The count value does not represent the total number of entities in the system. It is limited by the maximum number of entities that can be returned.
 
 ```ts
-let count = await dynamicsWebApi.count({ 
+const count = await dynamicsWebApi.count({ 
     collection: "leads", 
     filter: "statecode eq 0"
 });
@@ -755,7 +759,7 @@ Downside of this workaround is that it does not only return a count number but a
 optimisation always provide a column for select paramete, it will reduce a size of the response significantly. 
 
 ```ts
-let count = await dynamicsWebApi.countAll({ 
+const count = await dynamicsWebApi.countAll({ 
     collection: "leads", 
     filter: "statecode eq 0",
     //if you use this workaround, always provide a column 
@@ -770,11 +774,11 @@ by default.
 ### Associate
 
 ```ts
-let accountId = "00000000-0000-0000-0000-000000000001";
-let leadId = "00000000-0000-0000-0000-000000000002";
+const accountId = "00000000-0000-0000-0000-000000000001";
+const leadId = "00000000-0000-0000-0000-000000000002";
 
 //associate lead reacord to account
-let request: DynamicsWebApi.AssociateRequest = {
+const request: DynamicsWebApi.AssociateRequest = {
     collection: "accounts",
     primaryKey: accountId,
     relationshipName: "lead_parent_account",
@@ -796,10 +800,10 @@ then individual records in the response will contain the property `@Microsoft.Dy
 For example, there is an entity with a logical name `new_test`, it has a lookup attribute to `lead` entity called `new_parentlead` and schema name `new_ParentLead` which is needed single-valued navigation property.
 
 ```ts
-let new_testid = "00000000-0000-0000-0000-000000000001";
-let leadId = "00000000-0000-0000-0000-000000000002";
+const new_testid = "00000000-0000-0000-0000-000000000001";
+const leadId = "00000000-0000-0000-0000-000000000002";
 
-let request: DynamicsWebApi.AssociateSingleValuedRequest = {
+const request: DynamicsWebApi.AssociateSingleValuedRequest = {
     collection: "new_tests",
     primaryKey: new_testid,
     navigationProperty: "new_ParentLead",
@@ -816,10 +820,10 @@ JavaScript sample is the same only without a request type declaration.
 ### Disassociate
 
 ```ts
-let accountId = "00000000-0000-0000-0000-000000000001";
-let leadId = "00000000-0000-0000-0000-000000000002";
+const accountId = "00000000-0000-0000-0000-000000000001";
+const leadId = "00000000-0000-0000-0000-000000000002";
 
-let request: DynamicsWebApi.DisassociateRequest = {
+const request: DynamicsWebApi.DisassociateRequest = {
     collection: "accounts",
     primaryKey: accountId,
     relationshipName: "lead_parent_account",
@@ -837,9 +841,9 @@ Current request removes a reference to an entity for a single-valued navigation 
 The following code snippet uses an example shown in [Associate for a single-valued navigation property](#associate-for-a-single-valued-navigation-property).
 
 ```ts
-let new_testid = "00000000-0000-0000-0000-000000000001";
+const new_testid = "00000000-0000-0000-0000-000000000001";
 
-let request: DynamicsWebApi.AssociateSingleValuedRequest = {
+const request: DynamicsWebApi.AssociateSingleValuedRequest = {
     collection: "new_tests",
     primaryKey: new_testid,
     navigationProperty: "new_ParentLead"
@@ -863,19 +867,19 @@ interface Account {
 }
 
 //build a fetch xml
-let fetchXml = '<fetch mapping="logical">' +
+const fetchXml = '<fetch mapping="logical">' +
                     '<entity name="account">' +
                         '<attribute name="accountid"/>' +
                         '<attribute name="name"/>' +
                     '</entity>' +
                '</fetch>';
 
-let request: DynamicsWebApi.FetchXmlRequest = {
+const request: DynamicsWebApi.FetchXmlRequest = {
     collection: "accounts",
     fetchXml: fetchXml
 }
 
-let result = await dynamicsWebApi.fetch<Account>(request);
+const result = await dynamicsWebApi.fetch<Account>(request);
 //do something with results here; access records result.value[0].accountid 
 ```
 
@@ -883,19 +887,19 @@ let result = await dynamicsWebApi.fetch<Account>(request);
 
 ```js
 //build a fetch xml
-let fetchXml = '<fetch mapping="logical">' +
+const fetchXml = '<fetch mapping="logical">' +
                     '<entity name="account">' +
                         '<attribute name="accountid"/>' +
                         '<attribute name="name"/>' +
                     '</entity>' +
                '</fetch>';
 
-let request = {
+const request = {
     collection: "accounts",
     fetchXml: fetchXml
 }
 
-let result = await dynamicsWebApi.fetch(request);
+const result = await dynamicsWebApi.fetch(request);
 //do something with results here; access records result.value[0].accountid 
 ```
 
@@ -903,31 +907,31 @@ let result = await dynamicsWebApi.fetch(request);
 
 ```ts
 //build a fetch xml
-let fetchXml = '<fetch mapping="logical">' +
+const fetchXml = '<fetch mapping="logical">' +
                     '<entity name="account">' +
                         '<attribute name="accountid"/>' +
                         '<attribute name="name"/>' +
                     '</entity>' +
                '</fetch>';
 
-let request: DynamicsWebApi.FetchXmlRequest = {
+const request: DynamicsWebApi.FetchXmlRequest = {
     collection: "accounts",
     fetchXml: fetchXml
 }
 
-let page1 = await dynamicsWebApi.fetch<Account>(request);
+const page1 = await dynamicsWebApi.fetch<Account>(request);
 //do something with results here; access records page1.value[0].accountid
 
 request.pageNumber = page1.PagingInfo.nextPage;
 request.pagingCookie = page1.PagingInfo.cookie;
 
-let page2 = await dynamicsWebApi.fetch<Account>(request);
+const page2 = await dynamicsWebApi.fetch<Account>(request);
 //do something with results here; access records page2.value[0].accountid
 
 request.pageNumber = page2.PagingInfo.nextPage;
 request.pagingCookie = page2.PagingInfo.cookie;
 
-let page3 = await dynamicsWebApi.fetch<Account>(request);
+const page3 = await dynamicsWebApi.fetch<Account>(request);
 //and so on... or use a recoursive loop.
 ```
 
@@ -936,14 +940,14 @@ let page3 = await dynamicsWebApi.fetch<Account>(request);
 The following function executes a FetchXml request and goes through all pages automatically:
 
 ```ts
-let fetchXml = '<fetch mapping="logical">' +
+const fetchXml = '<fetch mapping="logical">' +
                     '<entity name="account">' +
                         '<attribute name="accountid"/>' +
                         '<attribute name="name"/>' +
                     '</entity>' +
                '</fetch>';
 
-let result = await dynamicsWebApi.fetchAll<Account>({
+const result = await dynamicsWebApi.fetchAll<Account>({
     collection: "accounts", 
     fetchXml: fetchXml
 });
@@ -975,30 +979,30 @@ interface RetrieveTeamPrivilegesResponse {
     RolePrivileges: RolePrivilege[]
 }
 
-let teamId = "00000000-0000-0000-0000-000000000001";
+const teamId = "00000000-0000-0000-0000-000000000001";
 
-let request: DynamicsWebApi.BoundFunctionRequest = {
+const request: DynamicsWebApi.BoundFunctionRequest = {
     id: teamId,
     collection: "teams",
     functionName: "Microsoft.Dynamics.CRM.RetrieveTeamPrivileges"
 }
 
-let result = await dynamicsWebApi.executeBoundFunction<RetrieveTeamPrivilegesResponse>(request);
+const result = await dynamicsWebApi.executeBoundFunction<RetrieveTeamPrivilegesResponse>(request);
 //do something with a result
 ```
 
 **JavaScript**
 
 ```js
-let teamId = "00000000-0000-0000-0000-000000000001";
+const teamId = "00000000-0000-0000-0000-000000000001";
 
-let request = {
+const request = {
     id: teamId,
     collection: "teams",
     functionName: "Microsoft.Dynamics.CRM.RetrieveTeamPrivileges"
 }
 
-let result = await dynamicsWebApi.executeBoundFunction(request);
+const result = await dynamicsWebApi.executeBoundFunction(request);
 //do something with a result
 ```
 
@@ -1012,35 +1016,35 @@ interface GetTimeZoneCodeByLocalizedNameResponse {
     TimeZoneCode: number
 }
 
-let parameters = {
+const parameters = {
     LocalizedStandardName: "Pacific Standard Time",
     LocaleId: 1033
 };
 
-let request: DynamicsWebApi.UnboundFunctionRequest = {
+const request: DynamicsWebApi.UnboundFunctionRequest = {
     parameters: parameters,
     functionName: "GetTimeZoneCodeByLocalizedName"
 }
 
-let result = await dynamicsWebApi.executeUnboundFunction<GetTimeZoneCodeByLocalizedNameResponse>(request);
-let timeZoneCode = result.TimeZoneCode;
+const result = await dynamicsWebApi.executeUnboundFunction<GetTimeZoneCodeByLocalizedNameResponse>(request);
+const timeZoneCode = result.TimeZoneCode;
 ```
 
 **JavaScript**
 
 ```js
-let parameters = {
+const parameters = {
     LocalizedStandardName: "Pacific Standard Time",
     LocaleId: 1033
 };
 
-let request = {
+const request = {
     parameters: parameters,
     functionName: "GetTimeZoneCodeByLocalizedName"
 }
 
-let result = await dynamicsWebApi.executeUnboundFunction(request);
-let timeZoneCode = result.TimeZoneCode;
+const result = await dynamicsWebApi.executeUnboundFunction(request);
+const timeZoneCode = result.TimeZoneCode;
 ```
 
 ### Execute Web API actions
@@ -1100,7 +1104,6 @@ DynamicsWebApi provides a straightforward way to execute Batch operations which 
 The following example bundles 2 retrieve multiple operations and an update:
 
 ```js
-
 //when you want to start a batch operation call the following function:
 //it is important to call it, otherwise all operations below will be executed right away.
 dynamicsWebApi.startBatch();
@@ -1128,13 +1131,11 @@ dynamicsWebApi.executeBatch()
     }).catch(function (error) {
         //catch error here
     });
-
 ```
 
 The next example shows how to run multiple operations in a single transaction which means if at least one operation fails all completed ones will be rolled back which ensures a data consistency.
 
 ```js
-
 //for example, a user did a checkout and we need to create two orders
 
 var order1 = {
@@ -1160,7 +1161,6 @@ dynamicsWebApi.executeBatch().then(function (responses) {
     //all completed operations will be rolled back
     alert('Cannot complete a checkout. Please try again later.');
 });
-
 ```
 
 **Important!** Developers who use DynamicsWebApi with callbacks do not need to pass `successCallback` and `errorCallback` in an individual operation when `startBatch()` is called, 
@@ -1194,7 +1194,6 @@ dynamicsWebApi.executeBatch()
     }).catch(function (error) {
         //catch error here
     });
-
 ```
 
 Note that if you are making a request to a navigation property (`collection: 'customerid_contact'`), the request won't have a response, it is an OOTB Web API limitation.
@@ -1208,7 +1207,6 @@ Note that if you are making a request to a navigation property (`collection: 'cu
 Another option to make the same request is to use `Content-ID` reference inside a request payload as following:
 
 ```js
-
 const contact = {
     firstname: 'John',
     lastname: 'Doe'
@@ -1233,7 +1231,6 @@ dynamicsWebApi.executeBatch()
     }).catch(function (error) {
         //catch error here
     });
-
 ```
 
 **Important!** Web API seems to have a limitation (or a bug) where it does not return the response with `returnRepresentation` set to `true`. It happens only if you are trying to return a representation of an entity that is being

@@ -154,7 +154,14 @@ export class RequestClient {
 	}
 
 	private static _isEntityNameException(entityName: string): boolean {
-		const exceptions = ["EntityDefinitions", "$metadata", "RelationshipDefinitions", "GlobalOptionSetDefinitions", "ManagedPropertyDefinitions"];
+		const exceptions = [
+			"EntityDefinitions",
+			"$metadata",
+			"RelationshipDefinitions",
+			"GlobalOptionSetDefinitions",
+			"ManagedPropertyDefinitions",
+			"$metadata",
+		];
 
 		return exceptions.indexOf(entityName) > -1;
 	}

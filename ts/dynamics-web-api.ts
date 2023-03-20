@@ -1075,6 +1075,18 @@ export class DynamicsWebApi {
 		return this.retrieveMultiple(<DynamicsWebApi.RetrieveMultipleRequest>internalRequest);
 	};
 
+	retrieveCsdlMetadata = (): Promise<any> => {
+		const internalRequest: Core.InternalRequest = {
+			collection: "$metadata",
+			method: "GET",
+			functionName: "retrieveCsdlMetadata",
+		};
+
+		return this._makeRequest(internalRequest).then((response) => {
+			return response.data;
+		});
+	};
+
 	/**
 	 * Starts a batch request.
 	 *
