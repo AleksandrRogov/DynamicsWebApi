@@ -21,6 +21,15 @@ Also, please check [suggestions and contributions](#contributions) section to le
 ***
 
 **DynamicsWebApi v2 is coming!**
+
+Check out the open [Discussion](https://github.com/AleksandrRogov/DynamicsWebApi/discussions/137) about the project.
+
+Check out the development progress in a [DynamicsWebApi v2 Project](https://github.com/users/AleksandrRogov/projects/2).
+
+**Want to help?** - Let me know. I desperately need help with documentation and examples.
+
+New patches `v.1.7.7+` will contain deprecations, watch out for them in the code and replace them as per recommendations (if they are available). Otherwise, let me know!
+
 v2 will be written in TypeScript and include numerous optimizations.
 There will be breaking changes between v1 and v2: 
   1. v2 will not have simple requests, only the advanced ones (with request objects), therefore I highly recommend using request objects for making requests.
@@ -196,13 +205,13 @@ To initialize a new instance of DynamicsWebApi with a configuration object, plea
 #### Web browser
 
 ```js
-var dynamicsWebApi = new DynamicsWebApi({ webApiVersion: '9.1' });
+const dynamicsWebApi = new DynamicsWebApi({ webApiVersion: '9.1' });
 ```
 
 #### Node.js
 
 ```js
-var dynamicsWebApi = new DynamicsWebApi({
+const dynamicsWebApi = new DynamicsWebApi({
     webApiUrl: 'https://myorg.api.crm.dynamics.com/api/data/v9.1/',
     onTokenRefresh: acquireToken
 });
