@@ -1075,6 +1075,11 @@ export class DynamicsWebApi {
 		return this.retrieveMultiple(<DynamicsWebApi.RetrieveMultipleRequest>internalRequest);
 	};
 
+	/**
+	 * Retrieves CSDL Document Metadata
+	 * @param request - An object that represents all possible options for a current request.
+	 * @returns {Promise<string>} Unformatted and unparsed CSDL $metadata document.
+	 */
 	retrieveCsdlMetadata = (request?: DynamicsWebApi.CsdlMetadataRequest): Promise<string> => {
 		const internalRequest: Core.InternalRequest = !request ? {} : Utility.copyObject<Core.InternalRequest>(request);
 

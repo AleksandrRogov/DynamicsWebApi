@@ -98,8 +98,9 @@ In order to use DynamicsWebApi inside Dynamics 365 you need to download a browse
 Upload a script as a JavaScript Web Resource, place on the entity form or refer to it in your HTML Web Resource and then initialize the main object:
 
 ```ts
-//DynamicsWebApi makes calls to Data API v9.2 if a configuration not set
-//and to Search API v1.0 if a configuration not set
+//By default DynamicsWebApi makes calls to 
+//Data API v9.2 and
+//Search API v1.0
 const dynamicsWebApi = new DynamicsWebApi();
 
 const response = await dynamicsWebApi.executeUnboundFunction<WhoAmIResponse>("WhoAmI");
@@ -165,7 +166,7 @@ const acquireToken = (dynamicsWebApiCallback) => {
 
 //create DynamicsWebApi
 const dynamicsWebApi = new DynamicsWebApi({
-    organizationUrl: serverUrl,
+    serverUrl: serverUrl,
     dataApi: {
         version: "9.2"
     },
@@ -190,14 +191,14 @@ To initialize a new instance of DynamicsWebApi with a configuration object, plea
 #### Dynamics 365 Web Resource
 
 ```js
-const dynamicsWebApi = new DynamicsWebApi({ dataApi: { version: "9.2" } });
+const dynamicsWebApi = new DynamicsWebApi({ dataApi: { version: "9.1" } });
 ```
 
 #### Node.js
 
 ```js
 const dynamicsWebApi = new DynamicsWebApi({
-    organizationUrl: "https://myorg.api.crm.dynamics.com",
+    serverUrl: "https://myorg.api.crm.dynamics.com",
     dataApi: {
         version: "9.1"
     },
@@ -208,13 +209,13 @@ const dynamicsWebApi = new DynamicsWebApi({
 You can set a configuration dynamically if needed:
 
 ```js
-//or can be set dynamically
-dynamicsWebApi.setConfig({ dataApi: { version: "9.1" } });
+dynamicsWebApi.setConfig({ dataApi: { version: "9.0" } });
 ```
 
 #### Configuration Parameters
 Property Name | Type | Description
 ------------ | ------------- | -------------
+dataApi | `ApiConfig` | Configuration object for Dataverse Web API. The name is based on the url path `data`.
 impersonate | `String` | Impersonates a user based on their systemuserid by adding a "MSCRMCallerID" header. A String representing the GUID value for the Dynamics 365 systemuserid. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/impersonate-another-user-web-api)
 impersonateAAD | `String` | Impersonates a user based on their Azure Active Directory (AAD) object id by passing that value along with the header "CallerObjectId". A String should represent a GUID value. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/impersonate-another-user-web-api)
 includeAnnotations | `String` | Defaults Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
@@ -222,21 +223,47 @@ maxPageSize | `Number` | Defaults the odata.maxpagesize preference. Use to set t
 onTokenRefresh | `Function` | A callback function that triggered when DynamicsWebApi requests a new OAuth token. (At this moment it is done before each call to Dynamics 365, as [recommended by Microsoft](https://msdn.microsoft.com/en-ca/library/gg327838.aspx#Anchor_2)).
 organizationUrl | `String` | Dynamics 365 Web Api organization URL. It is required when used in Node.js application (outside web resource). Example: "https://myorg.api.crm.dynamics.com/".
 returnRepresentation | `Boolean` | Defaults Prefer header with value "return=representation". Use this property to return just created or updated entity in a single request.
+searchApi | `ApiConfig` | Configuration object for Dataverse Search API. The name is based on the url path `search`.
+serverUrl | `String` | The url to Dataverse API server, for example: https://contoso.api.crm.dynamics.com/. It is required when used in Node.js application.
 timeout | `Number` | Sets a number of milliseconds before a request times out.
 useEntityNames | `Boolean` | Indicates whether to use entity logical names instead of collection logical names during requests.
 
-> **Note!**
-> Property `organizationUrl` is required when DynamicsWebApi used externally (in Node.js application).
+**Note!**
+Property `serverUrl` is required when DynamicsWebApi used externally (in Node.js application).
 
-> **Important!** 
-> If you are using `DynamicsWebApi` **outside Microsoft Dynamics 365** and set `useEntityNames` to `true` **the first request** to Web Api will fetch `LogicalCollectionName` and `LogicalName` from entity metadata for all entities. It does not happen when `DynamicsWebApi` is used in Microsoft Dynamics 365 Web Resources (there is no additional request, no impact on perfomance).
+**Important!** 
+If you are using `DynamicsWebApi` **outside Microsoft Dynamics 365** and set `useEntityNames` to `true` **the first request** to Web Api will fetch `LogicalCollectionName` and `LogicalName` from entity metadata for all entities. It does not happen when `DynamicsWebApi` is used in Microsoft Dynamics 365 Web Resources (there is no additional request, no impact on perfomance).
+
+**ApiConfig** Properties:
+
+| Property Name | Type | Description |
+|--------|--------|--------|
+| path | `String` | A path to API, for example: "data" or "search". Optional. |
+| version | `String` | API Version, for example: "1.0" or "9.2". Optional. |
+
+Both `dataApi` and `seatchApi` can be omitted from a configuration. Their default values are:
+
+```js
+//dataApi
+{
+    path: "data",
+    version: "9.2"
+}
+
+//searchApi
+{
+    path: "search",
+    version: "1.0"
+}
+```
 
 ## Request Examples
 
 For the object reference please use [DynamicsWebApi Wiki](../../wiki/).
 
-The following table describes all __possible__ properties that can be set for `request` object. 
-> __Please note!__ Not all operaions accept all properties and if 
+The following table describes all __possible__ properties that can be set for `request` object.
+
+__Please note!__ Not all operaions accept all properties and if 
 by mistake an invalid property has been specified you will receive either an error saying that the request is invalid or the response will not have expected results.
 
 Property Name | Type | Operation(s) Supported | Description
