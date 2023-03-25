@@ -302,10 +302,10 @@ export function parseResponse(response: string, responseHeaders: any, parseParam
 				parseResult = parseFileResponse(response, responseHeaders, parseParams[0]);
 			} else {
 				const contentType = getHeader(responseHeaders, "Content-Type");
-				if (contentType !== "application/xml") {
+				if (contentType.startsWith("application/json")) {
 					parseResult = parseData(JSON.parse(response, dateReviver), parseParams[0]);
 				} else {
-					parseResult = response;
+					parseResult = isNaN(Number(response)) ? response : Number(response);
 				}
 			}
 		}

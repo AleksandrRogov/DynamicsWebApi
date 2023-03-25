@@ -118,7 +118,7 @@ describe("xhr -", function () {
 				expect(responseObject.message).to.eql("message");
 				expect(responseObject.status).to.eql(404);
 				expect(responseObject.statusText).to.eql("Not Found");
-				expect(responseObject.headers).to.eql({ dummy: "header" });
+				expect(responseObject.headers).to.eql(mocks.responses.upsertPreventCreateResponse.responseHeaders);
 			});
 		});
 
@@ -172,7 +172,7 @@ describe("xhr -", function () {
 				expect(responseObject.message).to.eql("Unexpected Error");
 				expect(responseObject.status).to.eql(404);
 				expect(responseObject.statusText).to.eql("Not Found");
-				expect(responseObject.headers).to.eql({ dummy: "header" });
+				expect(responseObject.headers).to.eql(mocks.responses.upsertPreventCreateResponse.responseHeaders);
 			});
 		});
 

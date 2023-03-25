@@ -336,7 +336,7 @@ export declare class DynamicsWebApi {
      * @returns {Promise} D365 Web Api result
      */
     retrieveGlobalOptionSets: <T = any>(request?: DynamicsWebApi.RetrieveGlobalOptionSetsRequest) => Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
-    retrieveCsdlMetadata: () => Promise<any>;
+    retrieveCsdlMetadata: (request?: DynamicsWebApi.CsdlMetadataRequest) => Promise<string>;
     /**
      * Starts a batch request.
      *
@@ -766,6 +766,10 @@ export declare namespace DynamicsWebApi {
     interface DownloadRequest extends CRUDRequest {
         /**File Field Name */
         fieldName: string;
+    }
+    interface CsdlMetadataRequest extends BaseRequest {
+        /**This will include many different kinds of annotations that can be useful. Most annotations are not included by default because they increase the total size of the document. */
+        addAnnotations?: boolean;
     }
     interface ApiConfig {
         /** API Version to use, for example: "9.2" or "1.0" */

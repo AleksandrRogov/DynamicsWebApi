@@ -79,6 +79,7 @@ Please note, that "Dynamics 365" in this readme refers to Microsoft Dynamics 365
     * [Upload file](#upload-file)
     * [Download file](#download-file)
     * [Delete file](#delete-file)
+* [Retrieve CSDL $metadata document](#retrieve-csdl-metadata-document)
 * [Formatted Values and Lookup Properties](#formatted-values-and-lookup-properties)
 * [Using Alternate Keys](#using-alternate-keys)
 * [Making requests using Entity Logical Names](#making-requests-using-entity-logical-names)
@@ -242,6 +243,7 @@ Property Name | Type | Operation(s) Supported | Description
 ------------ | ------------- | ------------- | -------------
 action | `Object` | `executeUnboundAction` | A JavaScript object that represents a Dynamics 365 Web API action.
 actionName | `String` | `executeUnboundAction` | Web API Action name.
+addAnnotations | `Boolean` | `retrieveCsdlMetadata` | `v.2.0+` If set to `true` the document will include many different kinds of annotations that can be useful. Most annotations are not included by default because they increase the total size of the document.
 apply | `String` | `retrieveMultiple`, `retrieveAll` | Sets the $apply system query option to aggregate and group your data dynamically. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/query-data-web-api#aggregate-and-grouping-results)
 async | `Boolean` | All | **XHR requests only!** Indicates whether the requests should be made synchronously or asynchronously. Default value is `true` (asynchronously).
 bypassCustomPluginExecution | `Boolean` | `create`, `update`, `upsert`, `delete` | `v1.7.5+` If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/data-platform/bypass-custom-business-logic)
@@ -1994,6 +1996,22 @@ dynamicsWebApi.deleteRequest({
     //catch an error
 });
 ```
+
+## Retrieve CSDL $metadata document
+`v.2.0+`
+
+To retrieve a CSDL $metadata document use the following:
+
+```ts
+const request: DynamicsWebApi.CsdlMetadataRequest = {
+    addAnnotations: false; //or true;
+}
+
+//the parameter "request" is optional and can be ommited if additional annotations are not necessary
+const csdlDocument: string = await dynamicsWebApi.retrieveCsdlMetadata(request);
+```
+
+The `csdlDocument` will be the type of `string`. DynamicsWebApi does not parse the contents of the document and it should be done by the developer.
 
 ## Formatted Values and Lookup Properties
 

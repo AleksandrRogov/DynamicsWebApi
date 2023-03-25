@@ -10,6 +10,8 @@ declare class DWA {
             FormattedValue: string;
             FetchXmlPagingCookie: string;
         };
+        IncludeAnnotations: string;
+        get(annotation: string): string;
     };
 }
 export { DWA };

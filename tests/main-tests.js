@@ -1151,7 +1151,7 @@ describe("promises -", function () {
 				var response = mocks.responses.fetchXmlResponsePage2Cookie;
 				scope = nock(mocks.webApiUrl, {
 					reqheaders: {
-						Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.FormattedValue + '"',
+						Prefer: DWA.Prefer.get(DWA.Prefer.Annotations.FormattedValue),
 					},
 				})
 					.get(mocks.responses.collectionUrl + "?fetchXml=" + encodeURIComponent(mocks.data.fetchXmls.fetchXml2cookie))
@@ -2691,7 +2691,7 @@ describe("promises -", function () {
 				var response2 = mocks.responses.multipleWithCountResponse;
 				scope = nock(mocks.webApiUrl, {
 					reqheaders: {
-						Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.FormattedValue + '"',
+						Prefer: DWA.Prefer.get(DWA.Prefer.Annotations.FormattedValue),
 					},
 				})
 					.get(mocks.responses.collectionUrl + "?$select=name")
@@ -2752,7 +2752,7 @@ describe("promises -", function () {
 				var response = mocks.responses.multipleWithLinkResponse;
 				scope = nock(mocks.webApiUrl, {
 					reqheaders: {
-						Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.FormattedValue + '"',
+						Prefer: DWA.Prefer.get(DWA.Prefer.Annotations.FormattedValue),
 					},
 				})
 					.get(mocks.responses.collectionUrl + "?$select=name")
@@ -2795,7 +2795,7 @@ describe("promises -", function () {
 				var getLink = `/${link.pop()}?${linkQuery[1]}`;
 				scope = nock(link.join("/"), {
 					reqheaders: {
-						Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.FormattedValue + '"',
+						Prefer: DWA.Prefer.get(DWA.Prefer.Annotations.FormattedValue),
 					},
 				})
 					.get(getLink)
@@ -2918,7 +2918,7 @@ describe("promises -", function () {
 				var response = mocks.responses.multipleResponse;
 				scope = nock(mocks.webApiUrl, {
 					reqheaders: {
-						Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.FormattedValue + '"',
+						Prefer: DWA.Prefer.get(DWA.Prefer.Annotations.FormattedValue),
 					},
 				})
 					.get(mocks.responses.collectionUrl + "?$apply=groupby((statuscode),aggregate(estimatedvalue with sum as total))")
@@ -2958,7 +2958,7 @@ describe("promises -", function () {
 				var response = mocks.responses.multipleResponse;
 				scope = nock(mocks.webApiUrl, {
 					reqheaders: {
-						Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.FormattedValue + '"',
+						Prefer: DWA.Prefer.get(DWA.Prefer.Annotations.FormattedValue),
 					},
 				})
 					.get(
@@ -3004,7 +3004,7 @@ describe("promises -", function () {
 				var response = mocks.responses.multipleResponse;
 				scope = nock(mocks.webApiUrl, {
 					reqheaders: {
-						Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.FormattedValue + '"',
+						Prefer: DWA.Prefer.get(DWA.Prefer.Annotations.FormattedValue),
 					},
 				})
 					.get(mocks.responses.collectionUrl + "?$select=name")
@@ -3050,14 +3050,14 @@ describe("promises -", function () {
 				var getLink = `/${link.pop()}?${linkQuery[1]}`;
 				scope = nock(mocks.webApiUrl, {
 					reqheaders: {
-						Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.FormattedValue + '"',
+						Prefer: DWA.Prefer.get(DWA.Prefer.Annotations.FormattedValue),
 					},
 				})
 					.get(mocks.responses.collectionUrl + "?$select=name")
 					.reply(response.status, response.responseText, response.responseHeaders);
 				scope2 = nock(link.join("/"), {
 					reqheaders: {
-						Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.FormattedValue + '"',
+						Prefer: DWA.Prefer.get(DWA.Prefer.Annotations.FormattedValue),
 					},
 				})
 					.get(getLink)
@@ -5505,6 +5505,79 @@ describe("promises -", function () {
 			it("all requests have been made", function () {
 				expect(scope.isDone()).to.be.true;
 				expect(scope1.isDone()).to.be.true;
+			});
+		});
+	});
+
+	describe("dynamicsWebApi.retrieveCsdlMetadata -", function () {
+		describe("basic", function () {
+			var scope;
+			before(function () {
+				const response = mocks.responses.xmlResponse;
+				scope = nock(mocks.webApiUrl, {
+					reqheaders: {
+						Accept: "application/xml",
+					},
+				})
+					.get("/$metadata")
+					.reply(response.status, response.responseText, response.responseHeaders);
+			});
+
+			after(function () {
+				nock.cleanAll();
+			});
+
+			it("returns a correct response", function (done) {
+				dynamicsWebApiTest
+					.retrieveCsdlMetadata()
+					.then(function (object) {
+						expect(object).to.deep.equal(mocks.responses.xmlResponse.responseText);
+						done();
+					})
+					.catch(function (object) {
+						done(object);
+					});
+			});
+
+			it("all requests have been made", function () {
+				expect(scope.isDone()).to.be.true;
+			});
+		});
+
+		describe("annotations = true", function () {
+			var scope;
+			before(function () {
+				const response = mocks.responses.xmlResponse;
+				scope = nock(mocks.webApiUrl, {
+					reqheaders: {
+						Accept: "application/xml",
+						Prefer: DWA.Prefer.get(DWA.Prefer.Annotations.All),
+					},
+				})
+					.get("/$metadata")
+					.reply(response.status, response.responseText, response.responseHeaders);
+			});
+
+			after(function () {
+				nock.cleanAll();
+			});
+
+			it("returns a correct response", function (done) {
+				dynamicsWebApiTest
+					.retrieveCsdlMetadata({
+						addAnnotations: true,
+					})
+					.then(function (object) {
+						expect(object).to.deep.equal(mocks.responses.xmlResponse.responseText);
+						done();
+					})
+					.catch(function (object) {
+						done(object);
+					});
+			});
+
+			it("all requests have been made", function () {
+				expect(scope.isDone()).to.be.true;
 			});
 		});
 	});

@@ -1956,7 +1956,7 @@ describe("RequestClient.makeRequest", function () {
 				function (object) {
 					var expectedO = {
 						status: 200,
-						headers: {},
+						headers: mocks.data.defaultResponseHeaders,
 						data: mocks.data.testEntity,
 					};
 					expect(object).to.deep.equal(expectedO);
@@ -2016,7 +2016,7 @@ describe("RequestClient.makeRequest", function () {
 				function (object) {
 					var expectedO = {
 						status: 200,
-						headers: {},
+						headers: mocks.data.defaultResponseHeaders,
 						data: mocks.data.testEntity,
 					};
 					expect(object).to.deep.equal(expectedO);
@@ -2034,7 +2034,7 @@ describe("RequestClient.makeRequest", function () {
 						function (object1) {
 							var expectedO1 = {
 								status: 200,
-								headers: {},
+								headers: mocks.data.defaultResponseHeaders,
 								data: mocks.data.testEntity,
 							};
 							expect(object1).to.deep.equal(expectedO1);
@@ -2087,7 +2087,7 @@ describe("RequestClient.makeRequest", function () {
 				function (object) {
 					var expectedO = {
 						status: 200,
-						headers: {},
+						headers: mocks.data.defaultResponseHeaders,
 						data: mocks.data.testEntity,
 					};
 					expect(object).to.deep.equal(expectedO);
@@ -2141,7 +2141,7 @@ describe("RequestClient.makeRequest", function () {
 				function (object) {
 					var expectedO = {
 						status: 200,
-						headers: {},
+						headers: mocks.data.defaultResponseHeaders,
 						data: mocks.data.testEntity,
 					};
 					expect(object).to.deep.equal(expectedO);
@@ -2395,7 +2395,7 @@ describe("RequestClient.makeRequest", function () {
 					//delete multiple.oDataContext;
 					var expectedO = {
 						status: 200,
-						headers: {},
+						headers: mocks.data.defaultTextPlainResponseHeaders,
 						data: multiple,
 					};
 					expect(object).to.deep.equal(expectedO);
@@ -2579,28 +2579,38 @@ describe("empty batch payload", function () {
 
 describe("parseResponse", function () {
 	it("parses formatted values", function () {
-		var response = parseResponse(mocks.responses.responseFormatted200.responseText, [], [{}]);
+		var response = parseResponse(mocks.responses.responseFormatted200.responseText, mocks.responses.responseFormatted200.responseHeaders, [{}]);
 		expect(response).to.be.deep.equal(mocks.responses.responseFormattedEntity());
 	});
 
 	it("parses formatted values with expand formatted values", function () {
-		var response = parseResponse(mocks.responses.responseFormattedWithExpand200.responseText, [], [{}]);
+		var response = parseResponse(
+			mocks.responses.responseFormattedWithExpand200.responseText,
+			mocks.responses.responseFormattedWithExpand200.responseHeaders,
+			[{}]
+		);
 		expect(response).to.be.deep.equal(mocks.responses.responseFormattedEntityWithExpand());
 	});
 
 	it("parses formatted values - array", function () {
-		var response = parseResponse(mocks.responses.multipleFormattedResponse.responseText, [], [{}]);
+		var response = parseResponse(mocks.responses.multipleFormattedResponse.responseText, mocks.responses.multipleFormattedResponse.responseHeaders, [{}]);
 		expect(response).to.be.deep.equal(mocks.responses.multipleFormatted());
 	});
 
 	it("parses formatted and aliased values", function () {
-		var response = parseResponse(mocks.responses.responseFormattedAliased200.responseText, [], [{}]);
+		var response = parseResponse(mocks.responses.responseFormattedAliased200.responseText, mocks.responses.responseFormattedAliased200.responseHeaders, [
+			{},
+		]);
 		expect(response).to.be.deep.equal(mocks.responses.responseFormattedAliasedEntity());
 	});
 
 	it("when alias are not unique throws error", function () {
 		expect(function () {
-			parseResponse(mocks.responses.responseFormattedAliasedNotUnique200.responseText, [], [{}]);
+			parseResponse(
+				mocks.responses.responseFormattedAliasedNotUnique200.responseText,
+				mocks.responses.responseFormattedAliasedNotUnique200.responseHeaders,
+				[{}]
+			);
 		}).to.throw("The alias name of the linked entity must be unique!");
 	});
 });

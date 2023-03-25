@@ -425,10 +425,10 @@ export class DynamicsWebApi {
 		internalRequest.method = "GET";
 		internalRequest.functionName = "count";
 
-		if (internalRequest.filter == null || (internalRequest.filter != null && !internalRequest.filter.length)) {
-			internalRequest.navigationProperty = "$count";
-		} else {
+		if (internalRequest.filter?.length) {
 			internalRequest.count = true;
+		} else {
+			internalRequest.navigationProperty = "$count";
 		}
 
 		internalRequest.responseParameters = { toCount: internalRequest.count };
@@ -1067,20 +1067,24 @@ export class DynamicsWebApi {
 		internalRequest.collection = "GlobalOptionSetDefinitions";
 		internalRequest.functionName = "retrieveGlobalOptionSets";
 
-		if (request && request.castType) {
-			internalRequest.navigationProperty = request.castType;
+		if (request?.castType) {
 			ErrorHelper.stringParameterCheck(request.castType, "DynamicsWebApi.retrieveGlobalOptionSets", "request.castType");
+			internalRequest.navigationProperty = request.castType;
 		}
 
 		return this.retrieveMultiple(<DynamicsWebApi.RetrieveMultipleRequest>internalRequest);
 	};
 
-	retrieveCsdlMetadata = (): Promise<any> => {
-		const internalRequest: Core.InternalRequest = {
-			collection: "$metadata",
-			method: "GET",
-			functionName: "retrieveCsdlMetadata",
-		};
+	retrieveCsdlMetadata = (request?: DynamicsWebApi.CsdlMetadataRequest): Promise<string> => {
+		const internalRequest: Core.InternalRequest = !request ? {} : Utility.copyObject<Core.InternalRequest>(request);
+
+		internalRequest.collection = "$metadata";
+		internalRequest.functionName = "retrieveCsdlMetadata";
+
+		if (request?.addAnnotations) {
+			ErrorHelper.boolParameterCheck(request.addAnnotations, "DynamicsWebApi.retrieveCsdlMetadata", "request.addAnnotations");
+			internalRequest.includeAnnotations = "*";
+		}
 
 		return this._makeRequest(internalRequest).then((response) => {
 			return response.data;
@@ -1585,7 +1589,7 @@ export declare namespace DynamicsWebApi {
 		expand?: Expand[];
 	}
 
-	interface UploadRequest extends CRUDRequest {
+	export interface UploadRequest extends CRUDRequest {
 		/**Binary Buffer*/
 		data: Uint8Array | Buffer;
 		/**Name of the file */
@@ -1594,12 +1598,17 @@ export declare namespace DynamicsWebApi {
 		fieldName: string;
 	}
 
-	interface DownloadRequest extends CRUDRequest {
+	export interface DownloadRequest extends CRUDRequest {
 		/**File Field Name */
 		fieldName: string;
 	}
 
-	interface ApiConfig {
+	export interface CsdlMetadataRequest extends BaseRequest {
+		/**If set to "true" the document will include many different kinds of annotations that can be useful. Most annotations are not included by default because they increase the total size of the document. */
+		addAnnotations?: boolean;
+	}
+
+	export interface ApiConfig {
 		/** API Version to use, for example: "9.2" or "1.0" */
 		version?: string;
 		/** API Path, for example: "data" or "search" */
@@ -1637,7 +1646,7 @@ export declare namespace DynamicsWebApi {
 		searchApi?: ApiConfig;
 	}
 
-	interface ProxyConfig {
+	export interface ProxyConfig {
 		/**Proxy server url */
 		url: string;
 		/**Basic authentication credentials */

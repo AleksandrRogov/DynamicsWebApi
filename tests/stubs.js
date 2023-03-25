@@ -663,6 +663,8 @@ var dataStubs = {
 			},
 		},
 	},
+	defaultResponseHeaders: { "content-type": "application/json; odata.metadata=minimal" },
+	defaultTextPlainResponseHeaders: { "content-type": "text/plain" },
 };
 
 var responseStubs = {
@@ -684,6 +686,7 @@ var responseStubs = {
 	createReturnRepresentation: {
 		status: 201,
 		responseText: JSON.stringify(dataStubs.testEntity),
+		responseHeaders: dataStubs.defaultResponseHeaders,
 	},
 	testEntityUrl: "/tests(" + dataStubs.testEntityId + ")",
 	entityDefinitionsUrl: "/EntityDefinitions",
@@ -698,58 +701,72 @@ var responseStubs = {
 	response200: {
 		status: 200,
 		responseText: JSON.stringify(dataStubs.testEntity),
+		responseHeaders: dataStubs.defaultResponseHeaders,
 	},
 	responseFormatted200: {
 		status: 200,
 		responseText: JSON.stringify(dataStubs.testEntityFormatted),
+		responseHeaders: dataStubs.defaultResponseHeaders,
 	},
 	responseFormattedWithExpand200: {
 		status: 200,
 		responseText: JSON.stringify(dataStubs.testEntityFormattedWithExpand),
+		responseHeaders: dataStubs.defaultResponseHeaders,
 	},
 	responseFormattedAliased200: {
 		status: 200,
 		responseText: JSON.stringify(dataStubs.testEntityFormattedAliased),
+		responseHeaders: dataStubs.defaultResponseHeaders,
 	},
 	responseFormattedAliasedNotUnique200: {
 		status: 200,
 		responseText: JSON.stringify(dataStubs.testEntityFormattedAliasedNotUnique),
+		responseHeaders: dataStubs.defaultResponseHeaders,
 	},
 	responseEntityDefinitions: {
 		status: 200,
 		responseText: JSON.stringify(dataStubs.entityDefinitionList),
+		responseHeaders: dataStubs.defaultResponseHeaders,
 	},
 	retrieveReferenceResponse: {
 		status: 200,
 		responseText: JSON.stringify(dataStubs.referenceResponse),
+		responseHeaders: dataStubs.defaultResponseHeaders,
 	},
 	updateReturnRepresentation: {
 		status: 200,
 		responseText: JSON.stringify(dataStubs.updatedEntity),
+		responseHeaders: dataStubs.defaultResponseHeaders,
 	},
 	countBasic: {
 		status: 200,
 		responseText: "20",
+		responseHeaders: dataStubs.defaultTextPlainResponseHeaders,
 	},
 	multipleResponse: {
 		status: 200,
 		responseText: JSON.stringify(dataStubs.multiple),
+		responseHeaders: dataStubs.defaultResponseHeaders,
 	},
 	multipleFormattedResponse: {
 		status: 200,
 		responseText: JSON.stringify(dataStubs.multipleFormatted),
+		responseHeaders: dataStubs.defaultResponseHeaders,
 	},
 	multipleWithCountResponse: {
 		status: 200,
 		responseText: JSON.stringify(dataStubs.multipleWithCount),
+		responseHeaders: dataStubs.defaultResponseHeaders,
 	},
 	multipleWithLinkResponse: {
 		status: 200,
 		responseText: JSON.stringify(dataStubs.multipleWithLink),
+		responseHeaders: dataStubs.defaultResponseHeaders,
 	},
 	multipleWithDeltaLinkResponse: {
 		status: 200,
 		responseText: JSON.stringify(dataStubs.multipleWithDeltaLink),
+		responseHeaders: dataStubs.defaultResponseHeaders,
 	},
 	uploadFileBeginResponse: {
 		status: 200,
@@ -793,6 +810,7 @@ var responseStubs = {
 			JSON.stringify(dataStubs.multiple) +
 			"\r\n" +
 			"--batchresponse_904020fa-6213-43d4-a26a-5347b70095e8--",
+		responseHeaders: dataStubs.defaultTextPlainResponseHeaders,
 	},
 	batchRetrieveMultipleCreateRetrieveMultiple: {
 		status: 200,
@@ -832,6 +850,7 @@ var responseStubs = {
 			JSON.stringify(dataStubs.multiple2) +
 			"\r\n" +
 			"--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae--",
+		responseHeaders: dataStubs.defaultTextPlainResponseHeaders,
 	},
 	batchError: {
 		status: 400,
@@ -851,6 +870,7 @@ var responseStubs = {
 			'{"error":{"code":"0x0","message":"error","innererror":{"message":"error","type":"Microsoft.Crm.CrmHttpException","stacktrace":"stack"}}}\r\n' +
 			"--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n" +
 			"--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae--",
+		responseHeaders: dataStubs.defaultTextPlainResponseHeaders,
 	},
 	batchRetrieveMultipleUpdateRetrieveMultiple: {
 		status: 200,
@@ -890,6 +910,7 @@ var responseStubs = {
 			JSON.stringify(dataStubs.multiple2) +
 			"\r\n" +
 			"--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae--",
+		responseHeaders: dataStubs.defaultTextPlainResponseHeaders,
 	},
 	batchUpsertUpsertUpsertWithAlternateKeys: {
 		status: 200,
@@ -929,6 +950,7 @@ var responseStubs = {
 			"\r\n" +
 			"--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd--\r\n" +
 			"--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae--",
+		responseHeaders: dataStubs.defaultTextPlainResponseHeaders,
 	},
 	batchUpdateDelete: {
 		status: 200,
@@ -960,6 +982,7 @@ var responseStubs = {
 			"\r\n" +
 			"--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd--\r\n" +
 			"--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae--",
+		responseHeaders: dataStubs.defaultTextPlainResponseHeaders,
 	},
 	//batchCreateContentID: {
 	//    status: 200,
@@ -1022,6 +1045,7 @@ var responseStubs = {
 			JSON.stringify(dataStubs.multiple2) +
 			"\r\n" +
 			"--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae--",
+		responseHeaders: dataStubs.defaultTextPlainResponseHeadersseHeaders,
 	},
 	batchRetrieveMultipleCountRetrieveMultiple: {
 		status: 200,
@@ -1052,6 +1076,7 @@ var responseStubs = {
 			JSON.stringify(dataStubs.multiple2) +
 			"\r\n" +
 			"--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae--",
+		responseHeaders: dataStubs.defaultTextPlainResponseHeadersseHeaders,
 	},
 	batchRetrieveMultipleCountFilteredRetrieveMultiple: {
 		status: 200,
@@ -1083,22 +1108,27 @@ var responseStubs = {
 			JSON.stringify(dataStubs.multiple2) +
 			"\r\n" +
 			"--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae--",
+		responseHeaders: dataStubs.defaultTextPlainResponseHeadersseHeaders,
 	},
 	fetchXmlResponsePage1Cookie: {
 		status: 200,
 		responseText: JSON.stringify(dataStubs.fetchXmls.fetchXmlResponsePage1Cookie),
+		responseHeaders: dataStubs.defaultResponseHeaders,
 	},
 	fetchXmlResponsePage2Cookie: {
 		status: 200,
 		responseText: JSON.stringify(dataStubs.fetchXmls.fetchXmlResponsePage2Cookie),
+		responseHeaders: dataStubs.defaultResponseHeaders,
 	},
 	fetchXmlResponsePage2NoCookie: {
 		status: 200,
 		responseText: JSON.stringify(dataStubs.fetchXmls.fetchXmlResponsePage2NoCookie),
+		responseHeaders: dataStubs.defaultResponseHeaders,
 	},
 	fetchXmlResponsePage1: {
 		status: 200,
 		responseText: JSON.stringify(dataStubs.fetchXmls.fetchXmlResponsePage1),
+		responseHeaders: dataStubs.defaultResponseHeaders,
 	},
 	actionRequest: {
 		Status: 3,
@@ -1106,6 +1136,7 @@ var responseStubs = {
 			subject: "Won Opportunity",
 			"testid@odata.bind": "tests(" + dataStubs.testEntityId + ")",
 		},
+		responseHeaders: dataStubs.defaultResponseHeaders,
 	},
 	actionRequestModified: {
 		Status: 3,
@@ -1113,6 +1144,7 @@ var responseStubs = {
 			subject: "Won Opportunity",
 			"testid@odata.bind": "/tests(" + dataStubs.testEntityId + ")",
 		},
+		responseHeaders: dataStubs.defaultResponseHeaders,
 	},
 	upsertPreventCreateResponse: {
 		status: 404,
@@ -1120,12 +1152,14 @@ var responseStubs = {
 		responseText: JSON.stringify({
 			error: { message: "message" },
 		}),
+		responseHeaders: dataStubs.defaultResponseHeaders,
 	},
 	upsertPreventUpdateResponse: {
 		status: 412,
 		responseText: JSON.stringify({
 			error: { message: "message" },
 		}),
+		responseHeaders: dataStubs.defaultResponseHeaders,
 	},
 	responseFormattedEntity: function () {
 		var stub = dataStubs.testEntityFormatted;
@@ -1190,6 +1224,13 @@ var responseStubs = {
 		stub.oDataContext = stub["@odata.context"];
 		stub.oDataCount = stub["@odata.count"];
 		return stub;
+	},
+	xmlResponse: {
+		status: 200,
+		responseText: `<?xml version="1.0" encoding="utf-8"?><edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx"></edmx:Edmx>`,
+		responseHeaders: {
+			"Content-Type": "application/xml",
+		},
 	},
 };
 

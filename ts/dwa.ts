@@ -8,6 +8,10 @@ class DWA {
 			static FormattedValue: string = "OData.Community.Display.V1.FormattedValue";
 			static FetchXmlPagingCookie: string = "Microsoft.Dynamics.CRM.fetchxmlpagingcookie";
 		};
+		static IncludeAnnotations: string = "odata.include-annotations";
+		static get(annotation: string) {
+			return `${DWA.Prefer.IncludeAnnotations}="${annotation}"`;
+		}
 	};
 }
 
