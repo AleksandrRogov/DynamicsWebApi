@@ -1889,6 +1889,46 @@ describe("promises -", function () {
 			});
 		});
 
+		describe("basic - using request.data instead of request.entity", function () {
+			var scope;
+			before(function () {
+				var response = mocks.responses.basicEmptyResponseSuccess;
+				scope = nock(mocks.webApiUrl, {
+					reqheaders: {
+						"If-Match": "*",
+					},
+				})
+					.patch(mocks.responses.testEntityUrl, mocks.data.testEntity)
+					.reply(response.status, response.responseText, response.responseHeaders);
+			});
+
+			after(function () {
+				nock.cleanAll();
+			});
+
+			it("returns a correct response", function (done) {
+				var dwaRequest = {
+					id: mocks.data.testEntityId,
+					collection: "tests",
+					data: mocks.data.testEntity,
+				};
+
+				dynamicsWebApiTest
+					.updateRequest(dwaRequest)
+					.then(function (object) {
+						expect(object).to.be.true;
+						done();
+					})
+					.catch(function (object) {
+						done(object);
+					});
+			});
+
+			it("all requests have been made", function () {
+				expect(scope.isDone()).to.be.true;
+			});
+		});
+
 		describe("return representation", function () {
 			var scope;
 			before(function () {
@@ -5907,6 +5947,49 @@ describe("promises -", function () {
 			});
 		});
 
+		describe("authorization - dataApi", function () {
+			var scope;
+			before(function () {
+				var response = mocks.responses.multipleResponse;
+				scope = nock(mocks.webApiUrl, {
+					reqheaders: {
+						Authorization: "Bearer token001",
+					},
+				})
+					.get("/tests")
+					.reply(response.status, response.responseText, response.responseHeaders);
+			});
+
+			after(function () {
+				nock.cleanAll();
+			});
+
+			it("sends the request to the right end point and returns a response", function (done) {
+				var getToken = function (callback) {
+					var adalCallback = function (token) {
+						callback(token);
+					};
+
+					adalCallback({ accessToken: "token001" });
+				};
+
+				var dynamicsWebApiAuth = new DynamicsWebApi({ onTokenRefresh: getToken, serverUrl: mocks.serverUrl, dataApi: { version: "8.2" } });
+				dynamicsWebApiAuth
+					.retrieveMultipleRequest({ collection: "tests" })
+					.then(function (object) {
+						expect(object).to.deep.equal(mocks.responses.multiple());
+						done();
+					})
+					.catch(function (object) {
+						done(object);
+					});
+			});
+
+			it("all requests have been made", function () {
+				expect(scope.isDone()).to.be.true;
+			});
+		});
+
 		describe("authorization - plain token", function () {
 			var scope;
 			before(function () {
@@ -6560,6 +6643,43 @@ describe("promises -", function () {
 				expect(scope.isDone()).to.be.true;
 			});
 		});
+
+		describe("dataApi is overriden by the new config set", function () {
+			var dynamicsWebApi81 = new DynamicsWebApi({ dataApi: { version: "8.1" } });
+
+			var scope;
+			before(function () {
+				var response = mocks.responses.multipleResponse;
+				scope = nock(mocks.webApiUrl, {
+					reqheaders: {
+						MSCRMCallerID: mocks.data.testEntityId2,
+					},
+				})
+					.get("/tests")
+					.reply(response.status, response.responseText, response.responseHeaders);
+			});
+
+			after(function () {
+				nock.cleanAll();
+			});
+
+			it("sends the request to the right end point and returns a response", function (done) {
+				dynamicsWebApi81.setConfig({ dataApi: { version: "8.2" }, impersonate: mocks.data.testEntityId2 });
+				dynamicsWebApi81
+					.retrieveMultipleRequest({ collection: "tests" })
+					.then(function (object) {
+						expect(object).to.deep.equal(mocks.responses.multiple());
+						done();
+					})
+					.catch(function (object) {
+						done(object);
+					});
+			});
+
+			it("all requests have been made", function () {
+				expect(scope.isDone()).to.be.true;
+			});
+		});
 	});
 
 	describe("dynamicsWebApi.initializeInstance -", function () {
@@ -6617,6 +6737,38 @@ describe("promises -", function () {
 
 			it("sends the request to the right end point", function (done) {
 				var dynamicsWebApiCopy = dynamicsWebApi81.initializeInstance({ webApiVersion: "8.2" });
+				dynamicsWebApiCopy
+					.retrieveMultipleRequest({ collection: "tests" })
+					.then(function (object) {
+						expect(object).to.deep.equal(mocks.responses.multiple());
+						done();
+					})
+					.catch(function (object) {
+						done(object);
+					});
+			});
+
+			it("all requests have been made", function () {
+				expect(scope.isDone()).to.be.true;
+			});
+		});
+
+		describe("dataApi test", function () {
+			var dynamicsWebApi81 = new DynamicsWebApi();
+			dynamicsWebApi81.setConfig({ dataApi: { version: "8.1" }, impersonate: mocks.data.testEntityId2 });
+
+			var scope;
+			before(function () {
+				var response = mocks.responses.multipleResponse;
+				scope = nock(mocks.webApiUrl).get(mocks.responses.collectionUrl).reply(response.status, response.responseText, response.responseHeaders);
+			});
+
+			after(function () {
+				nock.cleanAll();
+			});
+
+			it("sends the request to the right end point", function (done) {
+				var dynamicsWebApiCopy = dynamicsWebApi81.initializeInstance({ dataApi: { version: "8.2" } });
 				dynamicsWebApiCopy
 					.retrieveMultipleRequest({ collection: "tests" })
 					.then(function (object) {

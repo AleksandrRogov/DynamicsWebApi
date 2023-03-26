@@ -1,4 +1,4 @@
-﻿// Type definitions for dynamics-web-api v1.7.7
+﻿// Type definitions for dynamics-web-api v1.7.8
 // Project: https://github.com/AleksandrRogov/DynamicsWebApi/
 // Definitions by: Aleksandr Rogov https://github.com/AleksandrRogov/
 
@@ -41,6 +41,7 @@ declare class DynamicsWebApi {
 	createRequest<T = any>(request: DynamicsWebApi.CreateRequest<T>): Promise<T>;
 	/**
 	 * Sends an asynchronous request to create a new record.
+	 * @deprecated Please use "createRequest". It will be easier to fix breaking changes once v2 is realeased.
 	 *
 	 * @param object - A JavaScript object valid for create operations.
 	 * @param collection - The name of the Entity Collection or Entity Logical name.
@@ -67,6 +68,7 @@ declare class DynamicsWebApi {
 	updateRequest<T = any>(request: DynamicsWebApi.UpdateRequest<T>): Promise<T>;
 	/**
 	 * Sends an asynchronous request to update a record.
+	 * @deprecated Please use "updateRequest". It will be easier to fix breaking changes once v2 is realeased.
 	 *
 	 * @param key - A String representing the GUID value or Alternate Key(s) for the record to update.
 	 * @param collection - The name of the Entity Collection or Entity Logical name.
@@ -99,6 +101,7 @@ declare class DynamicsWebApi {
 	deleteRequest(request: DynamicsWebApi.DeleteRequest): Promise<any>;
 	/**
 	 * Sends an asynchronous request to delete a record.
+	 * @deprecated Please use "deleteRequest". It will be easier to fix breaking changes once v2 is realeased.
 	 *
 	 * @param key - A String representing the GUID value or Alternate Key(s) for the record to delete.
 	 * @param collection - The name of the Entity Collection or Entity Logical name.
@@ -113,6 +116,7 @@ declare class DynamicsWebApi {
 	retrieveRequest<T = any>(request: DynamicsWebApi.RetrieveRequest): Promise<T>;
 	/**
 	 * Sends an asynchronous request to retrieve a record.
+	 * @deprecated Please use "retrieveRequest". It will be easier to fix breaking changes once v2 is realeased.
 	 *
 	 * @param key - A String representing the GUID value or Alternate Key(s) for the record to retrieve.
 	 * @param collection - The name of the Entity Collection or Entity Logical name.
@@ -128,6 +132,7 @@ declare class DynamicsWebApi {
 	upsertRequest<T = any>(request: DynamicsWebApi.UpsertRequest<T>): Promise<T>;
 	/**
 	 * Sends an asynchronous request to upsert a record.
+	 * @deprecated Please use "upsertRequest". It will be easier to fix breaking changes once v2 is realeased.
 	 *
 	 * @param key - A String representing the GUID value or Alternate Key(s) for the record to upsert.
 	 * @param collection - The name of the Entity Collection or Entity Logical name.
@@ -153,6 +158,7 @@ declare class DynamicsWebApi {
 	countAll(collection: string, filter?: string, select?: string[]): Promise<number>;
 	/**
 	 * Sends an asynchronous request to retrieve records.
+	 * @deprecated Please use "retrieveMultipleRequest". It will be easier to fix breaking changes once v2 is realeased.
 	 *
 	 * @param collection - The name of the Entity Collection or Entity Logical name.
 	 * @param select - Use the $select system query option to limit the properties returned.
@@ -162,6 +168,7 @@ declare class DynamicsWebApi {
 	retrieveMultiple<T = any>(collection: string, select?: string[], filter?: string, oDataLink?: string): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>>;
 	/**
 	 * Sends an asynchronous request to retrieve all records.
+	 * @deprecated Please use "retrieveAllRequest". It will be easier to fix breaking changes once v2 is realeased.
 	 *
 	 * @param collection - The name of the Entity Collection or Entity Logical name.
 	 * @param select - Use the $select system query option to limit the properties returned.
@@ -533,9 +540,9 @@ declare namespace DynamicsWebApi {
 		impersonate?: string;
 		/**Impersonates the user.A String representing the GUID value for the Azure active directory object id. */
 		impersonateAAD?: string;
-		/** If set to 'true', DynamicsWebApi adds a request header 'Cache-Control: no-cache'.Default value is 'false'. */
+		/**If set to 'true', DynamicsWebApi adds a request header 'Cache-Control: no-cache'.Default value is 'false'. */
 		noCache?: boolean;
-		/** Authorization Token. If set, onTokenRefresh will not be called. */
+		/**Authorization Token. If set, onTokenRefresh will not be called. */
 		token?: string;
 		/**Sets a number of milliseconds before a request times out. */
 		timeout?: number;
@@ -547,7 +554,7 @@ declare namespace DynamicsWebApi {
 	}
 
 	interface CRUDRequest extends Request {
-		/** DEPRECATED Use "key" instead. A String representing the Primary Key(GUID) of the record. */
+		/**@deprecated Use "key" instead. A String representing the Primary Key(GUID) of the record. */
 		id?: string;
 		/**A String representing collection record's Primary Key (GUID) or Alternate Key(s). */
 		key?: string;
@@ -559,6 +566,8 @@ declare namespace DynamicsWebApi {
 		/**v.1.3.4+ Web API v9+ only! Boolean that enables duplicate detection. */
 		duplicateDetection?: boolean;
 		/**A JavaScript object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single-valued navigation properties). */
+		data?: T;
+		/**@deprecated use "data" instead */
 		entity?: T;
 		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
 		expand?: Expand[];
@@ -584,6 +593,8 @@ declare namespace DynamicsWebApi {
 		/**v.1.3.4+ Web API v9+ only! Boolean that enables duplicate detection. */
 		duplicateDetection?: boolean;
 		/**A JavaScript object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single-valued navigation properties). */
+		data?: T;
+		/**@deprecated use "data" instead */
 		entity?: T;
 		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
 		expand?: Expand[];
@@ -709,9 +720,11 @@ declare namespace DynamicsWebApi {
 	}
 
 	interface Config {
-		/**A String representing a URL to Web API(webApiVersion not required if webApiUrl specified)[not used inside of CRM] */
+		/**The url to Dataverse API server, for example: https://contoso.api.crm.dynamics.com/. It is required when used in Node.js application. */
+		serverUrl?: string;
+		/**@deprecated use serverUrl together with dataApi (if required) instead */
 		webApiUrl?: string;
-		/**The version of Web API to use, for example: "8.1" */
+		/**@deprecated use dataApi.version instead */
 		webApiVersion?: string;
 		/**A String representing a GUID value for the Dynamics 365 system user id */
 		impersonate?: string;
@@ -731,6 +744,15 @@ declare namespace DynamicsWebApi {
 		timeout?: number;
 		/**Proxy configuration */
 		proxy?: ProxyConfig;
+		/**Configuration object for Dataverse Web API. The name is based on the url path "data". */
+		dataApi?: ApiConfig;
+	}
+
+	interface ApiConfig {
+		/**Optional. A path to API, for example: "data". */
+		path?: string;
+		/**Optional. API Version, for example: "9.0" or "9.2". */
+		version?: string;
 	}
 
 	/** Callback with an acquired token called by DynamicsWebApi; "token" argument can be a string or an object with a property {accessToken: <token>}  */

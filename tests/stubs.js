@@ -12,6 +12,7 @@ global.Xrm = {
 
 var DWA = require("../lib/dwa");
 var webApiUrl = "http://testorg.crm.dynamics.com/api/data/v8.2/";
+var serverUrl = "http://testorg.crm.dynamics.com/";
 var webApiUrl90 = "http://testorg.crm.dynamics.com/api/data/v9.0/";
 var webApiUrl81 = "http://testorg.crm.dynamics.com/api/data/v8.1/";
 var webApiUrl80 = "http://testorg.crm.dynamics.com/api/data/v8.0/";
@@ -1190,5 +1191,6 @@ module.exports = {
 	webApiUrl90: webApiUrl90,
 	webApiUrl81: webApiUrl81,
 	webApiUrl80: webApiUrl80,
+	serverUrl: serverUrl,
 	utils: utils,
 };

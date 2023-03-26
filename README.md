@@ -236,17 +236,27 @@ proxy | Object | `v.1.7.2+` Proxy configuration object. [More Info](#using-proxy
 returnRepresentation | Boolean | Defaults Prefer header with value "return=representation". Use this property to return just created or updated entity in a single request.
 timeout | Number | Sets a number of milliseconds before a request times out.
 useEntityNames | Boolean | `v.1.4.0+` Indicates whether to use entity logical names instead of collection logical names during requests.
-webApiUrl | String | A complete URL string to Web API. Example of the URL: "https://myorg.api.crm.dynamics.com/api/data/v9.1/". If it is specified then webApiVersion property will not be used even if it is not empty. 
-webApiVersion | String | Version of the Web API. Default version is "8.0".
+webApiUrl | String | **Deprecated!** Use `serverUrl` together with `dataApi` instead. A complete URL string to Web API. Example of the URL: "https://myorg.api.crm.dynamics.com/api/data/v9.1/". If it is specified then webApiVersion property will not be used even if it is not empty. 
+webApiVersion | String | **Deprecated!** Use `dataApi.version` instead. Version of the Web API. Default version is "8.0".
+dataApi | Object | `v1.7.8+` Configuration object for Dataverse Web API.
+serverUrl | String | `v1.7.8+` The url to Dataverse API server, for example: https://contoso.api.crm.dynamics.com/. It is required when used in Node.js application.
 
 Configuration property `webApiVersion` is required only when DynamicsWebApi used inside CRM. 
 Property `webApiUrl` is required when DynamicsWebApi used externally.
+
+**Important!** `webApiUrl` and `webApiVersion` are deprecated and will be removed in v2. Please use `serverUrl` and `dataApi` instead.
 
 **Important!** If both configuration properties set then `webApiUrl` will have a higher priority than `webApiVersion`, so the last one will be skipped.
 
 **Important!** Please note, if you are using `DynamicsWebApi` **outside Microsoft Dynamics 365** and set `useEntityNames` to `true` **the first request** to Web Api 
 will fetch `LogicalCollectionName` and `LogicalName` from entity metadata for all entities. It does not happen when `DynamicsWebApi`
 is used in Microsoft Dynamics 365 Web Resources (there is no additional request, no impact on perfomance).
+
+**dataApi** properties:
+| Property Name | Type | Description |
+|--------|--------|--------|
+| path | `String` | Optional. A path to API, for example: "data". |
+| version | `String` | Optional. API Version, for example: "9.1" or "9.2". |
 
 ## Request Examples
 
@@ -274,9 +284,9 @@ bypassCustomPluginExecution | Boolean | `createRequest`, `updateRequest`, `upser
 collection | String | All | The name of the Entity Collection (or Entity Logical name in `v1.4.0+`).
 contentId | String | `createRequest`, `updateRequest`, `upsertRequest`, `deleteRequest` | `v1.5.6+` **BATCH REQUESTS ONLY!** Sets Content-ID header or references request in a Change Set. [More Info](https://www.odata.org/documentation/odata-version-3-0/batch-processing/)
 count | Boolean | `retrieveMultipleRequest`, `retrieveAllRequest` | Boolean that sets the $count system query option with a value of true to include a count of entities that match the filter criteria up to 5000 (per page). Do not use $top with $count!
-data | ArrayBuffer / Buffer (for node.js) | `uploadFile` | `v.1.7.0+` **Web API v9.1+ only!** File buffer for uploading to File Attributes.
+data | Object / ArrayBuffer / Buffer (for node.js) | `uploadFile` and `v.1.7.8+` for `createRequest`, `updateRequest`, `upsertRequest` | `v.1.7.0+` **Web API v9.1+ only!** File buffer for uploading to File Attributes. `v.1.7.8+` A JavaScript object with properties corresponding to the logical name of entity attributes (exceptions are lookups and single-valued navigation properties).
 duplicateDetection | Boolean | `createRequest`, `updateRequest`, `upsertRequest` | `v.1.3.4+` **Web API v9+ only!** Boolean that enables duplicate detection. [More Info](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/webapi/update-delete-entities-using-web-api#check-for-duplicate-records)
-entity | Object | `createRequest`, `updateRequest`, `upsertRequest` | A JavaScript object with properties corresponding to the logical name of entity attributes (exceptions are lookups and single-valued navigation properties).
+entity | Object | `createRequest`, `updateRequest`, `upsertRequest` | **Deprecated!** Use `data` instead. A JavaScript object with properties corresponding to the logical name of entity attributes (exceptions are lookups and single-valued navigation properties).
 expand | Array | `retrieveRequest`, `retrieveMultipleRequest`, `createRequest`, `updateRequest`, `upsertRequest` | An array of Expand Objects (described below the table) representing the $expand OData System Query Option value to control which related records are also returned.
 fieldName | String | `uploadFile`, `downloadFile`, `deleteRequest` | `v.1.7.0+` **Web API v9.1+ only!** Use this option to specify the name of the file attribute in Dynamics 365. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/file-attributes)
 fileName | String | `uploadFile` | `v.1.7.0+` **Web API v9.1+ only!** Specifies the name of the file

@@ -1,7 +1,10 @@
-﻿// Type definitions for dynamics-web-api-callbacks v1.7.7
+﻿// Type definitions for dynamics-web-api-callbacks v1.7.8
 // Project: https://github.com/AleksandrRogov/DynamicsWebApi
 // Definitions by: Aleksandr Rogov https://github.com/AleksandrRogov/
 
+/**
+ * @deprecated Please use DynamicsWebApi with Promises. Will be fully removed in v2.
+ */
 declare class DynamicsWebApi {
 	/**
 	 * DynamicsWebApi constructor
@@ -863,7 +866,7 @@ declare namespace DynamicsWebApi {
 	}
 
 	interface CRUDRequest extends Request {
-		/** DEPRECATED Use "key" instead. A String representing the Primary Key(GUID) of the record. */
+		/**@deprecated Use "key" instead. A String representing the Primary Key(GUID) of the record. */
 		id?: string;
 		/**A String representing collection record's Primary Key (GUID) or Alternate Key(s). */
 		key?: string;
@@ -874,7 +877,9 @@ declare namespace DynamicsWebApi {
 		bypassCustomPluginExecution?: boolean;
 		/**v.1.3.4+ Web API v9+ only! Boolean that enables duplicate detection. */
 		duplicateDetection?: boolean;
-		/**A JavaScript object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single - valued navigation properties). */
+		/**A JavaScript object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single-valued navigation properties). */
+		data?: T;
+		/**@deprecated use "data" instead */
 		entity?: T;
 		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
 		expand?: Expand[];
@@ -899,7 +904,9 @@ declare namespace DynamicsWebApi {
 		bypassCustomPluginExecution?: boolean;
 		/**v.1.3.4+ Web API v9+ only! Boolean that enables duplicate detection. */
 		duplicateDetection?: boolean;
-		/**A JavaScript object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single - valued navigation properties). */
+		/**A JavaScript object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single-valued navigation properties). */
+		data?: T;
+		/**@deprecated use "data" instead */
 		entity?: T;
 		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
 		expand?: Expand[];
@@ -915,7 +922,7 @@ declare namespace DynamicsWebApi {
 		contentId?: string;
 		/**v.1.4.3 + Casts the AttributeMetadata to a specific type. (Used in requests to Attribute Metadata). */
 		metadataAttributeType?: string;
-		/**A String representing the name of a single - valued navigation property.Useful when needed to retrieve information about a related record in a single request. */
+		/**A String representing the name of a single - valued navigation property. Useful when needed to retrieve information about a related record in a single request. */
 		navigationProperty?: string;
 		/**v.1.4.3 + A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata). */
 		navigationPropertyKey?: string;
@@ -1023,13 +1030,15 @@ declare namespace DynamicsWebApi {
 	}
 
 	interface Config {
-		/**A String representing a URL to Web API (webApiVersion not required if webApiUrl specified)[not used inside of CRM] */
+		/**The url to Dataverse API server, for example: https://contoso.api.crm.dynamics.com/. It is required when used in Node.js application. */
+		serverUrl?: string;
+		/**@deprecated use serverUrl together with dataApi (if required) instead */
 		webApiUrl?: string;
-		/**The version of Web API to use, for example: "8.1" */
+		/**@deprecated use dataApi.version instead */
 		webApiVersion?: string;
 		/**A String representing a GUID value for the Dynamics 365 system user id */
 		impersonate?: string;
-		/**Impersonates the user. A String representing the GUID value for the Azure active directory object id. */
+		/**Impersonates the user.A String representing the GUID value for the Azure active directory object id. */
 		impersonateAAD?: string;
 		/**A function that is called when a security token needs to be refreshed. */
 		onTokenRefresh?: (callback: OnTokenAcquiredCallback) => void;
@@ -1037,7 +1046,7 @@ declare namespace DynamicsWebApi {
 		includeAnnotations?: string;
 		/**Sets the odata.maxpagesize preference value to request the number of entities returned in the response. */
 		maxPageSize?: string;
-		/**Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.*/
+		/**Sets Prefer header request with value "return=representation".Use this property to return just created or updated entity in a single request.*/
 		returnRepresentation?: boolean;
 		/**Indicates whether to use Entity Logical Names instead of Collection Logical Names.*/
 		useEntityNames?: boolean;
@@ -1045,6 +1054,15 @@ declare namespace DynamicsWebApi {
 		timeout?: number;
 		/**Proxy configuration */
 		proxy?: ProxyConfig;
+		/**Configuration object for Dataverse Web API. The name is based on the url path "data". */
+		dataApi?: ApiConfig;
+	}
+
+	interface ApiConfig {
+		/**Optional. A path to API, for example: "data". */
+		path?: string;
+		/**Optional. API Version, for example: "9.0" or "9.2". */
+		version?: string;
 	}
 
 	/** Callback with an acquired token called by DynamicsWebApi; "token" argument can be a string or an object with a property {accessToken: <token>}  */
