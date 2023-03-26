@@ -1,4 +1,4 @@
-import { DynamicsWebApi } from "../dynamics-web-api";
+import { Config } from "../dynamics-web-api";
 import { Core } from "../types";
 import { InternalConfig } from "./Config";
 /**
@@ -32,9 +32,9 @@ export declare class RequestUtility {
      * @param {Object} [config] - DynamicsWebApi config
      * @returns {ConvertedRequestOptions} Additional options in request
      */
-    static composeUrl(request: Core.InternalRequest, config: DynamicsWebApi.Config, url?: string, joinSymbol?: string): string;
-    static composeHeaders(request: Core.InternalRequest, config: DynamicsWebApi.Config): any;
-    static composePreferHeader(request: Core.InternalRequest, config: DynamicsWebApi.Config): string;
+    static composeUrl(request: Core.InternalRequest, config: Config, url?: string, joinSymbol?: string): string;
+    static composeHeaders(request: Core.InternalRequest, config: Config): any;
+    static composePreferHeader(request: Core.InternalRequest, config: Config): string;
     static convertToBatch(requests: Core.InternalRequest[], config: InternalConfig): Core.InternalBatchRequest;
     static entityNames: any;
     static findCollectionName(entityName: string): string | null;

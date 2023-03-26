@@ -2,7 +2,7 @@
 	"compilerOptions": {
 		"noImplicitAny": false,
 		"module": "commonjs",
-		//"esModuleInterop": true,
+		"esModuleInterop": true,
 		"noEmitOnError": true,
 		"removeComments": false,
 		"sourceMap": true,
@@ -16,6 +16,6 @@
 		"strict": true
 	},
 	// "compileOnSave": true,
-	"include": ["./ts/**/*"],
-	"exclude": ["node_modules", "typesold"]
+	"include": ["./src/**/*"],
+	"exclude": ["node_modules", "typesold", "./tests/"]
 }

@@ -1,21 +1,24 @@
 ﻿//<cookie pagenumber="2" pagingcookie="<cookie page="1"><accountid last="{EF72AE29-B3DE-E611-8102-5065F38A7BF1}" first="{475B158C-541C-E511-80D3-3863BB347BA8}" /></cookie>" istracking="False" />
 //<cookie pagenumber="2" pagingcookie="<cookie page="2"><accountid last="{F972AE29-B3DE-E611-8102-5065F38A7BF1}" first="{F172AE29-B3DE-E611-8102-5065F38A7BF1}" /></cookie>" istracking="False" />
+const serverUrl = "http://testorg.crm.dynamics.com";
+
 global.Xrm = {
 	Page: {
 		context: {
 			getClientUrl: function () {
-				return "http://testorg.crm.dynamics.com";
+				return serverUrl;
 			},
 		},
 	},
 };
 
-var webApiUrl = "http://testorg.crm.dynamics.com/api/data/v8.2/";
-var webApiUrl81 = "http://testorg.crm.dynamics.com/api/data/v8.1/";
-var webApiUrl80 = "http://testorg.crm.dynamics.com/api/data/v8.0/";
-var webApiUrl90 = "http://testorg.crm.dynamics.com/api/data/v9.0/";
-var webApiUrl91 = "http://testorg.crm.dynamics.com/api/data/v9.1/";
-var webApiUrl92 = "http://testorg.crm.dynamics.com/api/data/v9.2/";
+var webApiUrl = `${serverUrl}/api/data/v8.2/`;
+var webApiUrl81 = `${serverUrl}/api/data/v8.1/`;
+var webApiUrl80 = `${serverUrl}/api/data/v8.0/`;
+var webApiUrl90 = `${serverUrl}/api/data/v9.0/`;
+var webApiUrl91 = `${serverUrl}/api/data/v9.1/`;
+var webApiUrl92 = `${serverUrl}/api/data/v9.2/`;
+const searchApiUrl = `${serverUrl}/api/search/v1.0/`;
 
 var dataStubs = {
 	testEntityId: "00000000-0000-0000-0000-000000000001",
@@ -187,6 +190,29 @@ var dataStubs = {
 	downloadFileChunk2: {
 		"@odata.context": "context",
 		value: Buffer.from("micsWebApi!", "utf-8").toString("base64"),
+	},
+	searchMultiple: {
+		querycontext: null,
+		value: [
+			{
+				"@search.score": 25,
+				"@search.highlights": {
+					name: ["{crmhit}test{/crmhit}"],
+				},
+				name: "name1",
+				statecode: ["Active"],
+			},
+			{
+				"@search.score": 22,
+				"@search.highlights": {
+					name: ["{crmhit}test{/crmhit}"],
+				},
+				name: "name2",
+				statecode: ["Active"],
+			},
+		],
+		facets: {},
+		totalrecordcount: -1,
 	},
 	batch:
 		"--dwa_batch_XXX\n" +
@@ -671,6 +697,9 @@ var responseStubs = {
 	webApiUrl: webApiUrl,
 	collectionUrl: "/tests",
 	collection: "tests",
+	searchUrl: "/query",
+	suggestUrl: "/suggest",
+	autocompleteUrl: "/autocomplete",
 	createReturnId: {
 		status: 204,
 		responseHeaders: {
@@ -1232,6 +1261,11 @@ var responseStubs = {
 			"Content-Type": "application/xml",
 		},
 	},
+	searchMultiple: {
+		status: 200,
+		responseText: JSON.stringify(dataStubs.searchMultiple),
+		responseHeaders: dataStubs.defaultResponseHeaders,
+	},
 };
 
 var utils = {
@@ -1251,4 +1285,6 @@ module.exports = {
 	webApiUrl91: webApiUrl91,
 	webApiUrl92: webApiUrl92,
 	utils: utils,
+	searchApiUrl: searchApiUrl,
+	serverUrl: serverUrl,
 };

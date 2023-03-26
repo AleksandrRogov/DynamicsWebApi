@@ -3,7 +3,7 @@
 import { ConfigurationUtility, InternalConfig } from "./utils/Config";
 import { Utility } from "./utils/Utility";
 import { ErrorHelper } from "./helpers/ErrorHelper";
-import { RequestClient } from "./requests/RequestClient";
+import { RequestClient } from "./client/RequestClient";
 import { Core } from "./types";
 
 /**
@@ -16,7 +16,7 @@ export class DynamicsWebApi {
 	private _isBatch = false;
 	private _batchRequestId: string | null = null;
 
-	constructor(config?: DynamicsWebApi.Config) {
+	constructor(config?: Config) {
 		ConfigurationUtility.merge(this._config, config);
 	}
 
@@ -27,7 +27,7 @@ export class DynamicsWebApi {
 	 * @example
 	   dynamicsWebApi.setConfig({ organizationUrl: 'https://contoso.api.dynamics.com/' });
 	 */
-	setConfig = (config: DynamicsWebApi.Config) => ConfigurationUtility.merge(this._config, config);
+	setConfig = (config: Config) => ConfigurationUtility.merge(this._config, config);
 
 	private _makeRequest = (request: Core.InternalRequest): Promise<any> => {
 		request.isBatch = this._isBatch;
@@ -60,7 +60,7 @@ export class DynamicsWebApi {
 	 *}).catch(function (error) {
 	 *});
 	 */
-	create = <TData = any>(request: DynamicsWebApi.CreateRequest<TData>): Promise<TData> => {
+	create = <TData = any>(request: CreateRequest<TData>): Promise<TData> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.create", "request");
 
 		let internalRequest: Core.InternalRequest;
@@ -97,7 +97,7 @@ export class DynamicsWebApi {
 	 *
 	 *});
 	 */
-	retrieve = <T = any>(request: DynamicsWebApi.RetrieveRequest): Promise<T> => {
+	retrieve = <T = any>(request: RetrieveRequest): Promise<T> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieve", "request");
 
 		let internalRequest: Core.InternalRequest;
@@ -123,7 +123,7 @@ export class DynamicsWebApi {
 	 * @param {DWARequest} request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	update = <TData = any>(request: DynamicsWebApi.UpdateRequest<TData>): Promise<TData> => {
+	update = <TData = any>(request: UpdateRequest<TData>): Promise<TData> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.update", "request");
 
 		let internalRequest: Core.InternalRequest;
@@ -171,7 +171,7 @@ export class DynamicsWebApi {
 	 * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	updateSingleProperty = <T = any>(request: DynamicsWebApi.UpdateSinglePropertyRequest): Promise<T> => {
+	updateSingleProperty = <T = any>(request: UpdateSinglePropertyRequest): Promise<T> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.updateSingleProperty", "request");
 		ErrorHelper.parameterCheck(request.fieldValuePair, "DynamicsWebApi.updateSingleProperty", "request.fieldValuePair");
 
@@ -197,7 +197,7 @@ export class DynamicsWebApi {
 	 * @param {DWARequest} request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	deleteRecord = (request: DynamicsWebApi.DeleteRequest): Promise<any> => {
+	deleteRecord = (request: DeleteRequest): Promise<any> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.deleteRecord", "request");
 
 		let internalRequest: Core.InternalRequest;
@@ -233,7 +233,7 @@ export class DynamicsWebApi {
 	 * @param {DWARequest} request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	upsert = <TData = any>(request: DynamicsWebApi.UpsertRequest<TData>): Promise<TData> => {
+	upsert = <TData = any>(request: UpsertRequest<TData>): Promise<TData> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.upsert", "request");
 
 		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
@@ -279,7 +279,7 @@ export class DynamicsWebApi {
 	 *
 	 * @param {any} request - An object that represents all possible options for a current request.
 	 */
-	uploadFile = (request: DynamicsWebApi.UploadRequest): Promise<void> => {
+	uploadFile = (request: UploadRequest): Promise<void> => {
 		ErrorHelper.throwBatchIncompatible("DynamicsWebApi.uploadFile", this._isBatch);
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.uploadFile", "request");
 
@@ -302,7 +302,7 @@ export class DynamicsWebApi {
 		bytesDownloaded: number = 0,
 		// fileSize: number = 0,
 		data: string = ""
-	): Promise<DynamicsWebApi.DownloadResponse> => {
+	): Promise<DownloadResponse> => {
 		// bytesDownloaded = bytesDownloaded || 0;
 		// fileSize = fileSize || 0;
 		// data = data || "";
@@ -332,7 +332,7 @@ export class DynamicsWebApi {
 	 * Download a file from a File Attribute
 	 * @param {any} request - An object that represents all possible options for a current request.
 	 */
-	downloadFile = (request: DynamicsWebApi.DownloadRequest): Promise<DynamicsWebApi.DownloadResponse> => {
+	downloadFile = (request: DownloadRequest): Promise<DownloadResponse> => {
 		ErrorHelper.throwBatchIncompatible("DynamicsWebApi.downloadFile", this._isBatch);
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.downloadFile", "request");
 
@@ -351,10 +351,7 @@ export class DynamicsWebApi {
 	 * @param {string} [nextPageLink] - Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	retrieveMultiple = <T = any>(
-		request: DynamicsWebApi.RetrieveMultipleRequest,
-		nextPageLink?: string
-	): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>> => {
+	retrieveMultiple = <T = any>(request: RetrieveMultipleRequest, nextPageLink?: string): Promise<RetrieveMultipleResponse<T>> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieveMultiple", "request");
 
 		let internalRequest: Core.InternalRequest;
@@ -376,11 +373,7 @@ export class DynamicsWebApi {
 		});
 	};
 
-	private _retrieveAllRequest = <T = any>(
-		request: DynamicsWebApi.RetrieveMultipleRequest,
-		nextPageLink?: string,
-		records: any[] = []
-	): Promise<DynamicsWebApi.AllResponse<T>> => {
+	private _retrieveAllRequest = <T = any>(request: RetrieveMultipleRequest, nextPageLink?: string, records: any[] = []): Promise<AllResponse<T>> => {
 		return this.retrieveMultiple(request, nextPageLink).then((response) => {
 			records = records.concat(response.value);
 
@@ -390,7 +383,7 @@ export class DynamicsWebApi {
 				return this._retrieveAllRequest(request, pageLink, records);
 			}
 
-			const result: DynamicsWebApi.AllResponse<T> = { value: records };
+			const result: AllResponse<T> = { value: records };
 
 			if (response.oDataDeltaLink) {
 				result["@odata.deltaLink"] = response.oDataDeltaLink;
@@ -407,7 +400,7 @@ export class DynamicsWebApi {
 	 * @param {DWARequest} request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	retrieveAll = <T = any>(request: DynamicsWebApi.RetrieveMultipleRequest): Promise<DynamicsWebApi.AllResponse<T>> => {
+	retrieveAll = <T = any>(request: RetrieveMultipleRequest): Promise<AllResponse<T>> => {
 		ErrorHelper.throwBatchIncompatible("DynamicsWebApi.retrieveAll", this._isBatch);
 		return this._retrieveAllRequest(request);
 	};
@@ -418,7 +411,7 @@ export class DynamicsWebApi {
 	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	count = (request: DynamicsWebApi.CountRequest): Promise<number> => {
+	count = (request: CountRequest): Promise<number> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.count", "request");
 
 		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
@@ -444,7 +437,7 @@ export class DynamicsWebApi {
 	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	countAll = (request: DynamicsWebApi.CountAllRequest): Promise<number> => {
+	countAll = (request: CountAllRequest): Promise<number> => {
 		ErrorHelper.throwBatchIncompatible("DynamicsWebApi.countAll", this._isBatch);
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.countAll", "request");
 
@@ -459,7 +452,7 @@ export class DynamicsWebApi {
 	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	fetch = <T = any>(request: DynamicsWebApi.FetchXmlRequest): Promise<DynamicsWebApi.FetchXmlResponse<T>> => {
+	fetch = <T = any>(request: FetchXmlRequest): Promise<FetchXmlResponse<T>> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.fetch", "request");
 
 		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
@@ -501,10 +494,10 @@ export class DynamicsWebApi {
 	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	fetchAll = <T = any>(request: DynamicsWebApi.FetchAllRequest): Promise<DynamicsWebApi.FetchXmlResponse<T>> => {
+	fetchAll = <T = any>(request: FetchAllRequest): Promise<FetchXmlResponse<T>> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.fetchAll", "request");
 
-		const _executeFetchXmlAll = (request: DynamicsWebApi.FetchXmlRequest, records: any[] = []): Promise<DynamicsWebApi.FetchXmlResponse<T>> => {
+		const _executeFetchXmlAll = (request: FetchXmlRequest, records: any[] = []): Promise<FetchXmlResponse<T>> => {
 			// records = records || [];
 
 			return this.fetch(request).then(function (response) {
@@ -531,7 +524,7 @@ export class DynamicsWebApi {
 	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	associate = (request: DynamicsWebApi.AssociateRequest): Promise<void> => {
+	associate = (request: AssociateRequest): Promise<void> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.associate", "request");
 
 		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
@@ -558,7 +551,7 @@ export class DynamicsWebApi {
 	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	disassociate = (request: DynamicsWebApi.DisassociateRequest): Promise<void> => {
+	disassociate = (request: DisassociateRequest): Promise<void> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.disassociate", "request");
 
 		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
@@ -583,7 +576,7 @@ export class DynamicsWebApi {
 	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	associateSingleValued = (request: DynamicsWebApi.AssociateSingleValuedRequest): Promise<void> => {
+	associateSingleValued = (request: AssociateSingleValuedRequest): Promise<void> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.associateSingleValued", "request");
 
 		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
@@ -610,7 +603,7 @@ export class DynamicsWebApi {
 	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	disassociateSingleValued = (request: DynamicsWebApi.DisassociateSingleValuedRequest): Promise<void> => {
+	disassociateSingleValued = (request: DisassociateSingleValuedRequest): Promise<void> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.disassociateSingleValued", "request");
 
 		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
@@ -634,8 +627,8 @@ export class DynamicsWebApi {
 	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	executeUnboundFunction = <T = any>(request: DynamicsWebApi.UnboundFunctionRequest): Promise<T> => {
-		return this._executeFunction<T>(<DynamicsWebApi.BoundFunctionRequest>request, true);
+	executeUnboundFunction = <T = any>(request: UnboundFunctionRequest): Promise<T> => {
+		return this._executeFunction<T>(<BoundFunctionRequest>request, true);
 	};
 
 	/**
@@ -644,11 +637,11 @@ export class DynamicsWebApi {
 	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	executeBoundFunction = <T = any>(request: DynamicsWebApi.BoundFunctionRequest): Promise<T> => {
+	executeBoundFunction = <T = any>(request: BoundFunctionRequest): Promise<T> => {
 		return this._executeFunction<T>(request);
 	};
 
-	private _executeFunction = <T = any>(request: DynamicsWebApi.BoundFunctionRequest, isUnbound: boolean = false): Promise<T> => {
+	private _executeFunction = <T = any>(request: BoundFunctionRequest, isUnbound: boolean = false): Promise<T> => {
 		const functionName = !isUnbound ? "executeBoundFunction" : "executeUnboundFunction";
 
 		ErrorHelper.parameterCheck(request, `DynamicsWebApi.${functionName}`, "request");
@@ -673,8 +666,8 @@ export class DynamicsWebApi {
 	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	executeUnboundAction = <T = any>(request: DynamicsWebApi.UnboundActionRequest): Promise<T> => {
-		return this._executeAction<T>(<DynamicsWebApi.BoundActionRequest>request, true);
+	executeUnboundAction = <T = any>(request: UnboundActionRequest): Promise<T> => {
+		return this._executeAction<T>(<BoundActionRequest>request, true);
 	};
 
 	/**
@@ -683,11 +676,11 @@ export class DynamicsWebApi {
 	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise | Function} D365 Web Api result
 	 */
-	executeBoundAction = <T = any>(request: DynamicsWebApi.BoundActionRequest): Promise<T> => {
+	executeBoundAction = <T = any>(request: BoundActionRequest): Promise<T> => {
 		return this._executeAction<T>(request);
 	};
 
-	private _executeAction = <T = any>(request: DynamicsWebApi.BoundActionRequest, isUnbound: boolean = false): Promise<T> => {
+	private _executeAction = <T = any>(request: BoundActionRequest, isUnbound: boolean = false): Promise<T> => {
 		const functionName = !isUnbound ? "executeBoundAction" : "executeUnboundAction";
 
 		ErrorHelper.parameterCheck(request, `DynamicsWebApi.${functionName}`, "request");
@@ -713,7 +706,7 @@ export class DynamicsWebApi {
 	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	createEntity = <T = any>(request: DynamicsWebApi.CreateEntityRequest): Promise<T> => {
+	createEntity = <T = any>(request: CreateEntityRequest): Promise<T> => {
 		ErrorHelper.parameterCheck(request, `DynamicsWebApi.createEntity`, "request");
 		ErrorHelper.parameterCheck(request.data, "DynamicsWebApi.createEntity", "request.data");
 
@@ -721,7 +714,7 @@ export class DynamicsWebApi {
 		internalRequest.collection = "EntityDefinitions";
 		internalRequest.functionName = "createEntity";
 
-		return this.create(<DynamicsWebApi.CreateRequest>internalRequest);
+		return this.create(<CreateRequest>internalRequest);
 	};
 
 	/**
@@ -730,7 +723,7 @@ export class DynamicsWebApi {
 	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	updateEntity = <T = any>(request: DynamicsWebApi.UpdateEntityRequest): Promise<T> => {
+	updateEntity = <T = any>(request: UpdateEntityRequest): Promise<T> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.updateEntity", "request");
 		ErrorHelper.parameterCheck(request.data, "DynamicsWebApi.updateEntity", "request.data");
 		ErrorHelper.guidParameterCheck(request.data.MetadataId, "DynamicsWebApi.updateEntity", "request.data.MetadataId");
@@ -741,7 +734,7 @@ export class DynamicsWebApi {
 		internalRequest.functionName = "updateEntity";
 		internalRequest.method = "PUT";
 
-		return this.update(<DynamicsWebApi.UpdateRequest>internalRequest);
+		return this.update(<UpdateRequest>internalRequest);
 	};
 
 	/**
@@ -750,7 +743,7 @@ export class DynamicsWebApi {
 	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	retrieveEntity = <T = any>(request: DynamicsWebApi.RetrieveEntityRequest): Promise<T> => {
+	retrieveEntity = <T = any>(request: RetrieveEntityRequest): Promise<T> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieveEntity", "request");
 		ErrorHelper.keyParameterCheck(request.key, "DynamicsWebApi.retrieveEntity", "request.key");
 
@@ -758,7 +751,7 @@ export class DynamicsWebApi {
 		internalRequest.collection = "EntityDefinitions";
 		internalRequest.functionName = "retrieveEntity";
 
-		return this.retrieve(<DynamicsWebApi.RetrieveRequest>internalRequest);
+		return this.retrieve(<RetrieveRequest>internalRequest);
 	};
 
 	/**
@@ -767,13 +760,13 @@ export class DynamicsWebApi {
 	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	retrieveEntities = <T = any>(request?: DynamicsWebApi.RetrieveEntitiesRequest): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>> => {
+	retrieveEntities = <T = any>(request?: RetrieveEntitiesRequest): Promise<RetrieveMultipleResponse<T>> => {
 		const internalRequest: Core.InternalRequest = !request ? {} : Utility.copyObject<Core.InternalRequest>(request);
 
 		internalRequest.collection = "EntityDefinitions";
 		internalRequest.functionName = "retrieveEntities";
 
-		return this.retrieveMultiple(<DynamicsWebApi.RetrieveMultipleRequest>internalRequest);
+		return this.retrieveMultiple(<RetrieveMultipleRequest>internalRequest);
 	};
 
 	/**
@@ -782,7 +775,7 @@ export class DynamicsWebApi {
 	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	createAttribute = <T = any>(request: DynamicsWebApi.CreateAttributeRequest): Promise<T> => {
+	createAttribute = <T = any>(request: CreateAttributeRequest): Promise<T> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.createAttribute", "request");
 		ErrorHelper.parameterCheck(request.data, "DynamicsWebApi.createAttribute", "request.data");
 		ErrorHelper.keyParameterCheck(request.entityKey, "DynamicsWebApi.createAttribute", "request.entityKey");
@@ -793,7 +786,7 @@ export class DynamicsWebApi {
 		internalRequest.navigationProperty = "Attributes";
 		internalRequest.key = request.entityKey;
 
-		return this.create(<DynamicsWebApi.CreateRequest>internalRequest);
+		return this.create(<CreateRequest>internalRequest);
 	};
 
 	/**
@@ -802,7 +795,7 @@ export class DynamicsWebApi {
 	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	updateAttribute = <T = any>(request: DynamicsWebApi.UpdateAttributeRequest): Promise<T> => {
+	updateAttribute = <T = any>(request: UpdateAttributeRequest): Promise<T> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.updateAttribute", "request");
 		ErrorHelper.parameterCheck(request.data, "DynamicsWebApi.updateAttribute", "request.data");
 		ErrorHelper.keyParameterCheck(request.entityKey, "DynamicsWebApi.updateAttribute", "request.entityKey");
@@ -821,7 +814,7 @@ export class DynamicsWebApi {
 		internalRequest.functionName = "updateAttribute";
 		internalRequest.method = "PUT";
 
-		return this.update(<DynamicsWebApi.UpdateRequest>internalRequest);
+		return this.update(<UpdateRequest>internalRequest);
 	};
 
 	/**
@@ -830,7 +823,7 @@ export class DynamicsWebApi {
 	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	retrieveAttributes = <T = any>(request: DynamicsWebApi.RetrieveAttributesRequest): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>> => {
+	retrieveAttributes = <T = any>(request: RetrieveAttributesRequest): Promise<RetrieveMultipleResponse<T>> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieveAttributes", "request");
 		ErrorHelper.keyParameterCheck(request.entityKey, "DynamicsWebApi.retrieveAttributes", "request.entityKey");
 
@@ -845,7 +838,7 @@ export class DynamicsWebApi {
 		internalRequest.key = request.entityKey;
 		internalRequest.functionName = "retrieveAttributes";
 
-		return this.retrieveMultiple(<DynamicsWebApi.RetrieveMultipleRequest>internalRequest);
+		return this.retrieveMultiple(<RetrieveMultipleRequest>internalRequest);
 	};
 
 	/**
@@ -854,7 +847,7 @@ export class DynamicsWebApi {
 	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	retrieveAttribute = <T = any>(request: DynamicsWebApi.RetrieveAttributeRequest): Promise<T> => {
+	retrieveAttribute = <T = any>(request: RetrieveAttributeRequest): Promise<T> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieveAttributes", "request");
 		ErrorHelper.keyParameterCheck(request.entityKey, "DynamicsWebApi.retrieveAttribute", "request.entityKey");
 		ErrorHelper.keyParameterCheck(request.attributeKey, "DynamicsWebApi.retrieveAttribute", "request.attributeKey");
@@ -871,7 +864,7 @@ export class DynamicsWebApi {
 		internalRequest.key = request.entityKey;
 		internalRequest.functionName = "retrieveAttribute";
 
-		return this.retrieve(<DynamicsWebApi.RetrieveRequest>internalRequest);
+		return this.retrieve(<RetrieveRequest>internalRequest);
 	};
 
 	/**
@@ -880,7 +873,7 @@ export class DynamicsWebApi {
 	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	createRelationship = <T = any>(request: DynamicsWebApi.CreateRelationshipRequest): Promise<T> => {
+	createRelationship = <T = any>(request: CreateRelationshipRequest): Promise<T> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.createRelationship", "request");
 		ErrorHelper.parameterCheck(request.data, "DynamicsWebApi.createRelationship", "request.data");
 
@@ -888,7 +881,7 @@ export class DynamicsWebApi {
 		internalRequest.collection = "RelationshipDefinitions";
 		internalRequest.functionName = "createRelationship";
 
-		return this.create(<DynamicsWebApi.CreateRequest>internalRequest);
+		return this.create(<CreateRequest>internalRequest);
 	};
 
 	/**
@@ -897,7 +890,7 @@ export class DynamicsWebApi {
 	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	updateRelationship = <T = any>(request: DynamicsWebApi.UpdateRelationshipRequest): Promise<T> => {
+	updateRelationship = <T = any>(request: UpdateRelationshipRequest): Promise<T> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.updateRelationship", "request");
 		ErrorHelper.parameterCheck(request.data, "DynamicsWebApi.updateRelationship", "request.data");
 		ErrorHelper.guidParameterCheck(request.data.MetadataId, "DynamicsWebApi.updateRelationship", "request.data.MetadataId");
@@ -913,7 +906,7 @@ export class DynamicsWebApi {
 		internalRequest.functionName = "updateRelationship";
 		internalRequest.method = "PUT";
 
-		return this.update(<DynamicsWebApi.UpdateRequest>internalRequest);
+		return this.update(<UpdateRequest>internalRequest);
 	};
 
 	/**
@@ -922,7 +915,7 @@ export class DynamicsWebApi {
 	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	deleteRelationship = (request: DynamicsWebApi.DeleteRelationshipRequest): Promise<any> => {
+	deleteRelationship = (request: DeleteRelationshipRequest): Promise<any> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.deleteRelationship", "request");
 		ErrorHelper.keyParameterCheck(request.key, "DynamicsWebApi.deleteRelationship", "request.key");
 
@@ -930,7 +923,7 @@ export class DynamicsWebApi {
 		internalRequest.collection = "RelationshipDefinitions";
 		internalRequest.functionName = "deleteRelationship";
 
-		return this.deleteRecord(<DynamicsWebApi.DeleteRequest>internalRequest);
+		return this.deleteRecord(<DeleteRequest>internalRequest);
 	};
 
 	/**
@@ -939,7 +932,7 @@ export class DynamicsWebApi {
 	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	retrieveRelationships = <T = any>(request?: DynamicsWebApi.RetrieveRelationshipsRequest): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>> => {
+	retrieveRelationships = <T = any>(request?: RetrieveRelationshipsRequest): Promise<RetrieveMultipleResponse<T>> => {
 		const internalRequest: Core.InternalRequest = !request ? {} : Utility.copyObject<Core.InternalRequest>(request);
 
 		internalRequest.collection = "RelationshipDefinitions";
@@ -952,7 +945,7 @@ export class DynamicsWebApi {
 			}
 		}
 
-		return this.retrieveMultiple(<DynamicsWebApi.RetrieveMultipleRequest>internalRequest);
+		return this.retrieveMultiple(<RetrieveMultipleRequest>internalRequest);
 	};
 
 	/**
@@ -961,7 +954,7 @@ export class DynamicsWebApi {
 	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	retrieveRelationship = <T = any>(request: DynamicsWebApi.RetrieveRelationshipRequest): Promise<T> => {
+	retrieveRelationship = <T = any>(request: RetrieveRelationshipRequest): Promise<T> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieveRelationship", "request");
 		ErrorHelper.keyParameterCheck(request.key, "DynamicsWebApi.retrieveRelationship", "request.key");
 
@@ -974,7 +967,7 @@ export class DynamicsWebApi {
 		internalRequest.navigationProperty = request.castType;
 		internalRequest.functionName = "retrieveRelationship";
 
-		return this.retrieve(<DynamicsWebApi.RetrieveRequest>internalRequest);
+		return this.retrieve(<RetrieveRequest>internalRequest);
 	};
 
 	/**
@@ -983,7 +976,7 @@ export class DynamicsWebApi {
 	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	createGlobalOptionSet = <T = any>(request: DynamicsWebApi.CreateGlobalOptionSetRequest): Promise<T> => {
+	createGlobalOptionSet = <T = any>(request: CreateGlobalOptionSetRequest): Promise<T> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.createGlobalOptionSet", "request");
 		ErrorHelper.parameterCheck(request.data, "DynamicsWebApi.createGlobalOptionSet", "request.data");
 
@@ -991,7 +984,7 @@ export class DynamicsWebApi {
 		internalRequest.collection = "GlobalOptionSetDefinitions";
 		internalRequest.functionName = "createGlobalOptionSet";
 
-		return this.create(<DynamicsWebApi.CreateRequest>internalRequest);
+		return this.create(<CreateRequest>internalRequest);
 	};
 
 	/**
@@ -1000,7 +993,7 @@ export class DynamicsWebApi {
 	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	updateGlobalOptionSet = <T = any>(request: DynamicsWebApi.UpdateGlobalOptionSetRequest): Promise<T> => {
+	updateGlobalOptionSet = <T = any>(request: UpdateGlobalOptionSetRequest): Promise<T> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.updateGlobalOptionSet", "request");
 		ErrorHelper.parameterCheck(request.data, "DynamicsWebApi.updateGlobalOptionSet", "request.data");
 		ErrorHelper.guidParameterCheck(request.data.MetadataId, "DynamicsWebApi.updateGlobalOptionSet", "request.data.MetadataId");
@@ -1015,7 +1008,7 @@ export class DynamicsWebApi {
 		internalRequest.functionName = "updateGlobalOptionSet";
 		internalRequest.method = "PUT";
 
-		return this.update(<DynamicsWebApi.UpdateRequest>internalRequest);
+		return this.update(<UpdateRequest>internalRequest);
 	};
 
 	/**
@@ -1024,14 +1017,14 @@ export class DynamicsWebApi {
 	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	deleteGlobalOptionSet = (request: DynamicsWebApi.DeleteGlobalOptionSetRequest): Promise<any> => {
+	deleteGlobalOptionSet = (request: DeleteGlobalOptionSetRequest): Promise<any> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.deleteGlobalOptionSet", "request");
 
 		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
 		internalRequest.collection = "GlobalOptionSetDefinitions";
 		internalRequest.functionName = "deleteGlobalOptionSet";
 
-		return this.deleteRecord(<DynamicsWebApi.DeleteRequest>internalRequest);
+		return this.deleteRecord(<DeleteRequest>internalRequest);
 	};
 
 	/**
@@ -1040,7 +1033,7 @@ export class DynamicsWebApi {
 	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	retrieveGlobalOptionSet = <T = any>(request: DynamicsWebApi.RetrieveGlobalOptionSetRequest): Promise<T> => {
+	retrieveGlobalOptionSet = <T = any>(request: RetrieveGlobalOptionSetRequest): Promise<T> => {
 		ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieveGlobalOptionSet", "request");
 
 		if (request.castType) {
@@ -1052,7 +1045,7 @@ export class DynamicsWebApi {
 		internalRequest.navigationProperty = request.castType;
 		internalRequest.functionName = "retrieveGlobalOptionSet";
 
-		return this.retrieve(<DynamicsWebApi.RetrieveRequest>internalRequest);
+		return this.retrieve(<RetrieveRequest>internalRequest);
 	};
 
 	/**
@@ -1061,7 +1054,7 @@ export class DynamicsWebApi {
 	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	retrieveGlobalOptionSets = <T = any>(request?: DynamicsWebApi.RetrieveGlobalOptionSetsRequest): Promise<DynamicsWebApi.RetrieveMultipleResponse<T>> => {
+	retrieveGlobalOptionSets = <T = any>(request?: RetrieveGlobalOptionSetsRequest): Promise<RetrieveMultipleResponse<T>> => {
 		const internalRequest: Core.InternalRequest = !request ? {} : Utility.copyObject<Core.InternalRequest>(request);
 
 		internalRequest.collection = "GlobalOptionSetDefinitions";
@@ -1072,7 +1065,7 @@ export class DynamicsWebApi {
 			internalRequest.navigationProperty = request.castType;
 		}
 
-		return this.retrieveMultiple(<DynamicsWebApi.RetrieveMultipleRequest>internalRequest);
+		return this.retrieveMultiple(<RetrieveMultipleRequest>internalRequest);
 	};
 
 	/**
@@ -1080,7 +1073,7 @@ export class DynamicsWebApi {
 	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise<string>} Unformatted and unparsed CSDL $metadata document.
 	 */
-	retrieveCsdlMetadata = (request?: DynamicsWebApi.CsdlMetadataRequest): Promise<string> => {
+	retrieveCsdlMetadata = (request?: CsdlMetadataRequest): Promise<string> => {
 		const internalRequest: Core.InternalRequest = !request ? {} : Utility.copyObject<Core.InternalRequest>(request);
 
 		internalRequest.collection = "$metadata";
@@ -1090,6 +1083,26 @@ export class DynamicsWebApi {
 			ErrorHelper.boolParameterCheck(request.addAnnotations, "DynamicsWebApi.retrieveCsdlMetadata", "request.addAnnotations");
 			internalRequest.includeAnnotations = "*";
 		}
+
+		return this._makeRequest(internalRequest).then((response) => {
+			return response.data;
+		});
+	};
+
+	search = <TValue = any>(request: SearchRequest): Promise<SearchResponse<TValue>> => {
+		ErrorHelper.parameterCheck(request, "DynamicsWebApi.search", "request");
+		ErrorHelper.parameterCheck(request.query, "DynamicsWebApi.search", "request.query");
+		ErrorHelper.stringParameterCheck(request.query.search, "DynamicsWebApi.search", "request.query.search");
+		ErrorHelper.maxLengthStringParameterCheck(request.query.search, "DynamicsWebApi.search", "request.query.search", 100);
+
+		const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+		internalRequest.collection = "query";
+		internalRequest.functionName = "search";
+		internalRequest.method = "POST";
+		internalRequest.data = internalRequest.query;
+		internalRequest.apiConfig = this._config.searchApi;
+
+		delete internalRequest.query;
 
 		return this._makeRequest(internalRequest).then((response) => {
 			return response.data;
@@ -1110,7 +1123,7 @@ export class DynamicsWebApi {
 	 * @param request - An object that represents all possible options for a current request.
 	 * @returns {Promise} D365 Web Api result
 	 */
-	executeBatch = (request?: DynamicsWebApi.BaseRequest): Promise<any[]> => {
+	executeBatch = (request?: BaseRequest): Promise<any[]> => {
 		ErrorHelper.throwBatchNotStarted(this._isBatch);
 
 		const internalRequest: Core.InternalRequest = !request ? {} : Utility.copyObject<Core.InternalRequest>(request);
@@ -1137,7 +1150,7 @@ export class DynamicsWebApi {
 	 */
 	initializeInstance = (config) => new DynamicsWebApi(config || this._config);
 
-	utility = {
+	Utility = {
 		/**
 		 * Searches for a collection name by provided entity name in a cached entity metadata.
 		 * The returned collection name can be null.
@@ -1175,569 +1188,606 @@ export class DynamicsWebApi {
  */
 //module.exports = DynamicsWebApi;
 
-export declare namespace DynamicsWebApi {
-	export interface Expand {
-		/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
-		select?: string[];
-		/**Use the $filter system query option to set criteria for which entities will be returned. */
-		filter?: string;
-		/**Limit the number of results returned by using the $top system query option.Do not use $top with $count! */
-		top?: number;
-		/**An Array(of Strings) representing the order in which items are returned using the $orderby system query option.Use the asc or desc suffix to specify ascending or descending order respectively.The default is ascending if the suffix isn't applied. */
-		orderBy?: string[];
-		/**A name of a single-valued navigation property which needs to be expanded. */
-		property?: string;
-		/**An Array of Expand Objects representing the $expand Query Option value to control which related records need to be returned. */
-		expand?: Expand[];
-	}
+export interface Expand {
+	/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+	select?: string[];
+	/**Use the $filter system query option to set criteria for which entities will be returned. */
+	filter?: string;
+	/**Limit the number of results returned by using the $top system query option.Do not use $top with $count! */
+	top?: number;
+	/**An Array(of Strings) representing the order in which items are returned using the $orderby system query option.Use the asc or desc suffix to specify ascending or descending order respectively.The default is ascending if the suffix isn't applied. */
+	orderBy?: string[];
+	/**A name of a single-valued navigation property which needs to be expanded. */
+	property?: string;
+	/**An Array of Expand Objects representing the $expand Query Option value to control which related records need to be returned. */
+	expand?: Expand[];
+}
 
-	export interface BaseRequest {
-		/**XHR requests only! Indicates whether the requests should be made synchronously or asynchronously.Default value is 'true'(asynchronously). */
-		async?: boolean;
-		/**Impersonates a user based on their systemuserid by adding "MSCRMCallerID" header. A String representing the GUID value for the Dynamics 365 systemuserid. */
-		impersonate?: string;
-		/**Impersonates a user based on their Azure Active Directory (AAD) object id by passing that value along with the header "CallerObjectId". A String should represent a GUID value. */
-		impersonateAAD?: string;
-		/**If set to 'true', DynamicsWebApi adds a request header 'Cache-Control: no-cache'.Default value is 'false'. */
-		noCache?: boolean;
-		/** Authorization Token. If set, onTokenRefresh will not be called. */
-		token?: string;
-		/**Sets a number of milliseconds before a request times out. */
-		timeout?: number;
-	}
+export interface BaseRequest {
+	/**XHR requests only! Indicates whether the requests should be made synchronously or asynchronously.Default value is 'true'(asynchronously). */
+	async?: boolean;
+	/**Impersonates a user based on their systemuserid by adding "MSCRMCallerID" header. A String representing the GUID value for the Dynamics 365 systemuserid. */
+	impersonate?: string;
+	/**Impersonates a user based on their Azure Active Directory (AAD) object id by passing that value along with the header "CallerObjectId". A String should represent a GUID value. */
+	impersonateAAD?: string;
+	/**If set to 'true', DynamicsWebApi adds a request header 'Cache-Control: no-cache'.Default value is 'false'. */
+	noCache?: boolean;
+	/** Authorization Token. If set, onTokenRefresh will not be called. */
+	token?: string;
+	/**Sets a number of milliseconds before a request times out. */
+	timeout?: number;
+}
 
-	export interface Request extends BaseRequest {
-		/**A name of the Entity Collection or Entity Logical name. */
-		collection: string;
-	}
+export interface Request extends BaseRequest {
+	/**A name of the Entity Collection or Entity Logical name. */
+	collection: string;
+}
 
-	export interface CRUDRequest extends Request {
-		/**A String representing collection record's Primary Key (GUID) or Alternate Key(s). */
-		key?: string;
-	}
+export interface CRUDRequest extends Request {
+	/**A String representing collection record's Primary Key (GUID) or Alternate Key(s). */
+	key?: string;
+}
 
-	export interface CountRequest extends Request {
-		/**Use the $filter system query option to set criteria for which entities will be returned. */
-		filter?: string;
-	}
+export interface CountRequest extends Request {
+	/**Use the $filter system query option to set criteria for which entities will be returned. */
+	filter?: string;
+}
 
-	export interface CountAllRequest extends CountRequest {
-		/**An Array (of strings) representing the $select OData System Query Option to control which attributes will be returned. */
-		select?: string[];
-	}
+export interface CountAllRequest extends CountRequest {
+	/**An Array (of strings) representing the $select OData System Query Option to control which attributes will be returned. */
+	select?: string[];
+}
 
-	export interface FetchAllRequest extends Request {
-		/**Sets FetchXML - a proprietary query language that provides capabilities to perform aggregation. */
-		fetchXml: string;
-		/**Sets Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie */
-		includeAnnotations?: string;
-	}
+export interface FetchAllRequest extends Request {
+	/**Sets FetchXML - a proprietary query language that provides capabilities to perform aggregation. */
+	fetchXml: string;
+	/**Sets Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types. For example: * or Microsoft.Dynamics.CRM.fetchxmlpagingcookie */
+	includeAnnotations?: string;
+}
 
-	export interface FetchXmlRequest extends FetchAllRequest {
-		/**Page number. */
-		pageNumber?: number;
-		/**Paging cookie. To retrive the first page, pagingCookie must be null. */
-		pagingCookie?: string;
-	}
+export interface FetchXmlRequest extends FetchAllRequest {
+	/**Page number. */
+	pageNumber?: number;
+	/**Paging cookie. To retrive the first page, pagingCookie must be null. */
+	pagingCookie?: string;
+}
 
-	export interface CreateRequest<T = any> extends CRUDRequest {
-		/**v.1.7.5+ If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. */
-		bypassCustomPluginExecution?: boolean;
-		/**Web API v9+ only! Boolean that enables duplicate detection. */
-		duplicateDetection?: boolean;
-		/**A JavaScript object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single-valued navigation properties). */
-		data?: T;
-		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
-		expand?: Expand[];
-		/**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types. */
-		includeAnnotations?: string;
-		/**A String representing the name of a single - valued navigation property.Useful when needed to retrieve information about a related record in a single request. */
-		navigationProperty?: string;
-		/**A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata). */
-		navigationPropertyKey?: string;
-		/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
-		select?: string[];
-		/**Sets Prefer header request with value "return=representation".Use this property to return just created or updated entity in a single request. */
-		returnRepresentation?: boolean;
-		/**BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */
-		contentId?: string;
-		/**v.1.7.7+ A unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. */
-		partitionId?: string;
-	}
+export interface CreateRequest<T = any> extends CRUDRequest {
+	/**v.1.7.5+ If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. */
+	bypassCustomPluginExecution?: boolean;
+	/**Web API v9+ only! Boolean that enables duplicate detection. */
+	duplicateDetection?: boolean;
+	/**A JavaScript object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single-valued navigation properties). */
+	data?: T;
+	/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
+	expand?: Expand[];
+	/**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types. */
+	includeAnnotations?: string;
+	/**A String representing the name of a single - valued navigation property.Useful when needed to retrieve information about a related record in a single request. */
+	navigationProperty?: string;
+	/**A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata). */
+	navigationPropertyKey?: string;
+	/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+	select?: string[];
+	/**Sets Prefer header request with value "return=representation".Use this property to return just created or updated entity in a single request. */
+	returnRepresentation?: boolean;
+	/**BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */
+	contentId?: string;
+	/**v.1.7.7+ A unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. */
+	partitionId?: string;
+}
 
-	export interface UpdateRequestBase<T = any> extends CRUDRequest {
-		/**v.1.7.5+ If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. */
-		bypassCustomPluginExecution?: boolean;
-		/**Web API v9+ only! Boolean that enables duplicate detection. */
-		duplicateDetection?: boolean;
-		/**A JavaScript object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single-valued navigation properties). */
-		data?: T;
-		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
-		expand?: Expand[];
-		/**Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests.*/
-		ifmatch?: string;
-		/**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types. */
-		includeAnnotations?: string;
-		/**Sets Prefer header request with value "return=representation".Use this property to return just created or updated entity in a single request. */
-		returnRepresentation?: boolean;
-		/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
-		select?: string[];
-		/**BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */
-		contentId?: string;
-		/**Casts the AttributeMetadata to a specific type. (Used in requests to Attribute Metadata). */
-		metadataAttributeType?: string;
-		/**A String representing the name of a single - valued navigation property.Useful when needed to retrieve information about a related record in a single request. */
-		navigationProperty?: string;
-		/**A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata). */
-		navigationPropertyKey?: string;
-		/**v.1.7.7+ A unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. */
-		partitionId?: string;
-	}
+export interface UpdateRequestBase<T = any> extends CRUDRequest {
+	/**v.1.7.5+ If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. */
+	bypassCustomPluginExecution?: boolean;
+	/**Web API v9+ only! Boolean that enables duplicate detection. */
+	duplicateDetection?: boolean;
+	/**A JavaScript object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single-valued navigation properties). */
+	data?: T;
+	/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
+	expand?: Expand[];
+	/**Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests.*/
+	ifmatch?: string;
+	/**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types. */
+	includeAnnotations?: string;
+	/**Sets Prefer header request with value "return=representation".Use this property to return just created or updated entity in a single request. */
+	returnRepresentation?: boolean;
+	/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+	select?: string[];
+	/**BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */
+	contentId?: string;
+	/**Casts the AttributeMetadata to a specific type. (Used in requests to Attribute Metadata). */
+	metadataAttributeType?: string;
+	/**A String representing the name of a single - valued navigation property.Useful when needed to retrieve information about a related record in a single request. */
+	navigationProperty?: string;
+	/**A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata). */
+	navigationPropertyKey?: string;
+	/**v.1.7.7+ A unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. */
+	partitionId?: string;
+}
 
-	export interface UpdateRequest<T = any> extends UpdateRequestBase<T> {
-		/**If set to 'true', DynamicsWebApi adds a request header 'MSCRM.MergeLabels: true'. Default value is 'false' */
-		mergeLabels?: boolean;
-	}
+export interface UpdateRequest<T = any> extends UpdateRequestBase<T> {
+	/**If set to 'true', DynamicsWebApi adds a request header 'MSCRM.MergeLabels: true'. Default value is 'false' */
+	mergeLabels?: boolean;
+}
 
-	export interface UpdateSinglePropertyRequest extends CRUDRequest {
-		/**Object with a logical name of the field as a key and a value to update with. Example: {subject: "Update Record"} */
-		fieldValuePair: { [key: string]: any };
-		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
-		expand?: Expand[];
-		/**Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests.*/
-		ifmatch?: string;
-		/**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types. */
-		includeAnnotations?: string;
-		/**Sets Prefer header request with value "return=representation".Use this property to return just created or updated entity in a single request. */
-		returnRepresentation?: boolean;
-		/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
-		select?: string[];
-		/**BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */
-		contentId?: string;
-	}
+export interface UpdateSinglePropertyRequest extends CRUDRequest {
+	/**Object with a logical name of the field as a key and a value to update with. Example: {subject: "Update Record"} */
+	fieldValuePair: { [key: string]: any };
+	/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
+	expand?: Expand[];
+	/**Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests.*/
+	ifmatch?: string;
+	/**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types. */
+	includeAnnotations?: string;
+	/**Sets Prefer header request with value "return=representation".Use this property to return just created or updated entity in a single request. */
+	returnRepresentation?: boolean;
+	/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+	select?: string[];
+	/**BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */
+	contentId?: string;
+}
 
-	export interface UpsertRequest<T = any> extends UpdateRequestBase<T> {
-		/**Sets If-None-Match header value that enables to use conditional retrieval in applicable requests. */
-		ifnonematch?: string;
-	}
+export interface UpsertRequest<T = any> extends UpdateRequestBase<T> {
+	/**Sets If-None-Match header value that enables to use conditional retrieval in applicable requests. */
+	ifnonematch?: string;
+}
 
-	export interface DeleteRequest extends CRUDRequest {
-		/**v.1.7.5+ If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. */
-		bypassCustomPluginExecution?: boolean;
-		/**Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests.*/
-		ifmatch?: string;
-		/**BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */
-		contentId?: string;
-		/**Field name that needs to be cleared (for example File Field) */
-		fieldName?: string;
-	}
+export interface DeleteRequest extends CRUDRequest {
+	/**v.1.7.5+ If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. */
+	bypassCustomPluginExecution?: boolean;
+	/**Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests.*/
+	ifmatch?: string;
+	/**BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */
+	contentId?: string;
+	/**Field name that needs to be cleared (for example File Field) */
+	fieldName?: string;
+}
 
-	export interface RetrieveRequest extends CRUDRequest {
-		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
-		expand?: Expand[];
-		/**Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests.*/
-		ifmatch?: string;
-		/**Sets If-None-Match header value that enables to use conditional retrieval in applicable requests. */
-		ifnonematch?: string;
-		/**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types. */
-		includeAnnotations?: string;
-		/**Casts the AttributeMetadata to a specific type. (Used in requests to Attribute Metadata). */
-		metadataAttributeType?: string;
-		/**A String representing the name of a single - valued navigation property.Useful when needed to retrieve information about a related record in a single request. */
-		navigationProperty?: string;
-		/**A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata). */
-		navigationPropertyKey?: string;
-		/**A String representing the GUID value of the saved query. */
-		savedQuery?: string;
-		/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
-		select?: string[];
-		/**A String representing the GUID value of the user query. */
-		userQuery?: string;
-		/**v.1.7.7+ A unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. */
-		partitionId?: string;
-	}
+export interface RetrieveRequest extends CRUDRequest {
+	/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
+	expand?: Expand[];
+	/**Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests.*/
+	ifmatch?: string;
+	/**Sets If-None-Match header value that enables to use conditional retrieval in applicable requests. */
+	ifnonematch?: string;
+	/**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types. */
+	includeAnnotations?: string;
+	/**Casts the AttributeMetadata to a specific type. (Used in requests to Attribute Metadata). */
+	metadataAttributeType?: string;
+	/**A String representing the name of a single - valued navigation property.Useful when needed to retrieve information about a related record in a single request. */
+	navigationProperty?: string;
+	/**A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata). */
+	navigationPropertyKey?: string;
+	/**A String representing the GUID value of the saved query. */
+	savedQuery?: string;
+	/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+	select?: string[];
+	/**A String representing the GUID value of the user query. */
+	userQuery?: string;
+	/**v.1.7.7+ A unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. */
+	partitionId?: string;
+}
 
-	export interface RetrieveMultipleRequest extends Request {
-		/**Use the $apply to aggregate and group your data dynamically */
-		apply?: string;
-		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
-		expand?: Expand[];
-		/**Boolean that sets the $count system query option with a value of true to include a count of entities that match the filter criteria up to 5000(per page).Do not use $top with $count! */
-		count?: boolean;
-		/**Use the $filter system query option to set criteria for which entities will be returned. */
-		filter?: string;
-		/**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types. */
-		includeAnnotations?: string;
-		/**Sets the odata.maxpagesize preference value to request the number of entities returned in the response. */
-		maxPageSize?: number;
-		/**An Array(of string) representing the order in which items are returned using the $orderby system query option.Use the asc or desc suffix to specify ascending or descending order respectively.The default is ascending if the suffix isn't applied. */
-		orderBy?: string[];
-		/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
-		select?: string[];
-		/**Limit the number of results returned by using the $top system query option.Do not use $top with $count! */
-		top?: number;
-		/**Sets Prefer header with value 'odata.track-changes' to request that a delta link be returned which can subsequently be used to retrieve entity changes. */
-		trackChanges?: boolean;
-		/**v.1.7.7+ A unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. */
-		partitionId?: string;
-		/**v.1.7.7+ Additional query parameters that either have not been implemented yet or they are parameter aliases for "$filter" and "$orderBy". Important! These parameters ARE NOT URI encoded! */
-		queryParams?: string[];
-	}
+export interface RetrieveMultipleRequest extends Request {
+	/**Use the $apply to aggregate and group your data dynamically */
+	apply?: string;
+	/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
+	expand?: Expand[];
+	/**Boolean that sets the $count system query option with a value of true to include a count of entities that match the filter criteria up to 5000(per page).Do not use $top with $count! */
+	count?: boolean;
+	/**Use the $filter system query option to set criteria for which entities will be returned. */
+	filter?: string;
+	/**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types. */
+	includeAnnotations?: string;
+	/**Sets the odata.maxpagesize preference value to request the number of entities returned in the response. */
+	maxPageSize?: number;
+	/**An Array(of string) representing the order in which items are returned using the $orderby system query option.Use the asc or desc suffix to specify ascending or descending order respectively.The default is ascending if the suffix isn't applied. */
+	orderBy?: string[];
+	/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+	select?: string[];
+	/**Limit the number of results returned by using the $top system query option.Do not use $top with $count! */
+	top?: number;
+	/**Sets Prefer header with value 'odata.track-changes' to request that a delta link be returned which can subsequently be used to retrieve entity changes. */
+	trackChanges?: boolean;
+	/**v.1.7.7+ A unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. */
+	partitionId?: string;
+	/**v.1.7.7+ Additional query parameters that either have not been implemented yet or they are parameter aliases for "$filter" and "$orderBy". Important! These parameters ARE NOT URI encoded! */
+	queryParams?: string[];
+}
 
-	export interface AssociateRequest extends Request {
-		/**Primary entity record id/key. */
-		primaryKey: string;
-		/**Relationship name. */
-		relationshipName: string;
-		/**Related name of the Entity Collection or Entity Logical name. */
-		relatedCollection: string;
-		/**Related entity record id/key. */
-		relatedKey: string;
-	}
+export interface AssociateRequest extends Request {
+	/**Primary entity record id/key. */
+	primaryKey: string;
+	/**Relationship name. */
+	relationshipName: string;
+	/**Related name of the Entity Collection or Entity Logical name. */
+	relatedCollection: string;
+	/**Related entity record id/key. */
+	relatedKey: string;
+}
 
-	export interface AssociateSingleValuedRequest extends Request {
-		/**Primary entity record id/key. */
-		primaryKey: string;
-		/**Navigation property name. */
-		navigationProperty: string;
-		/**Related name of the Entity Collection or Entity Logical name. */
-		relatedCollection: string;
-		/**Related entity record id/key. */
-		relatedKey: string;
-	}
+export interface AssociateSingleValuedRequest extends Request {
+	/**Primary entity record id/key. */
+	primaryKey: string;
+	/**Navigation property name. */
+	navigationProperty: string;
+	/**Related name of the Entity Collection or Entity Logical name. */
+	relatedCollection: string;
+	/**Related entity record id/key. */
+	relatedKey: string;
+}
 
-	export interface DisassociateRequest extends Request {
-		/**Primary entity record id/key. */
-		primaryKey: string;
-		/**Relationship name. */
-		relationshipName: string;
-		/**Related entity record id/key. */
-		relatedKey: string;
-	}
+export interface DisassociateRequest extends Request {
+	/**Primary entity record id/key. */
+	primaryKey: string;
+	/**Relationship name. */
+	relationshipName: string;
+	/**Related entity record id/key. */
+	relatedKey: string;
+}
 
-	export interface DisassociateSingleValuedRequest extends Request {
-		/**Primary entity record id/key. */
-		primaryKey: string;
-		/**Navigation property name. */
-		navigationProperty: string;
-	}
+export interface DisassociateSingleValuedRequest extends Request {
+	/**Primary entity record id/key. */
+	primaryKey: string;
+	/**Navigation property name. */
+	navigationProperty: string;
+}
 
-	export interface UnboundFunctionRequest extends BaseRequest {
-		/**Name of the function. */
-		functionName: string;
-		/**Function's input parameters. Example: { param1: "test", param2: 3 }. */
-		parameters?: any;
-	}
+export interface UnboundFunctionRequest extends BaseRequest {
+	/**Name of the function. */
+	functionName: string;
+	/**Function's input parameters. Example: { param1: "test", param2: 3 }. */
+	parameters?: any;
+}
 
-	export interface BoundFunctionRequest extends UnboundFunctionRequest, Request {
-		/**A String representing the GUID value for the record. */
-		id?: string;
-	}
+export interface BoundFunctionRequest extends UnboundFunctionRequest, Request {
+	/**A String representing the GUID value for the record. */
+	id?: string;
+}
 
-	export interface UnboundActionRequest extends BaseRequest {
-		/**A name of the Web API action. */
-		actionName: string;
-		/**A JavaScript object that represents a Dynamics 365 action. */
-		action?: any;
-	}
+export interface UnboundActionRequest extends BaseRequest {
+	/**A name of the Web API action. */
+	actionName: string;
+	/**A JavaScript object that represents a Dynamics 365 action. */
+	action?: any;
+}
 
-	export interface BoundActionRequest extends UnboundActionRequest, Request {
-		/**A String representing the GUID value for the record. */
-		id?: string;
-	}
+export interface BoundActionRequest extends UnboundActionRequest, Request {
+	/**A String representing the GUID value for the record. */
+	id?: string;
+}
 
-	export interface CreateEntityRequest extends BaseRequest {
-		/**An object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single-valued navigation properties). */
-		data: any;
-	}
+export interface CreateEntityRequest extends BaseRequest {
+	/**An object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single-valued navigation properties). */
+	data: any;
+}
 
-	export interface UpdateEntityRequest extends CRUDRequest {
-		/**An object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single-valued navigation properties). */
-		data: any;
-		/**Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false. */
-		mergeLabels?: boolean;
-	}
+export interface UpdateEntityRequest extends CRUDRequest {
+	/**An object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single-valued navigation properties). */
+	data: any;
+	/**Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false. */
+	mergeLabels?: boolean;
+}
 
-	export interface RetrieveEntityRequest extends BaseRequest {
-		/**An Entity MetadataId or Alternate Key (such as LogicalName). */
-		key: string;
-		/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
-		select?: string[];
-		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
-		expand?: Expand[];
-	}
+export interface RetrieveEntityRequest extends BaseRequest {
+	/**An Entity MetadataId or Alternate Key (such as LogicalName). */
+	key: string;
+	/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+	select?: string[];
+	/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
+	expand?: Expand[];
+}
 
-	export interface RetrieveEntitiesRequest extends BaseRequest {
-		/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
-		select?: string[];
-		/**Use the $filter system query option to set criteria for which entities will be returned. */
-		filter?: string;
-		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
-		expand?: Expand[];
-	}
+export interface RetrieveEntitiesRequest extends BaseRequest {
+	/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+	select?: string[];
+	/**Use the $filter system query option to set criteria for which entities will be returned. */
+	filter?: string;
+	/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
+	expand?: Expand[];
+}
 
-	export interface CreateAttributeRequest extends BaseRequest {
-		/**An Entity MetadataId or Alternate Key (such as LogicalName). */
-		entityKey: string;
-		/**Attribute metadata object. */
-		data: any;
-	}
+export interface CreateAttributeRequest extends BaseRequest {
+	/**An Entity MetadataId or Alternate Key (such as LogicalName). */
+	entityKey: string;
+	/**Attribute metadata object. */
+	data: any;
+}
 
-	export interface UpdateAttributeRequest extends CreateAttributeRequest {
-		/**Use this parameter to cast the Attribute to a specific type. */
-		castType?: string;
-		/**Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false. */
-		mergeLabels?: boolean;
-	}
+export interface UpdateAttributeRequest extends CreateAttributeRequest {
+	/**Use this parameter to cast the Attribute to a specific type. */
+	castType?: string;
+	/**Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false. */
+	mergeLabels?: boolean;
+}
 
-	export interface RetrieveAttributesRequest extends BaseRequest {
-		/**An Entity MetadataId or Alternate Key (such as LogicalName). */
-		entityKey: string;
-		/**Use this parameter to cast the Attribute to a specific type. */
-		castType?: string;
-		/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
-		select?: string[];
-		/**Use the $filter system query option to set criteria for which entities will be returned. */
-		filter?: string;
-		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
-		expand?: Expand[];
-	}
+export interface RetrieveAttributesRequest extends BaseRequest {
+	/**An Entity MetadataId or Alternate Key (such as LogicalName). */
+	entityKey: string;
+	/**Use this parameter to cast the Attribute to a specific type. */
+	castType?: string;
+	/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+	select?: string[];
+	/**Use the $filter system query option to set criteria for which entities will be returned. */
+	filter?: string;
+	/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
+	expand?: Expand[];
+}
 
-	export interface RetrieveAttributeRequest extends BaseRequest {
-		/**An Attribute MetadataId or Alternate Key (such as LogicalName). */
-		attributeKey: string;
-		/**An Entity MetadataId or Alternate Key (such as LogicalName). */
-		entityKey: string;
-		/**Use this parameter to cast the Attribute to a specific type. */
-		castType?: string;
-		/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
-		select?: string[];
-		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
-		expand?: Expand[];
-	}
+export interface RetrieveAttributeRequest extends BaseRequest {
+	/**An Attribute MetadataId or Alternate Key (such as LogicalName). */
+	attributeKey: string;
+	/**An Entity MetadataId or Alternate Key (such as LogicalName). */
+	entityKey: string;
+	/**Use this parameter to cast the Attribute to a specific type. */
+	castType?: string;
+	/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+	select?: string[];
+	/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
+	expand?: Expand[];
+}
 
-	export interface CreateRelationshipRequest extends BaseRequest {
-		/**Relationship Definition. */
-		data: any;
-	}
+export interface CreateRelationshipRequest extends BaseRequest {
+	/**Relationship Definition. */
+	data: any;
+}
 
-	export interface UpdateRelationshipRequest extends CreateRelationshipRequest {
-		/**Use this parameter to cast the Relationship metadata to a specific type. */
-		castType?: string;
-		/**Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false. */
-		mergeLabels?: boolean;
-	}
+export interface UpdateRelationshipRequest extends CreateRelationshipRequest {
+	/**Use this parameter to cast the Relationship metadata to a specific type. */
+	castType?: string;
+	/**Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false. */
+	mergeLabels?: boolean;
+}
 
-	export interface DeleteRelationshipRequest extends BaseRequest {
-		/**A Relationship MetadataId or Alternate Key (such as LogicalName). */
-		key: string;
-	}
+export interface DeleteRelationshipRequest extends BaseRequest {
+	/**A Relationship MetadataId or Alternate Key (such as LogicalName). */
+	key: string;
+}
 
-	export interface RetrieveRelationshipsRequest extends BaseRequest {
-		/**Use this parameter to cast the Relationship metadata to a specific type. */
-		castType?: string;
-		/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
-		select?: string[];
-		/**Use the $filter system query option to set criteria for which entities will be returned. */
-		filter?: string;
-		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
-		expand?: Expand[];
-	}
+export interface RetrieveRelationshipsRequest extends BaseRequest {
+	/**Use this parameter to cast the Relationship metadata to a specific type. */
+	castType?: string;
+	/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+	select?: string[];
+	/**Use the $filter system query option to set criteria for which entities will be returned. */
+	filter?: string;
+	/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
+	expand?: Expand[];
+}
 
-	export interface RetrieveRelationshipRequest extends BaseRequest {
-		/**A Relationship MetadataId or Alternate Key (such as LogicalName). */
-		key: string;
-		/**Use this parameter to cast the Relationship metadata to a specific type. */
-		castType?: string;
-		/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
-		select?: string[];
-		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
-		expand?: Expand[];
-	}
+export interface RetrieveRelationshipRequest extends BaseRequest {
+	/**A Relationship MetadataId or Alternate Key (such as LogicalName). */
+	key: string;
+	/**Use this parameter to cast the Relationship metadata to a specific type. */
+	castType?: string;
+	/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+	select?: string[];
+	/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
+	expand?: Expand[];
+}
 
-	export interface CreateGlobalOptionSetRequest extends BaseRequest {
-		/**Global Option Set Definition. */
-		data: any;
-	}
+export interface CreateGlobalOptionSetRequest extends BaseRequest {
+	/**Global Option Set Definition. */
+	data: any;
+}
 
-	export interface UpdateGlobalOptionSetRequest extends CreateRelationshipRequest {
-		/**Use this parameter to cast the Global Option Set metadata to a specific type. */
-		castType?: string;
-		/**Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false. */
-		mergeLabels?: boolean;
-	}
+export interface UpdateGlobalOptionSetRequest extends CreateRelationshipRequest {
+	/**Use this parameter to cast the Global Option Set metadata to a specific type. */
+	castType?: string;
+	/**Sets MSCRM.MergeLabels header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is false. */
+	mergeLabels?: boolean;
+}
 
-	export interface DeleteGlobalOptionSetRequest extends BaseRequest {
-		/**A Global Option Set MetadataId or Alternate Key (such as LogicalName). */
-		key: string;
-	}
+export interface DeleteGlobalOptionSetRequest extends BaseRequest {
+	/**A Global Option Set MetadataId or Alternate Key (such as LogicalName). */
+	key: string;
+}
 
-	export interface RetrieveGlobalOptionSetsRequest extends BaseRequest {
-		/**Use this parameter to cast the Global Option Set metadata to a specific type. */
-		castType?: string;
-		/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
-		select?: string[];
-		/**Use the $filter system query option to set criteria for which entities will be returned. */
-		filter?: string;
-		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
-		expand?: Expand[];
-	}
+export interface RetrieveGlobalOptionSetsRequest extends BaseRequest {
+	/**Use this parameter to cast the Global Option Set metadata to a specific type. */
+	castType?: string;
+	/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+	select?: string[];
+	/**Use the $filter system query option to set criteria for which entities will be returned. */
+	filter?: string;
+	/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
+	expand?: Expand[];
+}
 
-	export interface RetrieveGlobalOptionSetRequest extends BaseRequest {
-		/**A Global Option Set MetadataId or Alternate Key (such as LogicalName). */
-		key: string;
-		/**Use this parameter to cast the Global Option Set metadata to a specific type. */
-		castType?: string;
-		/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
-		select?: string[];
-		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
-		expand?: Expand[];
-	}
+export interface RetrieveGlobalOptionSetRequest extends BaseRequest {
+	/**A Global Option Set MetadataId or Alternate Key (such as LogicalName). */
+	key: string;
+	/**Use this parameter to cast the Global Option Set metadata to a specific type. */
+	castType?: string;
+	/**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+	select?: string[];
+	/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
+	expand?: Expand[];
+}
 
-	export interface UploadRequest extends CRUDRequest {
-		/**Binary Buffer*/
-		data: Uint8Array | Buffer;
-		/**Name of the file */
-		fileName: string;
-		/**File Field Name */
-		fieldName: string;
-	}
+export interface UploadRequest extends CRUDRequest {
+	/**Binary Buffer*/
+	data: Uint8Array | Buffer;
+	/**Name of the file */
+	fileName: string;
+	/**File Field Name */
+	fieldName: string;
+}
 
-	export interface DownloadRequest extends CRUDRequest {
-		/**File Field Name */
-		fieldName: string;
-	}
+export interface DownloadRequest extends CRUDRequest {
+	/**File Field Name */
+	fieldName: string;
+}
 
-	export interface CsdlMetadataRequest extends BaseRequest {
-		/**If set to "true" the document will include many different kinds of annotations that can be useful. Most annotations are not included by default because they increase the total size of the document. */
-		addAnnotations?: boolean;
-	}
+export interface CsdlMetadataRequest extends BaseRequest {
+	/**If set to "true" the document will include many different kinds of annotations that can be useful. Most annotations are not included by default because they increase the total size of the document. */
+	addAnnotations?: boolean;
+}
 
-	export interface ApiConfig {
-		/** API Version to use, for example: "9.2" or "1.0" */
-		version?: string;
-		/** API Path, for example: "data" or "search" */
-		path?: string;
-	}
+export type SearchMode = "any" | "all";
+export type SearchType = "simple" | "full";
 
-	export interface Config {
-		/**A complete URL string to Web API. Example of the URL: "https://myorg.api.crm.dynamics.com/api/data/v9.1/". If it is specified then webApiVersion property will not be used even if it is not empty.*/
-		// webApiUrl?: string | null;
-		// /**Web API Version to use, for example: "8.1" */
-		// webApiVersion?: string | null;
+export interface SearchRequestQuery {
+	/**The search parameter value contains the term to be searched for and has a 100-character limit. */
+	search: string;
+	/**The default table list searches across all Dataverse search–configured tables and columns. The default list is configured by your administrator when Dataverse search is enabled. */
+	entities?: string[];
+	/**Facets support the ability to drill down into data results after they've been retrieved. */
+	facets?: string[];
+	/**Filters are applied while searching data and are specified in standard OData syntax. */
+	filter?: string;
+	/**Specify true to return the total record count; otherwise false. The default is false. */
+	returnTotalRecordCount?: boolean;
+	/**Specifies the number of search results to skip. */
+	skip?: number;
+	/**Specifies the number of search results to retrieve. The default is 50, and the maximum value is 100. */
+	top?: number;
+	/**A list of comma-separated clauses where each clause consists of a column name followed by 'asc' (ascending, which is the default) or 'desc' (descending). This list specifies how to order the results in order of precedence. */
+	orderBy?: string[];
+	/**Specifies whether any or all the search terms must be matched to count the document as a match. The default is 'any'. */
+	searchMode?: SearchMode;
+	/**The search type specifies the syntax of a search query. Using 'simple' selects simple query syntax and 'full' selects Lucene query syntax. The default is 'simple'. */
+	searchType?: SearchType;
+}
 
-		organizationUrl?: string | null;
-		/**Impersonates a user based on their systemuserid by adding "MSCRMCallerID" header. A String representing the GUID value for the Dynamics 365 systemuserid. */
-		impersonate?: string | null;
-		/**Impersonates a user based on their Azure Active Directory (AAD) object id by passing that value along with the header "CallerObjectId". A String should represent a GUID value. */
-		impersonateAAD?: string | null;
-		/**A function that is called when a security token needs to be refreshed. */
-		onTokenRefresh?: ((callback: OnTokenAcquiredCallback) => void) | null;
-		/**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types.*/
-		includeAnnotations?: string | null;
-		/**Sets the odata.maxpagesize preference value to request the number of entities returned in the response. */
-		maxPageSize?: number | null;
-		/**Sets Prefer header request with value "return=representation".Use this property to return just created or updated entity in a single request.*/
-		returnRepresentation?: boolean | null;
-		/**Indicates whether to use Entity Logical Names instead of Collection Logical Names.*/
-		useEntityNames?: boolean | null;
-		/**Sets a number of milliseconds before a request times out. */
-		timeout?: number | null;
-		/**Proxy configuration object. */
-		proxy?: ProxyConfig | null;
+export interface SearchRequest extends BaseRequest {
+	/**Search query object */
+	query: SearchRequestQuery;
+}
 
-		dataApi?: ApiConfig;
+export interface ApiConfig {
+	/** API Version to use, for example: "9.2" or "1.0" */
+	version?: string;
+	/** API Path, for example: "data" or "search" */
+	path?: string;
+}
 
-		searchApi?: ApiConfig;
-	}
+export interface Config {
+	/**A complete URL string to Web API. Example of the URL: "https://myorg.api.crm.dynamics.com/api/data/v9.1/". If it is specified then webApiVersion property will not be used even if it is not empty.*/
+	// webApiUrl?: string | null;
+	// /**Web API Version to use, for example: "8.1" */
+	// webApiVersion?: string | null;
 
-	export interface ProxyConfig {
-		/**Proxy server url */
-		url: string;
-		/**Basic authentication credentials */
-		auth?: {
-			/**Username */
-			username: string;
-			/**Password */
-			password: string;
-		};
-	}
+	organizationUrl?: string | null;
+	/**Impersonates a user based on their systemuserid by adding "MSCRMCallerID" header. A String representing the GUID value for the Dynamics 365 systemuserid. */
+	impersonate?: string | null;
+	/**Impersonates a user based on their Azure Active Directory (AAD) object id by passing that value along with the header "CallerObjectId". A String should represent a GUID value. */
+	impersonateAAD?: string | null;
+	/**A function that is called when a security token needs to be refreshed. */
+	onTokenRefresh?: ((callback: OnTokenAcquiredCallback) => void) | null;
+	/**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types.*/
+	includeAnnotations?: string | null;
+	/**Sets the odata.maxpagesize preference value to request the number of entities returned in the response. */
+	maxPageSize?: number | null;
+	/**Sets Prefer header request with value "return=representation".Use this property to return just created or updated entity in a single request.*/
+	returnRepresentation?: boolean | null;
+	/**Indicates whether to use Entity Logical Names instead of Collection Logical Names.*/
+	useEntityNames?: boolean | null;
+	/**Sets a number of milliseconds before a request times out. */
+	timeout?: number | null;
+	/**Proxy configuration object. */
+	proxy?: ProxyConfig | null;
 
-	/** Callback with an acquired token called by DynamicsWebApi; "token" argument can be a string or an object with a property {accessToken: <token>}  */
-	export interface OnTokenAcquiredCallback {
-		(token: any): void;
-	}
+	dataApi?: ApiConfig;
 
-	export interface Utility {
-		/**
-		 * Searches for a collection name by provided entity name in a cached entity metadata.
-		 * The returned collection name can be null.
-		 * @param entityName - entity name
-		 */
-		getCollectionName(entityName: string): string;
-	}
+	searchApi?: ApiConfig;
+}
 
-	export interface RequestError extends Error {
-		/**This code is not related to the http status code and is frequently empty */
-		code?: string;
-		/**A message describing the error */
-		message: string;
-		/**HTTP status code */
-		status?: number;
-		/**HTTP status text. Frequently empty */
-		statusText?: string;
-		/**HTTP Response headers */
-		headers?: any;
-		/**Details about an error */
-		innererror?: {
-			/**A message describing the error, this is frequently the same as the outer message */
-			message?: string;
-			/**Microsoft.Crm.CrmHttpException */
-			type?: string;
-			/**Details from the server about where the error occurred */
-			stacktrace?: string;
-		};
-	}
+export interface ProxyConfig {
+	/**Proxy server url */
+	url: string;
+	/**Basic authentication credentials */
+	auth?: {
+		/**Username */
+		username: string;
+		/**Password */
+		password: string;
+	};
+}
 
-	export interface MultipleResponse<T = any> {
-		/**Multiple respone entities */
-		value: T[];
-		oDataCount?: number;
-		oDataContext?: string;
-	}
+/** Callback with an acquired token called by DynamicsWebApi; "token" argument can be a string or an object with a property {accessToken: <token>}  */
+export interface OnTokenAcquiredCallback {
+	(token: any): void;
+}
 
-	export interface AllResponse<T> extends MultipleResponse<T> {
-		/**@odata.deltaLink value */
-		oDataDeltaLink?: string;
-	}
+export interface Extensions {
+	/**
+	 * Searches for a collection name by provided entity name in a cached entity metadata.
+	 * The returned collection name can be null.
+	 * @param entityName - entity name
+	 */
+	getCollectionName(entityName: string): string;
+}
 
-	export interface RetrieveMultipleResponse<T> extends MultipleResponse<T> {
-		"@Microsoft.Dynamics.CRM.totalrecordcount"?: number;
-		"@Microsoft.Dynamics.CRM.totalrecordcountlimitexceeded"?: boolean;
-		/**@odata.nextLink value */
-		oDataNextLink?: string;
-		/**@odata.deltaLink value */
-		oDataDeltaLink?: string;
-	}
+export interface RequestError extends Error {
+	/**This code is not related to the http status code and is frequently empty */
+	code?: string;
+	/**A message describing the error */
+	message: string;
+	/**HTTP status code */
+	status?: number;
+	/**HTTP status text. Frequently empty */
+	statusText?: string;
+	/**HTTP Response headers */
+	headers?: any;
+	/**Details about an error */
+	innererror?: {
+		/**A message describing the error, this is frequently the same as the outer message */
+		message?: string;
+		/**Microsoft.Crm.CrmHttpException */
+		type?: string;
+		/**Details from the server about where the error occurred */
+		stacktrace?: string;
+	};
+}
 
-	export interface FetchXmlResponse<T> extends MultipleResponse<T> {
-		"@Microsoft.Dynamics.CRM.totalrecordcount"?: number;
-		"@Microsoft.Dynamics.CRM.totalrecordcountlimitexceeded"?: boolean;
-		/**Paging information */
-		PagingInfo?: {
-			/**Number of the next page */
-			nextPage?: number;
-			/**Next page cookie */
-			cookie?: string;
-		};
-	}
+export interface MultipleResponse<T = any> {
+	/**Multiple respone entities */
+	value: T[];
+	oDataCount?: number;
+	oDataContext?: string;
+}
 
-	interface DownloadResponse {
-		/**The name of the file */
-		fileName: string;
-		/**File size */
-		fileSize: number;
-		/**File Data */
-		data: Uint8Array | Buffer;
-	}
+export interface AllResponse<T> extends MultipleResponse<T> {
+	/**@odata.deltaLink value */
+	oDataDeltaLink?: string;
+}
+
+export interface RetrieveMultipleResponse<T> extends MultipleResponse<T> {
+	"@Microsoft.Dynamics.CRM.totalrecordcount"?: number;
+	"@Microsoft.Dynamics.CRM.totalrecordcountlimitexceeded"?: boolean;
+	/**@odata.nextLink value */
+	oDataNextLink?: string;
+	/**@odata.deltaLink value */
+	oDataDeltaLink?: string;
+}
+
+export interface FetchXmlResponse<T> extends MultipleResponse<T> {
+	"@Microsoft.Dynamics.CRM.totalrecordcount"?: number;
+	"@Microsoft.Dynamics.CRM.totalrecordcountlimitexceeded"?: boolean;
+	/**Paging information */
+	PagingInfo?: {
+		/**Number of the next page */
+		nextPage?: number;
+		/**Next page cookie */
+		cookie?: string;
+	};
+}
+
+interface DownloadResponse {
+	/**The name of the file */
+	fileName: string;
+	/**File size */
+	fileSize: number;
+	/**File Data */
+	data: Uint8Array | Buffer;
+}
+
+interface SearchResponse<TValue = any> {
+	/**Search results*/
+	value: TValue[];
+	facets: any;
+	totalrecordcount: number;
+	querycontext: any;
 }

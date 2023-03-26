@@ -1,9 +1,8 @@
 import { Utility } from "../utils/Utility";
 import { ConfigurationUtility, InternalConfig } from "../utils/Config";
 import { RequestUtility } from "../utils/Request";
-import { DynamicsWebApi } from "../../ts/dynamics-web-api";
 import { DynamicsWebApiError, ErrorHelper } from "../helpers/ErrorHelper";
-import { Core } from "../../ts/types";
+import { Core } from "../types";
 
 export class RequestClient {
 	private static _batchRequestCollection: Core.BatchRequestCollection = {};
@@ -91,9 +90,11 @@ export class RequestClient {
 				request.headers["Authorization"] = "Bearer " + (token.hasOwnProperty("accessToken") ? token.accessToken : token);
 			}
 
+			const url = request.apiConfig ? request.apiConfig.url : config.dataApi.url;
+
 			executeRequest({
 				method: request.method!,
-				uri: config.dataApi.url + request.path,
+				uri: url + request.path,
 				data: processedData,
 				additionalHeaders: request.headers,
 				responseParams: RequestClient._responseParseParams,
@@ -155,12 +156,14 @@ export class RequestClient {
 
 	private static _isEntityNameException(entityName: string): boolean {
 		const exceptions = [
-			"EntityDefinitions",
 			"$metadata",
+			"EntityDefinitions",
 			"RelationshipDefinitions",
 			"GlobalOptionSetDefinitions",
 			"ManagedPropertyDefinitions",
-			"$metadata",
+			"query",
+			"suggest",
+			"autocomplete",
 		];
 
 		return exceptions.indexOf(entityName) > -1;

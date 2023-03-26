@@ -1,5 +1,5 @@
 import { InternalConfig } from "../utils/Config";
-import { Core } from "../../ts/types";
+import { Core } from "../types";
 export declare class RequestClient {
     private static _batchRequestCollection;
     private static _responseParseParams;

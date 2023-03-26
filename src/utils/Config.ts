@@ -1,26 +1,26 @@
 import { Utility } from "./Utility";
 import { ErrorHelper } from "../helpers/ErrorHelper";
 import { Core } from "../types";
-import { DynamicsWebApi } from "../dynamics-web-api";
+import { ApiConfig, Config } from "../dynamics-web-api";
 
 type ApiType = "dataApi" | "searchApi";
 
-export interface InternalApiConfig extends DynamicsWebApi.ApiConfig {
+export interface InternalApiConfig extends ApiConfig {
 	url: string;
 }
 
-export interface InternalConfig extends DynamicsWebApi.Config {
+export interface InternalConfig extends Config {
 	dataApi: InternalApiConfig;
 	searchApi: InternalApiConfig;
 }
 
-const getApiUrl = (orgUrl: string | undefined | null, apiConfig: DynamicsWebApi.ApiConfig): string => {
+const getApiUrl = (orgUrl: string | undefined | null, apiConfig: ApiConfig): string => {
 	if (!orgUrl) orgUrl = Utility.getClientUrl();
 
 	return `${orgUrl}/api/${apiConfig.path}/v${apiConfig.version}/`;
 };
 
-const mergeApiConfigs = (apiConfig: DynamicsWebApi.ApiConfig | undefined, apiType: ApiType, internalConfig: InternalConfig): void => {
+const mergeApiConfigs = (apiConfig: ApiConfig | undefined, apiType: ApiType, internalConfig: InternalConfig): void => {
 	const internalApiConfig = internalConfig[apiType] as InternalApiConfig;
 
 	if (apiConfig?.version) {
@@ -39,7 +39,7 @@ const mergeApiConfigs = (apiConfig: DynamicsWebApi.ApiConfig | undefined, apiTyp
 export class ConfigurationUtility {
 	static mergeApiConfigs = mergeApiConfigs;
 
-	static merge(internalConfig: InternalConfig, config?: DynamicsWebApi.Config): void {
+	static merge(internalConfig: InternalConfig, config?: Config): void {
 		if (config?.organizationUrl) {
 			ErrorHelper.stringParameterCheck(config.organizationUrl, "DynamicsWebApi.setConfig", "config.organizationUrl");
 			internalConfig.organizationUrl = config.organizationUrl;

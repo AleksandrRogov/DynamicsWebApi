@@ -1,15 +1,15 @@
-import { DynamicsWebApi } from "../dynamics-web-api";
+import { ApiConfig, Config } from "../dynamics-web-api";
 type ApiType = "dataApi" | "searchApi";
-export interface InternalApiConfig extends DynamicsWebApi.ApiConfig {
+export interface InternalApiConfig extends ApiConfig {
     url: string;
 }
-export interface InternalConfig extends DynamicsWebApi.Config {
+export interface InternalConfig extends Config {
     dataApi: InternalApiConfig;
     searchApi: InternalApiConfig;
 }
 export declare class ConfigurationUtility {
-    static mergeApiConfigs: (apiConfig: DynamicsWebApi.ApiConfig | undefined, apiType: ApiType, internalConfig: InternalConfig) => void;
-    static merge(internalConfig: InternalConfig, config?: DynamicsWebApi.Config): void;
+    static mergeApiConfigs: (apiConfig: ApiConfig | undefined, apiType: ApiType, internalConfig: InternalConfig) => void;
+    static merge(internalConfig: InternalConfig, config?: Config): void;
     static default(): InternalConfig;
 }
 export {};

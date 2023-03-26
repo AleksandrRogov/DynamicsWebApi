@@ -1,5 +1,5 @@
 import { Utility } from "./Utility";
-import { DynamicsWebApi } from "../dynamics-web-api";
+import { Config } from "../dynamics-web-api";
 import { ErrorHelper } from "../helpers/ErrorHelper";
 import { Core } from "../types";
 import { InternalConfig } from "./Config";
@@ -97,7 +97,7 @@ export class RequestUtility {
 	 * @param {Object} [config] - DynamicsWebApi config
 	 * @returns {ConvertedRequestOptions} Additional options in request
 	 */
-	static composeUrl(request: Core.InternalRequest, config: DynamicsWebApi.Config, url: string = "", joinSymbol: string = "&"): string {
+	static composeUrl(request: Core.InternalRequest, config: Config, url: string = "", joinSymbol: string = "&"): string {
 		const queryArray: string[] = [];
 
 		if (request) {
@@ -266,7 +266,7 @@ export class RequestUtility {
 		return !queryArray.length ? url : url + "?" + queryArray.join(joinSymbol);
 	}
 
-	static composeHeaders(request: Core.InternalRequest, config: DynamicsWebApi.Config): any {
+	static composeHeaders(request: Core.InternalRequest, config: Config): any {
 		const headers: any = {};
 		const prefer = RequestUtility.composePreferHeader(request, config);
 
@@ -361,7 +361,7 @@ export class RequestUtility {
 		return headers;
 	}
 
-	static composePreferHeader(request: Core.InternalRequest, config: DynamicsWebApi.Config): string {
+	static composePreferHeader(request: Core.InternalRequest, config: Config): string {
 		let returnRepresentation: boolean | null | undefined = request.returnRepresentation;
 		let includeAnnotations: string | null | undefined = request.includeAnnotations;
 		let maxPageSize: number | null | undefined = request.maxPageSize;

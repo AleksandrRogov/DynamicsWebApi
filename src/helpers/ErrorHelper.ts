@@ -25,6 +25,14 @@ export class ErrorHelper {
 		}
 	}
 
+	static maxLengthStringParameterCheck(parameter: string | null, functionName: string, parameterName: string, maxLength: number): void {
+		if (!parameter) return;
+
+		if (parameter.length > maxLength) {
+			throw new Error(`${parameterName} has a ${maxLength} character limit.`);
+		}
+	}
+
 	static arrayParameterCheck(parameter, functionName: string, parameterName: string): void {
 		if (parameter.constructor !== Array) {
 			throwParameterError(functionName, parameterName, "Array");

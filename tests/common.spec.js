@@ -9,9 +9,9 @@ var { Utility } = require("../lib/utils/Utility");
 var { RequestUtility } = require("../lib/utils/Request");
 var { ErrorHelper } = require("../lib/helpers/ErrorHelper");
 var mocks = require("./stubs");
-var { dateReviver } = require("../lib/requests/helpers/dateReviver");
-var { RequestClient } = require("../lib/requests/RequestClient");
-var { parseResponse } = require("../lib/requests/helpers/parseResponse");
+var { dateReviver } = require("../lib/client/helpers/dateReviver");
+var { RequestClient } = require("../lib/client/RequestClient");
+var { parseResponse } = require("../lib/client/helpers/parseResponse");
 
 describe("Utility.", function () {
 	describe("buildFunctionParameters - ", function () {

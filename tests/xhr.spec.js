@@ -11,7 +11,7 @@ var { DWA } = require("../lib/dwa");
 var { DynamicsWebApi } = require("../lib/dynamics-web-api");
 var dynamicsWebApiTest = new DynamicsWebApi({ dataApi: { version: "8.2" } });
 
-var { XhrWrapper } = require("../lib/requests/xhr");
+var { XhrWrapper } = require("../lib/client/xhr");
 var { Utility } = require("../lib/utils/Utility");
 Utility.downloadChunkSize = 15;
 
@@ -1055,9 +1055,9 @@ describe("xhr -", function () {
 
 			after(function () {
 				global.XMLHttpRequest.restore();
-				global.XMLHttpRequest = null;
-				global.window = null;
-				XhrWrapper.afterSendEvent = null;
+				global.XMLHttpRequest = undefined;
+				global.window = undefined;
+				XhrWrapper.afterSendEvent = undefined;
 			});
 
 			it("sends the request to the right end point", function () {
@@ -1157,9 +1157,9 @@ describe("xhr -", function () {
 
 			after(function () {
 				global.XMLHttpRequest.restore();
-				global.XMLHttpRequest = null;
-				global.window = null;
-				XhrWrapper.afterSendEvent = null;
+				global.XMLHttpRequest = undefined;
+				global.window = undefined;
+				XhrWrapper.afterSendEvent = undefined;
 			});
 
 			it("sends the request to the right end point", function () {

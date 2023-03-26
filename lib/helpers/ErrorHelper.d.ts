@@ -5,6 +5,7 @@ export declare class ErrorHelper {
     static handleErrorResponse(req: any): void;
     static parameterCheck(parameter: any, functionName: string, parameterName: string, type?: string): void;
     static stringParameterCheck(parameter: any, functionName: string, parameterName: string): void;
+    static maxLengthStringParameterCheck(parameter: string | null, functionName: string, parameterName: string, maxLength: number): void;
     static arrayParameterCheck(parameter: any, functionName: string, parameterName: string): void;
     static stringOrArrayParameterCheck(parameter: any, functionName: string, parameterName: string): void;
     static numberParameterCheck(parameter: any, functionName: string, parameterName: string): void;

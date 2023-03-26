@@ -1,4 +1,5 @@
-﻿import { DynamicsWebApi } from "./dynamics-web-api";
+﻿import { ProxyConfig, Expand } from "./dynamics-web-api";
+import { InternalApiConfig } from "./utils/Config";
 
 export declare namespace Core {
 	interface RequestOptions {
@@ -14,7 +15,7 @@ export declare namespace Core {
 		timeout?: number | null;
 		isAsync?: boolean;
 		requestId: string;
-		proxy?: DynamicsWebApi.ProxyConfig | null;
+		proxy?: ProxyConfig | null;
 	}
 
 	interface BatchRequestCollection {
@@ -66,7 +67,7 @@ export declare namespace Core {
 		/**A JavaScript object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single-valued navigation properties). */
 		entity?: any;
 		/**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
-		expand?: DynamicsWebApi.Expand[];
+		expand?: Expand[];
 		/**Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests.*/
 		ifmatch?: string;
 		/**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types. */
@@ -128,6 +129,9 @@ export declare namespace Core {
 		transferMode?: string;
 		range?: string;
 		downloadSize?: string;
+		/**Set a specific api config for a request. Default is dataApi. */
+		apiConfig?: InternalApiConfig;
+		query?: any;
 	}
 
 	interface FileParseResult {
