@@ -28,7 +28,7 @@ Check out the development progress in a [DynamicsWebApi v2 Project](https://gith
 
 **Want to help?** - Let me know. I desperately need help with documentation and examples.
 
-New patches `v.1.7.7+` will contain deprecations, watch out for them in the code and replace them as per recommendations (if they are available). Otherwise, let me know!
+New patches `v.1.7.8+` will contain deprecation warnings, watch out for them in the code and replace them as per recommendations (if available). Otherwise, let me know!
 
 v2 will be written in TypeScript and include numerous optimizations.
 There will be breaking changes between v1 and v2: 
@@ -184,7 +184,10 @@ const acquireToken = (dynamicsWebApiCallback) => {
 
 //create DynamicsWebApi
 const dynamicsWebApi = new DynamicsWebApi({
-    webApiUrl: `${serverUrl}/api/data/v9.2/`,
+    serverUrl: serverUrl,
+    dataApi: {
+        version: '9.2'
+    }   
     onTokenRefresh: acquireToken
 });
 
@@ -205,14 +208,17 @@ To initialize a new instance of DynamicsWebApi with a configuration object, plea
 #### Web browser
 
 ```js
-const dynamicsWebApi = new DynamicsWebApi({ webApiVersion: '9.1' });
+const dynamicsWebApi = new DynamicsWebApi({ dataApi: { version: '9.1' } });
 ```
 
 #### Node.js
 
 ```js
 const dynamicsWebApi = new DynamicsWebApi({
-    webApiUrl: 'https://myorg.api.crm.dynamics.com/api/data/v9.1/',
+    serverUrl: 'https://myorg.api.crm.dynamics.com/',
+    dataApi: {
+        version: '9.1'
+    }
     onTokenRefresh: acquireToken
 });
 ```
@@ -221,7 +227,7 @@ You can set a configuration dynamically if needed:
 
 ```js
 //or can be set dynamically
-dynamicsWebApi.setConfig({ webApiVersion: '9.1' });
+dynamicsWebApi.setConfig({ dataApi: { version: '9.1' } });
 ```
 
 #### Configuration Parameters
@@ -2114,7 +2120,10 @@ In order to let DynamicsWebApi know that you are using proxy you have two option
 
 ```js
 const dynamicsWebApi = new DynamicsWebApi({
-    webApiUrl: 'https://myorg.api.crm.dynamics.com/api/data/v9.1/',
+    serverUrl: 'https://myorg.api.crm.dynamics.com/',
+    dataApi: {
+        version: '9.2'
+    }
     onTokenRefresh: acquireToken,
     proxy: {
         url: 'http://localhost:12345',
