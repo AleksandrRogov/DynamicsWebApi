@@ -5,6 +5,10 @@ var version = require("./package").version;
 
 var configs = [];
 
+const ifdefOptions = {
+	node: false,
+};
+
 ["dynamics-web-api.js", "dynamics-web-api.min.js"].forEach(function (name) {
 	var plugins = [];
 	var packageName = name.split(".")[0];
@@ -48,11 +52,7 @@ var configs = [];
 					test: /\.js$/,
 					enforce: "pre",
 					exclude: /(node_modules|bower_components|\.spec\.js)/,
-					use: [
-						{
-							loader: "webpack-strip-block",
-						},
-					],
+					use: [{ loader: "ifdef-loader", options: ifdefOptions }],
 				},
 			],
 		},

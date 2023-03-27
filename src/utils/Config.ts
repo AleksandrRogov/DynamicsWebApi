@@ -1,6 +1,5 @@
 import { Utility } from "./Utility";
 import { ErrorHelper } from "../helpers/ErrorHelper";
-import { Core } from "../types";
 import { ApiConfig, Config } from "../dynamics-web-api";
 
 type ApiType = "dataApi" | "searchApi";
@@ -14,10 +13,10 @@ export interface InternalConfig extends Config {
 	searchApi: InternalApiConfig;
 }
 
-const getApiUrl = (orgUrl: string | undefined | null, apiConfig: ApiConfig): string => {
-	if (!orgUrl) orgUrl = Utility.getClientUrl();
+const getApiUrl = (serverUrl: string | undefined | null, apiConfig: ApiConfig): string => {
+	if (!serverUrl) serverUrl = Utility.getClientUrl();
 
-	return `${orgUrl}/api/${apiConfig.path}/v${apiConfig.version}/`;
+	return `${serverUrl}/api/${apiConfig.path}/v${apiConfig.version}/`;
 };
 
 const mergeApiConfigs = (apiConfig: ApiConfig | undefined, apiType: ApiType, internalConfig: InternalConfig): void => {
@@ -33,16 +32,16 @@ const mergeApiConfigs = (apiConfig: ApiConfig | undefined, apiType: ApiType, int
 		internalApiConfig.path = apiConfig.path;
 	}
 
-	internalApiConfig.url = getApiUrl(internalConfig.organizationUrl, internalApiConfig);
+	internalApiConfig.url = getApiUrl(internalConfig.serverUrl, internalApiConfig);
 };
 
 export class ConfigurationUtility {
 	static mergeApiConfigs = mergeApiConfigs;
 
 	static merge(internalConfig: InternalConfig, config?: Config): void {
-		if (config?.organizationUrl) {
-			ErrorHelper.stringParameterCheck(config.organizationUrl, "DynamicsWebApi.setConfig", "config.organizationUrl");
-			internalConfig.organizationUrl = config.organizationUrl;
+		if (config?.serverUrl) {
+			ErrorHelper.stringParameterCheck(config.serverUrl, "DynamicsWebApi.setConfig", "config.serverUrl");
+			internalConfig.serverUrl = config.serverUrl;
 		}
 
 		mergeApiConfigs(config?.dataApi, "dataApi", internalConfig);
@@ -86,7 +85,7 @@ export class ConfigurationUtility {
 			internalConfig.useEntityNames = config.useEntityNames;
 		}
 
-		/* develblock:start */
+		/// #if node
 		if (config?.proxy) {
 			ErrorHelper.parameterCheck(config.proxy, "DynamicsWebApi.setConfig", "config.proxy");
 
@@ -102,12 +101,12 @@ export class ConfigurationUtility {
 
 			internalConfig.proxy = config.proxy;
 		}
-		/* develblock:end */
+		/// #endif
 	}
 
 	static default(): InternalConfig {
 		return {
-			organizationUrl: null,
+			serverUrl: null,
 			impersonate: null,
 			impersonateAAD: null,
 			onTokenRefresh: null,

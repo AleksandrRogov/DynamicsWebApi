@@ -243,13 +243,15 @@ function parseBatchResponse(response: string, parseParams: any, requestNumber: n
 }
 
 function base64ToString(base64: string): string | null {
-	/* develblock:start */
+	/// #if node
 	if (typeof process !== "undefined") {
 		return Buffer.from(base64, "base64").toString("binary");
 	} else if (typeof window !== "undefined")
-		/* develblock:end */
+		/// #endif
 		return window.atob(base64);
+	/// #if node
 	else return null;
+	/// #endif
 }
 
 function parseFileResponse(response: any, responseHeaders: any, parseParams: any): Core.FileParseResult {

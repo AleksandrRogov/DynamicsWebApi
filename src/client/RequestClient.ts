@@ -72,15 +72,15 @@ export class RequestClient {
 		}
 
 		var executeRequest: (options: Core.RequestOptions) => void;
-		/* develblock:start */
+		/// #if node
 		if (typeof XMLHttpRequest !== "undefined") {
-			/* develblock:end */
+			/// #endif
 			executeRequest = require("./xhr").XhrWrapper.xhrRequest;
-			/* develblock:start */
+			/// #if node
 		} else if (typeof process !== "undefined") {
 			executeRequest = require("./http");
 		}
-		/* develblock:end */
+		/// #endif
 
 		var sendInternalRequest = function (token?: any): void {
 			if (token) {
@@ -102,9 +102,9 @@ export class RequestClient {
 				errorCallback: errorCallback,
 				isAsync: request.async,
 				timeout: request.timeout || config.timeout,
-				/* develblock:start */
+				/// #if node
 				proxy: config.proxy,
-				/* develblock:end */
+				/// #endif
 				requestId: request.requestId!,
 			});
 		};
@@ -216,7 +216,7 @@ export class RequestClient {
 
 					request.responseParameters.convertedToBatch = false;
 
-					//if the URL contains more characters than max possible limit, convert the request to a batch request
+					//the URL contains more characters than max possible limit, convert the request to a batch request
 					if (request.path!.length > 2000) {
 						const batchRequest = RequestUtility.convertToBatch([request], config);
 
@@ -234,11 +234,11 @@ export class RequestClient {
 		}
 	}
 
-	/* develblock:start */
+	/// #if node
 	static _clearEntityNames(): void {
 		RequestUtility.entityNames = null;
 	}
-	/* develblock:end */
+	/// #endif
 
 	static getCollectionName(entityName: string): string | null {
 		return RequestUtility.findCollectionName(entityName);

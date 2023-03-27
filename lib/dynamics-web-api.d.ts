@@ -1,5 +1,4 @@
 /// <reference types="node" />
-import { RequestClient } from "./client/RequestClient";
 /**
  * Microsoft Dynamics CRM Web API helper library written in JavaScript.
  * It is compatible with: Dynamics 365 (online), Dynamics 365 (on-premise), Dynamics CRM 2016, Dynamics CRM Online.
@@ -15,7 +14,7 @@ export declare class DynamicsWebApi {
      *
      * @param {DynamicsWebApi.Config} config - Configuration
      * @example
-       dynamicsWebApi.setConfig({ organizationUrl: 'https://contoso.api.dynamics.com/' });
+       dynamicsWebApi.setConfig({ serverUrl: 'https://contoso.api.crm.dynamics.com/' });
      */
     setConfig: (config: Config) => void;
     private _makeRequest;
@@ -25,22 +24,21 @@ export declare class DynamicsWebApi {
      * @param {DWARequest} request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api result
      * @example
-     *var lead = {
+     *const lead = {
      *    subject: "Test WebAPI",
      *    firstname: "Test",
      *    lastname: "WebAPI",
      *    jobtitle: "Title"
      *};
      *
-     *var request = {
-     *    entity: lead,
+     *const request = {
+     *    data: lead,
      *    collection: "leads",
      *    returnRepresentation: true
      *}
      *
-     *dynamicsWebApi.createRequest(request).then(function (response) {
-     *}).catch(function (error) {
-     *});
+     *const response = await dynamicsWebApi.create(request);
+     *
      */
     create: <TData = any>(request: CreateRequest<TData>) => Promise<TData>;
     /**
@@ -49,7 +47,7 @@ export declare class DynamicsWebApi {
      * @param {DWARequest} request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api result
      * @example
-     *var request = {
+     *const request = {
      *    key: '7d577253-3ef0-4a0a-bb7f-8335c2596e70',
      *    collection: "leads",
      *    select: ["fullname", "subject"],
@@ -57,11 +55,7 @@ export declare class DynamicsWebApi {
      *    includeAnnotations: "OData.Community.Display.V1.FormattedValue"
      *};
      *
-     *dynamicsWebApi.retrieveRequest(request).then(function (response) {
-     *
-     *}).catch(function (error) {
-     *
-     *});
+     *const response = await dynamicsWebApi.retrieve(request);
      */
     retrieve: <T = any>(request: RetrieveRequest) => Promise<T>;
     /**
@@ -342,10 +336,26 @@ export declare class DynamicsWebApi {
      * @returns {Promise<string>} Unformatted and unparsed CSDL $metadata document.
      */
     retrieveCsdlMetadata: (request?: CsdlMetadataRequest) => Promise<string>;
+    /**
+     * Provides a search results page.
+     * @param request - An object that represents all possible options for a current request.
+     * @returns {Promise<SearchResponse<TValue>>} Search result
+     */
     search: <TValue = any>(request: SearchRequest) => Promise<SearchResponse<TValue>>;
     /**
+     * Provides suggestions as the user enters text into a form field.
+     * @param request - An object that represents all possible options for a current request.
+     * @returns {Promise<SuggestResponse<TValueDocument>>} Suggestions result
+     */
+    suggest: <TValueDocument = any>(request: SuggestRequest) => Promise<SuggestResponse<TValueDocument>>;
+    /**
+     * Provides autocompletion of input as the user enters text into a form field.
+     * @param request - An object that represents all possible options for a current request.
+     * @returns {Promise<AutocompleteResponse>} Result of autocomplete
+     */
+    autocomplete: (request: AutocompleteRequest) => Promise<AutocompleteResponse>;
+    /**
      * Starts a batch request.
-     *
      */
     startBatch: () => void;
     /**
@@ -369,19 +379,9 @@ export declare class DynamicsWebApi {
          * @param {string} entityName - entity name
          * @returns {string} a collection name
          */
-        getCollectionName: typeof RequestClient.getCollectionName;
+        getCollectionName: (entityName: string) => string | null;
     };
 }
-/**
- * DynamicsWebApi Utility helper class
- * @typicalname dynamicsWebApi.utility
- */
-/**
- * Microsoft Dynamics CRM Web API helper library written in JavaScript.
- * It is compatible with: Dynamics 365 (online), Dynamics 365 (on-premise), Dynamics CRM 2016, Dynamics CRM Online.
- * @module dynamics-web-api
- * @typicalname dynamicsWebApi
- */
 export interface Expand {
     /**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
     select?: string[];
@@ -778,15 +778,17 @@ export interface CsdlMetadataRequest extends BaseRequest {
 }
 export type SearchMode = "any" | "all";
 export type SearchType = "simple" | "full";
-export interface SearchRequestQuery {
-    /**The search parameter value contains the term to be searched for and has a 100-character limit. */
+export interface SearchQueryBase {
+    /**The search parameter value contains the term to be searched for and has a 100-character limit. For suggestions, min 3 characters in addition. */
     search: string;
     /**The default table list searches across all Dataverse search–configured tables and columns. The default list is configured by your administrator when Dataverse search is enabled. */
     entities?: string[];
-    /**Facets support the ability to drill down into data results after they've been retrieved. */
-    facets?: string[];
     /**Filters are applied while searching data and are specified in standard OData syntax. */
     filter?: string;
+}
+export interface Search extends SearchQueryBase {
+    /**Facets support the ability to drill down into data results after they've been retrieved. */
+    facets?: string[];
     /**Specify true to return the total record count; otherwise false. The default is false. */
     returnTotalRecordCount?: boolean;
     /**Specifies the number of search results to skip. */
@@ -800,9 +802,29 @@ export interface SearchRequestQuery {
     /**The search type specifies the syntax of a search query. Using 'simple' selects simple query syntax and 'full' selects Lucene query syntax. The default is 'simple'. */
     searchType?: SearchType;
 }
+export interface Suggest extends SearchQueryBase {
+    /**Use fuzzy search to aid with misspellings. The default is false. */
+    useFuzzy?: boolean;
+    /**Number of suggestions to retrieve. The default is 5. */
+    top?: number;
+    /**A list of comma-separated clauses where each clause consists of a column name followed by 'asc' (ascending, which is the default) or 'desc' (descending). This list specifies how to order the results in order of precedence. */
+    orderBy?: string[];
+}
+export interface Autocomplete extends SearchQueryBase {
+    /**Use fuzzy search to aid with misspellings. The default is false. */
+    useFuzzy?: boolean;
+}
 export interface SearchRequest extends BaseRequest {
     /**Search query object */
-    query: SearchRequestQuery;
+    query: Search;
+}
+export interface SuggestRequest extends BaseRequest {
+    /**Suggestion query object */
+    query: Suggest;
+}
+export interface AutocompleteRequest extends BaseRequest {
+    /**Autocomplete query object */
+    query: Autocomplete;
 }
 export interface ApiConfig {
     /** API Version to use, for example: "9.2" or "1.0" */
@@ -811,8 +833,8 @@ export interface ApiConfig {
     path?: string;
 }
 export interface Config {
-    /**A complete URL string to Web API. Example of the URL: "https://myorg.api.crm.dynamics.com/api/data/v9.1/". If it is specified then webApiVersion property will not be used even if it is not empty.*/
-    organizationUrl?: string | null;
+    /**The url to Dataverse API server, for example: https://contoso.api.crm.dynamics.com/. It is required when used in Node.js application. */
+    serverUrl?: string | null;
     /**Impersonates a user based on their systemuserid by adding "MSCRMCallerID" header. A String representing the GUID value for the Dynamics 365 systemuserid. */
     impersonate?: string | null;
     /**Impersonates a user based on their Azure Active Directory (AAD) object id by passing that value along with the header "CallerObjectId". A String should represent a GUID value. */
@@ -831,7 +853,9 @@ export interface Config {
     timeout?: number | null;
     /**Proxy configuration object. */
     proxy?: ProxyConfig | null;
+    /**Configuration object for Dataverse Web API (with path "data"). */
     dataApi?: ApiConfig;
+    /**Configuration object for Dataverse Search API (with path "search") */
     searchApi?: ApiConfig;
 }
 export interface ProxyConfig {
@@ -848,14 +872,6 @@ export interface ProxyConfig {
 /** Callback with an acquired token called by DynamicsWebApi; "token" argument can be a string or an object with a property {accessToken: <token>}  */
 export interface OnTokenAcquiredCallback {
     (token: any): void;
-}
-export interface Extensions {
-    /**
-     * Searches for a collection name by provided entity name in a cached entity metadata.
-     * The returned collection name can be null.
-     * @param entityName - entity name
-     */
-    getCollectionName(entityName: string): string;
 }
 export interface RequestError extends Error {
     /**This code is not related to the http status code and is frequently empty */
@@ -918,9 +934,23 @@ interface DownloadResponse {
 interface SearchResponse<TValue = any> {
     /**Search results*/
     value: TValue[];
-    facets: any;
+    facets: any | null;
     totalrecordcount: number;
-    querycontext: any;
+    querycontext: any | null;
+}
+interface SuggestResponseValue<TDocument = any> {
+    text: string;
+    document: TDocument;
+}
+interface SuggestResponse<TValueDocument = any> {
+    /**Suggestions*/
+    value: SuggestResponseValue<TValueDocument>[];
+    querycontext: any | null;
+}
+interface AutocompleteResponse {
+    /**Autocomplete result*/
+    value: string | null;
+    querycontext: any | null;
 }
 export {};
 //# sourceMappingURL=dynamics-web-api.d.ts.map

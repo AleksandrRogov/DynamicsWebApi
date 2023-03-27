@@ -191,6 +191,25 @@ var dataStubs = {
 		"@odata.context": "context",
 		value: Buffer.from("micsWebApi!", "utf-8").toString("base64"),
 	},
+	suggestMultiple: {
+		querycontext: null,
+		value: [
+			{
+				text: "{crmhit}test{/crmhit}",
+				document: {
+					"@search.entityname": "lead",
+					name: "test",
+				},
+			},
+			{
+				text: "{crmhit}test{/crmhit}2",
+				document: {
+					"@search.entityname": "lead",
+					name: "test2",
+				},
+			},
+		],
+	},
 	searchMultiple: {
 		querycontext: null,
 		value: [
@@ -213,6 +232,10 @@ var dataStubs = {
 		],
 		facets: {},
 		totalrecordcount: -1,
+	},
+	autocompleteResult: {
+		querycontext: null,
+		value: "{crmhit}test{/crmhit}",
 	},
 	batch:
 		"--dwa_batch_XXX\n" +
@@ -1264,6 +1287,16 @@ var responseStubs = {
 	searchMultiple: {
 		status: 200,
 		responseText: JSON.stringify(dataStubs.searchMultiple),
+		responseHeaders: dataStubs.defaultResponseHeaders,
+	},
+	suggestMultiple: {
+		status: 200,
+		responseText: JSON.stringify(dataStubs.suggestMultiple),
+		responseHeaders: dataStubs.defaultResponseHeaders,
+	},
+	autocompleteResult: {
+		status: 200,
+		responseText: JSON.stringify(dataStubs.autocompleteResult),
 		responseHeaders: dataStubs.defaultResponseHeaders,
 	},
 };
