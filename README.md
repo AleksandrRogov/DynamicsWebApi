@@ -1,6 +1,6 @@
 # DynamicsWebApi for Microsoft Dynamics 365 CE (CRM) / Microsoft Dataverse Web API (formerly known as Microsoft Common Data Service Web API) 
 
-[![Travis](https://img.shields.io/travis/AleksandrRogov/DynamicsWebApi/master.svg?style=flat-square)](https://travis-ci.org/AleksandrRogov/DynamicsWebApi.svg?branch=master)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/AleksandrRogov/DynamicsWebApi/build-test-coverage.yml?style=flat-square)](https://github.com/AleksandrRogov/DynamicsWebApi/actions/workflows/build-test-coverage.yml)
 [![Coveralls](https://img.shields.io/coveralls/AleksandrRogov/DynamicsWebApi/master.svg?style=flat-square)](https://coveralls.io/github/AleksandrRogov/DynamicsWebApi)
 ![npm](https://img.shields.io/npm/dm/dynamics-web-api?style=flat-square)
 ![npm](https://img.shields.io/npm/dt/dynamics-web-api?style=flat-square)
