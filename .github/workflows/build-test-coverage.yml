@@ -30,6 +30,6 @@ jobs:
     - run: npm run build --if-present
     - run: npm test
     - name: Prepare coverage
-      run: npm run coveralls
+      run: npm run test-coverage
     - name: Publish to Coveralls
       uses: coverallsapp/github-action@v2.0.0
