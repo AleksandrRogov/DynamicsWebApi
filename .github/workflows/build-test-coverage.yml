@@ -32,4 +32,7 @@ jobs:
     - name: Prepare coverage
       run: npm run test-coverage
     - name: Publish to Coveralls
-      uses: coverallsapp/github-action@v2.0.0
+      if: ${{ matrix.node-version == 16 }}
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
