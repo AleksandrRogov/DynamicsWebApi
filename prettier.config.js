@@ -3,8 +3,7 @@
  * @type {import('prettier').Options}
  */
 module.exports = {
-  printWidth: 160,
-  tabWidth: 4,
-  singleQuote: false,
-  useTabs: true,
+	printWidth: 160,
+	tabWidth: 4,
+	singleQuote: false,
 };

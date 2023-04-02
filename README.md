@@ -22,9 +22,9 @@ Also, please check [suggestions and contributions](#contributions) section to le
 
 **DynamicsWebApi v2 is coming!**
 
-Check out the open [Discussion](https://github.com/AleksandrRogov/DynamicsWebApi/discussions/137) about the project.
+Check out an open [Discussion](https://github.com/AleksandrRogov/DynamicsWebApi/discussions/137) about the project.
 
-Check out the development progress in a [DynamicsWebApi v2 Project](https://github.com/users/AleksandrRogov/projects/2).
+Check out a development progress in a [DynamicsWebApi v2 Project](https://github.com/users/AleksandrRogov/projects/2).
 
 **Want to help?** - Let me know. I desperately need help with documentation and examples.
 
@@ -40,6 +40,8 @@ I am very excited to finally release the new version and I hope you too! Stay tu
 ***
 
 Please note, that "Dynamics 365" in this readme refers to Microsoft Dynamics 365 Customer Engagement / Microsoft Dataverse (formerly known as Microsoft Common Data Service).
+
+I use Dataverse SDK terminology in this documentation. [More Info](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/understand-terminology#terminology-use-depending-on-protocol-or-technology)
 
 ## Table of Contents
 
@@ -70,7 +72,7 @@ Please note, that "Dynamics 365" in this readme refers to Microsoft Dynamics 365
   * [Execute Web API functions](#execute-web-api-functions)
   * [Execute Web API actions](#execute-web-api-actions)
   * [Execute Batch Operations](#execute-batch-operations)
-  * [Work with Metadata Definitions](#work-with-metadata-definitions)
+  * [Work with Table Difinitions (Metadata)](#work-with-metadata-definitions)
     * [Create Entity](#create-entity)
     * [Retrieve Entity](#retrieve-entity)
     * [Update Entity](#update-entity)
@@ -1206,7 +1208,7 @@ You can find an official documentation that covers Web API batch requests here: 
 
 `Version 1.4.3+`
 
-Before working with metadata read [the following section from Microsoft Documentation](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/webapi/use-web-api-metadata).
+Before working with metadata read [the following section from Microsoft Documentation](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/query-metadata-web-api).
 
 ### Create Entity
 
