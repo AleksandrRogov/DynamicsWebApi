@@ -34,7 +34,6 @@
 		"@types/sinon": "^10.0.13",
 		"Base64": "^1.2.0",
 		"chai": "^4.3.7",
-		"coveralls": "^3.1.1",
 		"gulp": "^4.0.2",
 		"ifdef-loader": "^2.3.2",
 		"mocha": "^10.2.0",
@@ -60,14 +59,13 @@
 	"scripts": {
 		"test": "tsc && mocha",
 		"test-coverage": "rimraf coverage && nyc npm test && nyc report --reporter=lcov",
-		"build": "rimraf dist && rimraf lib && rimraf coverage && rimraf .nyc_output && tsc && webpack",
+		"build": "rimraf dist && rimraf lib && rimraf coverage && rimraf .nyc_output && tsc && webpack --mode=production",
 		"release-patch": "npm version patch -m \"Release v%s\"",
 		"release-minor": "npm version minor -m \"Release v%s\"",
 		"format": "prettier --write \"src/**/*.ts\" \"tests/**/*.js\"",
 		"preversion": "npm test",
 		"version": "npm run build && git add -A dist",
-		"postversion": "git push && git push --tags",
-		"coveralls": "rimraf coverage && nyc npm test && nyc report --reporter=text-lcov | coveralls"
+		"postversion": "git push && git push --tags"
 	},
 	"repository": {
 		"type": "git",

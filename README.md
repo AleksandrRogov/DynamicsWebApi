@@ -1,26 +1,39 @@
 # DynamicsWebApi for Microsoft Dynamics 365 CE (CRM) / Microsoft Dataverse Web API (formerly known as Microsoft Common Data Service Web API) 
 
-[![Travis](https://img.shields.io/travis/AleksandrRogov/DynamicsWebApi.svg?style=flat-square)](https://travis-ci.org/AleksandrRogov/DynamicsWebApi)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/AleksandrRogov/DynamicsWebApi/build-test-coverage.yml?style=flat-square)](https://github.com/AleksandrRogov/DynamicsWebApi/actions/workflows/build-test-coverage.yml)
 [![Coveralls](https://img.shields.io/coveralls/AleksandrRogov/DynamicsWebApi.svg?style=flat-square)](https://coveralls.io/github/AleksandrRogov/DynamicsWebApi)
 ![npm](https://img.shields.io/npm/dm/dynamics-web-api?style=flat-square)
 ![npm](https://img.shields.io/npm/dt/dynamics-web-api?style=flat-square)
 
-DynamicsWebApi is a Microsoft Dynamics 365 CE (CRM) / Microsoft Dataverse (formerly: Common Data Service) Web API helper library written in JavaScript.
-It is compatible with: Microsoft Dataverse (formerly: Microsoft Common Data Service), Microsoft Dynamics 365 CE (online), Microsoft Dynamics 365 CE (on-premises), 
+DynamicsWebApi is a Microsoft Dynamics 365 CE (CRM) / Microsoft Dataverse (formerly: Common Data Service) Web API helper library written in Typescript.
+It is compatible with: Microsoft Dataverse (formerly known as Microsoft Common Data Service), Microsoft Dynamics 365 CE (online), Microsoft Dynamics 365 CE (on-premises), 
 Microsoft Dynamics CRM 2016, Microsoft Dynamics CRM Online.
 
 Please check [DynamicsWebApi Wiki](../../wiki/) where you will find documentation to DynamicsWebApi API and more.
 
 Libraries for browsers can be found in [dist](/dist/) folder.
 
+## Features
+
+- Straighforward requests to Create, Retrieve, Update/Upsert and Delete data using Dataverse Web API.
+- Query and modify Table, Column, Option Set and Relationship definitions (Entity Metadata).
+- Easily combine multiple operations into a Batch Request by calling a single function. DynamicsWebApi will convert all requests into a Batch operation, once it is executed.
+- Long URL requests are automatically converted into a Batch Request in a background.
+- Use powerful Fetch XML queries for more complex requests.
+- Work with File Fields. Upload, Download and Delete data stored in the File Fields.
+- Call Dataverse Search API and use a full power of its Search, Suggestion and Autocomplete capabilities.
+- Can be used in both Node.js and a Browser (as a web resource in Dynamics 365).
+- AbortController support (Node.js 15+). Cancel asynchronous requests once they are no longer need to be completed, for example, when the user leaves a page without waiting for the data to load.
+- Supports requests through Proxy.
+
 ***
 
-I maintain this project in my free time and, to be honest with you, it takes a considerable amount of time to make sure that the library has all new features, 
+I maintain this project in my free time and it takes a considerable amount of time to make sure that the library has all new features, 
 gets improved and all raised tickets have been answered and fixed in a short amount of time. If you feel that this project has saved your time and you would like to support it, 
 then please feel free to sponsor it through GitHub Sponsors or send a donation directly to my PayPal: [![PayPal.Me](/extra/paypal.png)](https://paypal.me/alexrogov). 
 GitHub button can be found on the project's page.
 
-Also, please check [suggestions and contributions](#contributions) section to learn more on how you can help to improve this project.
+Also, please check [suggestions and contributions](#contributions) section to learn more on how you can help to improve the project.
 
 ***
 
@@ -55,16 +68,16 @@ Please note, that "Dynamics 365" in this readme refers to Microsoft Dynamics 365
   * [Execute Web API functions](#execute-web-api-functions)
   * [Execute Web API actions](#execute-web-api-actions)
   * [Execute Batch Operations](#execute-batch-operations)
-  * [Work with Metadata Definitions](#work-with-metadata-definitions)
-    * [Create Entity](#create-entity)
-    * [Retrieve Entity](#retrieve-entity)
-    * [Update Entity](#update-entity)
-    * [Retrieve Multiple Entities](#retrieve-multiple-entities)
-    * [Create Attribute](#create-attribute)
-    * [Retrieve Attribute](#retrieve-attribute)
-    * [Update Attribute](#update-attribute)
-    * [Retrieve Multiple Attributes](#retrieve-multiple-attributes)
-    * [Use requests to query Entity and Attribute metadata](#use-requests-to-query-entity-and-attribute-metadata)
+  * [Work with Table Definitions (Entity Metadata)](#work-with-table-definitions-entity-metadata)
+    * [Create Table](#create-a-new-table)
+    * [Retrieve Table Definitions](#retrieve-table-definitions)
+    * [Update Table Definitions](#update-table-definitions)
+    * [Retrieve Multiple Table Definitions](#retrieve-multiple-table-definitions)
+    * [Create Columns](#create-columns)
+    * [Retrieve Columns](#retrieve-columns)
+    * [Update Columns](#update-columns)
+    * [Retrieve Multiple Columns](#retrieve-multiple-columns)
+    * [Use requests to query Table and Column definitions](#use-requests-to-query-table-and-column-definitions)
 	* [Create Relationship](#create-relationship)
 	* [Update Relationship](#update-relationship)
 	* [Delete Relationship](#delete-relationship)
@@ -75,14 +88,18 @@ Please note, that "Dynamics 365" in this readme refers to Microsoft Dynamics 365
 	* [Delete Global Option Set](#delete-global-option-set)
 	* [Retrieve Global Option Set](#retrieve-global-option-set)
 	* [Retrieve Multiple Global Option Sets](#retrieve-multiple-global-option-sets)
+* [Retrieve CSDL $metadata document](#retrieve-csdl-metadata-document)
 * [Work with File Fields](#work-with-file-fields)
     * [Upload file](#upload-file)
     * [Download file](#download-file)
     * [Delete file](#delete-file)
-* [Retrieve CSDL $metadata document](#retrieve-csdl-metadata-document)
 * [Formatted Values and Lookup Properties](#formatted-values-and-lookup-properties)
 * [Using Alternate Keys](#using-alternate-keys)
 * [Making requests using Entity Logical Names](#making-requests-using-entity-logical-names)
+* [Work with Dataverse Search API](#work-with-dataverse-search-api)
+    * [Search](#search)
+    * [Suggest](#suggest)
+    * [Autocomplete](#autocomplete)
 * [Using Proxy](#using-proxy)
 * [Using TypeScript Declaration Files](#using-typescript-declaration-files)
 * [In Progress / Feature List](#in-progress--feature-list)
@@ -118,12 +135,12 @@ npm install dynamics-web-api --save
 
 Then include it in your file:
 
-```js
+```ts
 //CommonJS
 const DynamicsWebApi = require("dynamics-web-api");
 
 //ES6 Module
-import DynamicsWebApi from "dynamics-web-api";
+import { DynamicsWebApi } from "dynamics-web-api";
 ```
 
 DynamicsWebApi does not fetch authorization tokens, so you will need to acquire OAuth token in your code and pass it to the DynamicsWebApi.
@@ -131,10 +148,10 @@ Token can be acquired using [MSAL for JS](https://github.com/AzureAD/microsoft-a
 
 Here is an example using `@azure/msal-node`:
 
-```js
+```ts
 //app configuraiton must be stored in a safe place
-import Config from './config.js';
-import DynamicsWebApi from 'dynamics-web-api';
+import { Config } from './config.ts';
+import { DynamicsWebApi } from 'dynamics-web-api';
 import * as MSAL from '@azure/msal-node';
 
 //OAuth Token Endpoint (from your Azure App Registration)
@@ -160,7 +177,7 @@ const acquireToken = (dynamicsWebApiCallback) => {
         //call DynamicsWebApi callback only when a token has been retrieved successfully
         dynamicsWebApiCallback(response.accessToken);
     }).catch((error) => {
-        console.log(JSON.stringify(error));
+        console.log(error);
     });
 }
 
@@ -190,13 +207,13 @@ To initialize a new instance of DynamicsWebApi with a configuration object, plea
 
 #### Dynamics 365 Web Resource
 
-```js
+```ts
 const dynamicsWebApi = new DynamicsWebApi({ dataApi: { version: "9.1" } });
 ```
 
 #### Node.js
 
-```js
+```ts
 const dynamicsWebApi = new DynamicsWebApi({
     serverUrl: "https://myorg.api.crm.dynamics.com",
     dataApi: {
@@ -208,7 +225,7 @@ const dynamicsWebApi = new DynamicsWebApi({
 
 You can set a configuration dynamically if needed:
 
-```js
+```ts
 dynamicsWebApi.setConfig({ dataApi: { version: "9.0" } });
 ```
 
@@ -229,10 +246,10 @@ timeout | `Number` | Sets a number of milliseconds before a request times out.
 useEntityNames | `Boolean` | Indicates whether to use entity logical names instead of collection logical names during requests.
 
 **Note!**
-Property `serverUrl` is required when DynamicsWebApi used externally (in Node.js application).
+Property `serverUrl` is required when DynamicsWebApi used in Node.js application.
 
 **Important!** 
-If you are using `DynamicsWebApi` **outside Microsoft Dynamics 365** and set `useEntityNames` to `true` **the first request** to Web Api will fetch `LogicalCollectionName` and `LogicalName` from entity metadata for all entities. It does not happen when `DynamicsWebApi` is used in Microsoft Dynamics 365 Web Resources (there is no additional request, no impact on perfomance).
+If you are using `DynamicsWebApi` **outside Microsoft Dynamics 365** and set `useEntityNames` to `true` **the first request** to Web Api will fetch `LogicalCollectionName` and `LogicalName` from `EntityMetadata` for all entities. It does not happen when `DynamicsWebApi` is used in Microsoft Dynamics 365 Web Resources (there is no additional request, no impact on perfomance).
 
 **ApiConfig** Properties:
 
@@ -326,8 +343,6 @@ This feature is very convenient when you make a call with big Fetch XMLs. No spe
 
 ### Create a record
 
-#### TypeScript
-
 ```ts
 //declaring interface for a Lead entity (declaration can be done in d.ts file)
 interface Lead {
@@ -362,34 +377,7 @@ const result = await dynamicsWebApi.create<Lead>(request);
 const leadId = result.leadid;
 ```
 
-#### JavaScript
-
-```js
-//init an object representing Dynamics 365 entity
-const lead = {
-    subject: "Test WebAPI",
-    firstname: "Test",
-    lastname: "WebAPI",
-    jobtitle: "Title"
-};
-
-//init DynamicsWebApi request
-const request = {
-    collection: "leads",
-    data: lead,
-    returnRepresentation: true
-}
-
-//call dynamicsWebApi.create function
-const result = await dynamicsWebApi.create(request);
-
-//do something with a record here
-const subject = result.subject;
-```
-
 ### Update a record
-
-#### TypeScript
 
 ```ts
 //declaring interface for a Lead entity (declaration can be done in d.ts file)
@@ -421,30 +409,7 @@ const result = await dynamicsWebApi.update<Lead>(request);
 const fullname = result.fullname;
 ```
 
-#### JavaScript
-
-```js
-//init DynamicsWebApi request
-const request = {
-    key: '7d577253-3ef0-4a0a-bb7f-8335c2596e70',
-    collection: "leads",
-    data: {
-        subject: "Test update",
-        jobtitle: "Developer"
-    },
-    returnRepresentation: true,
-    select: ["fullname"]
-};
-
-const result = await dynamicsWebApi.update(request);
-
-//do something with a fullname of a recently updated entity record
-const fullname = result.fullname;
-```
-
 ### Update a single property value
-
-#### TypeScript
 
 ```ts
 //initialize key value pair object
@@ -460,25 +425,7 @@ await dynamicsWebApi.updateSingleProperty(request);
 //do something after a succesful operation
 ```
 
-#### JavaScript
-
-```js
-//initialize key value pair object
-const request = {
-    collection: "leads",
-    key: "7d577253-3ef0-4a0a-bb7f-8335c2596e70",
-    fieldValuePair: { subject: "Update Single" }
-};
-
-//perform an update single property operation
-await dynamicsWebApi.updateSingleProperty(request);
-
-//do something after a succesful operation
-```
-
 ### Upsert a record
-
-#### TypeScript
 
 ```ts
 const leadId = "7d577253-3ef0-4a0a-bb7f-8335c2596e70";
@@ -503,35 +450,7 @@ else {
 }
 ```
 
-
-#### JavaScript
-
-```js
-const leadId = "7d577253-3ef0-4a0a-bb7f-8335c2596e70";
-
-const request = {
-    key: leadId,
-    collection: "leads",
-    returnRepresentation: true,
-    select: ["fullname"],
-    data: {
-        subject: "Test upsert"
-    },
-    ifnonematch: "*" //to prevent update
-};
-
-const result = dynamicsWebApi.upsert(request);
-if (result != null) {
-    //record created
-}
-else {
-    //update prevented
-}
-```
-
 ### Delete a record
-
-#### TypeScript
 
 ```ts
 //delete with optimistic concurrency
@@ -549,28 +468,7 @@ else{
     //record has not been deleted
 }
 ```
-
-#### JavaScript
-
-```js
-//delete with optimistic concurrency
-const request = {
-    key: recordId,
-    collection: "leads",
-    ifmatch: 'W/"470867"'
-}
-
-const isDeleted = await dynamicsWebApi.deleteRecord(request);
-if (isDeleted){
-    //record has been deleted
-}
-else{
-    //record has not been deleted
-}
-```
 ### Retrieve a record
-
-#### TypeScript
 
 ```ts
 //declaring interface for a Lead entity (declaration can be done in d.ts file)
@@ -599,26 +497,6 @@ const request: DynamicsWebApi.RetrieveRequest = {
 const result = await dynamicsWebApi.retrieve<Lead>(request);
 
 //do something with a retrieved record
-```
-
-#### JavaScript
-
-```js
-const request = {
-    key: "7d577253-3ef0-4a0a-bb7f-8335c2596e70",
-    collection: "leads",
-    select: ["fullname", "subject"],
-
-    //ETag value with the If-None-Match header to request data to be retrieved only 
-    //if it has changed since the last time it was retrieved.
-    ifnonematch: 'W/"468026"',
-
-    //Retrieved record will contain formatted values
-    includeAnnotations: "OData.Community.Display.V1.FormattedValue"
-};
-
-//do something with a retrieved record
-const result = await dynamicsWebApi.retrieve(request);
 ```
 
 #### Retrieve a reference to related record using a single-valued navigation property
@@ -683,8 +561,6 @@ const fullname = parentLead.fullname;
 
 ### Retrieve multiple records
 
-#### TypeScript
-
 ```ts
 //declaring interface for a Lead entity (declaration can be done in d.ts file)
 interface Lead {
@@ -706,25 +582,6 @@ const response = await dynamicsWebApi.retrieveMultiple<Lead>(request);
 const count = response.oDataCount;
 const nextLink = response.oDataNextLink;
 const records = response.value;
-```
-
-#### JavaScript
-
-```js
-const request = {
-    collection: "leads",
-    select: ["fullname", "subject"],
-    filter: "statecode eq 0",
-    maxPageSize: 5,
-    count: true
-}
-
-const result = await dynamicsWebApi.retrieveMultiple(request);
-
-const count = response.oDataCount;
-const nextLink = response.oDataNextLink;
-const records = response.value;
-//do something else with a records array. Access a record: records[0].subject;
 ```
 
 #### Change Tracking
@@ -768,7 +625,7 @@ const records = response.value;
 
 It is possible to count records separately from RetrieveMultiple call. In order to do that use the following snippet:
 
-> **IMPORTANT!** The count value does not represent the total number of entities in the system. It is limited by the maximum number of entities that can be returned.
+**IMPORTANT!** The count value does not represent the total number of entities in the system. It is limited by the maximum number of entities that can be returned.
 
 ```ts
 const count = await dynamicsWebApi.count({ 
@@ -819,8 +676,6 @@ await dynamicsWebApi.associate(request);
 //does not have any return value
 ```
 
-JavaScript sample is the same only without a request type declaration.
-
 ### Associate for a single-valued navigation property
 
 The name of a single-valued navigation property can be retrieved by using a `GET` request with a header `Prefer:odata.include-annotations=Microsoft.Dynamics.CRM.associatednavigationproperty`, 
@@ -844,8 +699,6 @@ await dynamicsWebApi.associateSingleValued(request);
 //does not have any return value
 ```
 
-JavaScript sample is the same only without a request type declaration.
-
 ### Disassociate
 
 ```ts
@@ -862,8 +715,6 @@ const request: DynamicsWebApi.DisassociateRequest = {
 await dynamicsWebApi.disassociate(request);
 //does not have any return value
 ```
-
-JavaScript sample is the same only without a request type declaration.
 
 ### Disassociate for a single-valued navigation property
 Current request removes a reference to an entity for a single-valued navigation property. 
@@ -882,11 +733,7 @@ await dynamicsWebApi.disassociateSingleValued(request);
 //does not have any return value
 ```
 
-JavaScript sample is the same only without a request type declaration.
-
 ### Fetch XML Request
-
-#### TypeScript
 
 ```ts
 //declaring interface for an Account entity (declaration can be done in d.ts file)
@@ -909,26 +756,6 @@ const request: DynamicsWebApi.FetchXmlRequest = {
 }
 
 const result = await dynamicsWebApi.fetch<Account>(request);
-//do something with results here; access records result.value[0].accountid 
-```
-
-#### JavaScript
-
-```js
-//build a fetch xml
-const fetchXml = '<fetch mapping="logical">' +
-                    '<entity name="account">' +
-                        '<attribute name="accountid"/>' +
-                        '<attribute name="name"/>' +
-                    '</entity>' +
-               '</fetch>';
-
-const request = {
-    collection: "accounts",
-    fetchXml: fetchXml
-}
-
-const result = await dynamicsWebApi.fetch(request);
 //do something with results here; access records result.value[0].accountid 
 ```
 
@@ -987,8 +814,6 @@ const result = await dynamicsWebApi.fetchAll<Account>({
 
 #### Bound functions
 
-**TypeScript**
-
 ```ts
 //declaring needed types for the Function (types can be declared in *.d.ts file), if needed
 enum UserResponse {
@@ -1020,24 +845,7 @@ const result = await dynamicsWebApi.executeBoundFunction<RetrieveTeamPrivilegesR
 //do something with a result
 ```
 
-**JavaScript**
-
-```js
-const teamId = "00000000-0000-0000-0000-000000000001";
-
-const request = {
-    id: teamId,
-    collection: "teams",
-    functionName: "Microsoft.Dynamics.CRM.RetrieveTeamPrivileges"
-}
-
-const result = await dynamicsWebApi.executeBoundFunction(request);
-//do something with a result
-```
-
 #### Unbound functions
-
-**TypeScript**
 
 ```ts
 //declaring needed types for the Function (types can be declared in *.d.ts file), if needed
@@ -1056,23 +864,6 @@ const request: DynamicsWebApi.UnboundFunctionRequest = {
 }
 
 const result = await dynamicsWebApi.executeUnboundFunction<GetTimeZoneCodeByLocalizedNameResponse>(request);
-const timeZoneCode = result.TimeZoneCode;
-```
-
-**JavaScript**
-
-```js
-const parameters = {
-    LocalizedStandardName: "Pacific Standard Time",
-    LocaleId: 1033
-};
-
-const request = {
-    parameters: parameters,
-    functionName: "GetTimeZoneCodeByLocalizedName"
-}
-
-const result = await dynamicsWebApi.executeUnboundFunction(request);
 const timeZoneCode = result.TimeZoneCode;
 ```
 
@@ -1121,8 +912,6 @@ dynamicsWebApi.executeUnboundAction("WinOpportunity", actionRequest).then(functi
 
 ## Execute Batch Operations
 
-`version 1.5.0+`
-
 Batch requests bundle multiple operations into a single one and have the following advantages:
 
 * Reduces a number of requests sent to the Web API server. `Each user is allowed up to 60,000 API requests, per organization instance, within five minute sliding interval.` [More Info](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/api-limits)
@@ -1132,134 +921,120 @@ Batch requests bundle multiple operations into a single one and have the followi
 DynamicsWebApi provides a straightforward way to execute Batch operations which may not always be simple to compose. 
 The following example bundles 2 retrieve multiple operations and an update:
 
-```js
+```ts
 //when you want to start a batch operation call the following function:
 //it is important to call it, otherwise all operations below will be executed right away.
 dynamicsWebApi.startBatch();
 
 //call necessary operations just like you would normally do.
 //these calls will be converted into a single batch request
-dynamicsWebApi.retrieveMultiple('accounts');
-dynamicsWebApi.update('00000000-0000-0000-0000-000000000002', 'contacts', { firstname: "Test", lastname: "Batch!" });
-dynamicsWebApi.retrieveMultiple('contacts');
+dynamicsWebApi.retrieveMultiple({ collection: "accounts" });
+dynamicsWebApi.update({
+    key: '00000000-0000-0000-0000-000000000002',
+    collection: "contacts",
+    data: { firstname: "Test", lastname: "Batch!" }
+});
+dynamicsWebApi.retrieveMultiple({ collection: "contacts" });
 
 //execute a batch request:
-dynamicsWebApi.executeBatch()
-    .then(function (responses) {
-        //'responses' is an array of responses of each individual request
-        //they have the same sequence as the calls between startBatch() and executeBatch()
-        //in this case responses.length is 3
+const responses = await dynamicsWebApi.executeBatch();
+//'responses' is an array of responses of each individual request
+//they have the same sequence as the calls between startBatch() and executeBatch()
+//in this case responses.length is 3
 
-        //dynamicsWebApi.retrieveMultiple response:
-        var accounts = responses[0];
-        //dynamicsWebApi.update response
-        var isUpdated = responses[1]; //should be 'true'
-        //dynamicsWebApi.retrieveMultiple response:
-        var contacts = responses[2]; //will contain an updated contact
-
-    }).catch(function (error) {
-        //catch error here
-    });
+//dynamicsWebApi.retrieveMultiple response:
+const accounts = responses[0];
+//dynamicsWebApi.update response
+const isUpdated = responses[1]; //should be 'true'
+//dynamicsWebApi.retrieveMultiple response:
+const contacts = responses[2]; //will contain an updated contact
 ```
 
 The next example shows how to run multiple operations in a single transaction which means if at least one operation fails all completed ones will be rolled back which ensures a data consistency.
 
-```js
+```ts
 //for example, a user did a checkout and we need to create two orders
 
-var order1 = {
-    name: '1 year membership',
-    'customerid_contact@odata.bind': 'contacts(00000000-0000-0000-0000-000000000001)'
+const order1 = {
+    name: "1 year membership",
+    "customerid_contact@odata.bind": "contacts(00000000-0000-0000-0000-000000000001)"
 };
 
-var order2 = {
-    name: 'book',
-    'customerid_contact@odata.bind': 'contacts(00000000-0000-0000-0000-000000000001)'
+const order2 = {
+    name: "book",
+    "customerid_contact@odata.bind": "contacts(00000000-0000-0000-0000-000000000001)"
 };
 
 dynamicsWebApi.startBatch();
 
-dynamicsWebApi.create(order1, 'salesorders');
-dynamicsWebApi.create(order2, 'salesorders');
+dynamicsWebApi.create(order1, "salesorders");
+dynamicsWebApi.create(order2, "salesorders");
 
-dynamicsWebApi.executeBatch().then(function (responses) {
-    var salesorderId1 = responses[0];
-    var salesorderId2 = responses[1];
-}).catch(function (error) {
+try {
+    const responses = await dynamicsWebApi.executeBatch();
+    const salesorderId1 = responses[0];
+    const salesorderId2 = responses[1];
+}
+catch (error){
     //catch error here
     //all completed operations will be rolled back
-    alert('Cannot complete a checkout. Please try again later.');
-});
+    alert("Cannot complete a checkout. Please try again later.");
+}
 ```
-
-**Important!** Developers who use DynamicsWebApi with callbacks do not need to pass `successCallback` and `errorCallback` in an individual operation when `startBatch()` is called, 
-just pass `null` if you need to add additional parameters in the request, 
-for example: `dynamicsWebApi.deleteRecord('00000000-0000-0000-0000-000000000001', 'contacts', null, null, 'firstname')`.
 
 ### Use Content-ID to reference requests in a Change Set
 
-`version 1.5.6+`
-
 You can reference a request in a Change Set. For example, if you want to create related entities in a single batch request:
 
-```js
-var order = {
-    name: '1 year membership'
+```ts
+const order = {
+    name: "1 year membership"
 };
 
-var contact = {
-    firstname: 'John',
-    lastname: 'Doe'
+const contact = {
+    firstname: "John",
+    lastname: "Doe"
 };
 
 dynamicsWebApi.startBatch();
-dynamicsWebApi.createRequest({ entity: order, collection: 'salesorders', contentId: '1' });
-dynamicsWebApi.createRequest({ entity: contact, collection: 'customerid_contact', contentId: '$1' });
+dynamicsWebApi.create({ data: order, collection: "salesorders", contentId: "1" });
+dynamicsWebApi.create({ data: contact, collection: "customerid_contact", contentId: "$1" });
 
-dynamicsWebApi.executeBatch()
-    .then(function (responses) {
-        var salesorderId = responses[0];
-        //responses[1]; is undefined <- CRM Web API limitation
-    }).catch(function (error) {
-        //catch error here
-    });
+const responses = await dynamicsWebApi.executeBatch()
+const salesorderId = responses[0];
+//responses[1]; is undefined <- Dataverse Web API limitation
 ```
 
-Note that if you are making a request to a navigation property (`collection: 'customerid_contact'`), the request won't have a response, it is an OOTB Web API limitation.
+Note that if you are making a request to a navigation property (`collection: "customerid_contact"`), the request won't have a response, it is an OOTB Web API limitation.
 
 **Important!** DynamicsWebApi automatically assigns value to a `Content-ID` if it is not provided, therefore, please set your `Content-ID` value less than 100000.
 
 ### Use Content-ID inside a request payload
 
-`version 1.5.7+`
-
 Another option to make the same request is to use `Content-ID` reference inside a request payload as following:
 
-```js
+```ts
 const contact = {
-    firstname: 'John',
-    lastname: 'Doe'
+    firstname: "John",
+    lastname: "Doe"
 };
 
 const order = {
-    name: '1 year membership',
+    name: "1 year membership",
     //reference a request in a navigation property
-    'customerid_contact@odata.bind': '$1'
+    "customerid_contact@odata.bind": "$1"
 };
 
 dynamicsWebApi.startBatch();
-dynamicsWebApi.createRequest({ entity: contact, collection: 'contacts', contentId: '1' });
-dynamicsWebApi.createRequest({ entity: order, collection: 'salesorders' });
+dynamicsWebApi.create({ data: contact, collection: "contacts", contentId: "1" });
+dynamicsWebApi.create({ data: order, collection: "salesorders" });
 
-dynamicsWebApi.executeBatch()
-    .then(function (responses) {
-        //in this case both ids exist in a response
-        //which makes it a preferred method
-        const contactId = responses[0];
-        const salesorderId = responses[1];
-    }).catch(function (error) {
-        //catch error here
-    });
+const responses = await dynamicsWebApi.executeBatch();
+
+//in this case both ids exist in a response
+//which makes it a preferred method
+const contactId = responses[0];
+const salesorderId = responses[1];
 ```
 
 **Important!** Web API seems to have a limitation (or a bug) where it does not return the response with `returnRepresentation` set to `true`. It happens only if you are trying to return a representation of an entity that is being
@@ -1271,8 +1046,6 @@ Currently, there are some limitations in DynamicsWebApi Batch Operations:
 
 * Operations that use pagination to recursively retrieve all records cannot be used in a 'batch mode'. These include: `retrieveAll`, `retrieveAllRequest`, `countAll`, `fetchAll`, `executeFetchXmlAll`.
 You will get an error saying that the operation is incompatible with a 'batch mode'.
-* **Does not apply to `v.1.6.5+`**: The following limitation is for external applications (working outside D365 CE forms). `useEntityNames` may not work in a 'batch mode' if it is set to `true`. 
-To make sure that it works, please execute any operation before calling `dynamicsWebApi.startBatch()` so that it caches all entity names, for example: `dynamicsWebApi.count('account')`.
 
 There are also out of the box Web API limitations for batch operations:
 
@@ -1281,16 +1054,14 @@ There are also out of the box Web API limitations for batch operations:
 
 You can find an official documentation that covers Web API batch requests here: [Execute batch operations using the Web API](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/webapi/execute-batch-operations-using-web-api).
 
-## Work with Metadata Definitions
+## Work with Table Definitions (Entity Metadata)
 
-`Version 1.4.3+`
+Before working with metadata read [the following section from Microsoft Documentation](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/query-metadata-web-api).
 
-Before working with metadata read [the following section from Microsoft Documentation](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/webapi/use-web-api-metadata).
+### Create a new Table
 
-### Create Entity
-
-```js
-var entityDefinition = {
+```ts
+const entityDefinition = {
     "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
     "Attributes": [
     {
@@ -1358,63 +1129,61 @@ var entityDefinition = {
     "SchemaName": "new_BankAccount"
 };
 
-dynamicsWebApi.createEntity(entityDefinition).then(function(entityId){
-    //entityId is newly created entity id (MetadataId)
-}).catch(function(error){
-    //catch an error
-})
+//entityId is newly created entity id (MetadataId)
+const entityId = await dynamicsWebApi.createEntity({ data: entityDefinition });
+
 ```
 
-### Retrieve Entity
+### Retrieve Table Definitions
 
 Entity Metadata can be retrieved by either Primary Key (**MetadataId**) or by an Alternate Key (**LogicalName**). [More Info](https://msdn.microsoft.com/en-us/library/mt788314.aspx#bkmk_byName)
 
 ```js
-var entityKey = '00000000-0000-0000-0000-000000000001';
-//or you can use an alternate key:
-//var entityKey = "LogicalName='new_accountname'";
-dynamicsWebApi.retrieveEntity(entityKey, ['SchemaName', 'LogicalName']).then(function(entityMetadata){
-    var schemaName = entityMetadata.SchemaName;
-}).catch(function(error){
-    //catch an error
+const entityKey = "00000000-0000-0000-0000-000000000001";
+//  or you can use an alternate key:
+//const entityKey = "LogicalName='new_accountname'";
+
+const entityMetadata = await dynamicsWebApi.retrieveEntity({
+    key: entityKey,
+    select: ["SchemaName", "LogicalName"]
 });
+
+const schemaName = entityMetadata.SchemaName;
 ```
 
-### Update Entity
+### Update Table Definitions
 
 Microsoft recommends to make changes in the entity metadata that has been priorly retrieved to avoid any mistake. I would also recommend to read information about **MSCRM.MergeLabels** header prior updating metadata. More information about the header can be found [here](https://msdn.microsoft.com/en-us/library/mt593078.aspx#Anchor_2).
 
 **Important!** Make sure you set **`MetadataId`** property when you update the metadata, DynamicsWebApi use it as a primary key for the EntityDefinition record.
 
-```js
-var entityKey = "LogicalName='new_accountname'";
-dynamicsWebApi.retrieveEntity(entityKey).then(function(entityMetadata){
-    //1. change label
-    entityMetadata.DispalyName.LocalizedLabels[0].Label = 'New Bank Account';
-    //2. update metadata
-    return dynamicsWebApi.updateEntity(entityMetadata);
-}).catch(function(error){
-    //catch an error
-});
+```ts
+const entityKey = "LogicalName='new_accountname'";
+const entityMetadata = await dynamicsWebApi.retrieveEntity({ key: entityKey });
+//1. change label
+entityMetadata.DispalyName.LocalizedLabels[0].Label = "New Bank Account";
+//2. update metadata
+await dynamicsWebApi.updateEntity({ data: entityMetadata });
 ```
 
-**Important!** When you update an entity, you must publish changes in CRM. [More Info](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/customize-dev/publish-customizations)
+**Important!** When you update a table definition, you must publish your changes. [More Info](https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/publish-customizations)
 
-### Retrieve Multiple Entities
+### Retrieve Multiple Table Definitions
 
-```js
-dynamicsWebApi.retrieveEntities(['LogicalName'], "OwnershipType eq Microsoft.Dynamics.CRM.OwnershipTypes'UserOwned'").then(function(response){
-    var firstLogicalName = response.value[0].LogicalName;
-}).catch(function(error){
-    //catch an error
+```ts
+const response = await dynamicsWebApi.retrieveEntities({
+    select: ["LogicalName"],
+    filter: "OwnershipType eq Microsoft.Dynamics.CRM.OwnershipTypes'UserOwned'"
 });
+
+const firstLogicalName = response.value[0].LogicalName;
 ```
 
-### Create Attribute
+### Create Columns
 
-```js
-var entityKey = '00000000-0000-0000-0000-000000000001';
-var attributeDefinition = {
+```ts
+const entityKey = '00000000-0000-0000-0000-000000000001';
+const attributeDefinition = {
     "AttributeType": "Money",
     "AttributeTypeName": {
         "Value": "MoneyType"
@@ -1445,189 +1214,187 @@ var attributeDefinition = {
     "PrecisionSource": 2
 };
 
-dynamicsWebApi.createAttribute(entityKey, attributeDefinition).then(function(attributeId){
-    //attributeId is a PrimaryKey (MetadataId) for newly created attribute
-}).catch(function(error){
-    //catch an error
+//attributeId is a PrimaryKey (MetadataId) for newly created column
+const attributeId = await dynamicsWebApi.createAttribute({
+    entityKey: entityKey,
+    data: attributeDefinition
 });
 ```
 
-### Retrieve Attribute
+### Retrieve Columns
 
-Attribute Metadata can be retrieved by either Primary Key (**MetadataId**) or by an Alternate Key (**LogicalName**). [More Info](https://msdn.microsoft.com/en-us/library/mt788314.aspx#bkmk_byName)
+Column definitions can be retrieved by either Primary Key (**MetadataId**) or by an Alternate Key (**LogicalName**). [More Info](https://msdn.microsoft.com/en-us/library/mt788314.aspx#bkmk_byName)
 
 The following example will retrieve only common properties available in [AttributeMetadata](https://msdn.microsoft.com/en-us/library/mt607551.aspx) entity.
 
-```js
-var entityKey = '00000000-0000-0000-0000-000000000001';
+```ts
+const entityKey = "00000000-0000-0000-0000-000000000001";
 //or you can use an alternate key:
 //var entityKey = "LogicalName='new_accountname'";
-var attributeKey = '00000000-0000-0000-0000-000000000002';
+const attributeKey = "00000000-0000-0000-0000-000000000002";
 //or you can use an alternate key:
 //var attributeKey = "LogicalName='new_balance'";
-dynamicsWebApi.retrieveAttribute(entityKey, attributeKey, ['SchemaName']).then(function(attributeMetadata){
-    var schemaName = attributeMetadata.SchemaName;
-}).catch(function(error){
-    //catch an error
+const attributeMetadata = await dynamicsWebApi.retrieveAttribute({
+    entityKey: entityKey, 
+    attributeKey: attributeKey, 
+    select: ["SchemaName"]
 });
+
+const schemaName = attributeMetadata.SchemaName;
 ```
 
-Use parameter in the function to cast the attribute to a specific type.
+Use `castType` property in a request to cast the attribute to a specific type.
 
-```js
-var entityKey = '00000000-0000-0000-0000-000000000001';
-var attributeKey = '00000000-0000-0000-0000-000000000002';
-dynamicsWebApi.retrieveAttribute(entityKey, attributeKey, ['SchemaName'], 'Microsoft.Dynamics.CRM.MoneyAttributeMetadata')
-    .then(function(attributeMetadata){
-        var schemaName = attributeMetadata.SchemaName;
-    }).catch(function(error){
-        //catch an error
-    });
+```ts
+const entityKey = '00000000-0000-0000-0000-000000000001';
+const attributeKey = '00000000-0000-0000-0000-000000000002';
+const attributeMetadata = await dynamicsWebApi.retrieveAttribute({
+    entityKey: entityKey, 
+    attributeKey: attributeKey, 
+    select: ["SchemaName"],
+    castType: "Microsoft.Dynamics.CRM.MoneyAttributeMetadata"
+})
+
+const schemaName = attributeMetadata.SchemaName;
 ```
 
-### Update Attribute
+### Update Columns
 
 **Important!** Make sure you set **`MetadataId`** property when you update the metadata, DynamicsWebApi use it as a primary key for the EntityDefinition record.
 
 The following example will update only common properties availible in [AttributeMetadata](https://msdn.microsoft.com/en-us/library/mt607551.aspx) entity. If you need to update specific properties of Attributes with type that inherit from the AttributeMetadata you will need to cast the attribute to the specific type. [More Info](https://msdn.microsoft.com/en-us/library/mt607522.aspx#Anchor_4)
 
-```js
-var entityKey = "LogicalName='new_accountname'";
-var attributeKey = "LogicalName='new_balance'";
-dynamicsWebApi.retrieveAttribute(entityKey, attributeKey).then(function(attributeMetadata){
-    //1. change label
-    attributeMetadata.DispalyName.LocalizedLabels[0].Label = 'New Balance';
-    //2. update metadata
-    return dynamicsWebApi.updateAttribute(entityKey, attributeMetadata);
-}).catch(function(error){
-    //catch an error
+```ts
+const entityKey = "LogicalName='my_accountname'";
+const attributeKey = "LogicalName='my_balance'";
+const attributeMetadata = await dynamicsWebApi.retrieveAttribute({
+    entityKey: entityKey, 
+    attributeKey: attributeKey
+});
+//1. change label
+attributeMetadata.DispalyName.LocalizedLabels[0].Label = "New Balance";
+//2. update metadata
+await dynamicsWebApi.updateAttribute({
+    entityKey: entityKey, 
+    data: attributeMetadata
 });
 ```
 
 To cast a property to a specific type use a parameter in the function.
 
-```js
-var entityKey = "LogicalName='new_accountname'";
-var attributeKey = "LogicalName='new_balance'";
-var attributeType = 'Microsoft.Dynamics.CRM.MoneyAttributeMetadata';
-dynamicsWebApi.retrieveAttribute(entityKey, attributeKey, attributeType).then(function(attributeMetadata){
-    //1. change label
-    attributeMetadata.DispalyName.LocalizedLabels[0].Label = 'New Balance';
-    //2. update metadata
-    return dynamicsWebApi.updateAttribute(entityKey, attributeMetadata, attributeType);
-}).catch(function(error){
-    //catch an error
+```ts
+const entityKey = "LogicalName='my_accountname'";
+const attributeKey = "LogicalName='my_balance'";
+const attributeType = 'Microsoft.Dynamics.CRM.MoneyAttributeMetadata';
+const attributeMetadata = await dynamicsWebApi.retrieveAttribute({
+    entityKey: entityKey, 
+    attributeKey: attributeKey,
+    castType: attributeType
+});
+//1. change label
+attributeMetadata.DispalyName.LocalizedLabels[0].Label = "New Balance";
+//2. update metadata
+await dynamicsWebApi.updateAttribute({
+    entityKey: entityKey, 
+    data: attributeMetadata,
+    castType: attributeType
 });
 ```
 
 **Important!** Make sure you include the attribute type in the update function as well.
 
-**Important!** When you update an attribute, you must publish changes in CRM. [More Info](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/customize-dev/publish-customizations)
+**Important!** When you update an attribute, you must publish changes in CRM. [More Info](https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/publish-customizations)
 
-### Retrieve Multiple Attributes
+### Retrieve Multiple Columns
 
 The following example will retrieve only common properties available in [AttributeMetadata](https://msdn.microsoft.com/en-us/library/mt607551.aspx) entity.
 
-```js
-var entityKey = "LogicalName='new_accountname'";
-dynamicsWebApi.retrieveAttributes(entityKey).then(function(response){
-    var firstAttribute = response.value[0];
-}).catch(function(error){
-    //catch an error
-});
+```ts
+const entityKey = "LogicalName='my_accountname'";
+const response = await dynamicsWebApi.retrieveAttributes({ entityKey: entityKey });
+const firstAttribute = response.value[0];
 ```
 
-To retrieve only attributes of a specific type use a parameter in a function:
+To retrieve columns of only a specific type use a `castType` property in a request object:
 
-```js
-var entityKey = "LogicalName='new_accountname'";
-dynamicsWebApi.retrieveAttributes(entityKey, 'Microsoft.Dynamics.CRM.MoneyAttributeMetadata').then(function(response){
-    var firstAttribute = response.value[0];
-}).catch(function(error){
-    //catch an error
+```ts
+const entityKey = "LogicalName='my_accountname'";
+const response = await dynamicsWebApi.retrieveAttributes({ 
+    entityKey: entityKey,
+    castType: "Microsoft.Dynamics.CRM.MoneyAttributeMetadata"
 });
+
+const firstAttribute = response.value[0];
 ```
 
-### Use requests to query Entity and Attribute metadata
+### Use requests to query Table and Column definitions
 
 You can also use common request functions to create, retrieve and update entity and attribute metadata. Just use the following rules:
 
-1. Always set `collection: 'EntityDefinitions'`.
+1. Always set `collection: "EntityDefinitions"`.
 2. To retrieve a specific **entity metadata** by a Primary or Alternate Key use `key` property. For example: `key: 'LogicalName="account"'`.
-3. To get attributes, set `navigationProperty: 'Attributes'`.
-4. To retrieve a specific **attribute metadata** by Primary or Alternate Key use `navigationPropertyKey`. For example: `navigationPropertyKey: '00000000-0000-0000-0000-000000000002'`.
+3. To get attributes, set `navigationProperty: "Attributes"`.
+4. To retrieve a specific **attribute metadata** by Primary or Alternate Key use `navigationPropertyKey`. For example: `navigationPropertyKey: "00000000-0000-0000-0000-000000000002"`.
 5. During entity or attribute metadata update you can use `mergeLabels` property to set **MSCRM.MergeLabels** attribute. By default `mergeLabels: false`.
-6. To send entity or attribute definition use `entity` property.
+6. To send entity or attribute definition use `data` property.
 
 #### Examples
 
-Retrieve entity metadata with attributes (with common properties):
+Retrieve a table definition with columns (with common properties):
 
-```js
-var request = {
-    collection: 'EntityDefinitions',
-    key: '00000000-0000-0000-0000-000000000001',
-    select: ['LogicalName', 'SchemaName'],
-    expand: 'Attributes'
-};
-
-dynamicsWebApi.retrieveRequest(request).then(function(entityMetadata){
-    var attributes = entityMetadata.Attributes;
-}).catch(function(error){
-    //catch an error
+```ts
+const entityMetadata = await dynamicsWebApi.retrieveRequest({
+    collection: "EntityDefinitions",
+    key: "00000000-0000-0000-0000-000000000001",
+    select: ["LogicalName", "SchemaName"],
+    expand: "Attributes"
 });
+
+const attributes = entityMetadata.Attributes;
 ```
 
-Retrieve attribute metadata and cast it to the StringType:
+Retrieve a column definition and cast it to the `StringType`:
 
-```js
-var request = {
-    collection: 'EntityDefinitions',
-    key: 'LogicalName="account"',
-    navigationProperty: 'Attributes',
-    navigationPropertyKey: 'LogicalName="firstname"',
-    metadataAttributeType: 'Microsoft.Dynamics.CRM.StringAttributeMetadata'
+```ts
+const request = {
+    collection: "EntityDefinitions",
+    key: "LogicalName='account'",
+    navigationProperty: "Attributes",
+    navigationPropertyKey: "LogicalName='firstname'",
+    metadataAttributeType: "Microsoft.Dynamics.CRM.StringAttributeMetadata"
 };
 
-dynamicsWebApi.retrieveRequest(request).then(function(attributeMetadata){
-    var displayNameDefaultLabel = attributeMetadata.DisplayName.LocalizedLabels[0].Label;
-}).catch(function(error){
-    //catch an error
-});
+const attributeMetadata = await dynamicsWebApi.retrieveRequest(request);
+const displayNameDefaultLabel = attributeMetadata.DisplayName.LocalizedLabels[0].Label;
 ```
 
 Update entity metadata with **MSCRM.MergeLabels** header set to `true`:
 
-```js
-var request = {
-    collection: 'EntityDefinitions',
-    key: 'LogicalName="account"'
-};
-
-dynamicsWebApi.retrieveRequest(request).then(function(entityMetadata){
-    //1. change label
-    entityMetadata.DisplayName.LocalizedLabels[0].Label = 'Organization';
-    //2. configure update request
-    var updateRequest = {
-        collection: 'EntityDefinitions',
-        key: entityMetadata.MetadataId,
-        mergeLabels: true,
-        entity: entityMetadata
-    };
-    //3. call update request
-    return dynamicsWebApi.updateRequest(updateRequest);
-}).catch(function(error){
-    //catch an error
+```ts
+const entityMetadata = await dynamicsWebApi.retrieveRequest({
+    collection: "EntityDefinitions",
+    key: "LogicalName='account'"
 });
+//1. change label
+entityMetadata.DisplayName.LocalizedLabels[0].Label = "Organization";
+//2. configure update request
+const updateRequest = {
+    collection: "EntityDefinitions",
+    key: entityMetadata.MetadataId,
+    mergeLabels: true,
+    entity: entityMetadata
+};
+//3. call update request
+await dynamicsWebApi.updateRequest(updateRequest);
 
 //it is the same as:
-dynamicsWebApi.retrieveEntity('LogicalName="account"').then(function(entityMetadata){
-    //1. change label
-    entityMetadata.DisplayName.LocalizedLabels[0].Label = 'Organization';
-    //2. call update request
-    return dynamicsWebApi.updateEntity(entityMetadata, true);
-}).catch(function(error){
-    //catch an error
+const entityMetadata2 = await dynamicsWebApi.retrieveEntity({ key: "LogicalName='account'" });
+//1. change label
+entityMetadata2.DisplayName.LocalizedLabels[0].Label = "Organization";
+//2. call update request
+await dynamicsWebApi.updateEntity({ 
+    data: entityMetadata, 
+    mergeLabels: true 
 });
 ```
 
@@ -1786,8 +1553,6 @@ dynamicsWebApi.retrieveRelationships(relationshipType, ['SchemaName', 'MetadataI
 
 ### Create Global Option Set
 
-`version 1.4.6+`
-
 ```js
 var optionSetDefinition = {
     "@odata.type": "Microsoft.Dynamics.CRM.OptionSetMetadata",
@@ -1855,8 +1620,6 @@ dynamicsWebApi.createGlobalOptionSet(optionSetDefinition).then(function (id) {
 
 ### Update Global Option Set
 
-`version 1.4.6+`
-
 **Important!** Publish your changes after update, otherwise a label won't be modified.
 
 ```js
@@ -1876,8 +1639,6 @@ dynamicsWebApi.retrieveGlobalOptionSet(key).then(function (response) {
 
 ### Delete Global Option Set
 
-`version 1.4.6+`
-
 ```js
 var key = '6e133d25-abd1-e811-816e-480fcfeab9c1';
 //or
@@ -1891,8 +1652,6 @@ dynamicsWebApi.deleteGlobalOptionSet(key).then(function (response) {
 ```
 
 ### Retrieve Global Option Set
-
-`version 1.4.6+`
 
 ```js
 var key = '6e133d25-abd1-e811-816e-480fcfeab9c1';
@@ -1923,8 +1682,6 @@ dynamicsWebApi.retrieveGlobalOptionSet(key, 'Microsoft.Dynamics.CRM.OptionSetMet
 
 ### Retrieve Multiple Global Option Sets
 
-`version 1.4.6+`
-
 ```js
 dynamicsWebApi.retrieveGlobalOptionSets().then(function (response) {
 	var optionSet = response.value[0]; //first global option set
@@ -1940,9 +1697,23 @@ dynamicsWebApi.retrieveGlobalOptionSets('Microsoft.Dynamics.CRM.OptionSetMetadat
 });
 ```
 
-## Work with File Fields
+## Retrieve CSDL $metadata document
+`v.2.0+`
 
-`version 1.7.0+`
+To retrieve a CSDL $metadata document use the following:
+
+```ts
+const request: DynamicsWebApi.CsdlMetadataRequest = {
+    addAnnotations: false; //or true;
+}
+
+//the parameter "request" is optional and can be ommited if additional annotations are not necessary
+const csdlDocument: string = await dynamicsWebApi.retrieveCsdlMetadata(request);
+```
+
+The `csdlDocument` will be the type of `string`. DynamicsWebApi does not parse the contents of the document and it should be done by the developer.
+
+## Work with File Fields
 
 Please make sure that you are connected to Dynamics 365 Web API with version 9.1+ to successfully use the functions. More information can be found [here](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/file-attributes)
 
@@ -2023,23 +1794,6 @@ dynamicsWebApi.deleteRequest({
     //catch an error
 });
 ```
-
-## Retrieve CSDL $metadata document
-`v.2.0+`
-
-To retrieve a CSDL $metadata document use the following:
-
-```ts
-const request: DynamicsWebApi.CsdlMetadataRequest = {
-    addAnnotations: false; //or true;
-}
-
-//the parameter "request" is optional and can be ommited if additional annotations are not necessary
-const csdlDocument: string = await dynamicsWebApi.retrieveCsdlMetadata(request);
-```
-
-The `csdlDocument` will be the type of `string`. DynamicsWebApi does not parse the contents of the document and it should be done by the developer.
-
 ## Formatted Values and Lookup Properties
 
 Starting from version 1.3.0 it became easier to access formatted values for properties and lookup data in response objects. 
@@ -2077,64 +1831,21 @@ OData Annotation | Property Suffix
 `@Microsoft.Dynamics.CRM.associatednavigationproperty` | `_NavigationProperty`
 
 ## Using Alternate Keys
-Starting from version 1.3.4, you can use alternate keys to Update, Upsert, Retrieve and Delete records. [More Info](https://msdn.microsoft.com/en-us/library/mt607871.aspx#Retrieve%20using%20an%20alternate%20key)
+You can use alternate keys to Update, Upsert, Retrieve and Delete records. [More Info](https://msdn.microsoft.com/en-us/library/mt607871.aspx#Retrieve%20using%20an%20alternate%20key)
 
-### Basic usage
-
-```js
-var alternateKey = "key='keyValue'"; 
-//or var alternateKey = "key='keyValue',anotherKey='keyValue2'";
-
-//perform a retrieve operaion
-dynamicsWebApi.retrieve(alternateKey, "leads", ["fullname", "subject"]).then(function (record) {
-    //do something with a record here
-})
-.catch(function (error) {
-    //catch an error
-});
-```
-
-### Advanced using Request Object
-
-Please use `key` instead of `id` for all requests that you make using DynamicsWebApi starting from `v.1.3.4`.
-
-Please note, that `id` field is not removed from the library, so all your existing scripts will work without any issue.
-
-```js
-var request = {
+```ts
+const request = {
     key: "alternateKey='keyValue'",
     collection: 'leads',
     select: ['fullname', 'subject']
 };
 
-dynamicsWebApi.retrieveRequest(request).then(function (record) {
-    //do something with a record
-})
-.catch(function (error) {
-    //if the record has not been found the error will be thrown
-});
+const record = await dynamicsWebApi.retrieveRequest(request);
+//do something with a record
 ```
-
-`key` can be used as a primary key (id):
-
-```js
-var request = {
-    key: '00000000-0000-0000-0000-000000000001',
-    collection: 'leads',
-    select: ['fullname', 'subject']
-};
-
-dynamicsWebApi.retrieveRequest(request).then(function (record) {
-    //do something with a record
-})
-.catch(function (error) {
-    //if the record has not been found the error will be thrown
-});
-```
-
 ## Making requests using Entity Logical Names
 
-Starting from version 1.4.0, it is possible to make requests using Entity Logical Names (for example: `account`, instead of `accounts`).
+It is possible to make requests using Entity Logical Names (for example: `account`, instead of `accounts`).
 There's a small perfomance impact when this feature is used **outside CRM/D365 Web Resources**: DynamicsWebApi makes a request to
 Entity Metadata and retrieves LogicalCollectionName and LogicalName for all entities during **the first call to Web Api** on the page.
 
@@ -2190,14 +1901,165 @@ Please use the following method to get a collection name from a cached entity me
 ```js
 //IMPORTANT! collectionName will be null if there was no call to Web API prior to that
 //this restriction does not apply if DynamicsWebApi used inside CRM/D365
-var collectionName = dynamicsWebApi.utility.getCollectionName('account');
+const collectionName = dynamicsWebApi.Utility.getCollectionName("account");
 ```
 
 Please note, everything said above will happen only if you set `useEntityNames: true` in the DynamicsWebApi config.
 
+## Work with Dataverse Search API
+
+DynamicsWebApi can be used to call Dataverse Search API and utilize its powerful Search, Suggest and Autocomplete capabilities. Before using, I highly recommend to get familiar with it by reading an [official documentation](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/relevance-search).
+
+To set Search API version use: `new DynamicsWebApi({ searchApi: { version: "2.0" }})`.
+
+Search, Suggest and Autocomplete requests have a common property `query`. This is the main property that configures a relevance search request.
+
+Examples below follow Microsoft official documenation.
+
+### Search
+
+The following table describes all parameters for a `search` request:
+
+Property Name | Type | Description
+------------ | ------------- | -------------
+search | `string` | **Required**. The search parameter value contains the term to be searched for and has a 100-character limit.
+entities | `string[]` | The default table list searches across all Dataverse search–configured tables and columns. The default list is configured by your administrator when Dataverse search is enabled.
+facets | `string[]` | Facets support the ability to drill down into data results after they've been retrieved.
+filter | `string` | Filters are applied while searching data and are specified in standard OData syntax.
+orderBy | `string[]` | A list of comma-separated clauses where each clause consists of a column name followed by 'asc' (ascending, which is the default) or 'desc' (descending). This list specifies how to order the results in order of precedence.
+returnTotalRecordCount | `boolean` | Specify true to return the total record count; otherwise false. The default is **false**.
+searchMode | `string` | Specifies whether **any** or **all** the search terms must be matched to count the document as a match. The default is '**any**'.
+searchType | `string` | The search type specifies the syntax of a search query. Using '**simple**' selects simple query syntax and '**full**' selects Lucene query syntax. The default is '**simple**'.
+skip | `number` | Specifies the number of search results to skip.
+top | `number` | Specifies the number of search results to retrieve. The default is **50**, and the maximum value is **100**.
+
+**Examples:**
+
+```ts
+const result = await dynamicsWebApi.search({
+    query: {
+        search: "<search term>"
+    }
+});
+```
+
+```ts
+const result = await dynamicsWebApi.search({
+    query: {
+        search: "maria",
+        facets: [
+            "@search.entityname,count:100",
+            "account.primarycontactid,count:100",
+            "ownerid,count:100",
+            "modifiedon,values:2019-04-27T00:00:00|2020-03-27T00:00:00|2020-04-20T00:00:00|2020-04-27T00:00:00",
+            "createdon,values:2019-04-27T00:00:00|2020-03-27T00:00:00|2020-04-20T00:00:00|2020-04-27T00:00:00"
+        ]
+    }
+});
+```
+
+```ts
+const result = await dynamicsWebApi.search({
+    query: {
+        search: "maria",
+        filter: "account:modifiedon ge 2020-04-27T00:00:00," +
+                "activities: regardingobjecttypecode eq 'account', annotation:objecttypecode eq 'account'," +
+                "incident: (prioritycode eq 1 or prioritycode eq 2)"
+    }
+});
+```
+
+```ts
+const result = await dynamicsWebApi.search({
+    query: {
+        search: "maria",
+        facets: [
+            "@search.entityname,count:100",  
+            "account.primarycontactid,count:100",  
+            "ownerid,count:100",  
+            "modifiedon,values:2019-04-27T00:00:00|2020-03-27T00:00:00|2020-04-20T00:00:00|2020-04-27T00:00:00",
+            "createdon,values:2019-04-27T00:00:00|2020-03-27T00:00:00|2020-04-20T00:00:00|2020-04-27T00:00:00"
+        ]
+    }
+});
+
+const firstHit = result.value[0];
+const firstHitScore = firstHit["@search.score"];
+const firstSearchEntityName = result.facets["@search.entityname"][0].Value;
+```
+
+### Suggest
+
+The following table describes all parameters for a `suggest` request:
+
+Property Name | Type | Description
+------------ | ------------- | -------------
+search | `string` | **Required**. The search parameter value contains the term to be searched for and has a 3-character min limit and max 100-character limit.
+entities | `string[]` | The default table list searches across all Dataverse search–configured tables and columns. The default list is configured by your administrator when Dataverse search is enabled.
+orderBy | `string[]` | A list of comma-separated clauses where each clause consists of a column name followed by 'asc' (ascending, which is the default) or 'desc' (descending). This list specifies how to order the results in order of precedence.
+filter | `string` | Filters are applied while searching data and are specified in standard OData syntax.
+top | `number` | Number of suggestions to retrieve. The default is **5**.
+useFuzzy | `boolean` | Use fuzzy search to aid with misspellings. The default is false.
+
+**Examples:**
+
+```ts
+const result = await dynamicsWebApi.suggest({
+    query: {
+        search: "mar"
+    }
+});
+
+const firstText = result.value[0].text;
+const firstDocument = result.value[0].document;
+```
+
+```ts
+const result = await dynamicsWebApi.suggest({
+    query: {
+        search: "mar",
+        filter: "account:modifiedon ge 2020-04-27T00:00:00," +
+                "activities:regardingobjecttypecode eq 'account', annotation:objecttypecode eq 'account'"
+    }
+});
+```
+
+### Autocomplete
+
+The following table describes all parameters for an `autocomplete` request:
+
+Property Name | Type | Description
+------------ | ------------- | -------------
+search | `string` | **Required**. The search parameter value contains the term to be searched for and has a 100-character limit.
+entities | `string[]` | The default table list searches across all Dataverse search–configured tables and columns. The default list is configured by your administrator when Dataverse search is enabled.
+filter | `string` | Filters are applied while searching data and are specified in standard OData syntax.
+useFuzzy | `boolean` | Use fuzzy search to aid with misspellings. The default is false.
+
+**Examples:**
+
+```ts
+const result = await dynamicsWebApi.autocomplete({
+    query: {
+        search: "mar"
+    }
+});
+
+const value = result.value;
+```
+
+```ts
+const result = await dynamicsWebApi.autocomplete({
+    query: {
+        search: "mar",
+        filter: "account:modifiedon ge 2020-04-27T00:00:00," +
+                "activities:regardingobjecttypecode eq 'account', annotation:objecttypecode eq 'account'"
+    }
+});
+```
+
 ## Using Proxy
 
-**Node.js Only.** Starting from v.1.7.2 DynamicsWebApi supports different types of connections through proxy. To make it possible, I added two dependencies in a `package.json`:
+**Node.js Only.** DynamicsWebApi supports different types of connections through proxy. To make it possible, I added two dependencies in a `package.json`:
 [http-proxy-agent](https://github.com/TooTallNate/node-https-proxy-agent) and [https-proxy-agent](https://github.com/TooTallNate/node-http-proxy-agent), based on a type of a protocol, DynamicsWebApi, based on a type of a protocol, DynamicsWebApi will use one of those agents.
 
 In order to let DynamicsWebApi know that you are using proxy you have two options:
@@ -2206,7 +2068,7 @@ In order to let DynamicsWebApi know that you are using proxy you have two option
 
 ```ts
 const dynamicsWebApi = new DynamicsWebApi({
-    webApiUrl: "https://myorg.api.crm.dynamics.com/api/data/v9.1/",
+    serverUrl: "https://myorg.api.crm.dynamics.com/",
     onTokenRefresh: acquireToken,
     proxy: {
         url: "http://localhost:12345",
@@ -2221,7 +2083,6 @@ const dynamicsWebApi = new DynamicsWebApi({
 
 ## Using TypeScript Declaration Files
 
-TypeScript declaration files `d.ts` added with v.1.5.3. 
 If you are not familiar with declaration files, these files are used to provide TypeScript type information about an API that's written in JavaScript.
 You want to consume those from your TypeScript code. [Quote](https://stackoverflow.com/a/21247316/2042071)
 
@@ -2231,15 +2092,13 @@ If you are using Node.Js with TypeScript, declarations will be fetched with an N
 At the top of a necessary `.ts` file add the following:
 
 ```ts
-import * as DynamicsWebApi from "dynamics-web-api";
+import { DynamicsWebApi, Config } from "dynamics-web-api";
 //for CommonJS:
 //import DynamicsWebApi = require("dynamics-web-api");
 ```
 
 ### Dynamics 365 web resource
-If you are developing CRM Web Resources with TypeScript, you will need to download a necessary `d.ts` file manually from the following folder: [types](/types/).
-As you may have noticed `types` folder contains two declaration files: `dynamics-web-api.d.ts` (Promises) and `dynamics-web-api-callbacks.d.ts` (Callbacks) - download the one that you need.
-**Do not download both files! Otherwise you will have type declaration conflicts.**
+If you are developing CRM Web Resources with TypeScript, you will need to download a necessary `d.ts` file manually from the following folder: [dist](/dist/).
 In my web resources project I usually put a declaration file under "./types/" folder. For example:
 
 ```
@@ -2248,7 +2107,7 @@ In my web resources project I usually put a declaration file under "./types/" fo
   -- form_web_resource.ts
 -- types/
   -- dynamics-web-api/
-    -- dynamics-web-api-callbacks.d.ts
+    -- dynamics-web-api.d.ts
 -- tsconfig.json
 ```
 
@@ -2284,7 +2143,7 @@ the config option "formatted" will enable developers to retrieve all information
 - [X] File upload/download/delete for a File Field. `Added in v.1.7.0`.
 - [X] Full proxy support. `Added in v.1.7.2`.
 - [ ] Refactoring and conversion to TypeScript - coming with `v.2.0`! Stay tuned!
-- [ ] Implement [Dataverse Search API](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/relevance-search). 
+- [X] Implement [Dataverse Search API](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/relevance-search). 
 
 Many more features to come!
 
