@@ -967,8 +967,8 @@ const order2 = {
 
 dynamicsWebApi.startBatch();
 
-dynamicsWebApi.create(order1, "salesorders");
-dynamicsWebApi.create(order2, "salesorders");
+dynamicsWebApi.create({ data: order1, collection: "salesorders" });
+dynamicsWebApi.create({ data: order2, collection: "salesorders" });
 
 try {
     const responses = await dynamicsWebApi.executeBatch();
@@ -1038,7 +1038,7 @@ const salesorderId = responses[1];
 ```
 
 **Important!** Web API seems to have a limitation (or a bug) where it does not return the response with `returnRepresentation` set to `true`. It happens only if you are trying to return a representation of an entity that is being
-linked to another one in a single request. [More Info and examples is in this issue.](https://github.com/AleksandrRogov/DynamicsWebApi/issues/112).
+linked to another one in a single request. [More Info and examples is in this issue](https://github.com/AleksandrRogov/DynamicsWebApi/issues/112).
 
 #### Limitations
 
@@ -1343,7 +1343,7 @@ You can also use common request functions to create, retrieve and update entity 
 Retrieve a table definition with columns (with common properties):
 
 ```ts
-const entityMetadata = await dynamicsWebApi.retrieveRequest({
+const entityMetadata = await dynamicsWebApi.retrieve({
     collection: "EntityDefinitions",
     key: "00000000-0000-0000-0000-000000000001",
     select: ["LogicalName", "SchemaName"],
@@ -1364,14 +1364,14 @@ const request = {
     metadataAttributeType: "Microsoft.Dynamics.CRM.StringAttributeMetadata"
 };
 
-const attributeMetadata = await dynamicsWebApi.retrieveRequest(request);
+const attributeMetadata = await dynamicsWebApi.retrieve(request);
 const displayNameDefaultLabel = attributeMetadata.DisplayName.LocalizedLabels[0].Label;
 ```
 
 Update entity metadata with **MSCRM.MergeLabels** header set to `true`:
 
 ```ts
-const entityMetadata = await dynamicsWebApi.retrieveRequest({
+const entityMetadata = await dynamicsWebApi.retrieve({
     collection: "EntityDefinitions",
     key: "LogicalName='account'"
 });
@@ -1382,10 +1382,10 @@ const updateRequest = {
     collection: "EntityDefinitions",
     key: entityMetadata.MetadataId,
     mergeLabels: true,
-    entity: entityMetadata
+    data: entityMetadata
 };
 //3. call update request
-await dynamicsWebApi.updateRequest(updateRequest);
+await dynamicsWebApi.update(updateRequest);
 
 //it is the same as:
 const entityMetadata2 = await dynamicsWebApi.retrieveEntity({ key: "LogicalName='account'" });
@@ -2148,14 +2148,6 @@ the config option "formatted" will enable developers to retrieve all information
 Many more features to come!
 
 Thank you for your patience and for using DynamcisWebApi!
-
-## JavaScript Promises
-Please use the following library that implements [ES6 Promises](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise): [DynamicsWebApi with Promises](/dist/dynamics-web-api.js).
-
-It is highly recommended to use one of the Promise Polyfills (Yaku, ES6 Promise and etc.) if DynamicsWebApi is intended to be used in the browsers.
-
-## JavaScript Callbacks
-Please use the following library that implements Callbacks : [DynamicsWebApi with Callbacks](/dist/dynamics-web-api-callbacks.js).
 
 ## Contributions
 
