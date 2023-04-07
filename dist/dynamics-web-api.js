@@ -1760,7 +1760,7 @@ class DynamicsWebApi {
          * Sends an asynchronous request to create a new record.
          *
          * @param {DWARequest} request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          * @example
          *const lead = {
          *    subject: "Test WebAPI",
@@ -1796,7 +1796,7 @@ class DynamicsWebApi {
          * Sends an asynchronous request to retrieve a record.
          *
          * @param {DWARequest} request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          * @example
          *const request = {
          *    key: '7d577253-3ef0-4a0a-bb7f-8335c2596e70',
@@ -1830,7 +1830,7 @@ class DynamicsWebApi {
          * Sends an asynchronous request to update a record.
          *
          * @param {DWARequest} request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
         this.update = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.update", "request");
@@ -1873,7 +1873,7 @@ class DynamicsWebApi {
          * @param {Object} keyValuePair - keyValuePair object with a logical name of the field as a key and a value to update with. Example: {subject: "Update Record"}
          * @param {string|Array} [prefer] - If set to "return=representation" the function will return an updated object
          * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
         this.updateSingleProperty = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.updateSingleProperty", "request");
@@ -1894,7 +1894,7 @@ class DynamicsWebApi {
          * Sends an asynchronous request to delete a record.
          *
          * @param {DWARequest} request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
         this.deleteRecord = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.deleteRecord", "request");
@@ -1928,7 +1928,7 @@ class DynamicsWebApi {
          * Sends an asynchronous request to upsert a record.
          *
          * @param {DWARequest} request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
         this.upsert = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.upsert", "request");
@@ -2026,7 +2026,7 @@ class DynamicsWebApi {
          *
          * @param request - An object that represents all possible options for a current request.
          * @param {string} [nextPageLink] - Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
         this.retrieveMultiple = (request, nextPageLink) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieveMultiple", "request");
@@ -2065,7 +2065,7 @@ class DynamicsWebApi {
          * Sends an asynchronous request to retrieve all records.
          *
          * @param {DWARequest} request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
         this.retrieveAll = (request) => {
             ErrorHelper_1.ErrorHelper.throwBatchIncompatible("DynamicsWebApi.retrieveAll", this._isBatch);
@@ -2075,7 +2075,7 @@ class DynamicsWebApi {
          * Sends an asynchronous request to count records. IMPORTANT! The count value does not represent the total number of entities in the system. It is limited by the maximum number of entities that can be returned. Returns: Number
          *
          * @param request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
         this.count = (request) => {
             var _a;
@@ -2098,7 +2098,7 @@ class DynamicsWebApi {
         /**
          * Sends an asynchronous request to count records. Returns: Number
          * @param request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
         this.countAll = (request) => {
             ErrorHelper_1.ErrorHelper.throwBatchIncompatible("DynamicsWebApi.countAll", this._isBatch);
@@ -2111,7 +2111,7 @@ class DynamicsWebApi {
          * Sends an asynchronous request to execute FetchXml to retrieve records. Returns: DWA.Types.FetchXmlResponse
          *
          * @param request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
         this.fetch = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.fetch", "request");
@@ -2144,7 +2144,7 @@ class DynamicsWebApi {
          * Sends an asynchronous request to execute FetchXml to retrieve all records.
          *
          * @param request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
         this.fetchAll = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.fetchAll", "request");
@@ -2167,7 +2167,7 @@ class DynamicsWebApi {
          * Associate for a collection-valued navigation property. (1:N or N:N)
          *
          * @param request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
         this.associate = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.associate", "request");
@@ -2189,7 +2189,7 @@ class DynamicsWebApi {
          * Disassociate for a collection-valued navigation property.
          *
          * @param request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
         this.disassociate = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.disassociate", "request");
@@ -2209,7 +2209,7 @@ class DynamicsWebApi {
          * Associate for a single-valued navigation property. (1:N)
          *
          * @param request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
         this.associateSingleValued = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.associateSingleValued", "request");
@@ -2231,7 +2231,7 @@ class DynamicsWebApi {
          * Removes a reference to an entity for a single-valued navigation property. (1:N)
          *
          * @param request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
         this.disassociateSingleValued = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.disassociateSingleValued", "request");
@@ -2247,65 +2247,37 @@ class DynamicsWebApi {
             });
         };
         /**
-         * Executes an unbound function (not bound to a particular entity record)
+         * Calls a Web API function
          *
          * @param request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
-        this.executeUnboundFunction = (request) => {
-            return this._executeFunction(request, true);
-        };
-        /**
-         * Executes a bound function
-         *
-         * @param request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
-         */
-        this.executeBoundFunction = (request) => {
-            return this._executeFunction(request);
-        };
-        this._executeFunction = (request, isUnbound = false) => {
-            const functionName = !isUnbound ? "executeBoundFunction" : "executeUnboundFunction";
-            ErrorHelper_1.ErrorHelper.parameterCheck(request, `DynamicsWebApi.${functionName}`, "request");
-            ErrorHelper_1.ErrorHelper.stringParameterCheck(request.functionName, `DynamicsWebApi.${functionName}`, "request.functionName");
+        this.callFunction = (request) => {
+            ErrorHelper_1.ErrorHelper.parameterCheck(request, `DynamicsWebApi.callFunction`, "request");
+            ErrorHelper_1.ErrorHelper.stringParameterCheck(request.functionName, `DynamicsWebApi.callFunction`, "request.functionName");
             const internalRequest = Utility_1.Utility.copyObject(request);
             internalRequest.method = "GET";
-            internalRequest.functionName = functionName;
+            internalRequest.functionName = "callFunction";
             internalRequest._additionalUrl = request.functionName + Utility_1.Utility.buildFunctionParameters(request.parameters);
-            internalRequest._isUnboundRequest = isUnbound;
-            internalRequest.key = request.id;
+            internalRequest._isUnboundRequest = !internalRequest.collection;
             return this._makeRequest(internalRequest).then(function (response) {
                 return response.data;
             });
         };
         /**
-         * Executes an unbound Web API action (not bound to a particular entity record)
+         * Calls a Web API action
          *
          * @param request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
-        this.executeUnboundAction = (request) => {
-            return this._executeAction(request, true);
-        };
-        /**
-         * Executes a bound Web API action (bound to a particular entity record)
-         *
-         * @param request - An object that represents all possible options for a current request.
-         * @returns {Promise | Function} D365 Web Api result
-         */
-        this.executeBoundAction = (request) => {
-            return this._executeAction(request);
-        };
-        this._executeAction = (request, isUnbound = false) => {
-            const functionName = !isUnbound ? "executeBoundAction" : "executeUnboundAction";
-            ErrorHelper_1.ErrorHelper.parameterCheck(request, `DynamicsWebApi.${functionName}`, "request");
-            ErrorHelper_1.ErrorHelper.stringParameterCheck(request.actionName, `DynamicsWebApi.${functionName}`, "request.actionName");
-            const internalRequest = Utility_1.Utility.copyObject(request);
+        this.callAction = (request) => {
+            ErrorHelper_1.ErrorHelper.parameterCheck(request, `DynamicsWebApi.callAction`, "request");
+            ErrorHelper_1.ErrorHelper.stringParameterCheck(request.actionName, `DynamicsWebApi.callAction`, "request.actionName");
+            const internalRequest = Utility_1.Utility.copyObject(request, ["action"]);
             internalRequest.method = "POST";
-            internalRequest.functionName = functionName;
+            internalRequest.functionName = "callAction";
             internalRequest._additionalUrl = request.actionName;
-            internalRequest._isUnboundRequest = isUnbound;
-            internalRequest.key = request.id;
+            internalRequest._isUnboundRequest = !internalRequest.collection;
             internalRequest.data = request.action;
             return this._makeRequest(internalRequest).then((response) => {
                 return response.data;
@@ -2315,7 +2287,7 @@ class DynamicsWebApi {
          * Sends an asynchronous request to create an entity definition.
          *
          * @param request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
         this.createEntity = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, `DynamicsWebApi.createEntity`, "request");
@@ -2329,7 +2301,7 @@ class DynamicsWebApi {
          * Sends an asynchronous request to update an entity definition.
          *
          * @param request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
         this.updateEntity = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.updateEntity", "request");
@@ -2346,7 +2318,7 @@ class DynamicsWebApi {
          * Sends an asynchronous request to retrieve a specific entity definition.
          *
          * @param request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
         this.retrieveEntity = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieveEntity", "request");
@@ -2360,7 +2332,7 @@ class DynamicsWebApi {
          * Sends an asynchronous request to retrieve entity definitions.
          *
          * @param request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
         this.retrieveEntities = (request) => {
             const internalRequest = !request ? {} : Utility_1.Utility.copyObject(request);
@@ -2372,7 +2344,7 @@ class DynamicsWebApi {
          * Sends an asynchronous request to create an attribute.
          *
          * @param request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
         this.createAttribute = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.createAttribute", "request");
@@ -2389,7 +2361,7 @@ class DynamicsWebApi {
          * Sends an asynchronous request to update an attribute.
          *
          * @param request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
         this.updateAttribute = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.updateAttribute", "request");
@@ -2413,7 +2385,7 @@ class DynamicsWebApi {
          * Sends an asynchronous request to retrieve attribute metadata for a specified entity definition.
          *
          * @param request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
         this.retrieveAttributes = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieveAttributes", "request");
@@ -2433,7 +2405,7 @@ class DynamicsWebApi {
          * Sends an asynchronous request to retrieve a specific attribute metadata for a specified entity definition.
          *
          * @param request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
         this.retrieveAttribute = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieveAttributes", "request");
@@ -2455,7 +2427,7 @@ class DynamicsWebApi {
          * Sends an asynchronous request to create a relationship definition.
          *
          * @param request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
         this.createRelationship = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.createRelationship", "request");
@@ -2469,7 +2441,7 @@ class DynamicsWebApi {
          * Sends an asynchronous request to update a relationship definition.
          *
          * @param request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
         this.updateRelationship = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.updateRelationship", "request");
@@ -2490,7 +2462,7 @@ class DynamicsWebApi {
          * Sends an asynchronous request to delete a relationship definition.
          *
          * @param request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
         this.deleteRelationship = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.deleteRelationship", "request");
@@ -2504,7 +2476,7 @@ class DynamicsWebApi {
          * Sends an asynchronous request to retrieve relationship definitions.
          *
          * @param request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
         this.retrieveRelationships = (request) => {
             const internalRequest = !request ? {} : Utility_1.Utility.copyObject(request);
@@ -2522,7 +2494,7 @@ class DynamicsWebApi {
          * Sends an asynchronous request to retrieve a specific relationship definition.
          *
          * @param request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
         this.retrieveRelationship = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieveRelationship", "request");
@@ -2540,7 +2512,7 @@ class DynamicsWebApi {
          * Sends an asynchronous request to create a Global Option Set definition
          *
          * @param request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
         this.createGlobalOptionSet = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.createGlobalOptionSet", "request");
@@ -2554,7 +2526,7 @@ class DynamicsWebApi {
          * Sends an asynchronous request to update a Global Option Set.
          *
          * @param request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
         this.updateGlobalOptionSet = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.updateGlobalOptionSet", "request");
@@ -2574,7 +2546,7 @@ class DynamicsWebApi {
          * Sends an asynchronous request to delete a Global Option Set.
          *
          * @param request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
         this.deleteGlobalOptionSet = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.deleteGlobalOptionSet", "request");
@@ -2587,7 +2559,7 @@ class DynamicsWebApi {
          * Sends an asynchronous request to retrieve Global Option Set definitions.
          *
          * @param request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
         this.retrieveGlobalOptionSet = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieveGlobalOptionSet", "request");
@@ -2604,7 +2576,7 @@ class DynamicsWebApi {
          * Sends an asynchronous request to retrieve Global Option Set definitions.
          *
          * @param request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
         this.retrieveGlobalOptionSets = (request) => {
             const internalRequest = !request ? {} : Utility_1.Utility.copyObject(request);
@@ -2704,7 +2676,7 @@ class DynamicsWebApi {
         /**
          * Executes a batch request. Please call DynamicsWebApi.startBatch() first to start a batch request.
          * @param request - An object that represents all possible options for a current request.
-         * @returns {Promise} D365 Web Api result
+         * @returns {Promise} D365 Web Api Response
          */
         this.executeBatch = (request) => {
             ErrorHelper_1.ErrorHelper.throwBatchNotStarted(this._isBatch);

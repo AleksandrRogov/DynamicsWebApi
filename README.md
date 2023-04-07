@@ -11,33 +11,35 @@ Microsoft Dynamics CRM 2016, Microsoft Dynamics CRM Online.
 
 Please check [DynamicsWebApi Wiki](../../wiki/) where you will find documentation to DynamicsWebApi API and more.
 
-Libraries for browsers can be found in [dist](/dist/) folder.
+Browser compiled script and type definitions can be found in [dist](/dist/) folder.
 
 ## Features
 
-- Straighforward requests to Create, Retrieve, Update/Upsert and Delete data using Dataverse Web API.
-- Query and modify Table, Column, Option Set and Relationship definitions (Entity Metadata).
-- Easily combine multiple operations into a Batch Request by calling a single function. DynamicsWebApi will convert all requests into a Batch operation, once it is executed.
-- Long URL requests are automatically converted into a Batch Request in a background.
-- Use powerful Fetch XML queries for more complex requests.
-- Work with File Fields. Upload, Download and Delete data stored in the File Fields.
-- Call Dataverse Search API and use a full power of its Search, Suggestion and Autocomplete capabilities.
-- Can be used in both Node.js and a Browser (as a web resource in Dynamics 365).
-- AbortController support (Node.js 15+). Cancel asynchronous requests once they are no longer need to be completed, for example, when the user leaves a page without waiting for the data to load.
-- Supports requests through Proxy.
+- **CRUD operations**. Including Fetch XML, Actions and Functions in Microsoft Dataverse Web API.
+- **Table Definitions (Entity Metadata)**. Query and modify Table, Column, Choice (Option Set) and Relationship definitions.
+- **Batch Requests**. DynamicsWebApi will convert all specified requests into a Batch operation, once it is executed.
+- **Simplicity and Automation**. Such as: requests with long URLs are automatically converted into a Batch Request in the background, or DynamicsWebApi will get all of the records by doing paging automatically and etc. 
+- **File Fields**. Upload, Download and Delete data stored in the File Fields.
+- **Microsoft Dataverse Search API**. Use a full power of its Search, Suggestion and Autocomplete capabilities.
+- **Node.js and a Browser** support.
+- **Abort Controller** (Browser and Node.js 15+). Cancel requests when they are no longer need to be completed. For example: when the user leaves a page without waiting for the data to load.
+- **Proxy Configuration**.
 
 ***
 
 I maintain this project in my free time and it takes a considerable amount of time to make sure that the library has all new features, 
 gets improved and all raised tickets have been answered and fixed in a short amount of time. If you feel that this project has saved your time and you would like to support it, 
-then please feel free to sponsor it through GitHub Sponsors or send a donation directly to my PayPal: [![PayPal.Me](/extra/paypal.png)](https://paypal.me/alexrogov). 
-GitHub button can be found on the project's page.
+then please feel free to sponsor it through [GitHub Sponsors](https://github.com/sponsors/AleksandrRogov).
 
-Also, please check [suggestions and contributions](#contributions) section to learn more on how you can help to improve the project.
+Also, please check [suggestions and contributions](#contributions) section to learn more about how you can help to improve the library.
 
 ***
 
-Please note, that "Dynamics 365" in this readme refers to Microsoft Dynamics 365 Customer Engagement / Microsoft Dataverse (formerly known as Microsoft Common Data Service).
+## Terminology
+
+Please familiarize yourself with [Dataverse Terminology](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/understand-terminology). There have been some changes in the namings of the objects and components and since DynamicsWebApi has been developing for many years there may be _conflicting_ naming, such as: `createEntity` - which means "Create a Table Definition". Dataverse SDK terminology is what the library has been based on. I have no plans on changing that (except for documentation), because Microsoft may change the namings again in the future which will lead to naming issues ...again.
+
+**Please note!** "Dynamics 365" in this readme refers to Microsoft Dataverse (formerly known as Microsoft Common Data Service) / Microsoft Dynamics 365 Customer Engagement.
 
 ## Table of Contents
 
@@ -47,16 +49,16 @@ Please note, that "Dynamics 365" in this readme refers to Microsoft Dynamics 365
   * [Configuration](#configuration)
     * [Configuration Parameters](#configuration-parameters)
 * [Request Examples](#request-examples)
-  * [Create a record](#create-a-record)
-  * [Update a record](#update-a-record)
-  * [Update a single property value](#update-a-single-property-value)
-  * [Upsert a record](#upsert-a-record)
-  * [Delete a record](#delete-a-record)
-    * [Delete a single property value](#delete-a-single-property-value)
-  * [Retrieve a record](#retrieve-a-record)
-  * [Retrieve multiple records](#retrieve-multiple-records)
+  * [Create a table row](#create-a-table-row)
+  * [Update a table row](#update-a-table-row)
+  * [Update a value in a single column](#update-a-value-in-a-single-column)
+  * [Upsert a table row](#upsert-a-table-row)
+  * [Delete a table row](#delete-a-table-row)
+    * [Delete a value in a single column](#delete-a-value-in-a-single-column)
+  * [Retrieve a table row](#retrieve-a-table-row)
+  * [Retrieve multiple table rows](#retrieve-multiple-table-rows)
     * [Change Tracking](#change-tracking)
-    * [Retrieve All records](#retrieve-all-records)
+    * [Retrieve All table rows](#retrieve-all-records)
   * [Count](#count)
     * [Count limitation workaround](#count-limitation-workaround)
   * [Associate](#associate)
@@ -69,7 +71,7 @@ Please note, that "Dynamics 365" in this readme refers to Microsoft Dynamics 365
   * [Execute Web API actions](#execute-web-api-actions)
   * [Execute Batch Operations](#execute-batch-operations)
   * [Work with Table Definitions (Entity Metadata)](#work-with-table-definitions-entity-metadata)
-    * [Create Table](#create-a-new-table)
+    * [Create a new Table Definition](#create-a-new-table-definition)
     * [Retrieve Table Definitions](#retrieve-table-definitions)
     * [Update Table Definitions](#update-table-definitions)
     * [Retrieve Multiple Table Definitions](#retrieve-multiple-table-definitions)
@@ -83,19 +85,20 @@ Please note, that "Dynamics 365" in this readme refers to Microsoft Dynamics 365
 	* [Delete Relationship](#delete-relationship)
 	* [Retrieve Relationship](#retrieve-relationship)
 	* [Retrieve Multiple Relationships](#retrieve-multiple-relationships)
+    * [Use multi-table lookup columns (Polymorfic Lookup Attributes)](#use-multi-table-lookup-columns-(polymorfic-lookup-attributes))
 	* [Create Global Option Set](#create-global-option-set)
 	* [Update Global Option Set](#update-global-option-set)
 	* [Delete Global Option Set](#delete-global-option-set)
 	* [Retrieve Global Option Set](#retrieve-global-option-set)
 	* [Retrieve Multiple Global Option Sets](#retrieve-multiple-global-option-sets)
 * [Retrieve CSDL $metadata document](#retrieve-csdl-metadata-document)
-* [Work with File Fields](#work-with-file-fields)
+* [Formatted Values and Lookup Columns](#formatted-values-and-lookup-columns)
+* [Using Alternate Keys](#using-alternate-keys)
+* [Making requests using Entity Logical Names](#making-requests-using-entity-logical-names)
+* [Work with File Fields/Columns](#work-with-file-fields)
     * [Upload file](#upload-file)
     * [Download file](#download-file)
     * [Delete file](#delete-file)
-* [Formatted Values and Lookup Properties](#formatted-values-and-lookup-properties)
-* [Using Alternate Keys](#using-alternate-keys)
-* [Making requests using Entity Logical Names](#making-requests-using-entity-logical-names)
 * [Work with Dataverse Search API](#work-with-dataverse-search-api)
     * [Search](#search)
     * [Suggest](#suggest)
@@ -103,8 +106,6 @@ Please note, that "Dynamics 365" in this readme refers to Microsoft Dynamics 365
 * [Using Proxy](#using-proxy)
 * [Using TypeScript Declaration Files](#using-typescript-declaration-files)
 * [In Progress / Feature List](#in-progress--feature-list)
-* [JavaScript Promises](#javascript-promises)
-* [JavaScript Callbacks](#javascript-callbacks)
 * [Contributions](#contributions)
 
 ## Getting Started
@@ -192,7 +193,7 @@ const dynamicsWebApi = new DynamicsWebApi({
 
 try{
     //call any function
-    const response = await dynamicsWebApi.executeUnboundFunction({
+    const response = await dynamicsWebApi.callFunction({
         functionName: "WhoAmI"
     });
     console.log(`Hello from Dynamics 365! My id is: ${response.UserId}`);
@@ -233,17 +234,17 @@ dynamicsWebApi.setConfig({ dataApi: { version: "9.0" } });
 Property Name | Type | Description
 ------------ | ------------- | -------------
 dataApi | `ApiConfig` | Configuration object for Dataverse Web API. The name is based on the url path `data`.
-impersonate | `String` | Impersonates a user based on their systemuserid by adding a "MSCRMCallerID" header. A String representing the GUID value for the Dynamics 365 systemuserid. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/impersonate-another-user-web-api)
-impersonateAAD | `String` | Impersonates a user based on their Azure Active Directory (AAD) object id by passing that value along with the header "CallerObjectId". A String should represent a GUID value. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/impersonate-another-user-web-api)
-includeAnnotations | `String` | Defaults Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
-maxPageSize | `Number` | Defaults the odata.maxpagesize preference. Use to set the number of entities returned in the response.
+impersonate | `string` | Impersonates a user based on their systemuserid by adding a "MSCRMCallerID" header. A String representing the GUID value for the Dynamics 365 systemuserid. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/impersonate-another-user-web-api)
+impersonateAAD | `string` | Impersonates a user based on their Azure Active Directory (AAD) object id by passing that value along with the header "CallerObjectId". A String should represent a GUID value. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/impersonate-another-user-web-api)
+includeAnnotations | `string` | Defaults Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
+maxPageSize | `number` | Defaults the odata.maxpagesize preference. Use to set the number of entities returned in the response.
 onTokenRefresh | `Function` | A callback function that triggered when DynamicsWebApi requests a new OAuth token. (At this moment it is done before each call to Dynamics 365, as [recommended by Microsoft](https://msdn.microsoft.com/en-ca/library/gg327838.aspx#Anchor_2)).
-organizationUrl | `String` | Dynamics 365 Web Api organization URL. It is required when used in Node.js application (outside web resource). Example: "https://myorg.api.crm.dynamics.com/".
-returnRepresentation | `Boolean` | Defaults Prefer header with value "return=representation". Use this property to return just created or updated entity in a single request.
+organizationUrl | `string` | Dynamics 365 Web Api organization URL. It is required when used in Node.js application (outside web resource). Example: "https://myorg.api.crm.dynamics.com/".
+returnRepresentation | `boolean` | Defaults Prefer header with value "return=representation". Use this property to return just created or updated entity in a single request.
 searchApi | `ApiConfig` | Configuration object for Dataverse Search API. The name is based on the url path `search`.
-serverUrl | `String` | The url to Dataverse API server, for example: https://contoso.api.crm.dynamics.com/. It is required when used in Node.js application.
-timeout | `Number` | Sets a number of milliseconds before a request times out.
-useEntityNames | `Boolean` | Indicates whether to use entity logical names instead of collection logical names during requests.
+serverUrl | `string` | The url to Dataverse API server, for example: https://contoso.api.crm.dynamics.com/. It is required when used in Node.js application.
+timeout | `number` | Sets a number of milliseconds before a request times out.
+useEntityNames | `boolean` | Indicates whether to use entity logical names instead of collection logical names during requests.
 
 **Note!**
 Property `serverUrl` is required when DynamicsWebApi used in Node.js application.
@@ -255,8 +256,8 @@ If you are using `DynamicsWebApi` **outside Microsoft Dynamics 365** and set `us
 
 | Property Name | Type | Description |
 |--------|--------|--------|
-| path | `String` | A path to API, for example: "data" or "search". Optional. |
-| version | `String` | API Version, for example: "1.0" or "9.2". Optional. |
+| path | `string` | A path to API, for example: "data" or "search". Optional. |
+| version | `string` | API Version, for example: "1.0" or "9.2". Optional. |
 
 Both `dataApi` and `seatchApi` can be omitted from a configuration. Their default values are:
 
@@ -285,63 +286,65 @@ by mistake an invalid property has been specified you will receive either an err
 
 Property Name | Type | Operation(s) Supported | Description
 ------------ | ------------- | ------------- | -------------
-action | `Object` | `executeUnboundAction` | A JavaScript object that represents a Dynamics 365 Web API action.
-actionName | `String` | `executeUnboundAction` | Web API Action name.
-addAnnotations | `Boolean` | `retrieveCsdlMetadata` | `v.2.0+` If set to `true` the document will include many different kinds of annotations that can be useful. Most annotations are not included by default because they increase the total size of the document.
-apply | `String` | `retrieveMultiple`, `retrieveAll` | Sets the $apply system query option to aggregate and group your data dynamically. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/query-data-web-api#aggregate-and-grouping-results)
-async | `Boolean` | All | **XHR requests only!** Indicates whether the requests should be made synchronously or asynchronously. Default value is `true` (asynchronously).
-bypassCustomPluginExecution | `Boolean` | `create`, `update`, `upsert`, `delete` | `v1.7.5+` If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/data-platform/bypass-custom-business-logic)
-collection | `String` | All | Entity Collection name.
-contentId | `String` | `create`, `update`, `upsert`, `deleteRecord` | **BATCH REQUESTS ONLY!** Sets Content-ID header or references request in a Change Set. [More Info](https://www.odata.org/documentation/odata-version-3-0/batch-processing/)
-count | `Boolean` | `retrieveMultiple`, `retrieveAll` | Boolean that sets the $count system query option with a value of true to include a count of entities that match the filter criteria up to 5000 (per page). Do not use $top with $count!
+action | `Object` | `callAction` | A JavaScript object that represents a Dynamics 365 Web API action.
+actionName | `string` | `callAction` | Web API Action name.
+addAnnotations | `boolean` | `retrieveCsdlMetadata` | If set to `true` the document will include many different kinds of annotations that can be useful. Most annotations are not included by default because they increase the total size of the document.
+apply | `string` | `retrieveMultiple`, `retrieveAll` | Sets the $apply system query option to aggregate and group your data dynamically. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/query-data-web-api#aggregate-and-grouping-results)
+async | `boolean` | All | **XHR requests only!** Indicates whether the requests should be made synchronously or asynchronously. Default value is `true` (asynchronously).
+bypassCustomPluginExecution | `boolean` | `create`, `update`, `upsert`, `delete` | If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/data-platform/bypass-custom-business-logic)
+collection | `string` | All | Entity Collection name.
+contentId | `string` | `create`, `update`, `upsert`, `deleteRecord` | **BATCH REQUESTS ONLY!** Sets Content-ID header or references request in a Change Set. [More Info](https://www.odata.org/documentation/odata-version-3-0/batch-processing/)
+count | `boolean` | `retrieveMultiple`, `retrieveAll` | Boolean that sets the $count system query option with a value of true to include a count of entities that match the filter criteria up to 5000 (per page). Do not use $top with $count!
 data | `Object` or `ArrayBuffer` / `Buffer` (for node.js) | `create`, `update`, `upsert`, `uploadFile` | A JavaScript object that represents Dynamics 365 entity, action, metadata and etc. 
-duplicateDetection | `Boolean` | `create`, `update`, `upsert` | **Web API v9+ only!** Boolean that enables duplicate detection. [More Info](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/webapi/update-delete-entities-using-web-api#check-for-duplicate-records)
-expand | `Array` | `retrieve`, `retrieveMultiple`, `create`, `update`, `upsert` | An array of Expand Objects (described below the table) representing the $expand OData System Query Option value to control which related records are also returned.
-fetchXml | `String` | `fetch`, `fetchAll` | Property that sets FetchXML - a proprietary query language that provides capabilities to perform aggregation.
-fieldName | `String` | `uploadFile`, `downloadFile`, `deleteRequest` | `v.1.7.0+` **Web API v9.1+ only!** Use this option to specify the name of the file attribute in Dynamics 365. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/file-attributes)
-fileName | `String` | `uploadFile` | `v.1.7.0+` **Web API v9.1+ only!** Specifies the name of the filefilter | String | `retrieve`, `retrieveMultiple`, `retrieveAll` | Use the $filter system query option to set criteria for which entities will be returned.
-ifmatch | `String` | `retrieve`, `update`, `upsert`, `deleteRecord` | Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests. [More Info](https://msdn.microsoft.com/en-us/library/mt607711.aspx)
-ifnonematch | `String` | `retrieve`, `upsert` | Sets If-None-Match header value that enables to use conditional retrieval in applicable requests. [More Info](https://msdn.microsoft.com/en-us/library/mt607711.aspx).
-impersonate | `String` | All | Impersonates a user based on their systemuserid by adding a "MSCRMCallerID" header. A String representing the GUID value for the Dynamics 365 systemuserid. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/impersonate-another-user-web-api)
-impersonateAAD | `String` | All | Impersonates a user based on their Azure Active Directory (AAD) object id by passing that value along with the header "CallerObjectId". A String should represent a GUID value. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/impersonate-another-user-web-api)
-includeAnnotations | `String` | `retrieve`, `retrieveMultiple`, `retrieveAll`, `create`, `update`, `upsert` | Sets Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
-key | `String` | `retrieve`, `create`, `update`, `upsert`, `deleteRecord`, `uploadFile`, `downloadFile` | A String representing collection record's Primary Key (GUID) or Alternate Key(s).
-maxPageSize | `Number` | `retrieveMultiple`, `retrieveAll` | Sets the odata.maxpagesize preference value to request the number of entities returned in the response.
-mergeLabels | `Boolean` | `update` | **Metadata Update only!** Sets `MSCRM.MergeLabels` header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is `false`. [More Info](https://msdn.microsoft.com/en-us/library/mt593078.aspx#bkmk_updateEntities)
-metadataAttributeType | `String` | `retrieve`, `update` | Casts the Attributes to a specific type. (Used in requests to Attribute Metadata) [More Info](https://msdn.microsoft.com/en-us/library/mt607522.aspx#Anchor_4)
-navigationProperty | `String` | `retrieve`, `create`, `update` | A String representing the name of a single-valued navigation property. Useful when needed to retrieve information about a related record in a single request.
-navigationPropertyKey | `String` | `retrieve`, `create`, `update` | A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata)
-noCache | `Boolean` | All | If set to `true`, DynamicsWebApi adds a request header `Cache-Control: no-cache`. Default value is `false`.
-orderBy | `Array` | `retrieveMultiple`, `retrieveAll` | An Array (of Strings) representing the order in which items are returned using the $orderby system query option. Use the asc or desc suffix to specify ascending or descending order respectively. The default is ascending if the suffix isn't applied.
-pageNumber | `Number` | `fetch` | Sets a page number for Fetch XML request ONLY!
-pagingCookie | `String` | `fetch` | Sets a paging cookie for Fetch XML request ONLY!
-partitionId | `String` | `create`, `update`, `upsert`, `delete`, `retrieve`, `retrieveMultiple` | `v.1.7.7+` Sets a unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. [More Info](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/azure-storage-partitioning)
+duplicateDetection | `boolean` | `create`, `update`, `upsert` | **D365 Web API v9+** Boolean that enables duplicate detection. [More Info](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/webapi/update-delete-entities-using-web-api#check-for-duplicate-records)
+expand | `Expand[]` | `retrieve`, `retrieveMultiple`, `create`, `update`, `upsert` | An array of Expand Objects (described below the table) representing the $expand OData System Query Option value to control which related records are also returned.
+fetchXml | `string` | `fetch`, `fetchAll` | Property that sets FetchXML - a proprietary query language that provides capabilities to perform aggregation.
+fieldName | `string` | `uploadFile`, `downloadFile`, `deleteRequest` | **D365 Web API v9.1+** Use this option to specify the name of the file attribute in Dynamics 365. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/file-attributes)
+fileName | `string` | `uploadFile` | **D365 Web API v9.1+** Specifies the name of the filefilter | String | `retrieve`, `retrieveMultiple`, `retrieveAll` | Use the $filter system query option to set criteria for which entities will be returned.
+functionName | `string` | `callFunction` | Name of a D365 Web Api function.
+ifmatch | `string` | `retrieve`, `update`, `upsert`, `deleteRecord` | Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests. [More Info](https://msdn.microsoft.com/en-us/library/mt607711.aspx)
+ifnonematch | `string` | `retrieve`, `upsert` | Sets If-None-Match header value that enables to use conditional retrieval in applicable requests. [More Info](https://msdn.microsoft.com/en-us/library/mt607711.aspx).
+impersonate | `string` | All | Impersonates a user based on their systemuserid by adding a "MSCRMCallerID" header. A String representing the GUID value for the Dynamics 365 systemuserid. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/impersonate-another-user-web-api)
+impersonateAAD | `string` | All | Impersonates a user based on their Azure Active Directory (AAD) object id by passing that value along with the header "CallerObjectId". A String should represent a GUID value. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/impersonate-another-user-web-api)
+includeAnnotations | `string` | `retrieve`, `retrieveMultiple`, `retrieveAll`, `create`, `update`, `upsert` | Sets Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
+key | `string` | `retrieve`, `create`, `update`, `upsert`, `deleteRecord`, `uploadFile`, `downloadFile`, `callAction`, `callFunction` | A string representing collection record's Primary Key (GUID) or Alternate Key(s).
+maxPageSize | `number` | `retrieveMultiple`, `retrieveAll` | Sets the odata.maxpagesize preference value to request the number of entities returned in the response.
+mergeLabels | `boolean` | `update` | **Metadata Update only!** Sets `MSCRM.MergeLabels` header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is `false`. [More Info](https://msdn.microsoft.com/en-us/library/mt593078.aspx#bkmk_updateEntities)
+metadataAttributeType | `string` | `retrieve`, `update` | Casts the Attributes to a specific type. (Used in requests to Attribute Metadata) [More Info](https://msdn.microsoft.com/en-us/library/mt607522.aspx#Anchor_4)
+navigationProperty | `string` | `retrieve`, `create`, `update` | A string representing the name of a single-valued navigation property. Useful when needed to retrieve information about a related record in a single request.
+navigationPropertyKey | `string` | `retrieve`, `create`, `update` | A string representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata)
+noCache | `boolean` | All | If set to `true`, DynamicsWebApi adds a request header `Cache-Control: no-cache`. Default value is `false`.
+orderBy | `string[]` | `retrieveMultiple`, `retrieveAll` | An array (of strings) representing the order in which items are returned using the $orderby system query option. Use the asc or desc suffix to specify ascending or descending order respectively. The default is ascending if the suffix isn't applied.
+pageNumber | `number` | `fetch` | Sets a page number for Fetch XML request ONLY!
+pagingCookie | `string` | `fetch` | Sets a paging cookie for Fetch XML request ONLY!
+parameters | `Object` | `callFunction` | Function's input parameters. Example: `{ param1: "test", param2: 3 }`. 
+partitionId | `string` | `create`, `update`, `upsert`, `delete`, `retrieve`, `retrieveMultiple` | Sets a unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. [More Info](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/azure-storage-partitioning)
 proxy | `Object` | Proxy configuration object. [More Info](#using-proxy)
-queryParams | `Array` | `retrieveMultiple`, `retrieveAll` | `v.1.7.7+` Additional query parameters that either have not been implemented yet or they are [parameter aliases](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/query-data-web-api#use-parameter-aliases-with-system-query-options) for "$filter" and "$orderBy". **Important!** These parameters ARE NOT URI encoded!
-returnRepresentation | `Boolean` | `create`, `update`, `upsert` | Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
-savedQuery | `String` | `retrieve` | A String representing the GUID value of the saved query.
-select | `Array` | `retrieve`, `retrieveMultiple`, `retrieveAll`, `update`, `upsert` | An Array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
-timeout | `Number` | All | Sets a number of milliseconds before a request times out.
-token | `String` | All | Authorization Token. If set, onTokenRefresh will not be called.
-top | `Number` | `retrieveMultiple`, `retrieveAll` | Limit the number of results returned by using the $top system query option. Do not use $top with $count!
-trackChanges | `Boolean` | `retrieveMultiple`, `retrieveAll` | Sets Prefer header with value 'odata.track-changes' to request that a delta link be returned which can subsequently be used to retrieve entity changes. __Important!__ Change Tracking must be enabled for the entity. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/use-change-tracking-synchronize-data-external-systems#enable-change-tracking-for-an-entity)
-userQuery | `String` | `retrieve` | A String representing the GUID value of the user query.
+queryParams | `string[]` | `retrieveMultiple`, `retrieveAll` | Additional query parameters that either have not been implemented yet or they are [parameter aliases](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/query-data-web-api#use-parameter-aliases-with-system-query-options) for "$filter" and "$orderBy". **Important!** These parameters ARE NOT URI encoded!
+returnRepresentation | `boolean` | `create`, `update`, `upsert` | Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
+savedQuery | `string` | `retrieve` | A String representing the GUID value of the saved query.
+select | `string[]` | `retrieve`, `retrieveMultiple`, `retrieveAll`, `update`, `upsert` | An array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
+timeout | `number` | All | Sets a number of milliseconds before a request times out.
+token | `string` | All | Authorization Token. If set, onTokenRefresh will not be called.
+top | `number` | `retrieveMultiple`, `retrieveAll` | Limit the number of results returned by using the $top system query option. Do not use $top with $count!
+trackChanges | `boolean` | `retrieveMultiple`, `retrieveAll` | Sets Prefer header with value 'odata.track-changes' to request that a delta link be returned which can subsequently be used to retrieve entity changes. __Important!__ Change Tracking must be enabled for the entity. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/use-change-tracking-synchronize-data-external-systems#enable-change-tracking-for-an-entity)
+userQuery | `string` | `retrieve` | A String representing the GUID value of the user query.
 
 The following table describes Expand Object properties:
 
 Property Name | Type | Description
 ------------ | ------------- | -------------
-expand | `Array` | An array of Expand Objects representing the $expand OData System Query Option value to control which related records are also returned.
-filter | `String` | Use the $filter system query option to set criteria for which related entities will be returned.
-orderBy | `Array` | An Array (of Strings) representing the order in which related items are returned using the $orderby system query option. Use the asc or desc suffix to specify ascending or descending order respectively. The default is ascending if the suffix isn't applied.
-property | `String` | A name of a single-valued navigation property which needs to be expanded.
-select | `Array` | An Array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
-top | `Number` | Limit the number of results returned by using the $top system query option.
+expand | `Expand[]` | An array of Expand Objects representing the $expand OData System Query Option value to control which related records are also returned.
+filter | `string` | Use the $filter system query option to set criteria for which related entities will be returned.
+orderBy | `string[]` | An Array (of strings) representing the order in which related items are returned using the $orderby system query option. Use the asc or desc suffix to specify ascending or descending order respectively. The default is ascending if the suffix isn't applied.
+property | `string` | A name of a single-valued navigation property which needs to be expanded.
+select | `string[]` | An Array (of strings) representing the $select OData System Query Option to control which attributes will be returned.
+top | `number` | Limit the number of results returned by using the $top system query option.
 
 All requests to Web API that have long URLs (more than 2000 characters) are automatically converted to a Batch Request.
 This feature is very convenient when you make a call with big Fetch XMLs. No special parameters needed to do a convertation.
 
-### Create a record
+### Create a table row
 
 ```ts
 //declaring interface for a Lead entity (declaration can be done in d.ts file)
@@ -377,7 +380,7 @@ const result = await dynamicsWebApi.create<Lead>(request);
 const leadId = result.leadid;
 ```
 
-### Update a record
+### Update a table row
 
 ```ts
 //declaring interface for a Lead entity (declaration can be done in d.ts file)
@@ -409,7 +412,7 @@ const result = await dynamicsWebApi.update<Lead>(request);
 const fullname = result.fullname;
 ```
 
-### Update a single property value
+### Update a value in a single column
 
 ```ts
 //initialize key value pair object
@@ -425,7 +428,7 @@ await dynamicsWebApi.updateSingleProperty(request);
 //do something after a succesful operation
 ```
 
-### Upsert a record
+### Upsert a table row
 
 ```ts
 const leadId = "7d577253-3ef0-4a0a-bb7f-8335c2596e70";
@@ -450,12 +453,12 @@ else {
 }
 ```
 
-### Delete a record
+### Delete a table row
 
 ```ts
 //delete with optimistic concurrency
 const request: DynamicsWebApi.DeleteRequest = {
-    key: recordId,
+    key: leadId,
     collection: "leads",
     ifmatch: 'W/"470867"'
 }
@@ -468,7 +471,18 @@ else{
     //record has not been deleted
 }
 ```
-### Retrieve a record
+#### Delete a value in a single column
+```ts
+//delete with optimistic concurrency
+const request: DynamicsWebApi.DeleteRequest = {
+    key: leadId,
+    collection: "leads",
+    fieldName: "subject"
+}
+
+await dynamicsWebApi.deleteRecord(request);
+```
+### Retrieve a table row
 
 ```ts
 //declaring interface for a Lead entity (declaration can be done in d.ts file)
@@ -499,7 +513,7 @@ const result = await dynamicsWebApi.retrieve<Lead>(request);
 //do something with a retrieved record
 ```
 
-#### Retrieve a reference to related record using a single-valued navigation property
+#### Retrieve a reference to a related table row using a single-valued navigation property
 
 It is possible to retrieve a reference to the related entity. In order to do that: `select` property
 must contain only a single value representing a name of a [single-valued navigation property](https://msdn.microsoft.com/en-us/library/mt607990.aspx#Anchor_5) 
@@ -520,7 +534,7 @@ const ownerId = reference.id;
 const collectionName = reference.collection; // systemusers or teams
 ```
 
-#### Retrieve a related record data using a single-valued navigation property
+#### Retrieve a related table row using a single-valued navigation property
 
 In order to retrieve a related record by a single-valued navigation property you need to add a prefix "/" to the __first__ element in a `select` array: 
 `select: ["/ownerid", "fullname"]`. The first element must be the name of a [single-valued navigation property](https://msdn.microsoft.com/en-us/library/mt607990.aspx#Anchor_5) 
@@ -559,7 +573,7 @@ const fullname = parentLead.fullname;
 //... and etc
 ```
 
-### Retrieve multiple records
+### Retrieve multiple table rows
 
 ```ts
 //declaring interface for a Lead entity (declaration can be done in d.ts file)
@@ -841,7 +855,7 @@ const request: DynamicsWebApi.BoundFunctionRequest = {
     functionName: "Microsoft.Dynamics.CRM.RetrieveTeamPrivileges"
 }
 
-const result = await dynamicsWebApi.executeBoundFunction<RetrieveTeamPrivilegesResponse>(request);
+const result = await dynamicsWebApi.callFunction<RetrieveTeamPrivilegesResponse>(request);
 //do something with a result
 ```
 
@@ -863,7 +877,7 @@ const request: DynamicsWebApi.UnboundFunctionRequest = {
     functionName: "GetTimeZoneCodeByLocalizedName"
 }
 
-const result = await dynamicsWebApi.executeUnboundFunction<GetTimeZoneCodeByLocalizedNameResponse>(request);
+const result = await dynamicsWebApi.callFunction<GetTimeZoneCodeByLocalizedNameResponse>(request);
 const timeZoneCode = result.TimeZoneCode;
 ```
 
@@ -871,43 +885,62 @@ const timeZoneCode = result.TimeZoneCode;
 
 #### Bound actions
 
-```js
-var queueId = "00000000-0000-0000-0000-000000000001";
-var letterActivityId = "00000000-0000-0000-0000-000000000002";
-var actionRequest = {
+```ts
+interface LetterAction {
     Target: {
-        activityid: letterActivityId,
-        "@odata.type": "Microsoft.Dynamics.CRM.letter"
+        activityid: string,
+        "@data.type": string
+    } 
+}
+
+interface LetterActionResponse {
+    QueueItemId: string
+}
+
+const queueId = "00000000-0000-0000-0000-000000000001";
+const actionRequest: DynamicsWebApi.BoundActionRequest<LetterAction> = {
+    key: queueId,
+    collection: "queues",
+    actionName: "Microsoft.Dynamics.CRM.AddToQueue",
+    action: {
+        Target: {
+            activityid: "00000000-0000-0000-0000-000000000002",
+            "@odata.type": "Microsoft.Dynamics.CRM.letter"
+        }
     }
-};
-dynamicsWebApi.executeBoundAction(queueId, "queues", "Microsoft.Dynamics.CRM.AddToQueue", actionRequest)
-    .then(function (result) {
-        var queueItemId = result.QueueItemId;
-    })
-    .catch(function (error) {
-        //catch an error
-    });
+}
+
+const result = await dynamicsWebApi.callAction<LetterActionResponse>(actionRequest);
+const queueItemId = result.QueueItemId;
 ```
 
 #### Unbound actions
 
-```js
-var opportunityId = "b3828ac8-917a-e511-80d2-00155d2a68d2";
-var actionRequest = {
-    Status: 3,
+```ts
+interface WinOpportunityAction {
+    Status: number,
     OpportunityClose: {
-        subject: "Won Opportunity",
-
-        //DynamicsWebApi will add full url if the property contains @odata.bind suffix
-        //but it is also possible to specify a full url to the entity record
-        "opportunityid@odata.bind": "opportunities(" + opportunityId + ")"
+        subject: string,
+        "opportunityid@odata.bind": string
     }
-};
-dynamicsWebApi.executeUnboundAction("WinOpportunity", actionRequest).then(function () {
-    //success
-}).catch(function (error) {
-    //catch an error
-});
+}
+
+const opportunityId = "b3828ac8-917a-e511-80d2-00155d2a68d2";
+const actionRequest: DynamicsWebApi.UnboundActionRequest<WinOpportunityAction> = {
+    actionName: "WinOpportunity",
+    action: {
+        Status: 3,
+        OpportunityClose: {
+            subject: "Won Opportunity",
+
+            //DynamicsWebApi will add full url if the property contains @odata.bind suffix
+            //but it is also possible to provide a full url to the entity record manually
+            "opportunityid@odata.bind": "opportunities(" + opportunityId + ")"
+        }
+    }
+}
+
+await dynamicsWebApi.callAction(actionRequest);
 ```
 
 ## Execute Batch Operations
@@ -1058,7 +1091,7 @@ You can find an official documentation that covers Web API batch requests here: 
 
 Before working with metadata read [the following section from Microsoft Documentation](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/query-metadata-web-api).
 
-### Create a new Table
+### Create a new Table Definition
 
 ```ts
 const entityDefinition = {
@@ -1400,8 +1433,8 @@ await dynamicsWebApi.updateEntity({
 
 ### Create Relationship
 
-```js
-var newRelationship = {
+```ts
+const newRelationship = {
     "SchemaName": "dwa_contact_dwa_dynamicswebapitest",
     "@odata.type": "Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata",
     "AssociatedMenuConfiguration": {
@@ -1480,81 +1513,154 @@ var newRelationship = {
     }
 };
 
-dynamicsWebApi.createRelationship(newRelationship).then(function (relationshipId) {
-    //relationshipId is a PrimaryKey (MetadataId) for a newly created relationship
-}).catch(function (error) {
-    //catch errors
-});
+//relationshipId is a PrimaryKey (MetadataId) for a newly created relationship
+const relationshipId = await dynamicsWebApi.createRelationship({ data: newRelationship });
 ```
 ### Update Relationship
 
 **Important!** Make sure you set **`MetadataId`** property when you update the metadata, DynamicsWebApi use it as a primary key for the EntityDefinition record.
 
-```js
-var metadataId = '10cb680e-b6a7-e811-816a-480fcfe97e21';
+```ts
+const metadataId = "10cb680e-b6a7-e811-816a-480fcfe97e21";
 
-dynamicsWebApi.retrieveRelationship(metadataId).then(function (relationship) {
-    relationship.AssociatedMenuConfiguration.Label.LocalizedLabels[0].Label = "New Label";
-    return dynamicsWebApi.updateRelationship(relationship);
-}).then(function (updateResponse) {
-    //check update response
-}).catch(function (error) {
-    //catch errors
-});
+const relationship = await dynamicsWebApi.retrieveRelationship({ key: metadataId });
+relationship.AssociatedMenuConfiguration.Label.LocalizedLabels[0].Label = "New Label";
+
+const updateResponse = await dynamicsWebApi.updateRelationship(relationship);
 ```
 
 ### Delete Relationship
 
-```js
-var metadataId = '10cb680e-b6a7-e811-816a-480fcfe97e21';
+```ts
+const metadataId = "10cb680e-b6a7-e811-816a-480fcfe97e21";
 
-dynamicsWebApi.deleteRelationship(metadataId).then(function (isDeleted) {
-    //isDeleted should be true
-}).catch(function (error) {
-    //catch errors
-});
+const isDeleted = await dynamicsWebApi.deleteRelationship({ key: metadataId });
 ```
 
 ### Retrieve Relationship
 
-```js
-var metadataId = '10cb680e-b6a7-e811-816a-480fcfe97e21';
+```ts
+const metadataId = "10cb680e-b6a7-e811-816a-480fcfe97e21";
 
-dynamicsWebApi.retrieveRelationship(metadataId).then(function (relationship) {
-    //work with a retrieved relationship
-}).catch(function (error) {
-    //catch errors
-});
+const relationship = await dynamicsWebApi.retrieveRelationship({ key: metadataId });
 ```
 
 You can also cast a relationship into a specific type:
 
-```js
-var metadataId = '10cb680e-b6a7-e811-816a-480fcfe97e21';
-var relationshipType = 'Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata';
-dynamicsWebApi.retrieveRelationship(metadataId, relationshipType).then(function (relationship) {
-    //work with a retrieved relationship
-}).catch(function (error) {
-    //catch errors
+```ts
+const metadataId = "10cb680e-b6a7-e811-816a-480fcfe97e21";
+const relationship = await dynamicsWebApi.retrieveRelationship({ 
+    key: metadataId,
+    castType: "Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata"
 });
 ```
 
 ### Retrieve Multiple Relationships
 
-```js
-const relationshipType = 'Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata';
-dynamicsWebApi.retrieveRelationships(relationshipType, ['SchemaName', 'MetadataId'], "ReferencedEntity eq 'account'")
-.then(function (relationship) {
-    //work with a retrieved relationship
-}).catch(function (error) {
-    //catch errors
+```ts
+const relationshipType = "Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata";
+const relationships = await dynamicsWebApi.retrieveRelationships({
+    castType: relationshipType, 
+    select: ["SchemaName", "MetadataId"], 
+    filter: "ReferencedEntity eq 'account'"
+})
+```
+
+### Use multi-table lookup columns (Polymorfic Lookup Attributes)
+
+Please check an official [Microsoft Documentation](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/multitable-lookup) for more information.
+
+Find an example on how to create a polymorfic lookup attribute below. All other operations can be done with existing functions such as `retrieveRelationship` or `retrieveAttribute`...
+
+```ts
+interface CreatePolymorphicLookupAttributeResponse {
+    "@odata.context": string,
+    RelationshipIds: string[],
+    AttributeId: string
+}
+
+const response = await dynamicsWebApi.create<CreatePolymorphicLookupAttributeResponse>({
+    collection: "CreatePolymorphicLookupAttribute",
+    data: {
+        OneToManyRelationships: [
+        {
+            SchemaName: "new_media_new_book",
+            ReferencedEntity: "new_book",
+            ReferencingEntity: "new_media"
+        },
+        {
+            SchemaName: "new_media_new_video",
+            ReferencedEntity: "new_video",
+            ReferencingEntity: "new_media"
+        },
+        {
+            SchemaName: "new_media_new_audio",
+            ReferencedEntity: "new_audio",
+            ReferencingEntity: "new_media",
+            CascadeConfiguration: {  
+                Assign: "NoCascade",  
+                Delete: "RemoveLink",  
+                Merge: "NoCascade",  
+                Reparent: "NoCascade",  
+                Share: "NoCascade",  
+                Unshare: "NoCascade"  
+            }
+        }],
+        Lookup: {
+            AttributeType: "Lookup",
+            AttributeTypeName: {
+                Value: "LookupType"
+            },
+
+            Description: {
+                "@odata.type": "Microsoft.Dynamics.CRM.Label",
+                LocalizedLabels: [
+                {
+                    "@odata.type": "Microsoft.Dynamics.CRM.LocalizedLabel",
+                    Label: "Media Polymorphic Lookup",
+                    LanguageCode: 1033
+                }],
+
+                UserLocalizedLabel: {
+                    "@odata.type": "Microsoft.Dynamics.CRM.LocalizedLabel",
+                    Label: " Media Polymorphic Lookup Attribute",
+                    LanguageCode: 1033
+                }
+            },
+
+            DisplayName: {
+                "@odata.type": "Microsoft.Dynamics.CRM.Label",
+                LocalizedLabels: [
+                {
+                    "@odata.type": "Microsoft.Dynamics.CRM.LocalizedLabel",
+                    Label: "MediaPolymorphicLookup",
+                    LanguageCode: 1033
+                }],
+
+                UserLocalizedLabel: {
+                "@odata.type": "Microsoft.Dynamics.CRM.LocalizedLabel",
+                Label: "MediaPolymorphicLookup",
+                LanguageCode: 1033
+                }
+            },
+
+            SchemaName: "new_mediaPolymporphicLookup",
+            "@odata.type": "Microsoft.Dynamics.CRM.ComplexLookupAttributeMetadata"
+        }
+    }
+});
+
+const attributeId = response.AttributeId;
+
+response.RelationshipIds.forEach(id => { 
+    //do something with the ids
 });
 ```
 
 ### Create Global Option Set
 
-```js
-var optionSetDefinition = {
+```ts
+const optionSetDefinition = {
     "@odata.type": "Microsoft.Dynamics.CRM.OptionSetMetadata",
     IsCustomOptionSet: true,
     IsGlobal: true,
@@ -1611,10 +1717,9 @@ var optionSetDefinition = {
     }
 };
 
-dynamicsWebApi.createGlobalOptionSet(optionSetDefinition).then(function (id) {
-    //metadata id
-}).catch(function (error) {
-    //catch error here
+//result is a metadata id
+const id = await dynamicsWebApi.createGlobalOptionSet({ 
+    data: optionSetDefinition 
 });
 ```
 
@@ -1622,83 +1727,66 @@ dynamicsWebApi.createGlobalOptionSet(optionSetDefinition).then(function (id) {
 
 **Important!** Publish your changes after update, otherwise a label won't be modified.
 
-```js
-var key = '6e133d25-abd1-e811-816e-480fcfeab9c1';
+```ts
+let key = "6e133d25-abd1-e811-816e-480fcfeab9c1";
 //or
 key = "Name='new_customglobaloptionset'";
 
-dynamicsWebApi.retrieveGlobalOptionSet(key).then(function (response) {
-    response.DisplayName.LocalizedLabels[0].Label = "Updated Display name to the Custom Global Option Set.";
-    return dynamicsWebApi.updateGlobalOptionSet(response);
-}).then(function (response) {
-    //check if it was updated
-}).catch (function (error) {
-    //catch error here
-});
+const optionSet = await dynamicsWebApi.retrieveGlobalOptionSet({ key: key });
+optionSet.DisplayName.LocalizedLabels[0].Label = "Updated Display name to the Custom Global Option Set.";
+
+const updatedOptionSet = dynamicsWebApi.updateGlobalOptionSet(response);
 ```
 
 ### Delete Global Option Set
 
-```js
-var key = '6e133d25-abd1-e811-816e-480fcfeab9c1';
+```ts
+let key = "6e133d25-abd1-e811-816e-480fcfeab9c1";
 //or
 key = "Name='new_customglobaloptionset'";
 
-dynamicsWebApi.deleteGlobalOptionSet(key).then(function (response) {
-    //check if it was deleted
-}).catch(function (error) {
-    //catch error here
-});
+const isDeleted = await dynamicsWebApi.deleteGlobalOptionSet({ key: key });
 ```
 
 ### Retrieve Global Option Set
 
-```js
-var key = '6e133d25-abd1-e811-816e-480fcfeab9c1';
+```ts
+const key = "6e133d25-abd1-e811-816e-480fcfeab9c1";
 //or
 key = "Name='new_customglobaloptionset'";
 
-dynamicsWebApi.retrieveGlobalOptionSet(key).then(function (response) {
-    //response.DisplayName.LocalizedLabels[0].Label
-}).catch (function (error) {
-    //catch error here
+let optionSet = await dynamicsWebApi.retrieveGlobalOptionSet(key);
+
+//OR select specific attributes
+optionSet = await dynamicsWebApi.retrieveGlobalOptionSet({
+    key: key, 
+    select: ["DisplayName"]
 });
 
-//select specific attributes
-//select specific attributes
-dynamicsWebApi.retrieveGlobalOptionSet(key, null, ['Name']).then(function (response) {
-    //response.DisplayName.LocalizedLabels[0].Label
-}).catch (function (error) {
-    //catch error here
-});
-
+//OR cast option set to a specific type, for example:
 //Options attribute exists only in OptionSetMetadata, therefore we need to cast to it
-dynamicsWebApi.retrieveGlobalOptionSet(key, 'Microsoft.Dynamics.CRM.OptionSetMetadata', ['Name', 'Options']).then(function (response) {
-    //response.DisplayName.LocalizedLabels[0].Label
-}).catch (function (error) {
-    //catch error here
+optionSet = await dynamicsWebApi.retrieveGlobalOptionSet({
+    key: key, 
+    castType: "Microsoft.Dynamics.CRM.OptionSetMetadata", 
+    select: ["Name", "Options"]
 });
 ```
 
 ### Retrieve Multiple Global Option Sets
 
-```js
-dynamicsWebApi.retrieveGlobalOptionSets().then(function (response) {
-	var optionSet = response.value[0]; //first global option set
-}).catch (function (error) {
-    //catch error here
-});
+```ts
+let optionSetsResponse = await dynamicsWebApi.retrieveGlobalOptionSets();
+let optionSet = optionSetsResponse.value[0]; //first global option set
 
-//select specific attributes
-dynamicsWebApi.retrieveGlobalOptionSets('Microsoft.Dynamics.CRM.OptionSetMetadata', ['Name', 'Options']).then(function (response) {
-	var optionSet = response.value[0]; //first global option set
-}).catch (function (error) {
-    //catch error here
+//OR select specific attributes AND cast to a specific type
+optionSetResponse = await dynamicsWebApi.retrieveGlobalOptionSets({
+    castType: "Microsoft.Dynamics.CRM.OptionSetMetadata", 
+    select: ["Name", "Options"]
 });
+optionSet = optionSetResponse.value[0]; //first global option set
 ```
 
 ## Retrieve CSDL $metadata document
-`v.2.0+`
 
 To retrieve a CSDL $metadata document use the following:
 
@@ -1713,105 +1801,24 @@ const csdlDocument: string = await dynamicsWebApi.retrieveCsdlMetadata(request);
 
 The `csdlDocument` will be the type of `string`. DynamicsWebApi does not parse the contents of the document and it should be done by the developer.
 
-## Work with File Fields
-
-Please make sure that you are connected to Dynamics 365 Web API with version 9.1+ to successfully use the functions. More information can be found [here](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/file-attributes)
-
-### Upload file
-
-**Browser**
-
-```js
-var fileElement = document.getElementById("upload");
-var fileName = fileElement.files[0].name;
-var fr = new FileReader();
-fr.onload = function(){
-    var fileData = new Uint8Array(this.result);
-	dynamicsWebApi.uploadFile({
-        collection: 'dwa_filestorages',
-        key: '00000000-0000-0000-0000-000000000001',
-        fieldName: 'dwa_file',
-        fileName: fileName,
-        data: fileData
-	}).then(function(){
-		//success
-	}).catch (function (error) {
-	    //catch error here
-    });
-}
-fr.readAsArrayBuffer(fileElement.files[0]);
-```
-
-**Node.JS**
-
-```js
-var fs = require('fs');
-var filename = 'logo.png';
-fs.readFile(filename, (err, data) => {
-    dynamicsWebApi.uploadFile({
-        collection: 'dwa_filestorages',
-        key: '00000000-0000-0000-0000-000000000001',
-        fieldName: 'dwa_file',
-        fileName: filename
-        data: data,
-    }).then(function() {
-        //success
-    }).catch(function (error) {
-        //catch error here	
-    });
-});
-```
-
-### Download file
-
-```js
-dynamicsWebApi.downloadFile({
-    collection: 'dwa_filestorages',
-    key: '00000000-0000-0000-0000-000000000001',
-    fieldName: 'dwa_file'
-}).then(function(result){
-    //Uint8Array for browser and Buffer for Node.js
-    var fileBinary = result.data; 
-    var fileName = result.fileName;
-    var fileSize = result.fileSize;
-})
-.catch(function (error) {
-    //catch an error
-});
-```
-
-### Delete file
-
-```js
-dynamicsWebApi.deleteRequest({
-    collection: 'dwa_filestorages',
-    key: '00000000-0000-0000-0000-000000000001',
-    fieldName: 'dwa_file'
-}).then(function(result){
-    //success
-})
-.catch(function (error) {
-    //catch an error
-});
-```
-## Formatted Values and Lookup Properties
+## Formatted Values and Lookup Columns
 
 Starting from version 1.3.0 it became easier to access formatted values for properties and lookup data in response objects. 
 DynamicsWebApi automatically creates aliases for each property that contains a formatted value or lookup data.
 For example:
 
-```js
+```ts
 //before v.1.3.0 a formatted value for account.donotpostalmail field could be accessed as following:
-var doNotPostEmailFormatted = response['donotpostalmail@OData.Community.Display.V1.FormattedValue'];
+let doNotPostEmailFormatted = response['donotpostalmail@OData.Community.Display.V1.FormattedValue'];
 
 //starting with v.1.3.0 it can be simplified
 doNotPostEmailFormatted = response.donotpostalmail_Formatted;
 
 //same for lookup data
 //before v.1.3.0
-var customerName = response['_customerid_value@OData.Community.Display.V1.FormattedValue'];
-var customerEntityLogicalName = response['_customerid_value@Microsoft.Dynamics.CRM.lookuplogicalname'];
-var customerNavigationProperty = response['_customerid_value@Microsoft.Dynamics.CRM.associatednavigationproperty'];
+let customerName = response['_customerid_value@OData.Community.Display.V1.FormattedValue'];
+let customerEntityLogicalName = response['_customerid_value@Microsoft.Dynamics.CRM.lookuplogicalname'];
+let customerNavigationProperty = response['_customerid_value@Microsoft.Dynamics.CRM.associatednavigationproperty'];
 
 //starting with v.1.3.0
 customerName = response._customerid_value_Formatted;
@@ -1851,45 +1858,34 @@ Entity Metadata and retrieves LogicalCollectionName and LogicalName for all enti
 
 To enable this feature set `useEntityNames: true` in DynamicsWebApi config.
 
-```js
-var dynamicsWebApi = new DynamicsWebApi({ useEntityNames: true });
+```ts
+interface Lead {
+    fullname?: string,
+    subject?: string,
+    leadid?: string
+}
+
+const dynamicsWebApi = new DynamicsWebApi({ useEntityNames: true });
 
 //make request using entity names
-dynamicsWebApi.retrieve(leadId, 'lead', ['fullname', 'subject']).then(function (record) {
-    //do something with a record here
-})
-.catch(function (error) {
-    //catch an error
-});
-
-//this will also work in request functions, even though the name of the property is a collection
-
-var request = {
-    collection: 'lead',
-    key: leadId,
-    select:  ['fullname', 'subject']
-};
-
-dynamicsWebApi.retrieveRequest(request).then(function (record) {
-    //do something with a record here
-})
-.catch(function (error) {
-    //catch an error
+const lead = await dynamicsWebApi.retrieve<Lead>({
+    key: leadId, 
+    collection: "lead", 
+    select: ["fullname", "subject"] 
 });
 ```
 
 This feature also applies when you set a navigation property and provide an entity name in the value:
 
-```js
-var account = {
-    name: 'account name',
-   'primarycontactid@odata.bind': 'contact(00000000-0000-0000-0000-000000000001)'
+```ts
+const account = {
+    name: "account name",
+   "primarycontactid@odata.bind": "contact(00000000-0000-0000-0000-000000000001)"
 }
 
-dynamicsWebApi.create(account, 'account').then(function(accountId)){
-    //newly created accountId
-}).catch(function (error) {
-    //catch error here
+const accountid = await dynamicsWebApi.create({
+    collection: "account",
+    data: account
 });
 ```
 
@@ -1898,13 +1894,87 @@ This happens, because DynamicsWebApi automatically checks all properties that en
 Thus, there may be a case when those properties are not used but you still need a collection name instead of an entity name.
 Please use the following method to get a collection name from a cached entity metadata:
 
-```js
+```ts
 //IMPORTANT! collectionName will be null if there was no call to Web API prior to that
 //this restriction does not apply if DynamicsWebApi used inside CRM/D365
 const collectionName = dynamicsWebApi.Utility.getCollectionName("account");
 ```
 
 Please note, everything said above will happen only if you set `useEntityNames: true` in the DynamicsWebApi config.
+
+## Work with File Fields
+
+Please make sure that you are connected to Dynamics 365 Web API with version 9.1+ to successfully use the functions. More information can be found [here](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/file-attributes)
+
+### Upload file
+
+**Browser**
+
+```ts
+const fileElement = document.getElementById("upload");
+const fileName = fileElement.files[0].name;
+const fr = new FileReader();
+fr.onload = function(){
+    const fileData = new Uint8Array(this.result);
+	dynamicsWebApi.uploadFile({
+        collection: "dwa_filestorages",
+        key: "00000000-0000-0000-0000-000000000001",
+        fieldName: "dwa_file",
+        fileName: fileName,
+        data: fileData
+	}).then(function(){
+		//success
+	}).catch (function (error) {
+	    //catch error here
+    });
+}
+fr.readAsArrayBuffer(fileElement.files[0]);
+```
+
+**Node.JS**
+
+```ts
+const fs = require("fs");
+const filename = "logo.png";
+fs.readFile(filename, (err, data) => {
+    dynamicsWebApi.uploadFile({
+        collection: "dwa_filestorages",
+        key: "00000000-0000-0000-0000-000000000001",
+        fieldName: "dwa_file",
+        fileName: filename
+        data: data,
+    }).then(function() {
+        //success
+    }).catch(function (error) {
+        //catch error here	
+    });
+});
+```
+
+### Download file
+
+```ts
+const donwloadResponse = await dynamicsWebApi.downloadFile({
+    collection: "dwa_filestorages",
+    key: "00000000-0000-0000-0000-000000000001",
+    fieldName: "dwa_file"
+});
+
+//Uint8Array for browser and Buffer for Node.js
+const fileBinary = donwloadResponse.data;
+const fileName = donwloadResponse.fileName;
+const fileSize = donwloadResponse.fileSize;
+```
+
+### Delete file
+
+```ts
+const isDeleted = await dynamicsWebApi.deleteRecord({
+    collection: "dwa_filestorages",
+    key: "00000000-0000-0000-0000-000000000001",
+    fieldName: "dwa_file"
+});
+```
 
 ## Work with Dataverse Search API
 
@@ -2112,7 +2182,7 @@ In my web resources project I usually put a declaration file under "./types/" fo
 ```
 
 **Important!** Make sure that you include `types` folder in your `tsconfig.json`:
-```
+```json
 "include": [
 	"./src/**/*",
 	"./types/**/*"
@@ -2142,7 +2212,7 @@ the config option "formatted" will enable developers to retrieve all information
 - [X] Impersonate a user based on their Azure Active Directory (AAD) object id. `Added in v.1.6.12`.
 - [X] File upload/download/delete for a File Field. `Added in v.1.7.0`.
 - [X] Full proxy support. `Added in v.1.7.2`.
-- [ ] Refactoring and conversion to TypeScript - coming with `v.2.0`! Stay tuned!
+- [X] Refactoring and conversion to TypeScript - coming with `v.2.0`! Stay tuned!
 - [X] Implement [Dataverse Search API](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/relevance-search). 
 
 Many more features to come!
@@ -2160,6 +2230,6 @@ And if you would like to contribute to the project you may do it in multiple way
 4. Feel free to connect with me on [LinkedIn](https://www.linkedin.com/in/alexrogov/) and if you wish to let me know how you use `DynamicsWebApi` and what project you are working on, I will be happy to hear about it.
 5. I maintain this project in my free time and, to be honest with you, it takes a considerable amount of time to make sure that the library has all new features, 
 gets improved and all raised tickets have been answered and fixed in a short amount of time. If you feel that this project has saved your time and you would like to support it, 
-then please feel free to use PayPal or GitHub Sponsors. My PayPal button: [![PayPal.Me](/extra/paypal.png)](https://paypal.me/alexrogov), GitHub button can be found on the project's page.
+then please feel free to use PayPal or GitHub Sponsors. My PayPal button: [![PayPal.Me](/.github/extra/paypal.png)](https://paypal.me/alexrogov), GitHub button can be found on the project's page.
 
 All contributions are greatly appreciated!

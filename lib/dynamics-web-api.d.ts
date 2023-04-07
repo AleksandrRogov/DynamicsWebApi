@@ -22,7 +22,7 @@ export declare class DynamicsWebApi {
      * Sends an asynchronous request to create a new record.
      *
      * @param {DWARequest} request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      * @example
      *const lead = {
      *    subject: "Test WebAPI",
@@ -45,7 +45,7 @@ export declare class DynamicsWebApi {
      * Sends an asynchronous request to retrieve a record.
      *
      * @param {DWARequest} request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      * @example
      *const request = {
      *    key: '7d577253-3ef0-4a0a-bb7f-8335c2596e70',
@@ -62,7 +62,7 @@ export declare class DynamicsWebApi {
      * Sends an asynchronous request to update a record.
      *
      * @param {DWARequest} request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
     update: <TData = any>(request: UpdateRequest<TData>) => Promise<TData>;
     /**
@@ -73,21 +73,21 @@ export declare class DynamicsWebApi {
      * @param {Object} keyValuePair - keyValuePair object with a logical name of the field as a key and a value to update with. Example: {subject: "Update Record"}
      * @param {string|Array} [prefer] - If set to "return=representation" the function will return an updated object
      * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
     updateSingleProperty: <T = any>(request: UpdateSinglePropertyRequest) => Promise<T>;
     /**
      * Sends an asynchronous request to delete a record.
      *
      * @param {DWARequest} request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
     deleteRecord: (request: DeleteRequest) => Promise<any>;
     /**
      * Sends an asynchronous request to upsert a record.
      *
      * @param {DWARequest} request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
     upsert: <TData = any>(request: UpsertRequest<TData>) => Promise<TData>;
     private _uploadFileChunk;
@@ -108,7 +108,7 @@ export declare class DynamicsWebApi {
      *
      * @param request - An object that represents all possible options for a current request.
      * @param {string} [nextPageLink] - Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
     retrieveMultiple: <T = any>(request: RetrieveMultipleRequest, nextPageLink?: string) => Promise<RetrieveMultipleResponse<T>>;
     private _retrieveAllRequest;
@@ -116,218 +116,202 @@ export declare class DynamicsWebApi {
      * Sends an asynchronous request to retrieve all records.
      *
      * @param {DWARequest} request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
     retrieveAll: <T = any>(request: RetrieveMultipleRequest) => Promise<AllResponse<T>>;
     /**
      * Sends an asynchronous request to count records. IMPORTANT! The count value does not represent the total number of entities in the system. It is limited by the maximum number of entities that can be returned. Returns: Number
      *
      * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
     count: (request: CountRequest) => Promise<number>;
     /**
      * Sends an asynchronous request to count records. Returns: Number
      * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
     countAll: (request: CountAllRequest) => Promise<number>;
     /**
      * Sends an asynchronous request to execute FetchXml to retrieve records. Returns: DWA.Types.FetchXmlResponse
      *
      * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
     fetch: <T = any>(request: FetchXmlRequest) => Promise<FetchXmlResponse<T>>;
     /**
      * Sends an asynchronous request to execute FetchXml to retrieve all records.
      *
      * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
     fetchAll: <T = any>(request: FetchAllRequest) => Promise<FetchXmlResponse<T>>;
     /**
      * Associate for a collection-valued navigation property. (1:N or N:N)
      *
      * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
     associate: (request: AssociateRequest) => Promise<void>;
     /**
      * Disassociate for a collection-valued navigation property.
      *
      * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
     disassociate: (request: DisassociateRequest) => Promise<void>;
     /**
      * Associate for a single-valued navigation property. (1:N)
      *
      * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
     associateSingleValued: (request: AssociateSingleValuedRequest) => Promise<void>;
     /**
      * Removes a reference to an entity for a single-valued navigation property. (1:N)
      *
      * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
     disassociateSingleValued: (request: DisassociateSingleValuedRequest) => Promise<void>;
     /**
-     * Executes an unbound function (not bound to a particular entity record)
+     * Calls a Web API function
      *
      * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
-    executeUnboundFunction: <T = any>(request: UnboundFunctionRequest) => Promise<T>;
+    callFunction: <T = any>(request: BoundFunctionRequest | UnboundFunctionRequest) => Promise<T>;
     /**
-     * Executes a bound function
+     * Calls a Web API action
      *
      * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
-    executeBoundFunction: <T = any>(request: BoundFunctionRequest) => Promise<T>;
-    private _executeFunction;
-    /**
-     * Executes an unbound Web API action (not bound to a particular entity record)
-     *
-     * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
-     */
-    executeUnboundAction: <T = any>(request: UnboundActionRequest) => Promise<T>;
-    /**
-     * Executes a bound Web API action (bound to a particular entity record)
-     *
-     * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise | Function} D365 Web Api result
-     */
-    executeBoundAction: <T = any>(request: BoundActionRequest) => Promise<T>;
-    private _executeAction;
+    callAction: <TResponse = any, TAction = any>(request: BoundActionRequest<TAction> | UnboundActionRequest<TAction>) => Promise<TResponse>;
     /**
      * Sends an asynchronous request to create an entity definition.
      *
      * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
     createEntity: <T = any>(request: CreateEntityRequest) => Promise<T>;
     /**
      * Sends an asynchronous request to update an entity definition.
      *
      * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
     updateEntity: <T = any>(request: UpdateEntityRequest) => Promise<T>;
     /**
      * Sends an asynchronous request to retrieve a specific entity definition.
      *
      * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
     retrieveEntity: <T = any>(request: RetrieveEntityRequest) => Promise<T>;
     /**
      * Sends an asynchronous request to retrieve entity definitions.
      *
      * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
     retrieveEntities: <T = any>(request?: RetrieveEntitiesRequest) => Promise<RetrieveMultipleResponse<T>>;
     /**
      * Sends an asynchronous request to create an attribute.
      *
      * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
     createAttribute: <T = any>(request: CreateAttributeRequest) => Promise<T>;
     /**
      * Sends an asynchronous request to update an attribute.
      *
      * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
     updateAttribute: <T = any>(request: UpdateAttributeRequest) => Promise<T>;
     /**
      * Sends an asynchronous request to retrieve attribute metadata for a specified entity definition.
      *
      * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
     retrieveAttributes: <T = any>(request: RetrieveAttributesRequest) => Promise<RetrieveMultipleResponse<T>>;
     /**
      * Sends an asynchronous request to retrieve a specific attribute metadata for a specified entity definition.
      *
      * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
     retrieveAttribute: <T = any>(request: RetrieveAttributeRequest) => Promise<T>;
     /**
      * Sends an asynchronous request to create a relationship definition.
      *
      * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
     createRelationship: <T = any>(request: CreateRelationshipRequest) => Promise<T>;
     /**
      * Sends an asynchronous request to update a relationship definition.
      *
      * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
     updateRelationship: <T = any>(request: UpdateRelationshipRequest) => Promise<T>;
     /**
      * Sends an asynchronous request to delete a relationship definition.
      *
      * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
     deleteRelationship: (request: DeleteRelationshipRequest) => Promise<any>;
     /**
      * Sends an asynchronous request to retrieve relationship definitions.
      *
      * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
     retrieveRelationships: <T = any>(request?: RetrieveRelationshipsRequest) => Promise<RetrieveMultipleResponse<T>>;
     /**
      * Sends an asynchronous request to retrieve a specific relationship definition.
      *
      * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
     retrieveRelationship: <T = any>(request: RetrieveRelationshipRequest) => Promise<T>;
     /**
      * Sends an asynchronous request to create a Global Option Set definition
      *
      * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
     createGlobalOptionSet: <T = any>(request: CreateGlobalOptionSetRequest) => Promise<T>;
     /**
      * Sends an asynchronous request to update a Global Option Set.
      *
      * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
     updateGlobalOptionSet: <T = any>(request: UpdateGlobalOptionSetRequest) => Promise<T>;
     /**
      * Sends an asynchronous request to delete a Global Option Set.
      *
      * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
     deleteGlobalOptionSet: (request: DeleteGlobalOptionSetRequest) => Promise<any>;
     /**
      * Sends an asynchronous request to retrieve Global Option Set definitions.
      *
      * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
     retrieveGlobalOptionSet: <T = any>(request: RetrieveGlobalOptionSetRequest) => Promise<T>;
     /**
      * Sends an asynchronous request to retrieve Global Option Set definitions.
      *
      * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
     retrieveGlobalOptionSets: <T = any>(request?: RetrieveGlobalOptionSetsRequest) => Promise<RetrieveMultipleResponse<T>>;
     /**
@@ -361,7 +345,7 @@ export declare class DynamicsWebApi {
     /**
      * Executes a batch request. Please call DynamicsWebApi.startBatch() first to start a batch request.
      * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise} D365 Web Api result
+     * @returns {Promise} D365 Web Api Response
      */
     executeBatch: (request?: BaseRequest) => Promise<any[]>;
     /**
@@ -618,17 +602,17 @@ export interface UnboundFunctionRequest extends BaseRequest {
 }
 export interface BoundFunctionRequest extends UnboundFunctionRequest, Request {
     /**A String representing the GUID value for the record. */
-    id?: string;
+    key?: string;
 }
-export interface UnboundActionRequest extends BaseRequest {
+export interface UnboundActionRequest<TAction = any> extends BaseRequest {
     /**A name of the Web API action. */
     actionName: string;
-    /**A JavaScript object that represents a Dynamics 365 action. */
-    action?: any;
+    /**An object that represents a Dynamics 365 action. */
+    action?: TAction;
 }
-export interface BoundActionRequest extends UnboundActionRequest, Request {
+export interface BoundActionRequest<TAction = any> extends UnboundActionRequest<TAction>, Request {
     /**A String representing the GUID value for the record. */
-    id?: string;
+    key?: string;
 }
 export interface CreateEntityRequest extends BaseRequest {
     /**An object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single-valued navigation properties). */
