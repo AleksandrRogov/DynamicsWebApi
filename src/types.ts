@@ -112,6 +112,7 @@ export declare namespace Core {
         queryParams?: string[];
         contentRange?: string;
         url?: string;
+        parameters?: { [key: string]: any };
         _isUnboundRequest?: boolean;
         _additionalUrl?: string;
         fetchXml?: string;

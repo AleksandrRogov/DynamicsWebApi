@@ -116,12 +116,16 @@ In order to use DynamicsWebApi inside Dynamics 365 you need to download a browse
 Upload a script as a JavaScript Web Resource, place on the entity form or refer to it in your HTML Web Resource and then initialize the main object:
 
 ```ts
+interface WhoAmIResponse {
+    UserId: string
+}
+
 //By default DynamicsWebApi makes calls to 
 //Data API v9.2 and
 //Search API v1.0
 const dynamicsWebApi = new DynamicsWebApi();
 
-const response = await dynamicsWebApi.executeUnboundFunction<WhoAmIResponse>("WhoAmI");
+const response = await dynamicsWebApi.callFunction<WhoAmIResponse>("WhoAmI");
 Xrm.Navigation.openAlertDialog({ text: `Hello Dynamics 365! My id is: ${response.UserId}` });
 ```
 
@@ -193,9 +197,7 @@ const dynamicsWebApi = new DynamicsWebApi({
 
 try{
     //call any function
-    const response = await dynamicsWebApi.callFunction({
-        functionName: "WhoAmI"
-    });
+    const response = await dynamicsWebApi.callFunction("WhoAmI");
     console.log(`Hello from Dynamics 365! My id is: ${response.UserId}`);
 }
 catch (error){
@@ -879,6 +881,12 @@ const request: DynamicsWebApi.UnboundFunctionRequest = {
 
 const result = await dynamicsWebApi.callFunction<GetTimeZoneCodeByLocalizedNameResponse>(request);
 const timeZoneCode = result.TimeZoneCode;
+```
+
+Unbound Web API functions can also be called using a short form (in case there are no parameters), for example:
+
+```ts
+const whoAmIResult = await dynamicsWebApi.callFunction("WhoAmI");
 ```
 
 ### Execute Web API actions
@@ -1982,7 +1990,9 @@ DynamicsWebApi can be used to call Dataverse Search API and utilize its powerful
 
 To set Search API version use: `new DynamicsWebApi({ searchApi: { version: "2.0" }})`.
 
-Search, Suggest and Autocomplete requests have a common property `query`. This is the main property that configures a relevance search request.
+Search, Suggest and Autocomplete requests have a common property `query`. This is the main property that configures a relevance search request. 
+
+All functions can also be called with a single parameter `term` which is of type `string`.
 
 Examples below follow Microsoft official documenation.
 
@@ -2006,11 +2016,14 @@ top | `number` | Specifies the number of search results to retrieve. The default
 **Examples:**
 
 ```ts
-const result = await dynamicsWebApi.search({
+let result = await dynamicsWebApi.search({
     query: {
         search: "<search term>"
     }
 });
+
+//the same as:
+result = await dynamicsWebApi.search("<search term>");
 ```
 
 ```ts
@@ -2074,11 +2087,14 @@ useFuzzy | `boolean` | Use fuzzy search to aid with misspellings. The default is
 **Examples:**
 
 ```ts
-const result = await dynamicsWebApi.suggest({
+let result = await dynamicsWebApi.suggest({
     query: {
         search: "mar"
     }
 });
+
+//the same as:
+result = await dynamicsWebApi.suggest("mar");
 
 const firstText = result.value[0].text;
 const firstDocument = result.value[0].document;
@@ -2108,11 +2124,14 @@ useFuzzy | `boolean` | Use fuzzy search to aid with misspellings. The default is
 **Examples:**
 
 ```ts
-const result = await dynamicsWebApi.autocomplete({
+let result = await dynamicsWebApi.autocomplete({
     query: {
         search: "mar"
     }
 });
+
+//the same as:
+result = await dynamicsWebApi.autocomplete("mar");
 
 const value = result.value;
 ```

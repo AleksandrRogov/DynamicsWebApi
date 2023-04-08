@@ -1613,21 +1613,18 @@ class Utility {
         return clientUrl;
     }
     static isObject(obj) {
-        const type = typeof obj;
-        return type === "object" && !!obj;
+        return typeof obj === "object" && !!obj && !Array.isArray(obj) && Object.prototype.toString.call(obj) !== "[object Date]";
     }
     static copyObject(src, excludeProps = []) {
         let target = {};
         for (let prop in src) {
             if (src.hasOwnProperty(prop) && !excludeProps.includes(prop)) {
                 // if the value is a nested object, recursively copy all its properties
-                if (Utility.isObject(src[prop]) && Object.prototype.toString.call(src[prop]) !== "[object Date]") {
-                    if (!Array.isArray(src[prop])) {
-                        target[prop] = Utility.copyObject(src[prop]);
-                    }
-                    else {
-                        target[prop] = src[prop].slice();
-                    }
+                if (Utility.isObject(src[prop])) {
+                    target[prop] = Utility.copyObject(src[prop]);
+                }
+                else if (Array.isArray(src[prop])) {
+                    target[prop] = src[prop].slice();
                 }
                 else {
                     target[prop] = src[prop];
@@ -2254,12 +2251,14 @@ class DynamicsWebApi {
          */
         this.callFunction = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, `DynamicsWebApi.callFunction`, "request");
-            ErrorHelper_1.ErrorHelper.stringParameterCheck(request.functionName, `DynamicsWebApi.callFunction`, "request.functionName");
-            const internalRequest = Utility_1.Utility.copyObject(request);
+            const isObject = Utility_1.Utility.isObject(request);
+            const parameterName = isObject ? "request.functionName" : "name";
+            const internalRequest = isObject ? Utility_1.Utility.copyObject(request) : { functionName: request };
+            ErrorHelper_1.ErrorHelper.stringParameterCheck(internalRequest.functionName, `DynamicsWebApi.callFunction`, parameterName);
             internalRequest.method = "GET";
-            internalRequest.functionName = "callFunction";
-            internalRequest._additionalUrl = request.functionName + Utility_1.Utility.buildFunctionParameters(request.parameters);
+            internalRequest._additionalUrl = internalRequest.functionName + Utility_1.Utility.buildFunctionParameters(internalRequest.parameters);
             internalRequest._isUnboundRequest = !internalRequest.collection;
+            internalRequest.functionName = "callFunction";
             return this._makeRequest(internalRequest).then(function (response) {
                 return response.data;
             });
@@ -2612,10 +2611,12 @@ class DynamicsWebApi {
          */
         this.search = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.search", "request");
-            ErrorHelper_1.ErrorHelper.parameterCheck(request.query, "DynamicsWebApi.search", "request.query");
-            ErrorHelper_1.ErrorHelper.stringParameterCheck(request.query.search, "DynamicsWebApi.search", "request.query.search");
-            ErrorHelper_1.ErrorHelper.maxLengthStringParameterCheck(request.query.search, "DynamicsWebApi.search", "request.query.search", 100);
-            const internalRequest = Utility_1.Utility.copyObject(request);
+            const isObject = Utility_1.Utility.isObject(request);
+            const parameterName = isObject ? "request.query.search" : "term";
+            const internalRequest = isObject ? Utility_1.Utility.copyObject(request) : { query: { search: request } };
+            ErrorHelper_1.ErrorHelper.parameterCheck(internalRequest.query, "DynamicsWebApi.search", "request.query");
+            ErrorHelper_1.ErrorHelper.stringParameterCheck(internalRequest.query.search, "DynamicsWebApi.search", parameterName);
+            ErrorHelper_1.ErrorHelper.maxLengthStringParameterCheck(internalRequest.query.search, "DynamicsWebApi.search", parameterName, 100);
             internalRequest.collection = "query";
             internalRequest.functionName = "search";
             internalRequest.method = "POST";
@@ -2633,10 +2634,12 @@ class DynamicsWebApi {
          */
         this.suggest = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.suggest", "request");
-            ErrorHelper_1.ErrorHelper.parameterCheck(request.query, "DynamicsWebApi.suggest", "request.query");
-            ErrorHelper_1.ErrorHelper.stringParameterCheck(request.query.search, "DynamicsWebApi.suggest", "request.query.search");
-            ErrorHelper_1.ErrorHelper.maxLengthStringParameterCheck(request.query.search, "DynamicsWebApi.suggest", "request.query.search", 100);
-            const internalRequest = Utility_1.Utility.copyObject(request);
+            const isObject = Utility_1.Utility.isObject(request);
+            const parameterName = isObject ? "request.query.search" : "term";
+            const internalRequest = isObject ? Utility_1.Utility.copyObject(request) : { query: { search: request } };
+            ErrorHelper_1.ErrorHelper.parameterCheck(internalRequest.query, "DynamicsWebApi.suggest", "request.query");
+            ErrorHelper_1.ErrorHelper.stringParameterCheck(internalRequest.query.search, "DynamicsWebApi.suggest", parameterName);
+            ErrorHelper_1.ErrorHelper.maxLengthStringParameterCheck(internalRequest.query.search, "DynamicsWebApi.suggest", parameterName, 100);
             internalRequest.functionName = internalRequest.collection = "suggest";
             internalRequest.method = "POST";
             internalRequest.data = internalRequest.query;
@@ -2653,10 +2656,13 @@ class DynamicsWebApi {
          */
         this.autocomplete = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.autocomplete", "request");
-            ErrorHelper_1.ErrorHelper.parameterCheck(request.query, "DynamicsWebApi.autocomplete", "request.query");
-            ErrorHelper_1.ErrorHelper.stringParameterCheck(request.query.search, "DynamicsWebApi.autocomplete", "request.query.search");
-            ErrorHelper_1.ErrorHelper.maxLengthStringParameterCheck(request.query.search, "DynamicsWebApi.autocomplete", "request.query.search", 100);
-            const internalRequest = Utility_1.Utility.copyObject(request);
+            const isObject = Utility_1.Utility.isObject(request);
+            const parameterName = isObject ? "request.query.search" : "term";
+            const internalRequest = isObject ? Utility_1.Utility.copyObject(request) : { query: { search: request } };
+            if (isObject)
+                ErrorHelper_1.ErrorHelper.parameterCheck(internalRequest.query, "DynamicsWebApi.autocomplete", "request.query");
+            ErrorHelper_1.ErrorHelper.stringParameterCheck(internalRequest.query.search, `DynamicsWebApi.autocomplete`, parameterName);
+            ErrorHelper_1.ErrorHelper.maxLengthStringParameterCheck(internalRequest.query.search, "DynamicsWebApi.autocomplete", parameterName, 100);
             internalRequest.functionName = internalRequest.collection = "autocomplete";
             internalRequest.method = "POST";
             internalRequest.data = internalRequest.query;

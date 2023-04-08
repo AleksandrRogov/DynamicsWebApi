@@ -620,16 +620,19 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    callFunction = <T = any>(request: BoundFunctionRequest | UnboundFunctionRequest): Promise<T> => {
+    callFunction: CallFunction = <T = any>(request: string | BoundFunctionRequest | UnboundFunctionRequest): Promise<T> => {
         ErrorHelper.parameterCheck(request, `DynamicsWebApi.callFunction`, "request");
-        ErrorHelper.stringParameterCheck(request.functionName, `DynamicsWebApi.callFunction`, "request.functionName");
 
-        const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+        const isObject = Utility.isObject(request);
+        const parameterName = isObject ? "request.functionName" : "name";
+        const internalRequest: Core.InternalRequest = isObject ? Utility.copyObject(request) : { functionName: request as string };
+
+        ErrorHelper.stringParameterCheck(internalRequest.functionName, `DynamicsWebApi.callFunction`, parameterName);
+
         internalRequest.method = "GET";
-        internalRequest.functionName = "callFunction";
-
-        internalRequest._additionalUrl = request.functionName + Utility.buildFunctionParameters(request.parameters);
+        internalRequest._additionalUrl = internalRequest.functionName + Utility.buildFunctionParameters(internalRequest.parameters);
         internalRequest._isUnboundRequest = !internalRequest.collection;
+        internalRequest.functionName = "callFunction";
 
         return this._makeRequest(internalRequest).then(function (response) {
             return response.data;
@@ -642,7 +645,7 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    callAction = <TResponse = any, TAction = any>(request: BoundActionRequest<TAction> | UnboundActionRequest<TAction>): Promise<TResponse> => {
+    callAction: CallAction = <TResponse = any, TAction = any>(request: BoundActionRequest<TAction> | UnboundActionRequest<TAction>): Promise<TResponse> => {
         ErrorHelper.parameterCheck(request, `DynamicsWebApi.callAction`, "request");
         ErrorHelper.stringParameterCheck(request.actionName, `DynamicsWebApi.callAction`, "request.actionName");
 
@@ -1052,13 +1055,17 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise<SearchResponse<TValue>>} Search result
      */
-    search = <TValue = any>(request: SearchRequest): Promise<SearchResponse<TValue>> => {
+    search: SearchFunction = <TValue = any>(request: string | SearchRequest): Promise<SearchResponse<TValue>> => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.search", "request");
-        ErrorHelper.parameterCheck(request.query, "DynamicsWebApi.search", "request.query");
-        ErrorHelper.stringParameterCheck(request.query.search, "DynamicsWebApi.search", "request.query.search");
-        ErrorHelper.maxLengthStringParameterCheck(request.query.search, "DynamicsWebApi.search", "request.query.search", 100);
 
-        const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+        const isObject = Utility.isObject(request);
+        const parameterName = isObject ? "request.query.search" : "term";
+        const internalRequest: Core.InternalRequest = isObject ? Utility.copyObject(request) : { query: { search: request as string } };
+
+        ErrorHelper.parameterCheck(internalRequest.query, "DynamicsWebApi.search", "request.query");
+        ErrorHelper.stringParameterCheck(internalRequest.query.search, "DynamicsWebApi.search", parameterName);
+        ErrorHelper.maxLengthStringParameterCheck(internalRequest.query.search, "DynamicsWebApi.search", parameterName, 100);
+
         internalRequest.collection = "query";
         internalRequest.functionName = "search";
         internalRequest.method = "POST";
@@ -1077,13 +1084,17 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise<SuggestResponse<TValueDocument>>} Suggestions result
      */
-    suggest = <TValueDocument = any>(request: SuggestRequest): Promise<SuggestResponse<TValueDocument>> => {
+    suggest: SuggestFunction = <TValueDocument = any>(request: string | SuggestRequest): Promise<SuggestResponse<TValueDocument>> => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.suggest", "request");
-        ErrorHelper.parameterCheck(request.query, "DynamicsWebApi.suggest", "request.query");
-        ErrorHelper.stringParameterCheck(request.query.search, "DynamicsWebApi.suggest", "request.query.search");
-        ErrorHelper.maxLengthStringParameterCheck(request.query.search, "DynamicsWebApi.suggest", "request.query.search", 100);
 
-        const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+        const isObject = Utility.isObject(request);
+        const parameterName = isObject ? "request.query.search" : "term";
+        const internalRequest: Core.InternalRequest = isObject ? Utility.copyObject(request) : { query: { search: request as string } };
+
+        ErrorHelper.parameterCheck(internalRequest.query, "DynamicsWebApi.suggest", "request.query");
+        ErrorHelper.stringParameterCheck(internalRequest.query.search, "DynamicsWebApi.suggest", parameterName);
+        ErrorHelper.maxLengthStringParameterCheck(internalRequest.query.search, "DynamicsWebApi.suggest", parameterName, 100);
+
         internalRequest.functionName = internalRequest.collection = "suggest";
         internalRequest.method = "POST";
         internalRequest.data = internalRequest.query;
@@ -1101,13 +1112,17 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise<AutocompleteResponse>} Result of autocomplete
      */
-    autocomplete = (request: AutocompleteRequest): Promise<AutocompleteResponse> => {
+    autocomplete: AutocompleteFunction = (request: string | AutocompleteRequest): Promise<AutocompleteResponse> => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.autocomplete", "request");
-        ErrorHelper.parameterCheck(request.query, "DynamicsWebApi.autocomplete", "request.query");
-        ErrorHelper.stringParameterCheck(request.query.search, "DynamicsWebApi.autocomplete", "request.query.search");
-        ErrorHelper.maxLengthStringParameterCheck(request.query.search, "DynamicsWebApi.autocomplete", "request.query.search", 100);
 
-        const internalRequest = Utility.copyObject<Core.InternalRequest>(request);
+        const isObject = Utility.isObject(request);
+        const parameterName = isObject ? "request.query.search" : "term";
+        const internalRequest: Core.InternalRequest = isObject ? Utility.copyObject(request) : { query: { search: request as string } };
+
+        if (isObject) ErrorHelper.parameterCheck(internalRequest.query, "DynamicsWebApi.autocomplete", "request.query");
+        ErrorHelper.stringParameterCheck(internalRequest.query.search, `DynamicsWebApi.autocomplete`, parameterName);
+        ErrorHelper.maxLengthStringParameterCheck(internalRequest.query.search, "DynamicsWebApi.autocomplete", parameterName, 100);
+
         internalRequest.functionName = internalRequest.collection = "autocomplete";
         internalRequest.method = "POST";
         internalRequest.data = internalRequest.query;
@@ -1773,7 +1788,7 @@ export interface FetchXmlResponse<T> extends MultipleResponse<T> {
     };
 }
 
-interface DownloadResponse {
+export interface DownloadResponse {
     /**The name of the file */
     fileName: string;
     /**File size */
@@ -1782,7 +1797,7 @@ interface DownloadResponse {
     data: Uint8Array | Buffer;
 }
 
-interface SearchResponse<TValue = any> {
+export interface SearchResponse<TValue = any> {
     /**Search results*/
     value: TValue[];
     facets: any | null;
@@ -1790,19 +1805,127 @@ interface SearchResponse<TValue = any> {
     querycontext: any | null;
 }
 
-interface SuggestResponseValue<TDocument = any> {
+export interface SuggestResponseValue<TDocument = any> {
     text: string;
     document: TDocument;
 }
 
-interface SuggestResponse<TValueDocument = any> {
+export interface SuggestResponse<TValueDocument = any> {
     /**Suggestions*/
     value: SuggestResponseValue<TValueDocument>[];
     querycontext: any | null;
 }
 
-interface AutocompleteResponse {
+export interface AutocompleteResponse {
     /**Autocomplete result*/
     value: string | null;
     querycontext: any | null;
 }
+
+//function overloads
+
+type CallFunction = {
+    /**
+     * Calls a Web API function
+     *
+     * @param name - The name of a function.
+     * @returns {Promise} D365 Web Api Response
+     */
+    <T = any>(name: string): Promise<T>;
+    /**
+     * Calls a bound Web API function
+     *
+     * @param request - An object that represents all possible options for a current request.
+     * @returns {Promise} D365 Web Api Response
+     */
+    <T = any>(request: BoundFunctionRequest): Promise<T>;
+    /**
+     * Calls an unbound Web API function (not bound to a particular table row)
+     *
+     * @param request - An object that represents all possible options for a current request.
+     * @returns {Promise} D365 Web Api Response
+     */
+    <T = any>(request: UnboundFunctionRequest): Promise<T>;
+};
+
+type CallAction = {
+    /**
+     * Calls a bound Web API action (bound to a particular table row)
+     *
+     * @param request - An object that represents all possible options for a current request.
+     * @type {T} Type of the value in a response
+     * @returns {Promise} D365 Web Api Response
+     */
+    <T = any>(request: BoundActionRequest): Promise<T>;
+    /**
+     * Calls an unbound Web API action (not bound to a particular table row)
+     *
+     * @param request - An object that represents all possible options for a current request.
+     * @type {T} Type of the value in a response
+     * @returns {Promise} D365 Web Api Response
+     */
+    <T = any>(request: UnboundActionRequest): Promise<T>;
+    /**
+     * Calls a bound Web API action (bound to a particular table row)
+     *
+     * @param request - An object that represents all possible options for a current request.
+     * @type {TResponse} Type of the value in a response
+     * @type {TAction} Type of an action object
+     * @returns {Promise} D365 Web Api Response
+     */
+    <TResponse = any, TAction = any>(request: BoundActionRequest<TAction>): Promise<TResponse>;
+    /**
+     * Calls an unbound Web API action (not bound to a particular table row)
+     *
+     * @param request - An object that represents all possible options for a current request.
+     * @type {TResponse} Type of the value in a response
+     * @type {TAction} Type of an action object
+     * @returns {Promise} D365 Web Api Response
+     */
+    <TResponse = any, TAction = any>(request: UnboundActionRequest<TAction>): Promise<TResponse>;
+};
+
+type SearchFunction = {
+    /**
+     * Provides a search results page.
+     * @param term - The term to be searched for and has a max 100-character limit.
+     * @returns {Promise<SearchResponse>} Search result
+     */
+    (term: string): Promise<SearchResponse>;
+    /**
+     * Provides a search results page.
+     * @param request - An object that represents all possible options for a current request.
+     * @returns {Promise<SearchResponse<TValue>>} Search result
+     */
+    <TValue = any>(request: SearchRequest): Promise<SearchResponse<TValue>>;
+};
+
+type SuggestFunction = {
+    /**
+     * Provides suggestions as the user enters text into a form field.
+     * @param term - The term to be searched for and has min 3 characters to a max 100-character limit.
+     * @returns {Promise<SuggestResponse>} Suggestions result
+     */
+    (term: string): Promise<SuggestResponse>;
+    /**
+     * Provides suggestions as the user enters text into a form field.
+     * @param request - An object that represents all possible options for a current request.
+     * @returns {Promise<SuggestResponse<TValueDocument>>} Suggestions result
+     */
+    <TValueDocument = any>(request: SuggestRequest): Promise<SuggestResponse<TValueDocument>>;
+};
+
+type AutocompleteFunction = {
+    /**
+     * Provides autocompletion of input as the user enters text into a form field.
+     * @param term - The term to be searched for and has a 100-character limit.
+     * @returns {Promise<AutocompleteResponse>} Result of autocomplete
+     */
+    (term: string): Promise<AutocompleteResponse>;
+    /**
+     * Provides autocompletion of input as the user enters text into a form field.
+     * @param request - An object that represents all possible options for a current request.
+     * @returns {Promise<AutocompleteResponse>} Result of autocomplete
+     */
+    (request: AutocompleteRequest): Promise<AutocompleteResponse>;
+};

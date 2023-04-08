@@ -1648,6 +1648,34 @@ describe("dynamicsWebApi.callFunction -", function () {
         });
     });
 
+    describe("unbound - short version", function () {
+        var scope;
+        before(function () {
+            var response = mocks.responses.response200;
+            scope = nock(mocks.webApiUrl).get("/FUN()").reply(response.status, response.responseText, response.responseHeaders);
+        });
+
+        after(function () {
+            nock.cleanAll();
+        });
+
+        it("(no parameters) returns a correct response", function (done) {
+            dynamicsWebApiTest
+                .callFunction("FUN")
+                .then(function (object) {
+                    expect(object).to.deep.equal(mocks.data.testEntity);
+                    done();
+                })
+                .catch(function (object) {
+                    done(object);
+                });
+        });
+
+        it("all requests have been made", function () {
+            expect(scope.isDone()).to.be.true;
+        });
+    });
+
     describe("unbound impersonation", function () {
         var scope;
         before(function () {
