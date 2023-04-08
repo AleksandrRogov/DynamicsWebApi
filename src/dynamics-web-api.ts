@@ -14,12 +14,16 @@ export class DynamicsWebApi {
     private _isBatch = false;
     private _batchRequestId: string | null = null;
 
+    /**
+     * Initializes a new instance of DynamicsWebApi
+     * @param config - Configuration object
+     */
     constructor(config?: Config) {
         ConfigurationUtility.merge(this._config, config);
     }
 
     /**
-	 * Sets the configuration parameters for DynamicsWebApi helper.
+	 * Merges provided configuration properties with an existing one.
 	 *
 	 * @param {DynamicsWebApi.Config} config - Configuration
 	 * @example
@@ -139,7 +143,7 @@ export class DynamicsWebApi {
         }
 
         //copy locally
-        var ifmatch = internalRequest.ifmatch;
+        const ifmatch = internalRequest.ifmatch;
         return this._makeRequest(internalRequest)
             .then(function (response) {
                 return response.data;
@@ -157,11 +161,7 @@ export class DynamicsWebApi {
     /**
      * Sends an asynchronous request to update a single value in the record.
      *
-     * @param {string} key - A String representing the GUID value or Alternate Key for the record to update.
-     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-     * @param {Object} keyValuePair - keyValuePair object with a logical name of the field as a key and a value to update with. Example: {subject: "Update Record"}
-     * @param {string|Array} [prefer] - If set to "return=representation" the function will return an updated object
-     * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
+     * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
     updateSingleProperty = <T = any>(request: UpdateSinglePropertyRequest): Promise<T> => {
@@ -187,7 +187,7 @@ export class DynamicsWebApi {
     /**
      * Sends an asynchronous request to delete a record.
      *
-     * @param {DWARequest} request - An object that represents all possible options for a current request.
+     * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
     deleteRecord = (request: DeleteRequest): Promise<any> => {
@@ -270,7 +270,7 @@ export class DynamicsWebApi {
     /**
      * Upload file to a File Attribute
      *
-     * @param {any} request - An object that represents all possible options for a current request.
+     * @param request - An object that represents all possible options for a current request.
      */
     uploadFile = (request: UploadRequest): Promise<void> => {
         ErrorHelper.throwBatchIncompatible("DynamicsWebApi.uploadFile", this._isBatch);
@@ -323,7 +323,7 @@ export class DynamicsWebApi {
 
     /**
      * Download a file from a File Attribute
-     * @param {any} request - An object that represents all possible options for a current request.
+     * @param request - An object that represents all possible options for a current request.
      */
     downloadFile = (request: DownloadRequest): Promise<DownloadResponse> => {
         ErrorHelper.throwBatchIncompatible("DynamicsWebApi.downloadFile", this._isBatch);
@@ -1136,7 +1136,7 @@ export class DynamicsWebApi {
     };
 
     /**
-     * Starts a batch request.
+     * Starts/executes a batch request.
      */
     startBatch = (): void => {
         this._isBatch = true;
@@ -1168,12 +1168,12 @@ export class DynamicsWebApi {
     };
 
     /**
-     * Creates a new instance of DynamicsWebApi
+     * Creates a new instance of DynamicsWebApi. If the config is not provided, it is copied from the current instance.
      *
-     * @param {DWAConfig} [config] - configuration object.
+     * @param config - configuration object.
      * @returns {DynamicsWebApi} The new instance of a DynamicsWebApi
      */
-    initializeInstance = (config) => new DynamicsWebApi(config || this._config);
+    initializeInstance = (config?: Config) => new DynamicsWebApi(config || this._config);
 
     Utility = {
         /**
@@ -1215,6 +1215,8 @@ export interface BaseRequest {
     token?: string;
     /**Sets a number of milliseconds before a request times out. */
     timeout?: number;
+    /**The AbortSignal interface represents a signal object that allows you to communicate with a DOM request and abort it if required via an AbortController object. */
+    signal?: AbortSignal;
 }
 
 export interface Request extends BaseRequest {

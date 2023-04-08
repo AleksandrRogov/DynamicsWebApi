@@ -121,7 +121,7 @@ interface WhoAmIResponse {
 }
 
 //By default DynamicsWebApi makes calls to 
-//Data API v9.2 and
+//Web API v9.2 and
 //Search API v1.0
 const dynamicsWebApi = new DynamicsWebApi();
 
@@ -1179,7 +1179,7 @@ const entityId = await dynamicsWebApi.createEntity({ data: entityDefinition });
 
 Entity Metadata can be retrieved by either Primary Key (**MetadataId**) or by an Alternate Key (**LogicalName**). [More Info](https://msdn.microsoft.com/en-us/library/mt788314.aspx#bkmk_byName)
 
-```js
+```ts
 const entityKey = "00000000-0000-0000-0000-000000000001";
 //  or you can use an alternate key:
 //const entityKey = "LogicalName='new_accountname'";
@@ -1196,7 +1196,7 @@ const schemaName = entityMetadata.SchemaName;
 
 Microsoft recommends to make changes in the entity metadata that has been priorly retrieved to avoid any mistake. I would also recommend to read information about **MSCRM.MergeLabels** header prior updating metadata. More information about the header can be found [here](https://msdn.microsoft.com/en-us/library/mt593078.aspx#Anchor_2).
 
-**Important!** Make sure you set **`MetadataId`** property when you update the metadata, DynamicsWebApi use it as a primary key for the EntityDefinition record.
+**Important!** Make sure you set **`MetadataId`** property when you update the metadata, DynamicsWebApi uses it as a primary key for the EntityDefinition record.
 
 ```ts
 const entityKey = "LogicalName='new_accountname'";
@@ -1207,7 +1207,18 @@ entityMetadata.DispalyName.LocalizedLabels[0].Label = "New Bank Account";
 await dynamicsWebApi.updateEntity({ data: entityMetadata });
 ```
 
-**Important!** When you update a table definition, you must publish your changes. [More Info](https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/publish-customizations)
+**Important!** When you update a table definition, you must publish your changes. [More Info](https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/publish-customizations). In our case we need to do an additional request to publish changes:
+
+```ts
+await dynamicsWebApi.callAction({
+    actionName: "PublishXml",
+    action: {
+        ParameterXml: "<importexportxml><webresources><webresource>new_accountname</webresource></webresources></importexportxml>"
+    }
+});
+```
+
+You can find examples of `ParameterXml` [here](https://learn.microsoft.com/en-us/dotnet/api/microsoft.crm.sdk.messages.publishxmlrequest.parameterxml?view=dataverse-sdk-latest#microsoft-crm-sdk-messages-publishxmlrequest-parameterxml).
 
 ### Retrieve Multiple Table Definitions
 

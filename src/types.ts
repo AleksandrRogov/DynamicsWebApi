@@ -16,6 +16,7 @@ export declare namespace Core {
         isAsync?: boolean;
         requestId: string;
         proxy?: ProxyConfig | null;
+        abortSignal?: AbortSignal;
     }
 
     interface BatchRequestCollection {
@@ -52,8 +53,6 @@ export declare namespace Core {
         noCache?: boolean;
         /** Authorization Token. If set, onTokenRefresh will not be called. */
         token?: string;
-        /** DEPRECATED Use "key" instead. A String representing the Primary Key(GUID) of the record. */
-        id?: string;
         /**A String representing collection record's Primary Key (GUID) or Alternate Key(s). */
         key?: string;
         /**v.1.7.5+ If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. */
@@ -64,8 +63,6 @@ export declare namespace Core {
         navigationProperty?: string;
         /**v.1.4.3 + A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata). */
         navigationPropertyKey?: string;
-        /**A JavaScript object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single-valued navigation properties). */
-        entity?: any;
         /**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
         expand?: Expand[];
         /**Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests.*/
@@ -133,6 +130,7 @@ export declare namespace Core {
         /**Set a specific api config for a request. Default is dataApi. */
         apiConfig?: InternalApiConfig;
         query?: any;
+        signal?: AbortSignal;
     }
 
     interface FileParseResult {

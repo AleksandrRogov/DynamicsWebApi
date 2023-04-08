@@ -1742,7 +1742,7 @@ describe("dynamicsWebApi.callFunction -", function () {
 
         it("(no parameters) returns a correct response", function (done) {
             dynamicsWebApiTest
-                .callFunction({ id: mocks.data.testEntityId, collection: "tests", functionName: "FUN" })
+                .callFunction({ key: mocks.data.testEntityId, collection: "tests", functionName: "FUN" })
                 .then(function (object) {
                     expect(object).to.deep.equal(mocks.data.testEntity);
                     done();
@@ -1755,7 +1755,7 @@ describe("dynamicsWebApi.callFunction -", function () {
         it("(with parameters) returns a correct response", function (done) {
             dynamicsWebApiTest
                 .callFunction({
-                    id: mocks.data.testEntityId,
+                    key: mocks.data.testEntityId,
                     collection: "tests",
                     functionName: "FUN",
                     parameters: { param1: "value1", param2: 2 },
@@ -1794,7 +1794,7 @@ describe("dynamicsWebApi.callFunction -", function () {
 
         it("(no parameters) returns a correct response", function (done) {
             dynamicsWebApiTest
-                .callFunction({ id: mocks.data.testEntityId, collection: "tests", functionName: "FUN", impersonate: mocks.data.testEntityId })
+                .callFunction({ key: mocks.data.testEntityId, collection: "tests", functionName: "FUN", impersonate: mocks.data.testEntityId })
                 .then(function (object) {
                     expect(object).to.deep.equal(mocks.data.testEntity);
                     done();
@@ -1807,7 +1807,7 @@ describe("dynamicsWebApi.callFunction -", function () {
         it("(with parameters) returns a correct response", function (done) {
             dynamicsWebApiTest
                 .callFunction({
-                    id: mocks.data.testEntityId,
+                    key: mocks.data.testEntityId,
                     collection: "tests",
                     functionName: "FUN",
                     parameters: { param1: "value1", param2: 2 },
@@ -1906,7 +1906,7 @@ describe("dynamicsWebApi.callAction -", function () {
 
         it("returns a correct response", function (done) {
             dynamicsWebApiTest
-                .callAction({ id: mocks.data.testEntityId, collection: "tests", actionName: "FUN", action: mocks.responses.actionRequest })
+                .callAction({ key: mocks.data.testEntityId, collection: "tests", actionName: "FUN", action: mocks.responses.actionRequest })
                 .then(function (object) {
                     expect(object).to.deep.equal(mocks.data.testEntity);
                     done();
@@ -1941,7 +1941,7 @@ describe("dynamicsWebApi.callAction -", function () {
         it("returns a correct response", function (done) {
             dynamicsWebApiTest
                 .callAction({
-                    id: mocks.data.testEntityId,
+                    key: mocks.data.testEntityId,
                     collection: "tests",
                     actionName: "FUN",
                     action: mocks.responses.actionRequest,
@@ -1982,7 +1982,7 @@ describe("dynamicsWebApi.update -", function () {
 
         it("returns a correct response", function (done) {
             var dwaRequest = {
-                id: mocks.data.testEntityId,
+                key: mocks.data.testEntityId,
                 collection: "tests",
                 data: mocks.data.testEntity,
             };
@@ -2025,7 +2025,7 @@ describe("dynamicsWebApi.update -", function () {
 
         it("returns a correct response", function (done) {
             var dwaRequest = {
-                id: mocks.data.testEntityId,
+                key: mocks.data.testEntityId,
                 collection: "tests",
                 data: mocks.data.testEntity,
                 returnRepresentation: true,
@@ -2044,7 +2044,7 @@ describe("dynamicsWebApi.update -", function () {
 
         it("[fullname, subject] returns a correct response", function (done) {
             var dwaRequest = {
-                id: mocks.data.testEntityId,
+                key: mocks.data.testEntityId,
                 collection: "tests",
                 data: mocks.data.testEntity,
                 returnRepresentation: true,
@@ -2087,7 +2087,7 @@ describe("dynamicsWebApi.update -", function () {
 
         it("returns a correct response", function (done) {
             var dwaRequest = {
-                id: mocks.data.testEntityId,
+                key: mocks.data.testEntityId,
                 collection: "tests",
                 data: mocks.data.testEntity,
                 ifmatch: "match",
@@ -2129,7 +2129,7 @@ describe("dynamicsWebApi.update -", function () {
 
         it("returns a correct response", function (done) {
             var dwaRequest = {
-                id: mocks.data.testEntityId,
+                key: mocks.data.testEntityId,
                 collection: "tests",
                 data: mocks.data.testEntity,
                 ifmatch: "match",
@@ -2171,7 +2171,7 @@ describe("dynamicsWebApi.update -", function () {
 
         it("catches the error", function (done) {
             var dwaRequest = {
-                id: mocks.data.testEntityId,
+                key: mocks.data.testEntityId,
                 collection: "tests",
                 data: mocks.data.testEntity,
                 ifmatch: "match",
@@ -2197,7 +2197,7 @@ describe("dynamicsWebApi.update -", function () {
 describe("dynamicsWebApi.upsert -", function () {
     describe("(update) basic", function () {
         var dwaRequest = {
-            id: mocks.data.testEntityId,
+            key: mocks.data.testEntityId,
             collection: "tests",
             data: mocks.data.testEntity,
         };
@@ -2269,7 +2269,7 @@ describe("dynamicsWebApi.upsert -", function () {
 
         it("(update) returns a correct response", function (done) {
             var dwaRequest = {
-                id: mocks.data.testEntityId,
+                key: mocks.data.testEntityId,
                 collection: "tests",
                 data: mocks.data.testEntity,
                 returnRepresentation: true,
@@ -2288,7 +2288,7 @@ describe("dynamicsWebApi.upsert -", function () {
 
         it("(create) returns a correct response", function (done) {
             var dwaRequest = {
-                id: mocks.data.testEntityId,
+                key: mocks.data.testEntityId,
                 collection: "tests",
                 data: mocks.data.testEntity,
                 returnRepresentation: true,
@@ -2313,7 +2313,7 @@ describe("dynamicsWebApi.upsert -", function () {
 
     describe("If-Match: '*' (Prevent Create)", function () {
         var dwaRequest = {
-            id: mocks.data.testEntityId,
+            key: mocks.data.testEntityId,
             collection: "tests",
             data: mocks.data.testEntity,
             returnRepresentation: true,
@@ -2388,7 +2388,7 @@ describe("dynamicsWebApi.upsert -", function () {
 
     describe("If-None-Match: '*' (Prevent Update)", function () {
         var dwaRequest = {
-            id: mocks.data.testEntityId,
+            key: mocks.data.testEntityId,
             collection: "tests",
             data: mocks.data.testEntity,
             returnRepresentation: true,
@@ -2483,7 +2483,7 @@ describe("dynamicsWebApi.retrieve -", function () {
 
         it("returns a correct response", function (done) {
             var dwaRequest = {
-                id: mocks.data.testEntityId,
+                key: mocks.data.testEntityId,
                 collection: "tests",
                 expand: [{ property: "prop" }],
                 impersonate: mocks.data.testEntityId2,
@@ -2526,7 +2526,7 @@ describe("dynamicsWebApi.retrieve -", function () {
 
         it("returns a correct response", function (done) {
             var dwaRequest = {
-                id: mocks.data.testEntityId,
+                key: mocks.data.testEntityId,
                 collection: "tests",
                 expand: [{ property: "prop", filter: "field eq 'value'" }],
                 impersonate: mocks.data.testEntityId2,
@@ -2569,7 +2569,7 @@ describe("dynamicsWebApi.retrieve -", function () {
 
         it("returns a correct response", function (done) {
             var dwaRequest = {
-                id: mocks.data.testEntityId,
+                key: mocks.data.testEntityId,
                 collection: "tests",
                 select: ["ownerid/$ref"],
                 impersonate: mocks.data.testEntityId2,
@@ -3186,7 +3186,7 @@ describe("dynamicsWebApi.deleteRecord -", function () {
         it("returns a correct response", function (done) {
             var dwaRequest = {
                 collection: "tests",
-                id: mocks.data.testEntityId,
+                key: mocks.data.testEntityId,
                 impersonate: mocks.data.testEntityId2,
             };
 
@@ -3263,7 +3263,7 @@ describe("dynamicsWebApi.deleteRecord -", function () {
         it("(pre-condition approved) returns a correct response", function (done) {
             var dwaRequest = {
                 collection: "tests",
-                id: mocks.data.testEntityId,
+                key: mocks.data.testEntityId,
                 impersonate: mocks.data.testEntityId2,
                 ifmatch: "match",
             };
@@ -3282,7 +3282,7 @@ describe("dynamicsWebApi.deleteRecord -", function () {
         it("(pre-condition failed) returns a correct response", function (done) {
             var dwaRequest = {
                 collection: "tests",
-                id: mocks.data.testEntityId,
+                key: mocks.data.testEntityId,
                 impersonate: mocks.data.testEntityId2,
                 ifmatch: "match",
             };
@@ -3301,7 +3301,7 @@ describe("dynamicsWebApi.deleteRecord -", function () {
         it("(request failed) returns a correct response", function (done) {
             var dwaRequest = {
                 collection: "tests",
-                id: mocks.data.testEntityId,
+                key: mocks.data.testEntityId,
                 impersonate: mocks.data.testEntityId2,
                 ifmatch: "match",
             };
@@ -5999,7 +5999,7 @@ describe("dynamicsWebApi.constructor -", function () {
 
         it("returns a correct response", function (done) {
             var dwaRequest = {
-                id: mocks.data.testEntityId,
+                key: mocks.data.testEntityId,
                 collection: "tests",
                 data: mocks.data.testEntity,
                 returnRepresentation: false,

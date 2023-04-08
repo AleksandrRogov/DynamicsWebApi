@@ -112,6 +112,7 @@ class RequestClient {
 ////////////////////////////////////
 //////////////////////////
                 requestId: request.requestId,
+                abortSignal: request.signal,
             });
         };
         //call a token refresh callback only if it is set and there is no "Authorization" header set yet
@@ -599,14 +600,23 @@ class XhrWrapper {
         const responseParams = options.responseParams;
         const successCallback = options.successCallback;
         const errorCallback = options.errorCallback;
-        const request = new XMLHttpRequest();
+        const signal = options.abortSignal;
+        if (signal === null || signal === void 0 ? void 0 : signal.aborted) {
+            errorCallback(ErrorHelper_1.ErrorHelper.handleHttpError({
+                message: "Request aborted",
+            }));
+        }
+        let request = new XMLHttpRequest();
         request.open(options.method, options.uri, options.isAsync || false);
         //set additional headers
         for (let key in additionalHeaders) {
             request.setRequestHeader(key, additionalHeaders[key]);
         }
+        const abort = () => request.abort();
         request.onreadystatechange = function () {
             if (request.readyState === 4) {
+                if (signal)
+                    signal.removeEventListener("abort", abort);
                 switch (request.status) {
                     case 200: // Success with content returned in response body.
                     case 201: // Success with content returned in response body.
@@ -622,7 +632,7 @@ class XhrWrapper {
                             status: request.status,
                         };
                         delete responseParams[options.requestId];
-                        // request = null;
+                        request = null;
                         successCallback(response);
                         break;
                     }
@@ -654,7 +664,7 @@ class XhrWrapper {
                             headers: headers,
                         };
                         delete responseParams[options.requestId];
-                        // request = null;
+                        request = null;
                         errorCallback(ErrorHelper_1.ErrorHelper.handleHttpError(error, errorParameters));
                         break;
                 }
@@ -672,7 +682,7 @@ class XhrWrapper {
                 headers: headers,
             }));
             delete responseParams[options.requestId];
-            // request = null;
+            request = null;
         };
         request.ontimeout = function () {
             const headers = (0, parseResponseHeaders_1.parseResponseHeaders)(request.getAllResponseHeaders());
@@ -683,8 +693,22 @@ class XhrWrapper {
                 headers: headers,
             }));
             delete responseParams[options.requestId];
-            // request = null;
+            request = null;
         };
+        request.onabort = function () {
+            const headers = (0, parseResponseHeaders_1.parseResponseHeaders)(request.getAllResponseHeaders());
+            errorCallback(ErrorHelper_1.ErrorHelper.handleHttpError({
+                status: request.status,
+                statusText: request.statusText,
+                message: "Request aborted",
+                headers: headers,
+            }));
+            delete responseParams[options.requestId];
+            request = null;
+        };
+        if (signal) {
+            signal.addEventListener("abort", abort);
+        }
         data ? request.send(data) : request.send();
         //called for testing
         if (XhrWrapper.afterSendEvent)
@@ -1018,11 +1042,6 @@ class RequestUtility {
                 //add alternate key feature
                 if (request.key) {
                     request.key = ErrorHelper_1.ErrorHelper.keyParameterCheck(request.key, `DynamicsWebApi.${request.functionName}`, "request.key");
-                }
-                else if (request.id) {
-                    request.key = ErrorHelper_1.ErrorHelper.guidParameterCheck(request.id, `DynamicsWebApi.${request.functionName}`, "request.id");
-                }
-                if (request.key) {
                     request.path += `(${request.key})`;
                 }
             }
@@ -1157,9 +1176,6 @@ class RequestUtility {
             if (request.fileName) {
                 ErrorHelper_1.ErrorHelper.stringParameterCheck(request.fileName, `DynamicsWebApi.${request.functionName}`, "request.fileName");
                 queryArray.push("x-ms-file-name=" + request.fileName);
-            }
-            if (request.entity) {
-                ErrorHelper_1.ErrorHelper.parameterCheck(request.entity, `DynamicsWebApi.${request.functionName}`, "request.entity");
             }
             if (request.data) {
                 ErrorHelper_1.ErrorHelper.parameterCheck(request.data, `DynamicsWebApi.${request.functionName}`, "request.data");
@@ -1365,7 +1381,7 @@ class RequestUtility {
                     continue;
                 batchBody.push(`${key}: ${internalRequest.headers[key]}`);
             }
-            const data = internalRequest.data || internalRequest.entity;
+            const data = internalRequest.data;
             if (!isGet && data) {
                 batchBody.push(`\n${RequestUtility.processData(data, config)}`);
             }
@@ -1734,12 +1750,16 @@ const RequestClient_1 = __webpack_require__(94);
  * @module dynamics-web-api
  */
 class DynamicsWebApi {
+    /**
+     * Initializes a new instance of DynamicsWebApi
+     * @param config - Configuration object
+     */
     constructor(config) {
         this._config = Config_1.ConfigurationUtility.default();
         this._isBatch = false;
         this._batchRequestId = null;
         /**
-         * Sets the configuration parameters for DynamicsWebApi helper.
+         * Merges provided configuration properties with an existing one.
          *
          * @param {DynamicsWebApi.Config} config - Configuration
          * @example
@@ -1848,7 +1868,7 @@ class DynamicsWebApi {
                 internalRequest.ifmatch = "*"; //to prevent upsert
             }
             //copy locally
-            var ifmatch = internalRequest.ifmatch;
+            const ifmatch = internalRequest.ifmatch;
             return this._makeRequest(internalRequest)
                 .then(function (response) {
                 return response.data;
@@ -1865,11 +1885,7 @@ class DynamicsWebApi {
         /**
          * Sends an asynchronous request to update a single value in the record.
          *
-         * @param {string} key - A String representing the GUID value or Alternate Key for the record to update.
-         * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-         * @param {Object} keyValuePair - keyValuePair object with a logical name of the field as a key and a value to update with. Example: {subject: "Update Record"}
-         * @param {string|Array} [prefer] - If set to "return=representation" the function will return an updated object
-         * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
+         * @param request - An object that represents all possible options for a current request.
          * @returns {Promise} D365 Web Api Response
          */
         this.updateSingleProperty = (request) => {
@@ -1890,7 +1906,7 @@ class DynamicsWebApi {
         /**
          * Sends an asynchronous request to delete a record.
          *
-         * @param {DWARequest} request - An object that represents all possible options for a current request.
+         * @param request - An object that represents all possible options for a current request.
          * @returns {Promise} D365 Web Api Response
          */
         this.deleteRecord = (request) => {
@@ -1966,7 +1982,7 @@ class DynamicsWebApi {
         /**
          * Upload file to a File Attribute
          *
-         * @param {any} request - An object that represents all possible options for a current request.
+         * @param request - An object that represents all possible options for a current request.
          */
         this.uploadFile = (request) => {
             ErrorHelper_1.ErrorHelper.throwBatchIncompatible("DynamicsWebApi.uploadFile", this._isBatch);
@@ -2007,7 +2023,7 @@ class DynamicsWebApi {
         };
         /**
          * Download a file from a File Attribute
-         * @param {any} request - An object that represents all possible options for a current request.
+         * @param request - An object that represents all possible options for a current request.
          */
         this.downloadFile = (request) => {
             ErrorHelper_1.ErrorHelper.throwBatchIncompatible("DynamicsWebApi.downloadFile", this._isBatch);
@@ -2673,7 +2689,7 @@ class DynamicsWebApi {
             });
         };
         /**
-         * Starts a batch request.
+         * Starts/executes a batch request.
          */
         this.startBatch = () => {
             this._isBatch = true;
@@ -2698,9 +2714,9 @@ class DynamicsWebApi {
             return promise;
         };
         /**
-         * Creates a new instance of DynamicsWebApi
+         * Creates a new instance of DynamicsWebApi. If the config is not provided, it is copied from the current instance.
          *
-         * @param {DWAConfig} [config] - configuration object.
+         * @param config - configuration object.
          * @returns {DynamicsWebApi} The new instance of a DynamicsWebApi
          */
         this.initializeInstance = (config) => new DynamicsWebApi(config || this._config);

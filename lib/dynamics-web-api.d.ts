@@ -8,9 +8,13 @@ export declare class DynamicsWebApi {
     private _config;
     private _isBatch;
     private _batchRequestId;
+    /**
+     * Initializes a new instance of DynamicsWebApi
+     * @param config - Configuration object
+     */
     constructor(config?: Config);
     /**
-     * Sets the configuration parameters for DynamicsWebApi helper.
+     * Merges provided configuration properties with an existing one.
      *
      * @param {DynamicsWebApi.Config} config - Configuration
      * @example
@@ -68,18 +72,14 @@ export declare class DynamicsWebApi {
     /**
      * Sends an asynchronous request to update a single value in the record.
      *
-     * @param {string} key - A String representing the GUID value or Alternate Key for the record to update.
-     * @param {string} collection - The name of the Entity Collection or Entity Logical name.
-     * @param {Object} keyValuePair - keyValuePair object with a logical name of the field as a key and a value to update with. Example: {subject: "Update Record"}
-     * @param {string|Array} [prefer] - If set to "return=representation" the function will return an updated object
-     * @param {Array} [select] - An Array representing the $select Query Option to control which attributes will be returned.
+     * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
     updateSingleProperty: <T = any>(request: UpdateSinglePropertyRequest) => Promise<T>;
     /**
      * Sends an asynchronous request to delete a record.
      *
-     * @param {DWARequest} request - An object that represents all possible options for a current request.
+     * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
     deleteRecord: (request: DeleteRequest) => Promise<any>;
@@ -94,13 +94,13 @@ export declare class DynamicsWebApi {
     /**
      * Upload file to a File Attribute
      *
-     * @param {any} request - An object that represents all possible options for a current request.
+     * @param request - An object that represents all possible options for a current request.
      */
     uploadFile: (request: UploadRequest) => Promise<void>;
     private _downloadFileChunk;
     /**
      * Download a file from a File Attribute
-     * @param {any} request - An object that represents all possible options for a current request.
+     * @param request - An object that represents all possible options for a current request.
      */
     downloadFile: (request: DownloadRequest) => Promise<DownloadResponse>;
     /**
@@ -339,7 +339,7 @@ export declare class DynamicsWebApi {
      */
     autocomplete: AutocompleteFunction;
     /**
-     * Starts a batch request.
+     * Starts/executes a batch request.
      */
     startBatch: () => void;
     /**
@@ -349,12 +349,12 @@ export declare class DynamicsWebApi {
      */
     executeBatch: (request?: BaseRequest) => Promise<any[]>;
     /**
-     * Creates a new instance of DynamicsWebApi
+     * Creates a new instance of DynamicsWebApi. If the config is not provided, it is copied from the current instance.
      *
-     * @param {DWAConfig} [config] - configuration object.
+     * @param config - configuration object.
      * @returns {DynamicsWebApi} The new instance of a DynamicsWebApi
      */
-    initializeInstance: (config: any) => DynamicsWebApi;
+    initializeInstance: (config?: Config) => DynamicsWebApi;
     Utility: {
         /**
          * Searches for a collection name by provided entity name in a cached entity metadata.
@@ -393,6 +393,8 @@ export interface BaseRequest {
     token?: string;
     /**Sets a number of milliseconds before a request times out. */
     timeout?: number;
+    /**The AbortSignal interface represents a signal object that allows you to communicate with a DOM request and abort it if required via an AbortController object. */
+    signal?: AbortSignal;
 }
 export interface Request extends BaseRequest {
     /**A name of the Entity Collection or Entity Logical name. */
