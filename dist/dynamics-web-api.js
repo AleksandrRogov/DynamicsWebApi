@@ -64,7 +64,7 @@ class RequestClient {
                 errorCallback(ErrorHelper_1.ErrorHelper.batchIsEmpty());
             const batchResult = Request_1.RequestUtility.convertToBatch(batchRequest, config);
             processedData = batchResult.body;
-            request.headers = Object.assign(Object.assign({}, batchResult.headers), request.headers);
+            request.headers = { ...batchResult.headers, ...request.headers };
             //clear an array of requests
             delete RequestClient._batchRequestCollection[request.requestId];
         }
@@ -601,7 +601,7 @@ class XhrWrapper {
         const successCallback = options.successCallback;
         const errorCallback = options.errorCallback;
         const signal = options.abortSignal;
-        if (signal === null || signal === void 0 ? void 0 : signal.aborted) {
+        if (signal?.aborted) {
             errorCallback(ErrorHelper_1.ErrorHelper.handleHttpError({
                 message: "Request aborted",
             }));
@@ -903,11 +903,11 @@ const getApiUrl = (serverUrl, apiConfig) => {
 };
 const mergeApiConfigs = (apiConfig, apiType, internalConfig) => {
     const internalApiConfig = internalConfig[apiType];
-    if (apiConfig === null || apiConfig === void 0 ? void 0 : apiConfig.version) {
+    if (apiConfig?.version) {
         ErrorHelper_1.ErrorHelper.stringParameterCheck(apiConfig.version, "DynamicsWebApi.setConfig", `config.${apiType}.version`);
         internalApiConfig.version = apiConfig.version;
     }
-    if (apiConfig === null || apiConfig === void 0 ? void 0 : apiConfig.path) {
+    if (apiConfig?.path) {
         ErrorHelper_1.ErrorHelper.stringParameterCheck(apiConfig.path, "DynamicsWebApi.setConfig", `config.${apiType}.path`);
         internalApiConfig.path = apiConfig.path;
     }
@@ -915,44 +915,44 @@ const mergeApiConfigs = (apiConfig, apiType, internalConfig) => {
 };
 class ConfigurationUtility {
     static merge(internalConfig, config) {
-        if (config === null || config === void 0 ? void 0 : config.serverUrl) {
+        if (config?.serverUrl) {
             ErrorHelper_1.ErrorHelper.stringParameterCheck(config.serverUrl, "DynamicsWebApi.setConfig", "config.serverUrl");
             internalConfig.serverUrl = config.serverUrl;
         }
-        mergeApiConfigs(config === null || config === void 0 ? void 0 : config.dataApi, "dataApi", internalConfig);
-        mergeApiConfigs(config === null || config === void 0 ? void 0 : config.searchApi, "searchApi", internalConfig);
-        if (config === null || config === void 0 ? void 0 : config.impersonate) {
+        mergeApiConfigs(config?.dataApi, "dataApi", internalConfig);
+        mergeApiConfigs(config?.searchApi, "searchApi", internalConfig);
+        if (config?.impersonate) {
             internalConfig.impersonate = ErrorHelper_1.ErrorHelper.guidParameterCheck(config.impersonate, "DynamicsWebApi.setConfig", "config.impersonate");
         }
-        if (config === null || config === void 0 ? void 0 : config.impersonateAAD) {
+        if (config?.impersonateAAD) {
             internalConfig.impersonateAAD = ErrorHelper_1.ErrorHelper.guidParameterCheck(config.impersonateAAD, "DynamicsWebApi.setConfig", "config.impersonateAAD");
         }
-        if (config === null || config === void 0 ? void 0 : config.onTokenRefresh) {
+        if (config?.onTokenRefresh) {
             ErrorHelper_1.ErrorHelper.callbackParameterCheck(config.onTokenRefresh, "DynamicsWebApi.setConfig", "config.onTokenRefresh");
             internalConfig.onTokenRefresh = config.onTokenRefresh;
         }
-        if (config === null || config === void 0 ? void 0 : config.includeAnnotations) {
+        if (config?.includeAnnotations) {
             ErrorHelper_1.ErrorHelper.stringParameterCheck(config.includeAnnotations, "DynamicsWebApi.setConfig", "config.includeAnnotations");
             internalConfig.includeAnnotations = config.includeAnnotations;
         }
-        if (config === null || config === void 0 ? void 0 : config.timeout) {
+        if (config?.timeout) {
             ErrorHelper_1.ErrorHelper.numberParameterCheck(config.timeout, "DynamicsWebApi.setConfig", "config.timeout");
             internalConfig.timeout = config.timeout;
         }
-        if (config === null || config === void 0 ? void 0 : config.maxPageSize) {
+        if (config?.maxPageSize) {
             ErrorHelper_1.ErrorHelper.numberParameterCheck(config.maxPageSize, "DynamicsWebApi.setConfig", "config.maxPageSize");
             internalConfig.maxPageSize = config.maxPageSize;
         }
-        if (config === null || config === void 0 ? void 0 : config.returnRepresentation) {
+        if (config?.returnRepresentation) {
             ErrorHelper_1.ErrorHelper.boolParameterCheck(config.returnRepresentation, "DynamicsWebApi.setConfig", "config.returnRepresentation");
             internalConfig.returnRepresentation = config.returnRepresentation;
         }
-        if (config === null || config === void 0 ? void 0 : config.useEntityNames) {
+        if (config?.useEntityNames) {
             ErrorHelper_1.ErrorHelper.boolParameterCheck(config.useEntityNames, "DynamicsWebApi.setConfig", "config.useEntityNames");
             internalConfig.useEntityNames = config.useEntityNames;
         }
 ////////////////////
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1083,7 +1083,6 @@ class RequestUtility {
      * @returns {ConvertedRequestOptions} Additional options in request
      */
     static composeUrl(request, config, url = "", joinSymbol = "&") {
-        var _a, _b, _c;
         const queryArray = [];
         if (request) {
             if (request.navigationProperty) {
@@ -1100,7 +1099,7 @@ class RequestUtility {
                     }
                 }
             }
-            if ((_a = request.select) === null || _a === void 0 ? void 0 : _a.length) {
+            if (request.select?.length) {
                 ErrorHelper_1.ErrorHelper.arrayParameterCheck(request.select, `DynamicsWebApi.${request.functionName}`, "request.select");
                 if (request.functionName == "retrieve" && request.select.length == 1 && request.select[0].endsWith("/$ref")) {
                     url += "/" + request.select[0];
@@ -1169,7 +1168,7 @@ class RequestUtility {
                 ErrorHelper_1.ErrorHelper.stringParameterCheck(request.downloadSize, `DynamicsWebApi.${request.functionName}`, "request.downloadSize");
                 queryArray.push("size=" + request.downloadSize);
             }
-            if ((_b = request.queryParams) === null || _b === void 0 ? void 0 : _b.length) {
+            if (request.queryParams?.length) {
                 ErrorHelper_1.ErrorHelper.arrayParameterCheck(request.queryParams, `DynamicsWebApi.${request.functionName}`, "request.queryParams");
                 queryArray.push(request.queryParams.join("&"));
             }
@@ -1186,7 +1185,7 @@ class RequestUtility {
             if (request.timeout) {
                 ErrorHelper_1.ErrorHelper.numberParameterCheck(request.timeout, `DynamicsWebApi.${request.functionName}`, "request.timeout");
             }
-            if ((_c = request.expand) === null || _c === void 0 ? void 0 : _c.length) {
+            if (request.expand?.length) {
                 ErrorHelper_1.ErrorHelper.stringOrArrayParameterCheck(request.expand, `DynamicsWebApi.${request.functionName}`, "request.expand");
                 if (typeof request.expand === "string") {
                     queryArray.push("$expand=" + request.expand);
@@ -1339,7 +1338,6 @@ class RequestUtility {
         let currentChangeSet = null;
         let contentId = 100000;
         requests.forEach((internalRequest) => {
-            var _a;
             internalRequest.functionName = "executeBatch";
             const isGet = internalRequest.method === "GET";
             if (isGet && currentChangeSet) {
@@ -1364,7 +1362,7 @@ class RequestUtility {
                 const contentIdValue = internalRequest.headers.hasOwnProperty("Content-ID") ? internalRequest.headers["Content-ID"] : ++contentId;
                 batchBody.push(`Content-ID: ${contentIdValue}`);
             }
-            if (!((_a = internalRequest.path) === null || _a === void 0 ? void 0 : _a.startsWith("$"))) {
+            if (!internalRequest.path?.startsWith("$")) {
                 batchBody.push(`\n${internalRequest.method} ${config.dataApi.url}${internalRequest.path} HTTP/1.1`);
             }
             else {
@@ -1471,9 +1469,12 @@ exports.RequestUtility = RequestUtility;
 /***/ }),
 
 /***/ 811:
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Utility = void 0;
 function isNodeEnv() {
@@ -1484,12 +1485,12 @@ function getGlobalObject() {
     return (isNodeEnv() ? __webpack_require__.g : typeof window !== "undefined" ? window : typeof self !== "undefined" ? self : {});
 }
 ////////////
-//////////////////////////////////
+////////////////////////////////////////////////////
 //////////
 function getCrypto() {
 ////////////////
 ////////////////////////////////////////
-///////////////////////
+////////////////////////////////
 /////
 //////////
 //////////////////
@@ -1501,7 +1502,7 @@ function getCrypto() {
 function generateRandomBytes() {
     const uCrypto = getCrypto();
 ////////////////
-/////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
 //////////////////
         return uCrypto.getRandomValues(new Uint8Array(1));
 ////////////////////
@@ -1631,10 +1632,10 @@ class Utility {
     static isObject(obj) {
         return typeof obj === "object" && !!obj && !Array.isArray(obj) && Object.prototype.toString.call(obj) !== "[object Date]";
     }
-    static copyObject(src, excludeProps = []) {
+    static copyObject(src, excludeProps) {
         let target = {};
         for (let prop in src) {
-            if (src.hasOwnProperty(prop) && !excludeProps.includes(prop)) {
+            if (src.hasOwnProperty(prop) && !excludeProps?.includes(prop)) {
                 // if the value is a nested object, recursively copy all its properties
                 if (Utility.isObject(src[prop])) {
                     target[prop] = Utility.copyObject(src[prop]);
@@ -1648,6 +1649,14 @@ class Utility {
             }
         }
         return target;
+    }
+    static copyRequest(src, excludeProps = []) {
+        //todo: do we need to include "data" in here?
+        if (!excludeProps.includes("signal"))
+            excludeProps.push("signal");
+        const result = Utility.copyObject(src, excludeProps);
+        result.signal = src.signal;
+        return result;
     }
     static setFileChunk(request, fileBuffer, chunkSize, offset) {
         offset = offset || 0;
@@ -1747,7 +1756,6 @@ const RequestClient_1 = __webpack_require__(94);
 /**
  * Microsoft Dynamics CRM Web API helper library written in JavaScript.
  * It is compatible with: Dynamics 365 (online), Dynamics 365 (on-premise), Dynamics CRM 2016, Dynamics CRM Online.
- * @module dynamics-web-api
  */
 class DynamicsWebApi {
     /**
@@ -1799,7 +1807,7 @@ class DynamicsWebApi {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.create", "request");
             let internalRequest;
             if (!request.functionName) {
-                internalRequest = Utility_1.Utility.copyObject(request);
+                internalRequest = Utility_1.Utility.copyRequest(request);
                 internalRequest.functionName = "create";
             }
             else
@@ -1826,18 +1834,17 @@ class DynamicsWebApi {
          *const response = await dynamicsWebApi.retrieve(request);
          */
         this.retrieve = (request) => {
-            var _a;
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieve", "request");
             let internalRequest;
             if (!request.functionName) {
-                internalRequest = Utility_1.Utility.copyObject(request);
+                internalRequest = Utility_1.Utility.copyRequest(request);
                 internalRequest.functionName = "retrieve";
             }
             else
                 internalRequest = request;
             internalRequest.method = "GET";
             internalRequest.responseParameters = {
-                isRef: ((_a = internalRequest.select) === null || _a === void 0 ? void 0 : _a.length) === 1 && internalRequest.select[0].endsWith("/$ref"),
+                isRef: internalRequest.select?.length === 1 && internalRequest.select[0].endsWith("/$ref"),
             };
             return this._makeRequest(internalRequest).then(function (response) {
                 return response.data;
@@ -1853,7 +1860,7 @@ class DynamicsWebApi {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.update", "request");
             let internalRequest;
             if (!request.functionName) {
-                internalRequest = Utility_1.Utility.copyObject(request);
+                internalRequest = Utility_1.Utility.copyRequest(request);
                 internalRequest.functionName = "update";
             }
             else
@@ -1893,7 +1900,7 @@ class DynamicsWebApi {
             ErrorHelper_1.ErrorHelper.parameterCheck(request.fieldValuePair, "DynamicsWebApi.updateSingleProperty", "request.fieldValuePair");
             var field = Object.keys(request.fieldValuePair)[0];
             var fieldValue = request.fieldValuePair[field];
-            const internalRequest = Utility_1.Utility.copyObject(request);
+            const internalRequest = Utility_1.Utility.copyRequest(request);
             internalRequest.navigationProperty = field;
             internalRequest.data = { value: fieldValue };
             internalRequest.functionName = "updateSingleProperty";
@@ -1913,7 +1920,7 @@ class DynamicsWebApi {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.deleteRecord", "request");
             let internalRequest;
             if (!request.functionName) {
-                internalRequest = Utility_1.Utility.copyObject(request);
+                internalRequest = Utility_1.Utility.copyRequest(request);
                 internalRequest.functionName = "deleteRecord";
             }
             else
@@ -1945,7 +1952,7 @@ class DynamicsWebApi {
          */
         this.upsert = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.upsert", "request");
-            const internalRequest = Utility_1.Utility.copyObject(request);
+            const internalRequest = Utility_1.Utility.copyRequest(request);
             internalRequest.method = "PATCH";
             internalRequest.functionName = "upsert";
             //copy locally
@@ -1987,7 +1994,7 @@ class DynamicsWebApi {
         this.uploadFile = (request) => {
             ErrorHelper_1.ErrorHelper.throwBatchIncompatible("DynamicsWebApi.uploadFile", this._isBatch);
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.uploadFile", "request");
-            const internalRequest = Utility_1.Utility.copyObject(request, ["data"]);
+            const internalRequest = Utility_1.Utility.copyRequest(request, ["data"]);
             internalRequest.method = "PATCH";
             internalRequest.functionName = "uploadFile";
             internalRequest.transferMode = "chunked";
@@ -2028,7 +2035,7 @@ class DynamicsWebApi {
         this.downloadFile = (request) => {
             ErrorHelper_1.ErrorHelper.throwBatchIncompatible("DynamicsWebApi.downloadFile", this._isBatch);
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.downloadFile", "request");
-            const internalRequest = Utility_1.Utility.copyObject(request);
+            const internalRequest = Utility_1.Utility.copyRequest(request);
             internalRequest.method = "GET";
             internalRequest.functionName = "downloadFile";
             internalRequest.responseParameters = { parse: true };
@@ -2045,7 +2052,7 @@ class DynamicsWebApi {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieveMultiple", "request");
             let internalRequest;
             if (!request.functionName) {
-                internalRequest = Utility_1.Utility.copyObject(request);
+                internalRequest = Utility_1.Utility.copyRequest(request);
                 internalRequest.functionName = "retrieveMultiple";
             }
             else
@@ -2091,12 +2098,11 @@ class DynamicsWebApi {
          * @returns {Promise} D365 Web Api Response
          */
         this.count = (request) => {
-            var _a;
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.count", "request");
-            const internalRequest = Utility_1.Utility.copyObject(request);
+            const internalRequest = Utility_1.Utility.copyRequest(request);
             internalRequest.method = "GET";
             internalRequest.functionName = "count";
-            if ((_a = internalRequest.filter) === null || _a === void 0 ? void 0 : _a.length) {
+            if (internalRequest.filter?.length) {
                 internalRequest.count = true;
             }
             else {
@@ -2128,7 +2134,7 @@ class DynamicsWebApi {
          */
         this.fetch = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.fetch", "request");
-            const internalRequest = Utility_1.Utility.copyObject(request);
+            const internalRequest = Utility_1.Utility.copyRequest(request);
             internalRequest.method = "GET";
             internalRequest.functionName = "fetch";
             ErrorHelper_1.ErrorHelper.stringParameterCheck(internalRequest.fetchXml, "DynamicsWebApi.fetch", "request.fetchXml");
@@ -2184,7 +2190,7 @@ class DynamicsWebApi {
          */
         this.associate = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.associate", "request");
-            const internalRequest = Utility_1.Utility.copyObject(request);
+            const internalRequest = Utility_1.Utility.copyRequest(request);
             internalRequest.method = "POST";
             internalRequest.functionName = "associate";
             ErrorHelper_1.ErrorHelper.stringParameterCheck(request.relatedCollection, "DynamicsWebApi.associate", "request.relatedcollection");
@@ -2206,7 +2212,7 @@ class DynamicsWebApi {
          */
         this.disassociate = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.disassociate", "request");
-            const internalRequest = Utility_1.Utility.copyObject(request);
+            const internalRequest = Utility_1.Utility.copyRequest(request);
             internalRequest.method = "DELETE";
             internalRequest.functionName = "disassociate";
             ErrorHelper_1.ErrorHelper.stringParameterCheck(request.relationshipName, "DynamicsWebApi.disassociate", "request.relationshipName");
@@ -2226,7 +2232,7 @@ class DynamicsWebApi {
          */
         this.associateSingleValued = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.associateSingleValued", "request");
-            const internalRequest = Utility_1.Utility.copyObject(request);
+            const internalRequest = Utility_1.Utility.copyRequest(request);
             internalRequest.method = "PUT";
             internalRequest.functionName = "associateSingleValued";
             const primaryKey = ErrorHelper_1.ErrorHelper.keyParameterCheck(request.primaryKey, "DynamicsWebApi.associateSingleValued", "request.primaryKey");
@@ -2248,7 +2254,7 @@ class DynamicsWebApi {
          */
         this.disassociateSingleValued = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.disassociateSingleValued", "request");
-            const internalRequest = Utility_1.Utility.copyObject(request);
+            const internalRequest = Utility_1.Utility.copyRequest(request);
             internalRequest.method = "DELETE";
             internalRequest.functionName = "disassociateSingleValued";
             const primaryKey = ErrorHelper_1.ErrorHelper.keyParameterCheck(request.primaryKey, "DynamicsWebApi.disassociateSingleValued", "request.primaryKey");
@@ -2288,7 +2294,7 @@ class DynamicsWebApi {
         this.callAction = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, `DynamicsWebApi.callAction`, "request");
             ErrorHelper_1.ErrorHelper.stringParameterCheck(request.actionName, `DynamicsWebApi.callAction`, "request.actionName");
-            const internalRequest = Utility_1.Utility.copyObject(request, ["action"]);
+            const internalRequest = Utility_1.Utility.copyRequest(request, ["action"]);
             internalRequest.method = "POST";
             internalRequest.functionName = "callAction";
             internalRequest._additionalUrl = request.actionName;
@@ -2307,7 +2313,7 @@ class DynamicsWebApi {
         this.createEntity = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, `DynamicsWebApi.createEntity`, "request");
             ErrorHelper_1.ErrorHelper.parameterCheck(request.data, "DynamicsWebApi.createEntity", "request.data");
-            const internalRequest = Utility_1.Utility.copyObject(request);
+            const internalRequest = Utility_1.Utility.copyRequest(request);
             internalRequest.collection = "EntityDefinitions";
             internalRequest.functionName = "createEntity";
             return this.create(internalRequest);
@@ -2322,7 +2328,7 @@ class DynamicsWebApi {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.updateEntity", "request");
             ErrorHelper_1.ErrorHelper.parameterCheck(request.data, "DynamicsWebApi.updateEntity", "request.data");
             ErrorHelper_1.ErrorHelper.guidParameterCheck(request.data.MetadataId, "DynamicsWebApi.updateEntity", "request.data.MetadataId");
-            const internalRequest = Utility_1.Utility.copyObject(request);
+            const internalRequest = Utility_1.Utility.copyRequest(request);
             internalRequest.collection = "EntityDefinitions";
             internalRequest.key = internalRequest.data.MetadataId;
             internalRequest.functionName = "updateEntity";
@@ -2338,7 +2344,7 @@ class DynamicsWebApi {
         this.retrieveEntity = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieveEntity", "request");
             ErrorHelper_1.ErrorHelper.keyParameterCheck(request.key, "DynamicsWebApi.retrieveEntity", "request.key");
-            const internalRequest = Utility_1.Utility.copyObject(request);
+            const internalRequest = Utility_1.Utility.copyRequest(request);
             internalRequest.collection = "EntityDefinitions";
             internalRequest.functionName = "retrieveEntity";
             return this.retrieve(internalRequest);
@@ -2350,7 +2356,7 @@ class DynamicsWebApi {
          * @returns {Promise} D365 Web Api Response
          */
         this.retrieveEntities = (request) => {
-            const internalRequest = !request ? {} : Utility_1.Utility.copyObject(request);
+            const internalRequest = !request ? {} : Utility_1.Utility.copyRequest(request);
             internalRequest.collection = "EntityDefinitions";
             internalRequest.functionName = "retrieveEntities";
             return this.retrieveMultiple(internalRequest);
@@ -2365,7 +2371,7 @@ class DynamicsWebApi {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.createAttribute", "request");
             ErrorHelper_1.ErrorHelper.parameterCheck(request.data, "DynamicsWebApi.createAttribute", "request.data");
             ErrorHelper_1.ErrorHelper.keyParameterCheck(request.entityKey, "DynamicsWebApi.createAttribute", "request.entityKey");
-            const internalRequest = Utility_1.Utility.copyObject(request);
+            const internalRequest = Utility_1.Utility.copyRequest(request);
             internalRequest.collection = "EntityDefinitions";
             internalRequest.functionName = "retrieveEntity";
             internalRequest.navigationProperty = "Attributes";
@@ -2386,7 +2392,7 @@ class DynamicsWebApi {
             if (request.castType) {
                 ErrorHelper_1.ErrorHelper.stringParameterCheck(request.castType, "DynamicsWebApi.updateAttribute", "request.castType");
             }
-            const internalRequest = Utility_1.Utility.copyObject(request);
+            const internalRequest = Utility_1.Utility.copyRequest(request);
             internalRequest.collection = "EntityDefinitions";
             internalRequest.navigationProperty = "Attributes";
             internalRequest.navigationPropertyKey = request.data.MetadataId;
@@ -2408,7 +2414,7 @@ class DynamicsWebApi {
             if (request.castType) {
                 ErrorHelper_1.ErrorHelper.stringParameterCheck(request.castType, "DynamicsWebApi.retrieveAttributes", "request.castType");
             }
-            const internalRequest = Utility_1.Utility.copyObject(request);
+            const internalRequest = Utility_1.Utility.copyRequest(request);
             internalRequest.collection = "EntityDefinitions";
             internalRequest.navigationProperty = "Attributes";
             internalRequest.metadataAttributeType = request.castType;
@@ -2429,7 +2435,7 @@ class DynamicsWebApi {
             if (request.castType) {
                 ErrorHelper_1.ErrorHelper.stringParameterCheck(request.castType, "DynamicsWebApi.retrieveAttribute", "request.castType");
             }
-            const internalRequest = Utility_1.Utility.copyObject(request);
+            const internalRequest = Utility_1.Utility.copyRequest(request);
             internalRequest.collection = "EntityDefinitions";
             internalRequest.navigationProperty = "Attributes";
             internalRequest.navigationPropertyKey = request.attributeKey;
@@ -2447,7 +2453,7 @@ class DynamicsWebApi {
         this.createRelationship = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.createRelationship", "request");
             ErrorHelper_1.ErrorHelper.parameterCheck(request.data, "DynamicsWebApi.createRelationship", "request.data");
-            const internalRequest = Utility_1.Utility.copyObject(request);
+            const internalRequest = Utility_1.Utility.copyRequest(request);
             internalRequest.collection = "RelationshipDefinitions";
             internalRequest.functionName = "createRelationship";
             return this.create(internalRequest);
@@ -2465,7 +2471,7 @@ class DynamicsWebApi {
             if (request.castType) {
                 ErrorHelper_1.ErrorHelper.stringParameterCheck(request.castType, "DynamicsWebApi.updateRelationship", "request.castType");
             }
-            const internalRequest = Utility_1.Utility.copyObject(request);
+            const internalRequest = Utility_1.Utility.copyRequest(request);
             internalRequest.collection = "RelationshipDefinitions";
             internalRequest.key = request.data.MetadataId;
             internalRequest.navigationProperty = request.castType;
@@ -2482,7 +2488,7 @@ class DynamicsWebApi {
         this.deleteRelationship = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.deleteRelationship", "request");
             ErrorHelper_1.ErrorHelper.keyParameterCheck(request.key, "DynamicsWebApi.deleteRelationship", "request.key");
-            const internalRequest = Utility_1.Utility.copyObject(request);
+            const internalRequest = Utility_1.Utility.copyRequest(request);
             internalRequest.collection = "RelationshipDefinitions";
             internalRequest.functionName = "deleteRelationship";
             return this.deleteRecord(internalRequest);
@@ -2494,7 +2500,7 @@ class DynamicsWebApi {
          * @returns {Promise} D365 Web Api Response
          */
         this.retrieveRelationships = (request) => {
-            const internalRequest = !request ? {} : Utility_1.Utility.copyObject(request);
+            const internalRequest = !request ? {} : Utility_1.Utility.copyRequest(request);
             internalRequest.collection = "RelationshipDefinitions";
             internalRequest.functionName = "retrieveRelationships";
             if (request) {
@@ -2517,7 +2523,7 @@ class DynamicsWebApi {
             if (request.castType) {
                 ErrorHelper_1.ErrorHelper.stringParameterCheck(request.castType, "DynamicsWebApi.retrieveRelationship", "request.castType");
             }
-            const internalRequest = Utility_1.Utility.copyObject(request);
+            const internalRequest = Utility_1.Utility.copyRequest(request);
             internalRequest.collection = "RelationshipDefinitions";
             internalRequest.navigationProperty = request.castType;
             internalRequest.functionName = "retrieveRelationship";
@@ -2532,7 +2538,7 @@ class DynamicsWebApi {
         this.createGlobalOptionSet = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.createGlobalOptionSet", "request");
             ErrorHelper_1.ErrorHelper.parameterCheck(request.data, "DynamicsWebApi.createGlobalOptionSet", "request.data");
-            const internalRequest = Utility_1.Utility.copyObject(request);
+            const internalRequest = Utility_1.Utility.copyRequest(request);
             internalRequest.collection = "GlobalOptionSetDefinitions";
             internalRequest.functionName = "createGlobalOptionSet";
             return this.create(internalRequest);
@@ -2550,7 +2556,7 @@ class DynamicsWebApi {
             if (request.castType) {
                 ErrorHelper_1.ErrorHelper.stringParameterCheck(request.castType, "DynamicsWebApi.updateGlobalOptionSet", "request.castType");
             }
-            const internalRequest = Utility_1.Utility.copyObject(request);
+            const internalRequest = Utility_1.Utility.copyRequest(request);
             internalRequest.collection = "GlobalOptionSetDefinitions";
             internalRequest.key = request.data.MetadataId;
             internalRequest.functionName = "updateGlobalOptionSet";
@@ -2565,7 +2571,7 @@ class DynamicsWebApi {
          */
         this.deleteGlobalOptionSet = (request) => {
             ErrorHelper_1.ErrorHelper.parameterCheck(request, "DynamicsWebApi.deleteGlobalOptionSet", "request");
-            const internalRequest = Utility_1.Utility.copyObject(request);
+            const internalRequest = Utility_1.Utility.copyRequest(request);
             internalRequest.collection = "GlobalOptionSetDefinitions";
             internalRequest.functionName = "deleteGlobalOptionSet";
             return this.deleteRecord(internalRequest);
@@ -2581,7 +2587,7 @@ class DynamicsWebApi {
             if (request.castType) {
                 ErrorHelper_1.ErrorHelper.stringParameterCheck(request.castType, "DynamicsWebApi.retrieveGlobalOptionSet", "request.castType");
             }
-            const internalRequest = Utility_1.Utility.copyObject(request);
+            const internalRequest = Utility_1.Utility.copyRequest(request);
             internalRequest.collection = "GlobalOptionSetDefinitions";
             internalRequest.navigationProperty = request.castType;
             internalRequest.functionName = "retrieveGlobalOptionSet";
@@ -2594,10 +2600,10 @@ class DynamicsWebApi {
          * @returns {Promise} D365 Web Api Response
          */
         this.retrieveGlobalOptionSets = (request) => {
-            const internalRequest = !request ? {} : Utility_1.Utility.copyObject(request);
+            const internalRequest = !request ? {} : Utility_1.Utility.copyRequest(request);
             internalRequest.collection = "GlobalOptionSetDefinitions";
             internalRequest.functionName = "retrieveGlobalOptionSets";
-            if (request === null || request === void 0 ? void 0 : request.castType) {
+            if (request?.castType) {
                 ErrorHelper_1.ErrorHelper.stringParameterCheck(request.castType, "DynamicsWebApi.retrieveGlobalOptionSets", "request.castType");
                 internalRequest.navigationProperty = request.castType;
             }
@@ -2609,10 +2615,10 @@ class DynamicsWebApi {
          * @returns {Promise<string>} Unformatted and unparsed CSDL $metadata document.
          */
         this.retrieveCsdlMetadata = (request) => {
-            const internalRequest = !request ? {} : Utility_1.Utility.copyObject(request);
+            const internalRequest = !request ? {} : Utility_1.Utility.copyRequest(request);
             internalRequest.collection = "$metadata";
             internalRequest.functionName = "retrieveCsdlMetadata";
-            if (request === null || request === void 0 ? void 0 : request.addAnnotations) {
+            if (request?.addAnnotations) {
                 ErrorHelper_1.ErrorHelper.boolParameterCheck(request.addAnnotations, "DynamicsWebApi.retrieveCsdlMetadata", "request.addAnnotations");
                 internalRequest.includeAnnotations = "*";
             }
@@ -2702,7 +2708,7 @@ class DynamicsWebApi {
          */
         this.executeBatch = (request) => {
             ErrorHelper_1.ErrorHelper.throwBatchNotStarted(this._isBatch);
-            const internalRequest = !request ? {} : Utility_1.Utility.copyObject(request);
+            const internalRequest = !request ? {} : Utility_1.Utility.copyRequest(request);
             internalRequest.collection = "$batch";
             internalRequest.method = "POST";
             internalRequest.functionName = "executeBatch";

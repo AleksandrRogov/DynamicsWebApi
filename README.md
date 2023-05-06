@@ -37,9 +37,9 @@ Also, please check [suggestions and contributions](#contributions) section to le
 
 ## Terminology
 
-Please familiarize yourself with [Dataverse Terminology](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/understand-terminology). There have been some changes in the namings of the objects and components and since DynamicsWebApi has been developing for many years there may be _conflicting_ naming, such as: `createEntity` - which means "Create a Table Definition". Dataverse SDK terminology is what the library has been based on. I have no plans on changing that (except for documentation), because Microsoft may change the namings again in the future which will lead to naming issues ...again.
+Please familiarize yourself with [Dataverse Terminology](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/understand-terminology). Microsoft has done some changes in the namings of the objects and components of D365 and since DynamicsWebApi has been developing for many years there may be _conflicting_ naming, such as: `createEntity` - which _right now_ means "Create a Table Definition". Dataverse SDK terminology is what the library has been based on. I have no plans on changing that (except in documentation), mainly because Microsoft may change the namings again in the future which will lead to naming issues ...again.
 
-**Please note!** "Dynamics 365" in this readme refers to Microsoft Dataverse (formerly known as Microsoft Common Data Service) / Microsoft Dynamics 365 Customer Engagement.
+**Please note!** "Dynamics 365" in this readme refers to Microsoft Dataverse (formerly known as Microsoft Common Data Service) / Microsoft Dynamics 365 Customer Engagement / Micorosft Dynamics CRM. **NOT** Microsoft Dynamics 365 Finance and Operations.
 
 ## Table of Contents
 
@@ -85,7 +85,7 @@ Please familiarize yourself with [Dataverse Terminology](https://learn.microsoft
 	* [Delete Relationship](#delete-relationship)
 	* [Retrieve Relationship](#retrieve-relationship)
 	* [Retrieve Multiple Relationships](#retrieve-multiple-relationships)
-    * [Use multi-table lookup columns (Polymorfic Lookup Attributes)](#use-multi-table-lookup-columns-(polymorfic-lookup-attributes))
+    * [Use multi-table lookup columns (Polymorfic Lookup Attributes)](#use-multi-table-lookup-columns-polymorfic-lookup-attributes)
 	* [Create Global Option Set](#create-global-option-set)
 	* [Update Global Option Set](#update-global-option-set)
 	* [Delete Global Option Set](#delete-global-option-set)

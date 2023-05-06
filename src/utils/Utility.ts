@@ -13,7 +13,7 @@ function getGlobalObject<T>(): T {
 }
 
 /// #if node
-const nCrypto = require("crypto");
+import nCrypto from "crypto";
 /// #endif
 
 function getCrypto() {
@@ -31,13 +31,13 @@ function getCrypto() {
 function generateRandomBytes() {
     const uCrypto = getCrypto();
     /// #if node
-    if (typeof uCrypto.getRandomValues !== "undefined") {
+    if (typeof uCrypto["randomBytes"] !== "function") {
         /// #endif
-        return uCrypto.getRandomValues(new Uint8Array(1));
+        return (uCrypto as Crypto).getRandomValues(new Uint8Array(1));
         /// #if node
     }
 
-    return uCrypto.randomBytes(1);
+    return (uCrypto as typeof nCrypto).randomBytes(1);
     /// #endif
 }
 
@@ -184,10 +184,10 @@ export class Utility {
         return typeof obj === "object" && !!obj && !Array.isArray(obj) && Object.prototype.toString.call(obj) !== "[object Date]";
     }
 
-    static copyObject<T = any>(src: any, excludeProps: string[] = []): T {
+    static copyObject<T = any>(src: any, excludeProps?: string[]): T {
         let target = {};
         for (let prop in src) {
-            if (src.hasOwnProperty(prop) && !excludeProps.includes(prop)) {
+            if (src.hasOwnProperty(prop) && !excludeProps?.includes(prop)) {
                 // if the value is a nested object, recursively copy all its properties
                 if (Utility.isObject(src[prop])) {
                     target[prop] = Utility.copyObject(src[prop]);
@@ -199,6 +199,16 @@ export class Utility {
             }
         }
         return <T>target;
+    }
+
+    static copyRequest(src: any, excludeProps: string[] = []): Core.InternalRequest{
+        //todo: do we need to include "data" in here?
+        if (!excludeProps.includes("signal")) excludeProps.push("signal");
+
+        const result = Utility.copyObject<Core.InternalRequest>(src, excludeProps);
+        result.signal = src.signal;
+
+        return result;
     }
 
     static setFileChunk(request: Core.InternalRequest, fileBuffer: Uint8Array | Buffer, chunkSize: number, offset: number): void {

@@ -3,7 +3,6 @@
 /**
  * Microsoft Dynamics CRM Web API helper library written in JavaScript.
  * It is compatible with: Dynamics 365 (online), Dynamics 365 (on-premise), Dynamics CRM 2016, Dynamics CRM Online.
- * @module dynamics-web-api
  */
 export declare class DynamicsWebApi {
     private _config;
