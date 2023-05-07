@@ -2,16 +2,9 @@ import { expect } from "chai";
 import nock from "nock";
 import * as mocks from "./stubs";
 
-import { DynamicsWebApi, Search, Autocomplete, Suggest } from "../src/dynamics-web-api";
 import { RequestClient } from "../src/client/RequestClient";
 import { InternalConfig } from "../src/utils/Config";
 import { Core } from "../src/types";
-
-const dynamicsWebApiTest = new DynamicsWebApi({
-    dataApi: {
-        version: "8.2",
-    },
-});
 
 describe("RequestClient.makeRequest", () => {
     describe("AbortSignal", () => {
@@ -21,11 +14,9 @@ describe("RequestClient.makeRequest", () => {
         const controller = new AbortController();
         before(() => {
             const response = mocks.responses.basicEmptyResponseSuccess;
-            interceptor = nock(mocks.webApiUrl)
-                .post("/test", mocks.data.testEntity);
+            interceptor = nock(mocks.webApiUrl).post("/test", mocks.data.testEntity);
 
-            scope = interceptor
-                .reply(response.status, response.responseText, response.responseHeaders);
+            scope = interceptor.reply(response.status, response.responseText, response.responseHeaders);
         });
 
         after(() => {
@@ -38,19 +29,21 @@ describe("RequestClient.makeRequest", () => {
                 functionName: "any",
                 collection: url,
                 data: mocks.data.testEntityAdditionalAttributes,
-                signal: controller.signal
+                signal: controller.signal,
             };
-            
+
             const config: InternalConfig = {
-                searchApi: {url: ""},
+                searchApi: { url: "" },
                 dataApi: { url: mocks.webApiUrl },
             };
 
-            controller.signal.addEventListener("abort", () => interceptor.replyWithError({
-                code: "ABORT_ERR",
-                name: "AbortError",
-                message: "The operation was aborted"
-            }));
+            controller.signal.addEventListener("abort", () =>
+                interceptor.replyWithError({
+                    code: "ABORT_ERR",
+                    name: "AbortError",
+                    message: "The operation was aborted",
+                })
+            );
 
             setTimeout(() => controller.abort(), 10);
 
@@ -72,5 +65,5 @@ describe("RequestClient.makeRequest", () => {
         it("request was not completed", function () {
             expect(scope.isDone()).to.be.false;
         });
-    })
+    });
 });

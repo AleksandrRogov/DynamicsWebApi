@@ -78,7 +78,7 @@ export class RequestClient {
             executeRequest = require("./xhr").XhrWrapper.xhrRequest;
             /// #if node
         } else if (typeof process !== "undefined") {
-            executeRequest = require("./http");
+            executeRequest = require("./http").httpRequest;
         }
         /// #endif
 

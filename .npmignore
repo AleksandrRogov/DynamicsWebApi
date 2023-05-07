@@ -11,6 +11,5 @@ obj
 /tests
 /dist
 /utils
+/src
 .nyc_output/
-
-*.d.ts.map

@@ -46,7 +46,7 @@ const getAgent = (options, protocol): http.Agent => {
  * Sends a request to given URL with given parameters
  *
  */
-function httpRequest(options: Core.RequestOptions) {
+export function httpRequest(options: Core.RequestOptions) {
     const data = options.data;
     const additionalHeaders = options.additionalHeaders;
     const responseParams = options.responseParams;
@@ -176,5 +176,3 @@ function httpRequest(options: Core.RequestOptions) {
 
     request.end();
 }
-
-export = httpRequest;

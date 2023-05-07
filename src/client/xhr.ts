@@ -21,9 +21,12 @@ export class XhrWrapper {
         if (signal?.aborted) {
             errorCallback(
                 ErrorHelper.handleHttpError({
-                    message: "Request aborted",
+                    message: "Request cancelled",
                 })
             );
+
+            delete responseParams[options.requestId];
+            return;
         }
 
         let request = new XMLHttpRequest();
@@ -33,8 +36,6 @@ export class XhrWrapper {
         for (let key in additionalHeaders) {
             request.setRequestHeader(key, additionalHeaders[key]);
         }
-
-        const abort = () => request.abort();
 
         request.onreadystatechange = function () {
             if (request.readyState === 4) {
@@ -63,6 +64,8 @@ export class XhrWrapper {
                         break;
                     }
                     default:
+                        if (!request) break; //response was handled somewhere else
+
                         // All other statuses are error cases.
                         let error;
                         let headers;
@@ -137,7 +140,10 @@ export class XhrWrapper {
             request = null as any;
         };
 
+        //browser abort
         request.onabort = function () {
+            if (!request) return;
+
             const headers = parseResponseHeaders(request.getAllResponseHeaders());
             errorCallback(
                 ErrorHelper.handleHttpError({
@@ -147,6 +153,27 @@ export class XhrWrapper {
                     headers: headers,
                 })
             );
+            delete responseParams[options.requestId];
+            request = null as any;
+        };
+
+        //manual abort/cancellation
+        const abort = () => {
+            if (!request) return;
+
+            const headers = parseResponseHeaders(request.getAllResponseHeaders());
+
+            errorCallback(
+                ErrorHelper.handleHttpError({
+                    status: request.status,
+                    statusText: request.statusText,
+                    message: "Request cancelled",
+                    headers: headers,
+                })
+            );
+
+            request.abort();
+
             delete responseParams[options.requestId];
             request = null as any;
         };
