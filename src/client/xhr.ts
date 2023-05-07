@@ -130,6 +130,7 @@ export class XhrWrapper {
             const headers = parseResponseHeaders(request.getAllResponseHeaders());
             errorCallback(
                 ErrorHelper.handleHttpError({
+                    name: "TimeoutError",
                     status: request.status,
                     statusText: request.statusText,
                     message: request.responseText || "Request Timed Out",
@@ -165,9 +166,11 @@ export class XhrWrapper {
 
             errorCallback(
                 ErrorHelper.handleHttpError({
+                    name: "AbortError",
+                    code: 20,
                     status: request.status,
                     statusText: request.statusText,
-                    message: "Request cancelled",
+                    message: "The user aborted a request.",
                     headers: headers,
                 })
             );

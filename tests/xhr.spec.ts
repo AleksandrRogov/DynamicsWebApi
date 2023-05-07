@@ -88,7 +88,9 @@ describe("xhr -", () => {
 
             it("cancels request and throws a correct error", function () {
                 expect(this.requests[0].aborted).to.be.true;
-                expect(responseObject.message).to.eql("Request cancelled");
+                expect(responseObject.message).to.eql("The user aborted a request.");
+                expect(responseObject.name).to.eql("AbortError");
+                expect(responseObject.code).to.eql(20);
                 expect(responseObject.status).to.eql(0);
                 expect(responseObject.statusText).to.eql("");
                 expect(responseObject.headers).to.eql({});

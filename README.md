@@ -103,6 +103,7 @@ Please familiarize yourself with [Dataverse Terminology](https://learn.microsoft
     * [Search](#search)
     * [Suggest](#suggest)
     * [Autocomplete](#autocomplete)
+* [Abort Request](#abort-request)
 * [Using Proxy](#using-proxy)
 * [Using TypeScript Declaration Files](#using-typescript-declaration-files)
 * [In Progress / Feature List](#in-progress--feature-list)
@@ -326,6 +327,7 @@ queryParams | `string[]` | `retrieveMultiple`, `retrieveAll` | Additional query 
 returnRepresentation | `boolean` | `create`, `update`, `upsert` | Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
 savedQuery | `string` | `retrieve` | A String representing the GUID value of the saved query.
 select | `string[]` | `retrieve`, `retrieveMultiple`, `retrieveAll`, `update`, `upsert` | An array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
+signal | `AbortSignal` | All | Specifies an `AbortSignal` that can be used to abort a request if required via an `AbortController` object. [More Info](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal)
 timeout | `number` | All | Sets a number of milliseconds before a request times out.
 token | `string` | All | Authorization Token. If set, onTokenRefresh will not be called.
 top | `number` | `retrieveMultiple`, `retrieveAll` | Limit the number of results returned by using the $top system query option. Do not use $top with $count!
@@ -2155,6 +2157,37 @@ const result = await dynamicsWebApi.autocomplete({
                 "activities:regardingobjecttypecode eq 'account', annotation:objecttypecode eq 'account'"
     }
 });
+```
+
+## Abort Request
+If necessary, it is possible to abort a DynamicsWebApi request via the `AbortController` object. Request cancellation works in Browsers and Node.js v15.0.0+.
+
+```ts
+const controller = new AbortController();
+
+const somethingHappenedMustAbort = () => controller.abort();
+
+/*
+    setTimeout here is used as an example: something happened
+    and the app must abort the request right away.
+    ...
+    if you need to set a specific timeout for a request, 
+    use "timeout" setting in the configuration
+*/
+setTimeout(() => somethingHappenedMustAbort(), 200);
+
+try {
+    const result = await dynamicsWebApi.retrieveAll({
+        collection: "contacts",
+        select: ["firstname", "lastname"],
+        signal: controller.signal
+    });
+}
+catch(error){
+    if (error.name === "AbortError") {
+        //request was aborted
+    }
+}
 ```
 
 ## Using Proxy
