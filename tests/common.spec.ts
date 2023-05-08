@@ -2,11 +2,16 @@ import { expect } from "chai";
 import nock from "nock";
 import * as mocks from "./stubs";
 
+global.DWA_TEST = true;
+
 import { RequestClient } from "../src/client/RequestClient";
 import { InternalConfig } from "../src/utils/Config";
 import { Core } from "../src/types";
 
 describe("RequestClient.makeRequest", () => {
+    before(() => {
+        global.DWA_BROWSER = false;
+    });
     describe("AbortSignal", () => {
         let scope: nock.Scope;
         let interceptor: nock.Interceptor;
@@ -45,12 +50,13 @@ describe("RequestClient.makeRequest", () => {
                 })
             );
 
-            setTimeout(() => controller.abort(), 10);
+            setTimeout(() => controller.abort(), 0);
 
             RequestClient.makeRequest(
                 request,
                 config,
                 function (object) {
+                    console.log(object);
                     expect(object).to.be.undefined;
                     done(object);
                 },

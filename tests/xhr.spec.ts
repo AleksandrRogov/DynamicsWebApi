@@ -28,6 +28,12 @@ declare module "sinon" {
 }
 
 describe("xhr -", () => {
+    before(() => {
+        global.DWA_BROWSER = true;
+    });
+    after(() => {
+        global.DWA_BROWSER = false;
+    });
     describe("dynamicsWebApi.retrieve -", () => {
         describe("AbortSignal", () => {
             let responseObject: any;

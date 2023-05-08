@@ -3,6 +3,7 @@ import { ConfigurationUtility, InternalConfig } from "../utils/Config";
 import { RequestUtility } from "../utils/Request";
 import { DynamicsWebApiError, ErrorHelper } from "../helpers/ErrorHelper";
 import { Core } from "../types";
+import { executeRequest } from "./helpers/executeRequest";
 
 export class RequestClient {
     private static _batchRequestCollection: Core.BatchRequestCollection = {};
@@ -71,18 +72,7 @@ export class RequestClient {
             request.headers["CallerObjectId"] = config.impersonateAAD;
         }
 
-        var executeRequest: (options: Core.RequestOptions) => void;
-        /// #if node
-        if (typeof XMLHttpRequest !== "undefined") {
-            /// #endif
-            executeRequest = require("./xhr").XhrWrapper.xhrRequest;
-            /// #if node
-        } else if (typeof process !== "undefined") {
-            executeRequest = require("./http").httpRequest;
-        }
-        /// #endif
-
-        var sendInternalRequest = function (token?: any): void {
+        const sendInternalRequest = function (token?: any): void {
             if (token) {
                 if (!request.headers) {
                     request.headers = {};

@@ -16,6 +16,12 @@ var { Utility } = require("../lib/utils/Utility");
 Utility.downloadChunkSize = 15;
 
 describe("xhr -", function () {
+    before(() => {
+        global.DWA_BROWSER = true;
+    });
+    after(() => {
+        global.DWA_BROWSER = false;
+    });
     describe("dynamicsWebApi.create -", function () {
         describe("basic", function () {
             var responseObject;

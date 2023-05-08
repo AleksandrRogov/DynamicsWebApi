@@ -13,6 +13,9 @@ Utility.downloadChunkSize = 15;
 var dynamicsWebApiTest = new DynamicsWebApi({ dataApi: { version: "8.2" } });
 
 describe("dynamicsWebApi.create -", function () {
+    before(() => {
+        global.DWA_BROWSER = false;
+    });
     describe("basic", function () {
         var scope;
         before(function () {

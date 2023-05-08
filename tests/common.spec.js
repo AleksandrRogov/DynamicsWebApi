@@ -1920,6 +1920,9 @@ describe("dateReviver", function () {
 //});
 
 describe("RequestClient.makeRequest", function () {
+    before(() => {
+        global.DWA_BROWSER = false;
+    });
     describe("useEntityNames", function () {
         var scope;
         before(function () {
@@ -2415,6 +2418,9 @@ describe("RequestClient.makeRequest", function () {
 });
 
 describe("RequestClient.sendRequest", function () {
+    before(() => {
+        global.DWA_BROWSER = false;
+    });
     describe("removes additional properties set by DynamicsWebApi", function () {
         var scope;
         var url = "test";

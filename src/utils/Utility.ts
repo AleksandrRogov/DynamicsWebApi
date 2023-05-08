@@ -1,4 +1,5 @@
 ﻿import { Core } from "../types";
+import { generateRandomBytes } from "./platform/node-crypto";
 
 declare var GetGlobalContext: any;
 declare var Xrm: any;
@@ -13,33 +14,32 @@ function getGlobalObject<T>(): T {
 }
 
 /// #if node
-import nCrypto from "crypto";
 /// #endif
 
-function getCrypto() {
-    /// #if node
-    if (typeof window === "undefined") {
-        return nCrypto;
-    } else {
-        /// #endif
-        return window.crypto;
-        /// #if node
-    }
-    /// #endif
-}
+// function getCrypto() {
+//     /// #if node
+//     if (typeof window === "undefined") {
+//         return nCrypto;
+//     } else {
+//         /// #endif
+//         return window.crypto;
+//         /// #if node
+//     }
+//     /// #endif
+// }
 
-function generateRandomBytes() {
-    const uCrypto = getCrypto();
-    /// #if node
-    if (typeof uCrypto["randomBytes"] !== "function") {
-        /// #endif
-        return (uCrypto as Crypto).getRandomValues(new Uint8Array(1));
-        /// #if node
-    }
+// function generateRandomBytes() {
+//     const uCrypto = getCrypto();
+//     /// #if node
+//     if (typeof uCrypto["randomBytes"] !== "function") {
+//         /// #endif
+//         return uCrypto.getRandomValues(new Uint8Array(1));
+//         /// #if node
+//     }
 
-    return (uCrypto as typeof nCrypto).randomBytes(1);
-    /// #endif
-}
+//     return uCrypto.randomBytes(1);
+//     /// #endif
+// }
 
 const downloadChunkSize = 4194304;
 
@@ -201,7 +201,7 @@ export class Utility {
         return <T>target;
     }
 
-    static copyRequest(src: any, excludeProps: string[] = []): Core.InternalRequest{
+    static copyRequest(src: any, excludeProps: string[] = []): Core.InternalRequest {
         //todo: do we need to include "data" in here?
         if (!excludeProps.includes("signal")) excludeProps.push("signal");
 

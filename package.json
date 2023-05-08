@@ -16,13 +16,12 @@
         "dynamics-crm-webapi",
         "dynamics-crm-online"
     ],
-    "main": "lib/dynamics-web-api.js",
-    "types": "lib/dynamics-web-api.d.ts",
+    "browser": "dist/dynamics-web-api.js",
+    "main": "dist/dynamics-web-api.node.js",
+    "types": "dist/dynamics-web-api.d.ts",
     "files": [
-        "lib/**/*.js",
-        "lib/**/*.js.map",
-        "lib/**/*.d.ts",
-        "webpack.config.js"
+        "dist/**/*.js",
+        "dist/**/*.d.ts"
     ],
     "author": {
         "name": "Aleksandr Rogov"
@@ -35,11 +34,13 @@
         "Base64": "^1.2.0",
         "chai": "^4.3.7",
         "copyfiles": "^2.4.1",
-        "gulp": "^4.0.2",
+        "esbuild": "^0.17.18",
+        "glob": "^10.2.2",
         "ifdef-loader": "^2.3.2",
         "mocha": "^10.2.0",
         "mocha-lcov-reporter": "^1.3.0",
         "nock": "^13.3.0",
+        "npm-run-all": "^4.1.5",
         "nyc": "^15.1.0",
         "prettier": "^2.8.4",
         "rimraf": "^4.4.0",
@@ -58,24 +59,34 @@
     },
     "license": "MIT",
     "scripts": {
-        "test": "tsc && mocha",
-        "test-coverage": "rimraf coverage && nyc npm test && nyc report --reporter=lcov",
-        "build": "rimraf dist && rimraf lib && rimraf coverage && rimraf .nyc_output && tsc && webpack --mode=production",
-        "postbuild": "npm run copyfiles && npm run add-banner",
-        "release-patch": "npm version patch -m \"Release v%s\"",
-        "release-minor": "npm version minor -m \"Release v%s\"",
+        "test:clean": "rimraf lib coverage .nyc_output",
+        "test:build": "tsc",
+        "test:mocha": "mocha",
+        "test": "run-s test:*",
+        "coverage": "run-s coverage:clean test:build coverage:nyc",
+        "coverage:clean": "rimraf coverage",
+        "coverage:nyc": "nyc npm run test:mocha && nyc report --reporter=html",
+        "clean": "rimraf dist lib coverage .nyc_output",
+        "off-build:ts": "node ./utils/build.mjs",
+        "build:bundle": "node ./utils/bundle.mjs",
+        "build:types": "tsc --emitDeclarationOnly",
+        "build": "run-s clean build:*",
+        "postbuild": "run-s copyfiles add-banner",
         "copyfiles": "copyfiles --flat ./lib/dynamics-web-api.d.ts ./dist/",
-        "add-banner": "node ./utils/add-banner.js",
+        "add-banner": "node ./utils/add-banner.mjs",
+        "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.js\"",
         "preversion": "npm test",
         "version": "npm run build && git add -A dist",
         "postversion": "git push && git push --tags",
-        "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.js\""
+        "release-patch": "npm version patch -m \"Release v%s\"",
+        "release-minor": "npm version minor -m \"Release v%s\"",
+
+        "old-build:bundle": "webpack --mode=production",
+        "old-build": "rimraf dist && rimraf lib && rimraf coverage && rimraf .nyc_output && tsc && webpack --mode=production",
+        "old-test": "tsc && mocha"
     },
     "repository": {
         "type": "git",
         "url": "https://github.com/AleksandrRogov/DynamicsWebApi.git"
-    },
-    "browser": {
-        "./lib/client/http.js": "./lib/client/xhr.js"
     }
 }

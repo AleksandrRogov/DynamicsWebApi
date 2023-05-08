@@ -18,9 +18,10 @@
 		"outDir": "lib",
 		"target": "ES2020",
 		"lib": ["ESNext", "DOM"],
+		"typeRoots": [ "./types", "node_modules/@types" ],
 		"strict": true,
 	},
 	// "compileOnSave": true,
-	"include": ["./src/**/*"],
+	"include": ["./src/**/*", "./types/**/*"],
 	"exclude": ["node_modules", "typesold", "./tests/"]
 }

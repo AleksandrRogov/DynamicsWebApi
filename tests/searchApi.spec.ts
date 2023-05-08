@@ -2,6 +2,8 @@ import { expect } from "chai";
 import nock from "nock";
 import * as mocks from "./stubs";
 
+global.DWA_AGENT = null;
+
 import { DynamicsWebApi, Search, Autocomplete, Suggest } from "../src/dynamics-web-api";
 
 const dynamicsWebApiTest = new DynamicsWebApi({
@@ -11,6 +13,9 @@ const dynamicsWebApiTest = new DynamicsWebApi({
 });
 
 describe("dynamicsWebApi.search -", () => {
+    before(() => {
+        global.DWA_BROWSER = false;
+    });
     describe("basic", () => {
         let scope;
         const searchQuery: Search = {

@@ -252,3 +252,4 @@ typesold/
 
 *.tgz
 lib/
+*.js.map

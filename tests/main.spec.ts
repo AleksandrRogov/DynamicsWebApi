@@ -11,6 +11,9 @@ const dynamicsWebApiTest = new DynamicsWebApi({
 });
 
 describe("dynamicsWebApi.retrieveMultiple -", () => {
+    before(() => {
+        global.DWA_BROWSER = false;
+    });
     describe("AbortSignal - multiple requests", () => {
         let scope: nock.Scope;
         let scope2: nock.Scope;
