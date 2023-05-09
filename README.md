@@ -2193,10 +2193,10 @@ catch(error){
 ## Using Proxy
 
 **Node.js Only.** DynamicsWebApi supports different types of connections through proxy. To make it possible, I added two dependencies in a `package.json`:
-[http-proxy-agent](https://github.com/TooTallNate/node-https-proxy-agent) and [https-proxy-agent](https://github.com/TooTallNate/node-http-proxy-agent), based on a type of a protocol, DynamicsWebApi, based on a type of a protocol, DynamicsWebApi will use one of those agents.
+[http-proxy-agent](https://github.com/TooTallNate/node-https-proxy-agent) and [https-proxy-agent](https://github.com/TooTallNate/node-http-proxy-agent), DynamicsWebApi will use one of those agents based on the type of a protocol.
 
 In order to let DynamicsWebApi know that you are using proxy you have two options:
-1. add environmental variables `http_proxy` or `https_proxy` in your .env file
+1. add environmental variables `http_proxy` or `https_proxy`,
 2. or pass parameters in DynamicsWebApi configuration, for example:
 
 ```ts
@@ -2216,7 +2216,7 @@ const dynamicsWebApi = new DynamicsWebApi({
 
 ## Using TypeScript Declaration Files
 
-If you are not familiar with declaration files, these files are used to provide TypeScript type information about an API that's written in JavaScript.
+If you are not familiar with declaration files, these files are used to provide TypeScript type information about an API.
 You want to consume those from your TypeScript code. [Quote](https://stackoverflow.com/a/21247316/2042071)
 
 ### Node.Js
@@ -2227,11 +2227,11 @@ At the top of a necessary `.ts` file add the following:
 ```ts
 import { DynamicsWebApi, Config } from "dynamics-web-api";
 //for CommonJS:
-//import DynamicsWebApi = require("dynamics-web-api");
+//const DynamicsWebApi = require("dynamics-web-api");
 ```
 
 ### Dynamics 365 web resource
-If you are developing CRM Web Resources with TypeScript, you will need to download a necessary `d.ts` file manually from the following folder: [dist](/dist/).
+If you are developing CRM Web Resources with TypeScript, you will need to download `dynamics-web-api.d.ts` file manually from [dist](/dist/) folder.
 In my web resources project I usually put a declaration file under "./types/" folder. For example:
 
 ```
