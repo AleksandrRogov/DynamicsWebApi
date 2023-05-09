@@ -17,7 +17,7 @@
         "dynamics-crm-online"
     ],
     "browser": "dist/dynamics-web-api.js",
-    "main": "dist/dynamics-web-api.node.js",
+    "main": "dist/dynamics-web-api.cjs.js",
     "types": "dist/dynamics-web-api.d.ts",
     "files": [
         "dist/**/*.js",
@@ -27,7 +27,6 @@
         "name": "Aleksandr Rogov"
     },
     "devDependencies": {
-        "@peculiar/webcrypto": "^1.4.1",
         "@types/chai": "^4.3.4",
         "@types/mocha": "^10.0.1",
         "@types/sinon": "^10.0.13",
@@ -65,7 +64,7 @@
         "test": "run-s test:*",
         "coverage": "run-s coverage:clean test:build coverage:nyc",
         "coverage:clean": "rimraf coverage",
-        "coverage:nyc": "nyc npm run test:mocha && nyc report --reporter=html",
+        "coverage:nyc": "nyc npm run test:mocha && nyc report --reporter=lcov",
         "clean": "rimraf dist lib coverage .nyc_output",
         "off-build:ts": "node ./utils/build.mjs",
         "build:bundle": "node ./utils/bundle.mjs",
@@ -80,7 +79,6 @@
         "postversion": "git push && git push --tags",
         "release-patch": "npm version patch -m \"Release v%s\"",
         "release-minor": "npm version minor -m \"Release v%s\"",
-
         "old-build:bundle": "webpack --mode=production",
         "old-build": "rimraf dist && rimraf lib && rimraf coverage && rimraf .nyc_output && tsc && webpack --mode=production",
         "old-test": "tsc && mocha"

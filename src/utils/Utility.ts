@@ -1,5 +1,5 @@
 ﻿import { Core } from "../types";
-import { generateRandomBytes } from "./platform/node-crypto";
+import { generateRandomBytes } from "../helpers/Crypto";
 
 declare var GetGlobalContext: any;
 declare var Xrm: any;
@@ -12,34 +12,6 @@ function isNodeEnv(): boolean {
 function getGlobalObject<T>(): T {
     return (isNodeEnv() ? global : typeof window !== "undefined" ? window : typeof self !== "undefined" ? self : {}) as T;
 }
-
-/// #if node
-/// #endif
-
-// function getCrypto() {
-//     /// #if node
-//     if (typeof window === "undefined") {
-//         return nCrypto;
-//     } else {
-//         /// #endif
-//         return window.crypto;
-//         /// #if node
-//     }
-//     /// #endif
-// }
-
-// function generateRandomBytes() {
-//     const uCrypto = getCrypto();
-//     /// #if node
-//     if (typeof uCrypto["randomBytes"] !== "function") {
-//         /// #endif
-//         return uCrypto.getRandomValues(new Uint8Array(1));
-//         /// #if node
-//     }
-
-//     return uCrypto.randomBytes(1);
-//     /// #endif
-// }
 
 const downloadChunkSize = 4194304;
 

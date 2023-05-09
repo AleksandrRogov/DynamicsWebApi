@@ -9,7 +9,7 @@ import { parseResponse } from "./helpers/parseResponse";
 
 const agents: { [key: string]: http.Agent } = {};
 
-const getAgent = (options, protocol): http.Agent => {
+const getAgent = (options: Core.RequestOptions, protocol: string): http.Agent => {
     const isHttp = protocol === "http";
     const proxy = options.proxy;
     const agentName = proxy ? proxy.url : protocol;
@@ -68,7 +68,7 @@ export function executeRequest(options: Core.RequestOptions) {
         headers[key] = additionalHeaders[key];
     }
     const parsedUrl = url.parse(options.uri);
-    const protocol = parsedUrl.protocol?.slice(0, -1);
+    const protocol = parsedUrl.protocol?.slice(0, -1) || "https";
     const protocolInterface = protocol === "http" ? http : https;
 
     const internalOptions: http.RequestOptions = {

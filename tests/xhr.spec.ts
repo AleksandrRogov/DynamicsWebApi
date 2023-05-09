@@ -2,7 +2,7 @@ import { expect } from "chai";
 import * as mocks from "./stubs";
 
 import sinon, { SinonFakeXMLHttpRequest } from "sinon";
-
+import crypto from "crypto";
 import { DynamicsWebApi, RetrieveRequest } from "../src/dynamics-web-api";
 
 const dynamicsWebApiTest = new DynamicsWebApi({
@@ -27,25 +27,34 @@ declare module "sinon" {
     }
 }
 
-describe("xhr -", () => {
-    before(() => {
+describe("xhr -", function () {
+    before(function () {
         global.DWA_BROWSER = true;
+        //@ts-ignore
+        global.window = {
+            crypto: <any>crypto.webcrypto,
+        };
+        //@ts-ignore
+        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+
+        this.requests = [];
     });
-    after(() => {
+    after(function () {
         global.DWA_BROWSER = false;
+        //@ts-ignore
+        global.window = null;
+        //@ts-ignore
+        global.XMLHttpRequest = null;
     });
+
     describe("dynamicsWebApi.retrieve -", () => {
         describe("AbortSignal", () => {
             let responseObject: any;
             const ac = new AbortController();
             before(async function () {
                 //@ts-ignore
-                global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-                const requests: SinonFakeXMLHttpRequest[] = (this.requests = []);
-
-                //@ts-ignore
-                global.XMLHttpRequest.onCreate = function (xhr: SinonFakeXMLHttpRequest) {
-                    requests.push(xhr);
+                global.XMLHttpRequest.onCreate = (xhr: SinonFakeXMLHttpRequest) => {
+                    this.requests.push(xhr);
                 };
 
                 var dwaRequest: RetrieveRequest = {
@@ -68,8 +77,7 @@ describe("xhr -", () => {
             after(function () {
                 //@ts-ignore
                 global.XMLHttpRequest.restore();
-                //@ts-ignore
-                global.XMLHttpRequest = null;
+                this.requests = [];
             });
 
             it("sends the request to the right end point", function () {

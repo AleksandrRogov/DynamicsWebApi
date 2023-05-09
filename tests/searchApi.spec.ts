@@ -2,8 +2,6 @@ import { expect } from "chai";
 import nock from "nock";
 import * as mocks from "./stubs";
 
-global.DWA_AGENT = null;
-
 import { DynamicsWebApi, Search, Autocomplete, Suggest } from "../src/dynamics-web-api";
 
 const dynamicsWebApiTest = new DynamicsWebApi({
@@ -41,6 +39,7 @@ describe("dynamicsWebApi.search -", () => {
                 expect(object).to.deep.equal(mocks.data.searchMultiple);
             } catch (object) {
                 console.error(object);
+                throw object;
             }
         });
 
@@ -71,6 +70,7 @@ describe("dynamicsWebApi.search -", () => {
                 expect(object).to.deep.equal(mocks.data.searchMultiple);
             } catch (object) {
                 console.error(object);
+                throw object;
             }
         });
 
@@ -108,6 +108,7 @@ describe("dynamicsWebApi.search -", () => {
                 expect(object).to.deep.equal(mocks.data.searchMultiple);
             } catch (object) {
                 console.error(object);
+                throw object;
             }
         });
 
@@ -143,6 +144,7 @@ describe("dynamicsWebApi.suggest -", () => {
                 expect(object).to.deep.equal(mocks.data.suggestMultiple);
             } catch (object) {
                 console.error(object);
+                throw object;
             }
         });
 
@@ -173,6 +175,7 @@ describe("dynamicsWebApi.suggest -", () => {
                 expect(object).to.deep.equal(mocks.data.suggestMultiple);
             } catch (object) {
                 console.error(object);
+                throw object;
             }
         });
 
@@ -210,6 +213,7 @@ describe("dynamicsWebApi.suggest -", () => {
                 expect(object).to.deep.equal(mocks.data.suggestMultiple);
             } catch (object) {
                 console.error(object);
+                throw object;
             }
         });
 
@@ -245,6 +249,7 @@ describe("dynamicsWebApi.autocomplete -", () => {
                 expect(object).to.deep.equal(mocks.data.autocompleteResult);
             } catch (object) {
                 console.error(object);
+                throw object;
             }
         });
 
@@ -282,6 +287,7 @@ describe("dynamicsWebApi.autocomplete -", () => {
                 expect(object).to.deep.equal(mocks.data.autocompleteResult);
             } catch (object) {
                 console.error(object);
+                throw object;
             }
         });
 
@@ -312,6 +318,7 @@ describe("dynamicsWebApi.autocomplete -", () => {
                 expect(object).to.deep.equal(mocks.data.autocompleteResult);
             } catch (object) {
                 console.error(object);
+                throw object;
             }
         });
 

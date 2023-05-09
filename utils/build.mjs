@@ -3,7 +3,7 @@ import { glob } from "glob";
 
 const tsFiles = await glob(`src/**/*.ts`, { ignore: `src/types/**` });
 
-//mot using this for now because of broken nyc coverage. could be an issue with a sourcemap
+//not using this for now because of broken nyc coverage. could be an issue with a sourcemap
 await esbuild.build({
     entryPoints: tsFiles,
     logLevel: "info",
@@ -13,7 +13,4 @@ await esbuild.build({
     platform: "node",
     packages: "external",
     format: "cjs",
-    define: {
-        "global.DWA_TEST": "true",
-    },
 });

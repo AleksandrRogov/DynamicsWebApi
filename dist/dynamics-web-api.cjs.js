@@ -31,19 +31,19 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 ));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// src/utils/platform/node-crypto.ts
+// src/helpers/Crypto.ts
 function getCrypto() {
-  return import_crypto.default;
+  return false ? global.window.crypto : nCrypto;
 }
 function generateRandomBytes() {
-  const uCrypto = getCrypto();
-  return uCrypto.randomBytes(1);
+  return false ? getCrypto().getRandomValues(new Uint8Array(1)) : getCrypto().randomBytes(1);
 }
-var import_crypto;
-var init_node_crypto = __esm({
-  "src/utils/platform/node-crypto.ts"() {
+var nCrypto;
+var init_Crypto = __esm({
+  "src/helpers/Crypto.ts"() {
     "use strict";
-    import_crypto = __toESM(require("crypto"));
+    if (true)
+      nCrypto = require("crypto");
   }
 });
 
@@ -55,7 +55,7 @@ var downloadChunkSize, _Utility, Utility;
 var init_Utility = __esm({
   "src/utils/Utility.ts"() {
     "use strict";
-    init_node_crypto();
+    init_Crypto();
     downloadChunkSize = 4194304;
     _Utility = class {
       /**
@@ -664,7 +664,7 @@ function executeRequest(options) {
     headers[key] = additionalHeaders[key];
   }
   const parsedUrl = url.parse(options.uri);
-  const protocol = (_a2 = parsedUrl.protocol) == null ? void 0 : _a2.slice(0, -1);
+  const protocol = ((_a2 = parsedUrl.protocol) == null ? void 0 : _a2.slice(0, -1)) || "https";
   const protocolInterface = protocol === "http" ? http : https;
   const internalOptions = {
     hostname: parsedUrl.hostname,
@@ -1376,14 +1376,8 @@ RequestUtility.entityNames = null;
 init_ErrorHelper();
 
 // src/client/helpers/executeRequest.ts
-var getExecuteRequest = () => {
-  return false ? null.executeRequest : (init_http(), __toCommonJS(http_exports)).executeRequest;
-};
-var run = getExecuteRequest();
 function executeRequest2(options) {
-  if (false)
-    run = getExecuteRequest();
-  run(options);
+  return false ? null.executeRequest(options) : (init_http(), __toCommonJS(http_exports)).executeRequest(options);
 }
 
 // src/client/RequestClient.ts
@@ -2520,4 +2514,4 @@ var DynamicsWebApi = class {
 0 && (module.exports = {
   DynamicsWebApi
 });
-//# sourceMappingURL=dynamics-web-api.node.js.map
+//# sourceMappingURL=dynamics-web-api.cjs.js.map

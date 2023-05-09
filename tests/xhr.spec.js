@@ -3,8 +3,8 @@ var expect = chai.expect;
 
 var sinon = require("sinon");
 
+var crypto = require("crypto");
 var base64 = require("Base64");
-var crypto = new (require("@peculiar/webcrypto").Crypto)();
 
 var mocks = require("./stubs");
 var { DWA } = require("../lib/dwa");
@@ -16,12 +16,25 @@ var { Utility } = require("../lib/utils/Utility");
 Utility.downloadChunkSize = 15;
 
 describe("xhr -", function () {
-    before(() => {
+    before(function () {
         global.DWA_BROWSER = true;
     });
-    after(() => {
+    after(function () {
         global.DWA_BROWSER = false;
     });
+
+    this.beforeAll(function () {
+        global.window = {
+            btoa: base64.btoa,
+            atob: base64.atob,
+            crypto: crypto.webcrypto,
+        };
+    });
+
+    this.afterAll(function () {
+        global.window = null;
+    });
+
     describe("dynamicsWebApi.create -", function () {
         describe("basic", function () {
             var responseObject;
@@ -33,19 +46,23 @@ describe("xhr -", function () {
                     requests.push(xhr);
                 };
 
-                dynamicsWebApiTest
-                    .create({ data: mocks.data.testEntity, collection: "tests" })
-                    .then(function (object) {
-                        responseObject = object;
-                        done();
-                    })
-                    .catch(function (object) {
-                        responseObject = object;
-                        done();
-                    });
+                try {
+                    dynamicsWebApiTest
+                        .create({ data: mocks.data.testEntity, collection: "tests" })
+                        .then(function (object) {
+                            responseObject = object;
+                            done();
+                        })
+                        .catch(function (object) {
+                            responseObject = object;
+                            done(responseObject);
+                        });
+                } catch (error) {
+                    console.log(error);
+                }
 
                 var response = mocks.responses.createReturnId;
-                this.requests[0].respond(response.status, response.responseHeaders);
+                this.requests[0]?.respond(response.status, response.responseHeaders);
             });
 
             after(function () {
@@ -54,19 +71,19 @@ describe("xhr -", function () {
             });
 
             it("sends the request to the right end point", function () {
-                expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ""));
+                expect(this.requests[0]?.url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ""));
             });
 
             it("uses the correct method", function () {
-                expect(this.requests[0].method).to.equal("POST");
+                expect(this.requests[0]?.method).to.equal("POST");
             });
 
             it("sends the right data", function () {
-                expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
+                expect(JSON.parse(this.requests[0]?.requestBody)).to.deep.equal(mocks.data.testEntity);
             });
 
             it("does not have Prefer header", function () {
-                expect(this.requests[0].requestHeaders["Prefer"]).to.be.undefined;
+                expect(this.requests[0]?.requestHeaders["Prefer"]).to.be.undefined;
             });
 
             it("returns the correct response", function () {
@@ -96,7 +113,7 @@ describe("xhr -", function () {
                     });
 
                 var response = mocks.responses.upsertPreventCreateResponse;
-                this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+                this.requests[0]?.respond(response.status, response.responseHeaders, response.responseText);
             });
 
             after(function () {
@@ -105,19 +122,19 @@ describe("xhr -", function () {
             });
 
             it("sends the request to the right end point", function () {
-                expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ""));
+                expect(this.requests[0]?.url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ""));
             });
 
             it("uses the correct method", function () {
-                expect(this.requests[0].method).to.equal("POST");
+                expect(this.requests[0]?.method).to.equal("POST");
             });
 
             it("sends the right data", function () {
-                expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
+                expect(JSON.parse(this.requests[0]?.requestBody)).to.deep.equal(mocks.data.testEntity);
             });
 
             it("does not have Prefer header", function () {
-                expect(this.requests[0].requestHeaders["Prefer"]).to.be.undefined;
+                expect(this.requests[0]?.requestHeaders["Prefer"]).to.be.undefined;
             });
 
             it("returns the correct response", function () {
@@ -150,7 +167,7 @@ describe("xhr -", function () {
                     });
 
                 var response = mocks.responses.upsertPreventCreateResponse;
-                this.requests[0].respond(response.status, response.responseHeaders);
+                this.requests[0]?.respond(response.status, response.responseHeaders);
             });
 
             after(function () {
@@ -159,19 +176,19 @@ describe("xhr -", function () {
             });
 
             it("sends the request to the right end point", function () {
-                expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ""));
+                expect(this.requests[0]?.url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ""));
             });
 
             it("uses the correct method", function () {
-                expect(this.requests[0].method).to.equal("POST");
+                expect(this.requests[0]?.method).to.equal("POST");
             });
 
             it("sends the right data", function () {
-                expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
+                expect(JSON.parse(this.requests[0]?.requestBody)).to.deep.equal(mocks.data.testEntity);
             });
 
             it("does not have Prefer header", function () {
-                expect(this.requests[0].requestHeaders["Prefer"]).to.be.undefined;
+                expect(this.requests[0]?.requestHeaders["Prefer"]).to.be.undefined;
             });
 
             it("returns the correct response", function () {
@@ -204,7 +221,7 @@ describe("xhr -", function () {
                     });
 
                 var response = mocks.responses.upsertPreventCreateResponse;
-                this.requests[0].respond(response.status, response.responseHeaders, "something");
+                this.requests[0]?.respond(response.status, response.responseHeaders, "something");
             });
 
             after(function () {
@@ -213,19 +230,19 @@ describe("xhr -", function () {
             });
 
             it("sends the request to the right end point", function () {
-                expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ""));
+                expect(this.requests[0]?.url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ""));
             });
 
             it("uses the correct method", function () {
-                expect(this.requests[0].method).to.equal("POST");
+                expect(this.requests[0]?.method).to.equal("POST");
             });
 
             it("sends the right data", function () {
-                expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
+                expect(JSON.parse(this.requests[0]?.requestBody)).to.deep.equal(mocks.data.testEntity);
             });
 
             it("does not have Prefer header", function () {
-                expect(this.requests[0].requestHeaders["Prefer"]).to.be.undefined;
+                expect(this.requests[0]?.requestHeaders["Prefer"]).to.be.undefined;
             });
 
             it("returns the correct response", function () {
@@ -266,7 +283,7 @@ describe("xhr -", function () {
                     .executeBatch()
                     .then(function (object) {
                         responseObject = object;
-                        done();
+                        done(responseObject);
                     })
                     .catch(function (object) {
                         responseObject = object;
@@ -274,7 +291,7 @@ describe("xhr -", function () {
                     });
 
                 var response = mocks.responses.batchError;
-                this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+                this.requests[0]?.respond(response.status, response.responseHeaders, response.responseText);
             });
 
             after(function () {
@@ -283,11 +300,11 @@ describe("xhr -", function () {
             });
 
             it("sends the request to the right end point", function () {
-                expect(this.requests[0].url).to.equal(mocks.webApiUrl + "$batch");
+                expect(this.requests[0]?.url).to.equal(mocks.webApiUrl + "$batch");
             });
 
             it("uses the correct method", function () {
-                expect(this.requests[0].method).to.equal("POST");
+                expect(this.requests[0]?.method).to.equal("POST");
             });
 
             it("sends the right data", function () {
@@ -303,11 +320,11 @@ describe("xhr -", function () {
                     return resultBody;
                 }
 
-                expect(filterBody(this.requests[0].requestBody)).to.deep.equal(checkBody);
+                expect(filterBody(this.requests[0]?.requestBody)).to.deep.equal(checkBody);
             });
 
             it("does not have Prefer header", function () {
-                expect(this.requests[0].requestHeaders["Prefer"]).to.be.undefined;
+                expect(this.requests[0]?.requestHeaders["Prefer"]).to.be.undefined;
             });
 
             it("returns the correct response", function () {
@@ -348,11 +365,11 @@ describe("xhr -", function () {
                 });
 
             var response = mocks.responses.createReturnRepresentation;
-            this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+            this.requests[0]?.respond(response.status, response.responseHeaders, response.responseText);
         });
 
         it("sends the request to the right end point", function () {
-            expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ""));
+            expect(this.requests[0]?.url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ""));
         });
 
         after(function () {
@@ -361,15 +378,15 @@ describe("xhr -", function () {
         });
 
         it("uses the correct method", function () {
-            expect(this.requests[0].method).to.equal("POST");
+            expect(this.requests[0]?.method).to.equal("POST");
         });
 
         it("sends the right data", function () {
-            expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
+            expect(JSON.parse(this.requests[0]?.requestBody)).to.deep.equal(mocks.data.testEntity);
         });
 
         it("sends the Prefer header", function () {
-            expect(this.requests[0].requestHeaders["Prefer"]).to.equal(DWA.Prefer.ReturnRepresentation);
+            expect(this.requests[0]?.requestHeaders["Prefer"]).to.equal(DWA.Prefer.ReturnRepresentation);
         });
 
         it("returns the correct response", function () {
@@ -408,7 +425,7 @@ describe("xhr -", function () {
                     });
 
                 var response = mocks.responses.basicEmptyResponseSuccess;
-                this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+                this.requests[0]?.respond(response.status, response.responseHeaders, response.responseText);
 
                 dwaRequest.returnRepresentation = true;
 
@@ -445,31 +462,31 @@ describe("xhr -", function () {
             });
 
             it("sends the request to the right end point", function () {
-                expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, "") + "?$select=fullname,subject");
+                expect(this.requests[0]?.url).to.equal(mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, "") + "?$select=fullname,subject");
                 expect(this.requests[1].url).to.equal(mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, "") + "?$select=fullname,subject");
                 expect(this.requests[2].url).to.equal(mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, "") + "?$select=fullname,subject");
             });
 
             it("uses the correct method", function () {
-                expect(this.requests[0].method).to.equal("PATCH");
+                expect(this.requests[0]?.method).to.equal("PATCH");
                 expect(this.requests[1].method).to.equal("PATCH");
                 expect(this.requests[2].method).to.equal("PATCH");
             });
 
             it("sends the right data", function () {
-                expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
+                expect(JSON.parse(this.requests[0]?.requestBody)).to.deep.equal(mocks.data.testEntity);
                 expect(JSON.parse(this.requests[1].requestBody)).to.deep.equal(mocks.data.testEntity);
                 expect(JSON.parse(this.requests[2].requestBody)).to.deep.equal(mocks.data.testEntity);
             });
 
             it("sends the Prefer header", function () {
-                expect(this.requests[0].requestHeaders["Prefer"]).to.be.undefined;
+                expect(this.requests[0]?.requestHeaders["Prefer"]).to.be.undefined;
                 expect(this.requests[1].requestHeaders["Prefer"]).to.equal(DWA.Prefer.ReturnRepresentation);
                 expect(this.requests[2].requestHeaders["Prefer"]).to.equal(DWA.Prefer.ReturnRepresentation);
             });
 
             it("sends the right If-Match header", function () {
-                expect(this.requests[0].requestHeaders["If-Match"]).to.equal("match");
+                expect(this.requests[0]?.requestHeaders["If-Match"]).to.equal("match");
                 expect(this.requests[1].requestHeaders["If-Match"]).to.equal("match");
                 expect(this.requests[2].requestHeaders["If-Match"]).to.equal("match");
             });
@@ -511,7 +528,7 @@ describe("xhr -", function () {
                     });
 
                 var response = mocks.responses.response200;
-                this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+                this.requests[0]?.respond(response.status, response.responseHeaders, response.responseText);
             });
 
             after(function () {
@@ -520,23 +537,23 @@ describe("xhr -", function () {
             });
 
             it("sends the request to the right end point", function () {
-                expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, "") + "?$expand=prop");
+                expect(this.requests[0]?.url).to.equal(mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, "") + "?$expand=prop");
             });
 
             it("uses the correct method", function () {
-                expect(this.requests[0].method).to.equal("GET");
+                expect(this.requests[0]?.method).to.equal("GET");
             });
 
             it("does not send data", function () {
-                expect(this.requests[0].requestBody).to.be.undefined;
+                expect(this.requests[0]?.requestBody).to.be.undefined;
             });
 
             it("sends the correct If-Match header", function () {
-                expect(this.requests[0].requestHeaders["If-Match"]).to.be.undefined;
+                expect(this.requests[0]?.requestHeaders["If-Match"]).to.be.undefined;
             });
 
             it("sends the correct MSCRMCallerID header", function () {
-                expect(this.requests[0].requestHeaders["MSCRMCallerID"]).to.be.undefined;
+                expect(this.requests[0]?.requestHeaders["MSCRMCallerID"]).to.be.undefined;
             });
 
             it("returns the correct response", function () {
@@ -583,7 +600,7 @@ describe("xhr -", function () {
                     });
 
                 var response = mocks.responses.response200;
-                this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+                this.requests[0]?.respond(response.status, response.responseHeaders, response.responseText);
             });
 
             after(function () {
@@ -592,19 +609,19 @@ describe("xhr -", function () {
             });
 
             it("sends the request to the right end point", function () {
-                expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, "") + "?$expand=prop");
+                expect(this.requests[0]?.url).to.equal(mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, "") + "?$expand=prop");
             });
 
             it("uses the correct method", function () {
-                expect(this.requests[0].method).to.equal("GET");
+                expect(this.requests[0]?.method).to.equal("GET");
             });
 
             it("does not send data", function () {
-                expect(this.requests[0].requestBody).to.be.undefined;
+                expect(this.requests[0]?.requestBody).to.be.undefined;
             });
 
             it("sends the correct Authorization header", function () {
-                expect(this.requests[0].requestHeaders["Authorization"]).to.equal("Bearer token001");
+                expect(this.requests[0]?.requestHeaders["Authorization"]).to.equal("Bearer token001");
             });
 
             it("returns the correct response", function () {
@@ -636,11 +653,11 @@ describe("xhr -", function () {
                     });
 
                 var response = mocks.responses.multipleResponse;
-                this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+                this.requests[0]?.respond(response.status, response.responseHeaders, response.responseText);
             });
 
             it("sends the request to the right end point", function () {
-                expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ""));
+                expect(this.requests[0]?.url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ""));
             });
 
             after(function () {
@@ -649,19 +666,19 @@ describe("xhr -", function () {
             });
 
             it("uses the correct method", function () {
-                expect(this.requests[0].method).to.equal("GET");
+                expect(this.requests[0]?.method).to.equal("GET");
             });
 
             it("does not send data", function () {
-                expect(this.requests[0].requestBody).to.be.undefined;
+                expect(this.requests[0]?.requestBody).to.be.undefined;
             });
 
             it("does not send If-Match header", function () {
-                expect(this.requests[0].requestHeaders["If-Match"]).to.be.undefined;
+                expect(this.requests[0]?.requestHeaders["If-Match"]).to.be.undefined;
             });
 
             it("does not send MSCRMCallerID header", function () {
-                expect(this.requests[0].requestHeaders["MSCRMCallerID"]).to.be.undefined;
+                expect(this.requests[0]?.requestHeaders["MSCRMCallerID"]).to.be.undefined;
             });
 
             it("returns the correct response", function () {
@@ -690,7 +707,7 @@ describe("xhr -", function () {
                     });
 
                 var response = mocks.responses.multipleResponse;
-                this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+                this.requests[0]?.respond(response.status, response.responseHeaders, response.responseText);
 
                 dynamicsWebApiTest
                     .retrieveMultiple({ collection: "tests", select: ["fullname", "subject"] })
@@ -713,27 +730,27 @@ describe("xhr -", function () {
             });
 
             it("sends the request to the right end point", function () {
-                expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, "") + "?$select=fullname");
+                expect(this.requests[0]?.url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, "") + "?$select=fullname");
                 expect(this.requests[1].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, "") + "?$select=fullname,subject");
             });
 
             it("uses the correct method", function () {
-                expect(this.requests[0].method).to.equal("GET");
+                expect(this.requests[0]?.method).to.equal("GET");
                 expect(this.requests[1].method).to.equal("GET");
             });
 
             it("does not send data", function () {
-                expect(this.requests[0].requestBody).to.be.undefined;
+                expect(this.requests[0]?.requestBody).to.be.undefined;
                 expect(this.requests[1].requestBody).to.be.undefined;
             });
 
             it("does not send If-Match header", function () {
-                expect(this.requests[0].requestHeaders["If-Match"]).to.be.undefined;
+                expect(this.requests[0]?.requestHeaders["If-Match"]).to.be.undefined;
                 expect(this.requests[1].requestHeaders["If-Match"]).to.be.undefined;
             });
 
             it("does not send MSCRMCallerID header", function () {
-                expect(this.requests[0].requestHeaders["MSCRMCallerID"]).to.be.undefined;
+                expect(this.requests[0]?.requestHeaders["MSCRMCallerID"]).to.be.undefined;
                 expect(this.requests[1].requestHeaders["MSCRMCallerID"]).to.be.undefined;
             });
 
@@ -764,7 +781,7 @@ describe("xhr -", function () {
                     });
 
                 var response = mocks.responses.multipleResponse;
-                this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+                this.requests[0]?.respond(response.status, response.responseHeaders, response.responseText);
 
                 dynamicsWebApiTest
                     .retrieveMultiple({ collection: "tests", select: ["fullname"], filter: "name eq 'name'" })
@@ -787,29 +804,29 @@ describe("xhr -", function () {
             });
 
             it("sends the request to the right end point", function () {
-                expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, "") + "?$filter=name%20eq%20'name'");
+                expect(this.requests[0]?.url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, "") + "?$filter=name%20eq%20'name'");
                 expect(this.requests[1].url).to.equal(
                     mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, "") + "?$select=fullname&$filter=name%20eq%20'name'"
                 );
             });
 
             it("uses the correct method", function () {
-                expect(this.requests[0].method).to.equal("GET");
+                expect(this.requests[0]?.method).to.equal("GET");
                 expect(this.requests[1].method).to.equal("GET");
             });
 
             it("does not send data", function () {
-                expect(this.requests[0].requestBody).to.be.undefined;
+                expect(this.requests[0]?.requestBody).to.be.undefined;
                 expect(this.requests[1].requestBody).to.be.undefined;
             });
 
             it("does not send If-Match header", function () {
-                expect(this.requests[0].requestHeaders["If-Match"]).to.be.undefined;
+                expect(this.requests[0]?.requestHeaders["If-Match"]).to.be.undefined;
                 expect(this.requests[1].requestHeaders["If-Match"]).to.be.undefined;
             });
 
             it("does not send MSCRMCallerID header", function () {
-                expect(this.requests[0].requestHeaders["MSCRMCallerID"]).to.be.undefined;
+                expect(this.requests[0]?.requestHeaders["MSCRMCallerID"]).to.be.undefined;
                 expect(this.requests[1].requestHeaders["MSCRMCallerID"]).to.be.undefined;
             });
 
@@ -842,7 +859,7 @@ describe("xhr -", function () {
                     });
 
                 var response = mocks.responses.multipleWithLinkResponse;
-                this.requests[0].respond(response.status, response.responseHeaders, response.responseText);
+                this.requests[0]?.respond(response.status, response.responseHeaders, response.responseText);
 
                 dynamicsWebApiTest
                     .retrieveMultiple(dwaRequest, mocks.responses.multipleWithLink().oDataNextLink)
@@ -860,7 +877,7 @@ describe("xhr -", function () {
             });
 
             it("sends the request to the right end point", function () {
-                expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ""));
+                expect(this.requests[0]?.url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ""));
                 expect(this.requests[1].url).to.equal(mocks.responses.multipleWithLink().oDataNextLink);
             });
 
@@ -870,22 +887,22 @@ describe("xhr -", function () {
             });
 
             it("uses the correct method", function () {
-                expect(this.requests[0].method).to.equal("GET");
+                expect(this.requests[0]?.method).to.equal("GET");
                 expect(this.requests[1].method).to.equal("GET");
             });
 
             it("does not send data", function () {
-                expect(this.requests[0].requestBody).to.be.undefined;
+                expect(this.requests[0]?.requestBody).to.be.undefined;
                 expect(this.requests[1].requestBody).to.be.undefined;
             });
 
             it("does not send If-Match header", function () {
-                expect(this.requests[0].requestHeaders["If-Match"]).to.be.undefined;
+                expect(this.requests[0]?.requestHeaders["If-Match"]).to.be.undefined;
                 expect(this.requests[1].requestHeaders["If-Match"]).to.be.undefined;
             });
 
             it("does not send MSCRMCallerID header", function () {
-                expect(this.requests[0].requestHeaders["MSCRMCallerID"]).to.be.undefined;
+                expect(this.requests[0]?.requestHeaders["MSCRMCallerID"]).to.be.undefined;
                 expect(this.requests[1].requestHeaders["MSCRMCallerID"]).to.be.undefined;
             });
 
@@ -917,7 +934,7 @@ describe("xhr -", function () {
                     done();
                 });
 
-            this.requests[0].onerror();
+            this.requests[0]?.onerror();
         });
 
         after(function () {
@@ -926,19 +943,19 @@ describe("xhr -", function () {
         });
 
         it("sends the request to the right end point", function () {
-            expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ""));
+            expect(this.requests[0]?.url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ""));
         });
 
         it("uses the correct method", function () {
-            expect(this.requests[0].method).to.equal("POST");
+            expect(this.requests[0]?.method).to.equal("POST");
         });
 
         it("sends the right data", function () {
-            expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
+            expect(JSON.parse(this.requests[0]?.requestBody)).to.deep.equal(mocks.data.testEntity);
         });
 
         it("does not have Prefer header", function () {
-            expect(this.requests[0].requestHeaders["Prefer"]).to.be.undefined;
+            expect(this.requests[0]?.requestHeaders["Prefer"]).to.be.undefined;
         });
 
         it("returns the correct response", function () {
@@ -972,7 +989,7 @@ describe("xhr -", function () {
                     done();
                 });
 
-            this.requests[0].ontimeout();
+            this.requests[0]?.ontimeout();
         });
 
         after(function () {
@@ -981,19 +998,19 @@ describe("xhr -", function () {
         });
 
         it("sends the request to the right end point", function () {
-            expect(this.requests[0].url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ""));
+            expect(this.requests[0]?.url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ""));
         });
 
         it("uses the correct method", function () {
-            expect(this.requests[0].method).to.equal("POST");
+            expect(this.requests[0]?.method).to.equal("POST");
         });
 
         it("sends the right data", function () {
-            expect(JSON.parse(this.requests[0].requestBody)).to.deep.equal(mocks.data.testEntity);
+            expect(JSON.parse(this.requests[0]?.requestBody)).to.deep.equal(mocks.data.testEntity);
         });
 
         it("does not have Prefer header", function () {
-            expect(this.requests[0].requestHeaders["Prefer"]).to.be.undefined;
+            expect(this.requests[0]?.requestHeaders["Prefer"]).to.be.undefined;
         });
 
         it("returns the correct response", function () {
@@ -1041,12 +1058,6 @@ describe("xhr -", function () {
                     i++;
                 };
 
-                global.window = {
-                    btoa: base64.btoa,
-                    atob: base64.atob,
-                    crypto: crypto,
-                };
-
                 dynamicsWebApiTest
                     .uploadFile(dwaRequest)
                     .then(function (object) {
@@ -1062,12 +1073,11 @@ describe("xhr -", function () {
             after(function () {
                 global.XMLHttpRequest.restore();
                 global.XMLHttpRequest = undefined;
-                global.window = undefined;
                 XhrWrapper.afterSendEvent = undefined;
             });
 
             it("sends the request to the right end point", function () {
-                expect(this.requests[0].url).to.equal(
+                expect(this.requests[0]?.url).to.equal(
                     mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, "") + `/${dwaRequest.fieldName}?x-ms-file-name=${dwaRequest.fileName}`
                 );
                 expect(this.requests[1].url).to.equal(beginResponse.responseHeaders.Location);
@@ -1075,13 +1085,13 @@ describe("xhr -", function () {
             });
 
             it("uses the correct method", function () {
-                expect(this.requests[0].method).to.equal("PATCH");
+                expect(this.requests[0]?.method).to.equal("PATCH");
                 expect(this.requests[1].method).to.equal("PATCH");
                 expect(this.requests[2].method).to.equal("PATCH");
             });
 
             it("sends data", function () {
-                expect(this.requests[0].requestBody).to.be.undefined;
+                expect(this.requests[0]?.requestBody).to.be.undefined;
                 expect(this.requests[1].requestBody).to.deep.eq(
                     mocks.utils.toTypedArray(dwaRequest.data.slice(0, beginResponse.responseHeaders["x-ms-chunk-size"]))
                 );
@@ -1091,7 +1101,7 @@ describe("xhr -", function () {
             });
 
             it("sends correct headers", function () {
-                expect(this.requests[0].requestHeaders["x-ms-transfer-mode"]).to.be.eq("chunked");
+                expect(this.requests[0]?.requestHeaders["x-ms-transfer-mode"]).to.be.eq("chunked");
                 expect(this.requests[1].requestHeaders["Content-Range"]).to.be.eq(
                     `bytes 0-${beginResponse.responseHeaders["x-ms-chunk-size"] - 1}/${dwaRequest.data.length}`
                 );
@@ -1169,7 +1179,7 @@ describe("xhr -", function () {
             });
 
             it("sends the request to the right end point", function () {
-                expect(this.requests[0].url).to.equal(
+                expect(this.requests[0]?.url).to.equal(
                     mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, "") + `/${dwaRequest.fieldName}?size=full`
                 );
                 expect(this.requests[1].url).to.equal(
@@ -1178,17 +1188,17 @@ describe("xhr -", function () {
             });
 
             it("uses the correct method", function () {
-                expect(this.requests[0].method).to.equal("GET");
+                expect(this.requests[0]?.method).to.equal("GET");
                 expect(this.requests[1].method).to.equal("GET");
             });
 
             it("does not send data", function () {
-                expect(this.requests[0].requestBody).to.be.undefined;
+                expect(this.requests[0]?.requestBody).to.be.undefined;
                 expect(this.requests[1].requestBody).to.be.undefined;
             });
 
             it("sends correct headers", function () {
-                expect(this.requests[0].requestHeaders["Range"]).to.be.eq(`bytes=0-${Utility.downloadChunkSize - 1}`);
+                expect(this.requests[0]?.requestHeaders["Range"]).to.be.eq(`bytes=0-${Utility.downloadChunkSize - 1}`);
                 expect(this.requests[1].requestHeaders["Range"]).to.be.eq(`bytes=${Utility.downloadChunkSize}-${Utility.downloadChunkSize * 2 - 1}`);
             });
 

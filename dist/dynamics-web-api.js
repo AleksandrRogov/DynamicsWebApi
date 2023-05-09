@@ -22,16 +22,18 @@
   };
   var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-  // src/utils/platform/browser-crypto.ts
+  // src/helpers/Crypto.ts
   function getCrypto() {
-    return window.crypto;
+    return true ? window.crypto : nCrypto;
   }
   function generateRandomBytes() {
-    const uCrypto = getCrypto();
-    return uCrypto.getRandomValues(new Uint8Array(1));
+    return true ? getCrypto().getRandomValues(new Uint8Array(1)) : getCrypto().randomBytes(1);
   }
-  var init_browser_crypto = __esm({
-    "src/utils/platform/browser-crypto.ts"() {
+  var init_Crypto = __esm({
+    "src/helpers/Crypto.ts"() {
+      "use strict";
+      if (false)
+        nCrypto = null;
     }
   });
 
@@ -43,7 +45,7 @@
   var init_Utility = __esm({
     "src/utils/Utility.ts"() {
       "use strict";
-      init_browser_crypto();
+      init_Crypto();
       downloadChunkSize = 4194304;
       _Utility = class {
         /**
@@ -1389,14 +1391,8 @@ ${_RequestUtility.processData(data, config)}`);
   init_ErrorHelper();
 
   // src/client/helpers/executeRequest.ts
-  var getExecuteRequest = () => {
-    return true ? (init_xhr(), __toCommonJS(xhr_exports)).executeRequest : null.executeRequest;
-  };
-  var run = getExecuteRequest();
   function executeRequest2(options) {
-    if (false)
-      run = getExecuteRequest();
-    run(options);
+    return true ? (init_xhr(), __toCommonJS(xhr_exports)).executeRequest(options) : null.executeRequest(options);
   }
 
   // src/client/RequestClient.ts

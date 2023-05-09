@@ -2,8 +2,6 @@ import { expect } from "chai";
 import nock from "nock";
 import * as mocks from "./stubs";
 
-global.DWA_TEST = true;
-
 import { RequestClient } from "../src/client/RequestClient";
 import { InternalConfig } from "../src/utils/Config";
 import { Core } from "../src/types";

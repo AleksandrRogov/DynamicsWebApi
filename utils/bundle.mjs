@@ -2,7 +2,7 @@ import * as esbuild from "esbuild";
 import { getBanner } from "./banner.mjs";
 
 const browserPlugin = {
-    name: "example",
+    name: "browserPlugin",
     setup(build) {
         build.onResolve({ filter: /platform\/node-/ }, async (args) => {
             const newPath = args.path.replace("node-", "browser-");
@@ -20,42 +20,40 @@ const browserPlugin = {
 
 const banner = `/*! ${getBanner()} */`;
 
-["dist/dynamics-web-api.node.js", "dist/dynamics-web-api.node.min.js"].forEach(async function (outfile) {
+const esbuilds = [];
+
+["dist/dynamics-web-api.cjs.js", "dist/dynamics-web-api.cjs.min.js", "dist/dynamics-web-api.js", "dist/dynamics-web-api.min.js"].forEach(function (outfile) {
     const minify = outfile.endsWith("min.js");
+    const isNode = outfile.includes("cjs");
 
-    await esbuild.build({
-        entryPoints: ["src/dynamics-web-api.ts"],
-        bundle: true,
-        target: ["es2020", "node15.0"],
-        platform: "node",
-        packages: "external",
-        minify: minify,
-        outfile: outfile,
-        banner: { js: banner },
-        sourcemap: true,
-        define: {
-            "global.DWA_TEST": "false",
-            "global.DWA_BROWSER": "false",
-        },
-    });
-});
-
-["dist/dynamics-web-api.js", "dist/dynamics-web-api.min.js"].forEach(async function (outfile) {
-    const minify = outfile.endsWith("min.js");
-
-    await esbuild.build({
+    const config = {
         entryPoints: ["src/dynamics-web-api.ts"],
         bundle: true,
         target: ["es2020"],
-        platform: "browser",
-        banner: { js: banner },
-        outfile: outfile,
+        platform: isNode ? "node" : "browser",
+        packages: isNode ? "external" : undefined,
         minify: minify,
+        outfile: outfile,
+        banner: { js: banner },
         sourcemap: true,
-        plugins: [browserPlugin],
         define: {
-            "global.DWA_TEST": "false",
-            "global.DWA_BROWSER": "true",
+            "global.DWA_BROWSER": isNode ? "false" : "true",
         },
-    });
+    };
+
+    if (isNode) {
+        config.target.push("node15.0");
+    } else {
+        config.plugins = [browserPlugin];
+        config.define["global.window"] = "window";
+    }
+
+    esbuilds.push(esbuild.build(config));
 });
+
+try {
+    await Promise.all(esbuilds);
+    console.log("Bundles are done!");
+} catch (errors) {
+    console.error(errors);
+}
