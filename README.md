@@ -5,25 +5,32 @@
 ![npm](https://img.shields.io/npm/dm/dynamics-web-api?style=flat-square)
 ![npm](https://img.shields.io/npm/dt/dynamics-web-api?style=flat-square)
 
-DynamicsWebApi is a Microsoft Dynamics 365 CE (CRM) / Microsoft Dataverse (formerly: Common Data Service) Web API helper library written in Typescript.
-It is compatible with: Microsoft Dataverse (formerly known as Microsoft Common Data Service), Microsoft Dynamics 365 CE (online), Microsoft Dynamics 365 CE (on-premises), 
-Microsoft Dynamics CRM 2016, Microsoft Dynamics CRM Online.
+DynamicsWebApi is a Microsoft Dataverse Web API helper library written in Typescript.
+
+It is compatible with: Microsoft Dataverse, Microsoft Dynamics 365: Customer Service, Field Service, Marketing, Project Operations, Talents, Sales and any application built on Microsoft Power Apps platform. 
+As well as Microsoft Dynamics 365 CE (online), Microsoft Dynamics 365 CE (on-premises), Microsoft Dynamics CRM 2016, Microsoft Dynamics CRM Online.
 
 Please check [DynamicsWebApi Wiki](../../wiki/) where you will find documentation to DynamicsWebApi API and more.
 
-Browser compiled script and type definitions can be found in [dist](/dist/) folder.
+Browser-compiled script and type definitions can be found in [dist](/dist/) folder.
 
-## Features
+## Main Features
 
+- **Microsoft Dataverse Search API**. Access full power of its Search, Suggestion and Autocomplete capabilities.
+- **Batch Requests**. Convert all requests into a Batch operation with a single line of code.
+- **Simplicity and Automation**. Such as automated paging, big file downloading/uploading in chunks of data, automated conversion of requests with long URLs into a Batch Request in the background and more!
 - **CRUD operations**. Including Fetch XML, Actions and Functions in Microsoft Dataverse Web API.
 - **Table Definitions (Entity Metadata)**. Query and modify Table, Column, Choice (Option Set) and Relationship definitions.
-- **Batch Requests**. DynamicsWebApi will convert all specified requests into a Batch operation, once it is executed.
-- **Simplicity and Automation**. Such as: requests with long URLs are automatically converted into a Batch Request in the background, or DynamicsWebApi will get all of the records by doing paging automatically and etc. 
 - **File Fields**. Upload, Download and Delete data stored in the File Fields.
-- **Microsoft Dataverse Search API**. Use a full power of its Search, Suggestion and Autocomplete capabilities.
+- **Abort Signal using the Abort Controller** (Browser and Node.js 15+). Abort requests when they are no longer need to be completed. For example: when the user leaves a page without waiting for the data to load.
 - **Node.js and a Browser** support.
-- **Abort Controller** (Browser and Node.js 15+). Cancel requests when they are no longer need to be completed. For example: when the user leaves a page without waiting for the data to load.
-- **Proxy Configuration**.
+- **Proxy Configuration** support.
+
+## Terminology
+
+Check out [Dataverse Terminology](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/understand-terminology). Microsoft has done some changes in the namings of the objects and components of D365 and since DynamicsWebApi has been developing for many years there may be _conflicting_ naming, such as: `createEntity` - which _right now_ means "Create a Table Definition". Dataverse SDK terminology is what the library has been based on. I have no plans on changing that (except in documentation), mainly because Microsoft may change the namings again in the future which will lead to naming issues ...again.
+
+**Please note!** "Dynamics 365" in this readme refers to Microsoft Dataverse (formerly known as Microsoft Common Data Service) / Microsoft Dynamics 365 Customer Engagement / Micorosft Dynamics CRM. **NOT** Microsoft Dynamics 365 Finance and Operations.
 
 ***
 
@@ -35,30 +42,24 @@ Also, please check [suggestions and contributions](#contributions) section to le
 
 ***
 
-## Terminology
-
-Please familiarize yourself with [Dataverse Terminology](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/understand-terminology). Microsoft has done some changes in the namings of the objects and components of D365 and since DynamicsWebApi has been developing for many years there may be _conflicting_ naming, such as: `createEntity` - which _right now_ means "Create a Table Definition". Dataverse SDK terminology is what the library has been based on. I have no plans on changing that (except in documentation), mainly because Microsoft may change the namings again in the future which will lead to naming issues ...again.
-
-**Please note!** "Dynamics 365" in this readme refers to Microsoft Dataverse (formerly known as Microsoft Common Data Service) / Microsoft Dynamics 365 Customer Engagement / Micorosft Dynamics CRM. **NOT** Microsoft Dynamics 365 Finance and Operations.
-
 ## Table of Contents
 
 * [Getting Started](#getting-started)
-  * [DynamicsWebApi as a Dynamics 365 web resource](#dynamicswebapi-as-a-dynamics-365-web-resource)
-  * [DynamicsWebApi for Node.js](#dynamicswebapi-for-nodejs)
+  * [Dynamics 365 Web Resource](#dynamics-365-web-resource)
+  * [Node.js](#nodejs)
   * [Configuration](#configuration)
     * [Configuration Parameters](#configuration-parameters)
 * [Request Examples](#request-examples)
-  * [Create a table row](#create-a-table-row)
-  * [Update a table row](#update-a-table-row)
+  * [Create a Table Row](#create-a-table-row)
+  * [Update a Table Row](#update-a-table-row)
   * [Update a value in a single column](#update-a-value-in-a-single-column)
-  * [Upsert a table row](#upsert-a-table-row)
-  * [Delete a table row](#delete-a-table-row)
+  * [Upsert a Table Row](#upsert-a-table-row)
+  * [Delete a Table Row](#delete-a-table-row)
     * [Delete a value in a single column](#delete-a-value-in-a-single-column)
-  * [Retrieve a table row](#retrieve-a-table-row)
-  * [Retrieve multiple table rows](#retrieve-multiple-table-rows)
+  * [Retrieve a Table Row](#retrieve-a-table-row)
+  * [Retrieve Multiple Table Rows](#retrieve-multiple-table-rows)
     * [Change Tracking](#change-tracking)
-    * [Retrieve All table rows](#retrieve-all-records)
+    * [Retrieve All Table Rows](#retrieve-all-records)
   * [Count](#count)
     * [Count limitation workaround](#count-limitation-workaround)
   * [Associate](#associate)
@@ -71,21 +72,25 @@ Please familiarize yourself with [Dataverse Terminology](https://learn.microsoft
   * [Execute Web API actions](#execute-web-api-actions)
   * [Execute Batch Operations](#execute-batch-operations)
   * [Work with Table Definitions (Entity Metadata)](#work-with-table-definitions-entity-metadata)
+    * TABLES
     * [Create a new Table Definition](#create-a-new-table-definition)
     * [Retrieve Table Definitions](#retrieve-table-definitions)
     * [Update Table Definitions](#update-table-definitions)
     * [Retrieve Multiple Table Definitions](#retrieve-multiple-table-definitions)
+    * COLUMNS
     * [Create Columns](#create-columns)
     * [Retrieve Columns](#retrieve-columns)
     * [Update Columns](#update-columns)
     * [Retrieve Multiple Columns](#retrieve-multiple-columns)
     * [Use requests to query Table and Column definitions](#use-requests-to-query-table-and-column-definitions)
+    * RELATIONSHIPS
 	* [Create Relationship](#create-relationship)
 	* [Update Relationship](#update-relationship)
 	* [Delete Relationship](#delete-relationship)
 	* [Retrieve Relationship](#retrieve-relationship)
 	* [Retrieve Multiple Relationships](#retrieve-multiple-relationships)
     * [Use multi-table lookup columns (Polymorfic Lookup Attributes)](#use-multi-table-lookup-columns-polymorfic-lookup-attributes)
+    * GLOBAL OPTION SETS (CHOICES)
 	* [Create Global Option Set](#create-global-option-set)
 	* [Update Global Option Set](#update-global-option-set)
 	* [Delete Global Option Set](#delete-global-option-set)
@@ -111,46 +116,39 @@ Please familiarize yourself with [Dataverse Terminology](https://learn.microsoft
 
 ## Getting Started
 
-### DynamicsWebApi as a Dynamics 365 web resource
-In order to use DynamicsWebApi inside Dynamics 365 you need to download a browser version of the library, it can be found in [dist](/dist/) folder.
+### Dynamics 365 Web Resource
+To use DynamicsWebApi inside Dynamics 365 you need to download a browser version of the library, it can be found in [dist](/dist/) folder.
 
-Upload a script as a JavaScript Web Resource, place on the entity form or refer to it in your HTML Web Resource and then initialize the main object:
+Upload a script as a JavaScript Web Resource, add it to a table form or reference it in your HTML Web Resource and then initialize the main object:
 
 ```ts
-interface WhoAmIResponse {
-    UserId: string
-}
-
 //By default DynamicsWebApi makes calls to 
-//Web API v9.2 and
-//Search API v1.0
+//Web API v9.2 and Search API v1.0
 const dynamicsWebApi = new DynamicsWebApi();
 
-const response = await dynamicsWebApi.callFunction<WhoAmIResponse>("WhoAmI");
+const response = await dynamicsWebApi.callFunction("WhoAmI");
 Xrm.Navigation.openAlertDialog({ text: `Hello Dynamics 365! My id is: ${response.UserId}` });
 ```
 
-### DynamicsWebApi for Node.js
-DynamicsWebApi can be used as Node.js module to access Dynamics 365 Web API using OAuth.
-
-First of all, install a package from NPM:
+### Node.js
+To use DynamicsWebApi in Node.js install the `dynamics-web-api` package from NPM:
 
 ```shell
 npm install dynamics-web-api --save
 ```
 
-Then include it in your file:
+Then include it in your script:
 
 ```ts
 //CommonJS
 const DynamicsWebApi = require("dynamics-web-api");
 
-//ES6 Module
+//ESM
 import { DynamicsWebApi } from "dynamics-web-api";
 ```
 
-DynamicsWebApi does not fetch authorization tokens, so you will need to acquire OAuth token in your code and pass it to the DynamicsWebApi.
-Token can be acquired using [MSAL for JS](https://github.com/AzureAD/microsoft-authentication-library-for-js) or you can write your own functionality, as it is described [here](http://alexanderdevelopment.net/post/2016/11/23/dynamics-365-and-node-js-integration-using-the-web-api/).
+DynamicsWebApi does not fetch authorization tokens, so you will need to acquire them in your code and pass them back to the library.
+Authorization tokens can be acquired using [Microsoft Authentication Library for Node](https://www.npmjs.com/package/@azure/msal-node) or you can write your own logic to retrieve the tokens.
 
 Here is an example using `@azure/msal-node`:
 
@@ -215,6 +213,8 @@ To initialize a new instance of DynamicsWebApi with a configuration object, plea
 const dynamicsWebApi = new DynamicsWebApi({ dataApi: { version: "9.1" } });
 ```
 
+The library in Node.js requires a url to the Web API server and a refresh token callback function:
+
 #### Node.js
 
 ```ts
@@ -227,7 +227,7 @@ const dynamicsWebApi = new DynamicsWebApi({
 });
 ```
 
-You can set a configuration dynamically if needed:
+You can set the configuration dynamically if needed:
 
 ```ts
 dynamicsWebApi.setConfig({ dataApi: { version: "9.0" } });
@@ -250,7 +250,7 @@ timeout | `number` | Sets a number of milliseconds before a request times out.
 useEntityNames | `boolean` | Indicates whether to use entity logical names instead of collection logical names during requests.
 
 **Note!**
-Property `serverUrl` is required when DynamicsWebApi used in Node.js application.
+`serverUrl` and `onTokenRefresh` are required when DynamicsWebApi used in a Node.js application.
 
 **Important!** 
 If you are using `DynamicsWebApi` **outside Microsoft Dynamics 365** and set `useEntityNames` to `true` **the first request** to Web Api will fetch `LogicalCollectionName` and `LogicalName` from `EntityMetadata` for all entities. It does not happen when `DynamicsWebApi` is used in Microsoft Dynamics 365 Web Resources (there is no additional request, no impact on perfomance).
@@ -280,9 +280,9 @@ Both `dataApi` and `seatchApi` can be omitted from a configuration. Their defaul
 
 ## Request Examples
 
-For the object reference please use [DynamicsWebApi Wiki](../../wiki/).
+Please use [DynamicsWebApi Wiki](../../wiki/) for an object reference. It is automatically generated and I could not find a better doc generator, pardon me for that. If you know a good ".d.ts -> .md" doc generator - let me know!
 
-The following table describes all __possible__ properties that can be set for `request` object.
+The following table describes all __possible__ properties that can be set in `request` object.
 
 __Please note!__ Not all operaions accept all properties and if 
 by mistake an invalid property has been specified you will receive either an error saying that the request is invalid or the response will not have expected results.
