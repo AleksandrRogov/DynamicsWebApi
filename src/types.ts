@@ -1,4 +1,4 @@
-﻿import { ProxyConfig, Expand } from "./dynamics-web-api";
+﻿import { ProxyConfig, Expand, RequestError } from "./dynamics-web-api";
 import { InternalApiConfig } from "./utils/Config";
 
 export declare namespace Core {
@@ -10,14 +10,20 @@ export declare namespace Core {
         responseParams: {
             [key: string]: any[];
         };
-        successCallback: Function;
-        errorCallback: Function;
         timeout?: number | null;
         isAsync?: boolean;
         requestId: string;
         proxy?: ProxyConfig | null;
         abortSignal?: AbortSignal;
     }
+
+    interface WebApiResponse {
+        data: any;
+        headers: { [key: string]: string };
+        status: number;
+    }
+
+    interface WebApiErrorResponse extends RequestError {}
 
     interface BatchRequestCollection {
         [key: string]: InternalRequest[];

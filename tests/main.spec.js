@@ -4896,28 +4896,28 @@ describe("dynamicsWebApi.executeBatch -", function () {
     });
 
     describe("throws error", function () {
-        it("countAll", function () {
+        it("countAll", async () => {
             dynamicsWebApiTest.startBatch();
 
-            expect(function () {
-                dynamicsWebApiTest.countAll({ collection: "records" });
-            }).to.throw("DynamicsWebApi.countAll cannot be used in a BATCH request.");
+            await expectThrowsAsync(() => dynamicsWebApiTest.countAll({ collection: "records" }), "DynamicsWebApi.countAll cannot be used in a BATCH request.");
         });
 
-        it("retrieveAll", function () {
+        it("retrieveAll", async () => {
             dynamicsWebApiTest.startBatch();
 
-            expect(function () {
-                dynamicsWebApiTest.retrieveAll({ collection: "records" });
-            }).to.throw("DynamicsWebApi.retrieveAll cannot be used in a BATCH request.");
+            await expectThrowsAsync(
+                () => dynamicsWebApiTest.retrieveAll({ collection: "records" }),
+                "DynamicsWebApi.retrieveAll cannot be used in a BATCH request."
+            );
         });
 
-        it("fetchAll", function () {
+        it("fetchAll", async () => {
             dynamicsWebApiTest.startBatch();
 
-            expect(function () {
-                dynamicsWebApiTest.fetchAll({ collection: "collection", fetchXml: "any" });
-            }).to.throw("DynamicsWebApi.fetchAll cannot be used in a BATCH request.");
+            await expectThrowsAsync(
+                () => dynamicsWebApiTest.fetchAll({ collection: "collection", fetchXml: "any" }),
+                "DynamicsWebApi.fetchAll cannot be used in a BATCH request."
+            );
         });
     });
 
@@ -5687,12 +5687,14 @@ describe("dynamicsWebApi.constructor -", function () {
         });
 
         it("sends the request to the right end point and returns a response", function (done) {
-            var getToken = function (callback) {
-                var adalCallback = function (token) {
-                    callback(token);
+            const getToken = async function () {
+                var adalCallback = async function (token) {
+                    return token;
                 };
 
-                adalCallback({ accessToken: "token001" });
+                const token = await adalCallback({ accessToken: "token001" });
+
+                return token;
             };
 
             var dynamicsWebApiAuth = new DynamicsWebApi({ onTokenRefresh: getToken, dataApi: { version: "8.2" } });
@@ -5730,12 +5732,14 @@ describe("dynamicsWebApi.constructor -", function () {
         });
 
         it("sends the request to the right end point and returns a response", function (done) {
-            var getToken = function (callback) {
-                var adalCallback = function (token) {
-                    callback(token);
+            const getToken = async function () {
+                var adalCallback = async function (token) {
+                    return token;
                 };
 
-                adalCallback("token001");
+                const token = await adalCallback("token001");
+
+                return token;
             };
 
             var dynamicsWebApiAuth = new DynamicsWebApi({ onTokenRefresh: getToken, dataApi: { version: "8.2" } });
@@ -5782,12 +5786,14 @@ describe("dynamicsWebApi.constructor -", function () {
         });
 
         var i = 0;
-        var getToken = function (callback) {
-            var adalCallback = function (token) {
-                callback(token);
+        const getToken = async function () {
+            var adalCallback = async function (token) {
+                return token;
             };
 
-            adalCallback({ accessToken: "token00" + ++i });
+            const token = await adalCallback({ accessToken: "token00" + ++i });
+
+            return token;
         };
 
         it("sends the request to the right end point and returns a response", function (done) {
@@ -5835,8 +5841,8 @@ describe("dynamicsWebApi.constructor -", function () {
             nock.cleanAll();
         });
 
-        var getToken = sinon.spy(function any(callback) {
-            callback({ accessToken: "token001" });
+        const getToken = sinon.spy(async function any() {
+            return { accessToken: "token001" };
         });
 
         it("sends the request to the right end point and returns a response", function (done) {
@@ -6549,3 +6555,16 @@ describe("dynamicsWebApi proxy -", function () {
         });
     });
 });
+
+const expectThrowsAsync = async (method, errorMessage) => {
+    let error = null;
+    try {
+        await method();
+    } catch (err) {
+        error = err;
+    }
+    expect(error).to.be.an("Error");
+    if (errorMessage) {
+        expect(error.message).to.equal(errorMessage);
+    }
+};

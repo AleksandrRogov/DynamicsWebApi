@@ -30,12 +30,10 @@ export class DynamicsWebApi {
 	 */
     setConfig = (config: Config) => ConfigurationUtility.merge(this._config, config);
 
-    private _makeRequest = (request: Core.InternalRequest): Promise<any> => {
+    private _makeRequest = async (request: Core.InternalRequest): Promise<Core.WebApiResponse | undefined> => {
         request.isBatch = this._isBatch;
-        request.requestId = this._batchRequestId;
-        return new Promise((resolve, reject) => {
-            RequestClient.makeRequest(request, this._config, resolve, reject);
-        });
+        if (this._batchRequestId) request.requestId = this._batchRequestId;
+        return RequestClient.makeRequest(request, this._config);
     };
 
     /**
@@ -60,7 +58,7 @@ export class DynamicsWebApi {
      *const response = await dynamicsWebApi.create(request);
      *
      */
-    create = <TData = any>(request: CreateRequest<TData>): Promise<TData> => {
+    create = async <TData = any>(request: CreateRequest<TData>): Promise<TData> => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.create", "request");
 
         let internalRequest: Core.InternalRequest;
@@ -72,9 +70,9 @@ export class DynamicsWebApi {
 
         internalRequest.method = "POST";
 
-        return this._makeRequest(internalRequest).then(function (response) {
-            return response.data;
-        });
+        const response = await this._makeRequest(internalRequest);
+
+        return response?.data;
     };
 
     /**
@@ -93,7 +91,7 @@ export class DynamicsWebApi {
      *
      *const response = await dynamicsWebApi.retrieve(request);
      */
-    retrieve = <T = any>(request: RetrieveRequest): Promise<T> => {
+    retrieve = async <T = any>(request: RetrieveRequest): Promise<T> => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieve", "request");
 
         let internalRequest: Core.InternalRequest;
@@ -108,9 +106,8 @@ export class DynamicsWebApi {
             isRef: internalRequest.select?.length === 1 && internalRequest.select[0].endsWith("/$ref"),
         };
 
-        return this._makeRequest(internalRequest).then(function (response) {
-            return response.data;
-        });
+        const response = await this._makeRequest(internalRequest);
+        return response?.data;
     };
 
     /**
@@ -119,7 +116,7 @@ export class DynamicsWebApi {
      * @param {DWARequest} request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    update = <TData = any>(request: UpdateRequest<TData>): Promise<TData> => {
+    update = async <TData = any>(request: UpdateRequest<TData>): Promise<TData> => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.update", "request");
 
         let internalRequest: Core.InternalRequest;
@@ -143,18 +140,18 @@ export class DynamicsWebApi {
 
         //copy locally
         const ifmatch = internalRequest.ifmatch;
-        return this._makeRequest(internalRequest)
-            .then(function (response) {
-                return response.data;
-            })
-            .catch(function (error) {
-                if (ifmatch && error.status === 412) {
-                    //precondition failed - not updated
-                    return false;
-                }
-                //rethrow error otherwise
-                throw error;
-            });
+
+        try {
+            const response = await this._makeRequest(internalRequest);
+            return response?.data;
+        } catch (error: any) {
+            if (ifmatch && error.status === 412) {
+                //precondition failed - not updated
+                return <any>false; //todo: check this
+            }
+            //rethrow error otherwise
+            throw error;
+        }
     };
 
     /**
@@ -163,7 +160,7 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    updateSingleProperty = <T = any>(request: UpdateSinglePropertyRequest): Promise<T> => {
+    updateSingleProperty = async <T = any>(request: UpdateSinglePropertyRequest): Promise<T> => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.updateSingleProperty", "request");
         ErrorHelper.parameterCheck(request.fieldValuePair, "DynamicsWebApi.updateSingleProperty", "request.fieldValuePair");
 
@@ -178,9 +175,8 @@ export class DynamicsWebApi {
 
         delete internalRequest["fieldValuePair"];
 
-        return this._makeRequest(internalRequest).then(function (response) {
-            return response.data;
-        });
+        const response = await this._makeRequest(internalRequest);
+        return response?.data;
     };
 
     /**
@@ -189,7 +185,7 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    deleteRecord = (request: DeleteRequest): Promise<any> => {
+    deleteRecord = async (request: DeleteRequest): Promise<any> => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.deleteRecord", "request");
 
         let internalRequest: Core.InternalRequest;
@@ -204,19 +200,18 @@ export class DynamicsWebApi {
 
         //copy locally
         const ifmatch = internalRequest.ifmatch;
-        return this._makeRequest(internalRequest)
-            .then(function (response) {
-                return response.data;
-            })
-            .catch(function (error) {
-                if (ifmatch && error.status === 412) {
-                    //precondition failed - not deleted
-                    return false;
-                } else {
-                    //rethrow error otherwise
-                    throw error;
-                }
-            });
+
+        try {
+            const response = await this._makeRequest(internalRequest);
+            return response?.data;
+        } catch (error: any) {
+            if (ifmatch && error.status === 412) {
+                //precondition failed - not updated
+                return false; //todo: check this
+            }
+            //rethrow error otherwise
+            throw error;
+        }
     };
 
     /**
@@ -225,7 +220,7 @@ export class DynamicsWebApi {
      * @param {DWARequest} request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    upsert = <TData = any>(request: UpsertRequest<TData>): Promise<TData> => {
+    upsert = async <TData = any>(request: UpsertRequest<TData>): Promise<TData> => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.upsert", "request");
 
         const internalRequest = Utility.copyRequest(request);
@@ -235,35 +230,32 @@ export class DynamicsWebApi {
         //copy locally
         const ifnonematch = internalRequest.ifnonematch;
         const ifmatch = internalRequest.ifmatch;
-        return this._makeRequest(internalRequest)
-            .then(function (response) {
-                return response.data;
-            })
-            .catch(function (error) {
-                if (ifnonematch && error.status === 412) {
-                    //if prevent update
-                    return;
-                } else if (ifmatch && error.status === 404) {
-                    //if prevent create
-                    return;
-                }
-                //rethrow error otherwise
-                throw error;
-            });
+        try {
+            const response = await this._makeRequest(internalRequest);
+            return response?.data;
+        } catch (error: any) {
+            if (ifnonematch && error.status === 412) {
+                //if prevent update
+                return <any>null; //todo: check this
+            } else if (ifmatch && error.status === 404) {
+                //if prevent create
+                return <any>null; //todo: check this
+            }
+            //rethrow error otherwise
+            throw error;
+        }
     };
 
-    private _uploadFileChunk = (request: Core.InternalRequest, fileBytes: Uint8Array | Buffer, chunkSize: number, offset: number = 0): Promise<void> => {
+    private _uploadFileChunk = async (request: Core.InternalRequest, fileBytes: Uint8Array | Buffer, chunkSize: number, offset: number = 0): Promise<void> => {
         // offset = offset || 0;
         Utility.setFileChunk(request, fileBytes, chunkSize, offset);
 
-        return this._makeRequest(request).then(() => {
-            offset += chunkSize;
-            if (offset <= fileBytes.length) {
-                return this._uploadFileChunk(request, fileBytes, chunkSize, offset);
-            }
+        await this._makeRequest(request);
 
-            return;
-        });
+        offset += chunkSize;
+        if (offset <= fileBytes.length) {
+            return this._uploadFileChunk(request, fileBytes, chunkSize, offset);
+        }
     };
 
     /**
@@ -271,7 +263,7 @@ export class DynamicsWebApi {
      *
      * @param request - An object that represents all possible options for a current request.
      */
-    uploadFile = (request: UploadRequest): Promise<void> => {
+    uploadFile = async (request: UploadRequest): Promise<void> => {
         ErrorHelper.throwBatchIncompatible("DynamicsWebApi.uploadFile", this._isBatch);
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.uploadFile", "request");
 
@@ -280,16 +272,16 @@ export class DynamicsWebApi {
         internalRequest.functionName = "uploadFile";
         internalRequest.transferMode = "chunked";
 
-        return this._makeRequest(internalRequest).then((response) => {
-            internalRequest.url = response.data.location;
-            delete internalRequest.transferMode;
-            delete internalRequest.fieldName;
-            delete internalRequest.fileName;
-            return this._uploadFileChunk(internalRequest, request.data, response.data.chunkSize);
-        });
+        const response = await this._makeRequest(internalRequest);
+
+        internalRequest.url = response?.data.location;
+        delete internalRequest.transferMode;
+        delete internalRequest.fieldName;
+        delete internalRequest.fileName;
+        return this._uploadFileChunk(internalRequest, request.data, response?.data.chunkSize);
     };
 
-    private _downloadFileChunk = (
+    private _downloadFileChunk = async (
         request: Core.InternalRequest,
         bytesDownloaded: number = 0,
         // fileSize: number = 0,
@@ -302,22 +294,22 @@ export class DynamicsWebApi {
         request.range = "bytes=" + bytesDownloaded + "-" + (bytesDownloaded + Utility.downloadChunkSize - 1);
         request.downloadSize = "full";
 
-        return this._makeRequest(request).then((response) => {
-            request.url = response.data.location;
-            data += response.data.value;
+        const response = await this._makeRequest(request);
 
-            bytesDownloaded += Utility.downloadChunkSize;
+        request.url = response?.data.location;
+        data += response?.data.value;
 
-            if (bytesDownloaded <= response.data.fileSize) {
-                return this._downloadFileChunk(request, bytesDownloaded, data);
-            }
+        bytesDownloaded += Utility.downloadChunkSize;
 
-            return {
-                fileName: response.data.fileName,
-                fileSize: response.data.fileSize,
-                data: Utility.convertToFileBuffer(data),
-            };
-        });
+        if (bytesDownloaded <= response?.data.fileSize) {
+            return this._downloadFileChunk(request, bytesDownloaded, data);
+        }
+
+        return {
+            fileName: response?.data.fileName,
+            fileSize: response?.data.fileSize,
+            data: Utility.convertToFileBuffer(data),
+        };
     };
 
     /**
@@ -343,7 +335,7 @@ export class DynamicsWebApi {
      * @param {string} [nextPageLink] - Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
      * @returns {Promise} D365 Web Api Response
      */
-    retrieveMultiple = <T = any>(request: RetrieveMultipleRequest, nextPageLink?: string): Promise<RetrieveMultipleResponse<T>> => {
+    retrieveMultiple = async <T = any>(request: RetrieveMultipleRequest, nextPageLink?: string): Promise<RetrieveMultipleResponse<T>> => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieveMultiple", "request");
 
         let internalRequest: Core.InternalRequest;
@@ -360,30 +352,29 @@ export class DynamicsWebApi {
             internalRequest.url = nextPageLink;
         }
 
-        return this._makeRequest(internalRequest).then(function (response) {
-            return response.data;
-        });
+        const response = await this._makeRequest(internalRequest);
+
+        return response?.data;
     };
 
-    private _retrieveAllRequest = <T = any>(request: RetrieveMultipleRequest, nextPageLink?: string, records: any[] = []): Promise<AllResponse<T>> => {
-        return this.retrieveMultiple(request, nextPageLink).then((response) => {
-            records = records.concat(response.value);
+    private _retrieveAllRequest = async <T = any>(request: RetrieveMultipleRequest, nextPageLink?: string, records: any[] = []): Promise<AllResponse<T>> => {
+        const response = await this.retrieveMultiple(request, nextPageLink);
+        records = records.concat(response.value);
 
-            const pageLink = response.oDataNextLink;
+        const pageLink = response.oDataNextLink;
 
-            if (pageLink) {
-                return this._retrieveAllRequest(request, pageLink, records);
-            }
+        if (pageLink) {
+            return this._retrieveAllRequest(request, pageLink, records);
+        }
 
-            const result: AllResponse<T> = { value: records };
+        const result: AllResponse<T> = { value: records };
 
-            if (response.oDataDeltaLink) {
-                result["@odata.deltaLink"] = response.oDataDeltaLink;
-                result.oDataDeltaLink = response.oDataDeltaLink;
-            }
+        if (response.oDataDeltaLink) {
+            result["@odata.deltaLink"] = response.oDataDeltaLink;
+            result.oDataDeltaLink = response.oDataDeltaLink;
+        }
 
-            return result;
-        });
+        return result;
     };
 
     /**
@@ -403,7 +394,7 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    count = (request: CountRequest): Promise<number> => {
+    count = async (request: CountRequest): Promise<number> => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.count", "request");
 
         const internalRequest = Utility.copyRequest(request);
@@ -419,9 +410,8 @@ export class DynamicsWebApi {
         internalRequest.responseParameters = { toCount: internalRequest.count };
 
         //if filter has not been specified then simplify the request
-        return this._makeRequest(internalRequest).then(function (response) {
-            return response.data;
-        });
+        const response = await this._makeRequest(internalRequest);
+        return response?.data;
     };
 
     /**
@@ -429,13 +419,13 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    countAll = (request: CountAllRequest): Promise<number> => {
+    countAll = async (request: CountAllRequest): Promise<number> => {
         ErrorHelper.throwBatchIncompatible("DynamicsWebApi.countAll", this._isBatch);
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.countAll", "request");
 
-        return this._retrieveAllRequest(request).then(function (response) {
-            return response ? (response.value ? response.value.length : 0) : 0;
-        });
+        const response = await this._retrieveAllRequest(request);
+
+        return response ? (response.value ? response.value.length : 0) : 0;
     };
 
     /**
@@ -444,7 +434,7 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    fetch = <T = any>(request: FetchXmlRequest): Promise<FetchXmlResponse<T>> => {
+    fetch = async <T = any>(request: FetchXmlRequest): Promise<FetchXmlResponse<T>> => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.fetch", "request");
 
         const internalRequest = Utility.copyRequest(request);
@@ -475,9 +465,9 @@ export class DynamicsWebApi {
 
         internalRequest.responseParameters = { pageNumber: internalRequest.pageNumber };
 
-        return this._makeRequest(internalRequest).then(function (response) {
-            return response.data;
-        });
+        const response = await this._makeRequest(internalRequest);
+
+        return response?.data;
     };
 
     /**
@@ -486,24 +476,24 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    fetchAll = <T = any>(request: FetchAllRequest): Promise<FetchXmlResponse<T>> => {
+    fetchAll = async <T = any>(request: FetchAllRequest): Promise<FetchXmlResponse<T>> => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.fetchAll", "request");
 
-        const _executeFetchXmlAll = (request: FetchXmlRequest, records: any[] = []): Promise<FetchXmlResponse<T>> => {
+        const _executeFetchXmlAll = async (request: FetchXmlRequest, records: any[] = []): Promise<FetchXmlResponse<T>> => {
             // records = records || [];
 
-            return this.fetch(request).then(function (response) {
-                records = records.concat(response.value);
+            const response = await this.fetch(request);
 
-                if (response.PagingInfo) {
-                    request.pageNumber = response.PagingInfo.nextPage;
-                    request.pagingCookie = response.PagingInfo.cookie;
+            records = records.concat(response.value);
 
-                    return _executeFetchXmlAll(request, records);
-                }
+            if (response.PagingInfo) {
+                request.pageNumber = response.PagingInfo.nextPage;
+                request.pagingCookie = response.PagingInfo.cookie;
 
-                return { value: records };
-            });
+                return _executeFetchXmlAll(request, records);
+            }
+
+            return { value: records };
         };
 
         ErrorHelper.throwBatchIncompatible("DynamicsWebApi.fetchAll", this._isBatch);
@@ -516,7 +506,7 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    associate = (request: AssociateRequest): Promise<void> => {
+    associate = async (request: AssociateRequest): Promise<void> => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.associate", "request");
 
         const internalRequest = Utility.copyRequest(request);
@@ -532,9 +522,7 @@ export class DynamicsWebApi {
         internalRequest.key = primaryKey;
         internalRequest.data = { "@odata.id": `${request.relatedCollection}(${relatedKey})` };
 
-        return this._makeRequest(internalRequest).then(() => {
-            return;
-        });
+        await this._makeRequest(internalRequest);
     };
 
     /**
@@ -543,7 +531,7 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    disassociate = (request: DisassociateRequest): Promise<void> => {
+    disassociate = async (request: DisassociateRequest): Promise<void> => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.disassociate", "request");
 
         const internalRequest = Utility.copyRequest(request);
@@ -557,9 +545,7 @@ export class DynamicsWebApi {
         internalRequest.key = primaryKey;
         internalRequest.navigationProperty = `${request.relationshipName}(${relatedKey})/$ref`;
 
-        return this._makeRequest(internalRequest).then(() => {
-            return;
-        });
+        await this._makeRequest(internalRequest);
     };
 
     /**
@@ -568,7 +554,7 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    associateSingleValued = (request: AssociateSingleValuedRequest): Promise<void> => {
+    associateSingleValued = async (request: AssociateSingleValuedRequest): Promise<void> => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.associateSingleValued", "request");
 
         const internalRequest = Utility.copyRequest(request);
@@ -584,9 +570,7 @@ export class DynamicsWebApi {
         internalRequest.key = primaryKey;
         internalRequest.data = { "@odata.id": `${request.relatedCollection}(${relatedKey})` };
 
-        return this._makeRequest(internalRequest).then(() => {
-            return;
-        });
+        await this._makeRequest(internalRequest);
     };
 
     /**
@@ -595,7 +579,7 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    disassociateSingleValued = (request: DisassociateSingleValuedRequest): Promise<void> => {
+    disassociateSingleValued = async (request: DisassociateSingleValuedRequest): Promise<void> => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.disassociateSingleValued", "request");
 
         const internalRequest = Utility.copyRequest(request);
@@ -608,9 +592,7 @@ export class DynamicsWebApi {
         internalRequest.navigationProperty += "/$ref";
         internalRequest.key = primaryKey;
 
-        return this._makeRequest(internalRequest).then(() => {
-            return;
-        });
+        await this._makeRequest(internalRequest);
     };
 
     /**
@@ -619,7 +601,7 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    callFunction: CallFunction = <T = any>(request: string | BoundFunctionRequest | UnboundFunctionRequest): Promise<T> => {
+    callFunction: CallFunction = async <T = any>(request: string | BoundFunctionRequest | UnboundFunctionRequest): Promise<T> => {
         ErrorHelper.parameterCheck(request, `DynamicsWebApi.callFunction`, "request");
 
         const isObject = Utility.isObject(request);
@@ -633,9 +615,8 @@ export class DynamicsWebApi {
         internalRequest._isUnboundRequest = !internalRequest.collection;
         internalRequest.functionName = "callFunction";
 
-        return this._makeRequest(internalRequest).then(function (response) {
-            return response.data;
-        });
+        const response = await this._makeRequest(internalRequest);
+        return response?.data;
     };
 
     /**
@@ -644,7 +625,9 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    callAction: CallAction = <TResponse = any, TAction = any>(request: BoundActionRequest<TAction> | UnboundActionRequest<TAction>): Promise<TResponse> => {
+    callAction: CallAction = async <TResponse = any, TAction = any>(
+        request: BoundActionRequest<TAction> | UnboundActionRequest<TAction>
+    ): Promise<TResponse> => {
         ErrorHelper.parameterCheck(request, `DynamicsWebApi.callAction`, "request");
         ErrorHelper.stringParameterCheck(request.actionName, `DynamicsWebApi.callAction`, "request.actionName");
 
@@ -656,9 +639,8 @@ export class DynamicsWebApi {
         internalRequest._isUnboundRequest = !internalRequest.collection;
         internalRequest.data = request.action;
 
-        return this._makeRequest(internalRequest).then((response) => {
-            return response.data;
-        });
+        const response = await this._makeRequest(internalRequest);
+        return response?.data;
     };
     /**
      * Sends an asynchronous request to create an entity definition.
@@ -1033,7 +1015,7 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise<string>} Unformatted and unparsed CSDL $metadata document.
      */
-    retrieveCsdlMetadata = (request?: CsdlMetadataRequest): Promise<string> => {
+    retrieveCsdlMetadata = async (request?: CsdlMetadataRequest): Promise<string> => {
         const internalRequest: Core.InternalRequest = !request ? {} : Utility.copyRequest(request);
 
         internalRequest.collection = "$metadata";
@@ -1044,9 +1026,8 @@ export class DynamicsWebApi {
             internalRequest.includeAnnotations = "*";
         }
 
-        return this._makeRequest(internalRequest).then((response) => {
-            return response.data;
-        });
+        const response = await this._makeRequest(internalRequest);
+        return response?.data;
     };
 
     /**
@@ -1054,7 +1035,7 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise<SearchResponse<TValue>>} Search result
      */
-    search: SearchFunction = <TValue = any>(request: string | SearchRequest): Promise<SearchResponse<TValue>> => {
+    search: SearchFunction = async <TValue = any>(request: string | SearchRequest): Promise<SearchResponse<TValue>> => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.search", "request");
 
         const isObject = Utility.isObject(request);
@@ -1073,9 +1054,8 @@ export class DynamicsWebApi {
 
         delete internalRequest.query;
 
-        return this._makeRequest(internalRequest).then((response) => {
-            return response.data;
-        });
+        const response = await this._makeRequest(internalRequest);
+        return response?.data;
     };
 
     /**
@@ -1083,7 +1063,7 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise<SuggestResponse<TValueDocument>>} Suggestions result
      */
-    suggest: SuggestFunction = <TValueDocument = any>(request: string | SuggestRequest): Promise<SuggestResponse<TValueDocument>> => {
+    suggest: SuggestFunction = async <TValueDocument = any>(request: string | SuggestRequest): Promise<SuggestResponse<TValueDocument>> => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.suggest", "request");
 
         const isObject = Utility.isObject(request);
@@ -1101,9 +1081,8 @@ export class DynamicsWebApi {
 
         delete internalRequest.query;
 
-        return this._makeRequest(internalRequest).then((response) => {
-            return response.data;
-        });
+        const response = await this._makeRequest(internalRequest);
+        return response?.data;
     };
 
     /**
@@ -1111,7 +1090,7 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise<AutocompleteResponse>} Result of autocomplete
      */
-    autocomplete: AutocompleteFunction = (request: string | AutocompleteRequest): Promise<AutocompleteResponse> => {
+    autocomplete: AutocompleteFunction = async (request: string | AutocompleteRequest): Promise<AutocompleteResponse> => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.autocomplete", "request");
 
         const isObject = Utility.isObject(request);
@@ -1129,9 +1108,8 @@ export class DynamicsWebApi {
 
         delete internalRequest.query;
 
-        return this._makeRequest(internalRequest).then((response) => {
-            return response.data;
-        });
+        const response = await this._makeRequest(internalRequest);
+        return response?.data;
     };
 
     /**
@@ -1147,7 +1125,7 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    executeBatch = (request?: BaseRequest): Promise<any[]> => {
+    executeBatch = async (request?: BaseRequest): Promise<any[]> => {
         ErrorHelper.throwBatchNotStarted(this._isBatch);
 
         const internalRequest: Core.InternalRequest = !request ? {} : Utility.copyRequest(request);
@@ -1155,24 +1133,22 @@ export class DynamicsWebApi {
         internalRequest.collection = "$batch";
         internalRequest.method = "POST";
         internalRequest.functionName = "executeBatch";
-
-        this._isBatch = false;
-        const promise = this._makeRequest(internalRequest).then(function (response) {
-            return response.data;
-        });
+        internalRequest.requestId = this._batchRequestId;
 
         this._batchRequestId = null;
+        this._isBatch = false;
 
-        return promise;
+        const response = await this._makeRequest(internalRequest);
+        return response?.data;
     };
 
     /**
      * Creates a new instance of DynamicsWebApi. If the config is not provided, it is copied from the current instance.
      *
-     * @param config - configuration object.
+     * @param {Config} config - configuration object.
      * @returns {DynamicsWebApi} The new instance of a DynamicsWebApi
      */
-    initializeInstance = (config?: Config) => new DynamicsWebApi(config || this._config);
+    initializeInstance = (config?: Config): DynamicsWebApi => new DynamicsWebApi(config || this._config);
 
     Utility = {
         /**
@@ -1180,9 +1156,9 @@ export class DynamicsWebApi {
          * The returned collection name can be null.
          *
          * @param {string} entityName - entity name
-         * @returns {string} a collection name
+         * @returns {string | null} a collection name
          */
-        getCollectionName: (entityName: string) => RequestClient.getCollectionName(entityName),
+        getCollectionName: (entityName: string): string | null => RequestClient.getCollectionName(entityName),
     };
 }
 
@@ -1690,6 +1666,10 @@ export interface ApiConfig {
     path?: string;
 }
 
+export interface AccessToken {
+    accessToken: string;
+}
+
 export interface Config {
     /**The url to Dataverse API server, for example: https://contoso.api.crm.dynamics.com/. It is required when used in Node.js application. */
     serverUrl?: string | null;
@@ -1698,7 +1678,7 @@ export interface Config {
     /**Impersonates a user based on their Azure Active Directory (AAD) object id by passing that value along with the header "CallerObjectId". A String should represent a GUID value. */
     impersonateAAD?: string | null;
     /**A function that is called when a security token needs to be refreshed. */
-    onTokenRefresh?: ((callback: OnTokenAcquiredCallback) => void) | null;
+    onTokenRefresh?: (() => Promise<AccessToken | string>) | null;
     /**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types.*/
     includeAnnotations?: string | null;
     /**Sets the odata.maxpagesize preference value to request the number of entities returned in the response. */
@@ -1730,11 +1710,13 @@ export interface ProxyConfig {
 }
 
 /** Callback with an acquired token called by DynamicsWebApi; "token" argument can be a string or an object with a property {accessToken: <token>}  */
-export interface OnTokenAcquiredCallback {
-    (token: any): void;
-}
+// export interface OnTokenAcquiredCallback {
+//     (token: any): void;
+// }
 
 export interface RequestError extends Error {
+    /**The name of the error */
+    name: string;
     /**This code is not related to the http status code and is frequently empty */
     code?: string;
     /**A message describing the error */

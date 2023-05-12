@@ -660,19 +660,23 @@
     executeRequest: () => executeRequest
   });
   function executeRequest(options) {
+    return new Promise((resolve, reject) => {
+      _executeRequest(options, resolve, reject);
+    });
+  }
+  function _executeRequest(options, successCallback, errorCallback) {
     const data = options.data;
     const additionalHeaders = options.additionalHeaders;
     const responseParams = options.responseParams;
-    const successCallback = options.successCallback;
-    const errorCallback = options.errorCallback;
     const signal = options.abortSignal;
     if (signal?.aborted) {
       errorCallback(
         ErrorHelper.handleHttpError({
-          message: "Request cancelled"
+          name: "AbortError",
+          code: 20,
+          message: "The user aborted a request."
         })
       );
-      delete responseParams[options.requestId];
       return;
     }
     let request = new XMLHttpRequest();
@@ -697,7 +701,6 @@
               headers: responseHeaders,
               status: request.status
             };
-            delete responseParams[options.requestId];
             request = null;
             successCallback(response);
             break;
@@ -715,7 +718,6 @@
                 responseParams[options.requestId]
               );
               if (Array.isArray(errorParsed)) {
-                delete responseParams[options.requestId];
                 errorCallback(errorParsed);
                 break;
               }
@@ -732,7 +734,6 @@
               statusText: request.statusText,
               headers
             };
-            delete responseParams[options.requestId];
             request = null;
             errorCallback(ErrorHelper.handleHttpError(error, errorParameters));
             break;
@@ -752,7 +753,6 @@
           headers
         })
       );
-      delete responseParams[options.requestId];
       request = null;
     };
     request.ontimeout = function() {
@@ -766,7 +766,6 @@
           headers
         })
       );
-      delete responseParams[options.requestId];
       request = null;
     };
     request.onabort = function() {
@@ -781,7 +780,6 @@
           headers
         })
       );
-      delete responseParams[options.requestId];
       request = null;
     };
     const abort = () => {
@@ -799,7 +797,6 @@
         })
       );
       request.abort();
-      delete responseParams[options.requestId];
       request = null;
     };
     if (signal) {
@@ -1391,53 +1388,64 @@ ${_RequestUtility.processData(data, config)}`);
   init_ErrorHelper();
 
   // src/client/helpers/executeRequest.ts
-  function executeRequest2(options) {
+  async function executeRequest2(options) {
     return true ? (init_xhr(), __toCommonJS(xhr_exports)).executeRequest(options) : null.executeRequest(options);
   }
 
   // src/client/RequestClient.ts
-  var _RequestClient = class {
-    static addResponseParams(requestId, responseParams) {
-      if (_RequestClient._responseParseParams[requestId])
-        _RequestClient._responseParseParams[requestId].push(responseParams);
-      else
-        _RequestClient._responseParseParams[requestId] = [responseParams];
+  var _addResponseParams = (requestId, responseParams) => {
+    if (_responseParseParams[requestId])
+      _responseParseParams[requestId].push(responseParams);
+    else
+      _responseParseParams[requestId] = [responseParams];
+  };
+  var _addRequestToBatchCollection = (requestId, request) => {
+    if (_batchRequestCollection[requestId])
+      _batchRequestCollection[requestId].push(request);
+    else
+      _batchRequestCollection[requestId] = [request];
+  };
+  var _clearRequestData = (requestId) => {
+    delete _responseParseParams[requestId];
+    if (Object.hasOwn(_batchRequestCollection, requestId))
+      delete _batchRequestCollection[requestId];
+  };
+  var _runRequest = async (request, config) => {
+    try {
+      const result = await RequestClient.sendRequest(request, config);
+      _clearRequestData(request.requestId);
+      return result;
+    } catch (error) {
+      _clearRequestData(request.requestId);
+      throw error;
+    } finally {
+      _clearRequestData(request.requestId);
     }
-    static addRequestToBatchCollection(requestId, request) {
-      if (_RequestClient._batchRequestCollection[requestId])
-        _RequestClient._batchRequestCollection[requestId].push(request);
-      else
-        _RequestClient._batchRequestCollection[requestId] = [request];
-    }
+  };
+  var _batchRequestCollection = {};
+  var _responseParseParams = {};
+  var RequestClient = class {
     /**
      * Sends a request to given URL with given parameters
      *
-     * @param {string} method - Method of the request.
-     * @param {string} path - Request path.
-     * @param {Object} config - DynamicsWebApi config.
-     * @param {Object} [data] - Data to send in the request.
-     * @param {Object} [additionalHeaders] - Object with additional headers. IMPORTANT! This object does not contain default headers needed for every request.
-     * @param {any} [responseParams] - parameters for parsing the response
-     * @param {Function} successCallback - A callback called on success of the request.
-     * @param {Function} errorCallback - A callback called when a request failed.
-     * @param {boolean} [isBatch] - Indicates whether the request is a Batch request or not. Default: false
-     * @param {boolean} [isAsync] - Indicates whether the request should be made synchronously or asynchronously.
+     * @param {InternalRequest} request - Composed request to D365 Web Api
+     * @param {InternalConfig} config - DynamicsWebApi config.
      */
-    static sendRequest(request, config, successCallback, errorCallback) {
+    static async sendRequest(request, config) {
       request.headers = request.headers || {};
       request.responseParameters = request.responseParameters || {};
       request.requestId = request.requestId || Utility.generateUUID();
-      _RequestClient.addResponseParams(request.requestId, request.responseParameters);
+      _addResponseParams(request.requestId, request.responseParameters);
       let processedData = null;
       const isBatchConverted = request.responseParameters != null && request.responseParameters.convertedToBatch;
       if (request.path === "$batch" && !isBatchConverted) {
-        const batchRequest = _RequestClient._batchRequestCollection[request.requestId];
+        const batchRequest = _batchRequestCollection[request.requestId];
         if (!batchRequest)
-          errorCallback(ErrorHelper.batchIsEmpty());
+          throw ErrorHelper.batchIsEmpty();
         const batchResult = RequestUtility.convertToBatch(batchRequest, config);
         processedData = batchResult.body;
         request.headers = { ...batchResult.headers, ...request.headers };
-        delete _RequestClient._batchRequestCollection[request.requestId];
+        delete _batchRequestCollection[request.requestId];
       } else {
         processedData = !isBatchConverted ? RequestUtility.processData(request.data, config) : request.data;
         if (!isBatchConverted)
@@ -1449,62 +1457,57 @@ ${_RequestUtility.processData(data, config)}`);
       if (config.impersonateAAD && !request.headers["CallerObjectId"]) {
         request.headers["CallerObjectId"] = config.impersonateAAD;
       }
-      const sendInternalRequest = function(token) {
-        if (token) {
-          if (!request.headers) {
-            request.headers = {};
-          }
-          request.headers["Authorization"] = "Bearer " + (token.hasOwnProperty("accessToken") ? token.accessToken : token);
-        }
-        const url = request.apiConfig ? request.apiConfig.url : config.dataApi.url;
-        executeRequest2({
-          method: request.method,
-          uri: url + request.path,
-          data: processedData,
-          additionalHeaders: request.headers,
-          responseParams: _RequestClient._responseParseParams,
-          successCallback,
-          errorCallback,
-          isAsync: request.async,
-          timeout: request.timeout || config.timeout,
-          /// #if node
-          proxy: config.proxy,
-          /// #endif
-          requestId: request.requestId,
-          abortSignal: request.signal
-        });
-      };
+      let token = null;
       if (config.onTokenRefresh && (!request.headers || request.headers && !request.headers["Authorization"])) {
-        config.onTokenRefresh(sendInternalRequest);
-      } else {
-        sendInternalRequest();
+        token = await config.onTokenRefresh();
+        if (!token)
+          throw new Error("Token is empty. Request is aborted.");
       }
+      if (token) {
+        if (!request.headers) {
+          request.headers = {};
+        }
+        request.headers["Authorization"] = "Bearer " + (token.hasOwnProperty("accessToken") ? token.accessToken : token);
+      }
+      const url = request.apiConfig ? request.apiConfig.url : config.dataApi.url;
+      return await executeRequest2({
+        method: request.method,
+        uri: url + request.path,
+        data: processedData,
+        additionalHeaders: request.headers,
+        responseParams: _responseParseParams,
+        isAsync: request.async,
+        timeout: request.timeout || config.timeout,
+        /// #if node
+        proxy: config.proxy,
+        /// #endif
+        requestId: request.requestId,
+        abortSignal: request.signal
+      });
     }
-    static _getCollectionNames(entityName, config, successCallback, errorCallback) {
+    static async _getCollectionNames(entityName, config) {
       if (!Utility.isNull(RequestUtility.entityNames)) {
-        successCallback(RequestUtility.findCollectionName(entityName) || entityName);
-      } else {
-        const resolve = function(result) {
-          RequestUtility.entityNames = {};
-          for (var i = 0; i < result.data.value.length; i++) {
-            RequestUtility.entityNames[result.data.value[i].LogicalName] = result.data.value[i].EntitySetName;
-          }
-          successCallback(RequestUtility.findCollectionName(entityName) || entityName);
-        };
-        const reject = function(error) {
-          errorCallback({ message: "Unable to fetch EntityDefinitions. Error: " + error.message });
-        };
-        const request = RequestUtility.compose(
-          {
-            method: "GET",
-            collection: "EntityDefinitions",
-            select: ["EntitySetName", "LogicalName"],
-            noCache: true,
-            functionName: "retrieveMultiple"
-          },
-          config
-        );
-        _RequestClient.sendRequest(request, config, resolve, reject);
+        return RequestUtility.findCollectionName(entityName) || entityName;
+      }
+      const request = RequestUtility.compose(
+        {
+          method: "GET",
+          collection: "EntityDefinitions",
+          select: ["EntitySetName", "LogicalName"],
+          noCache: true,
+          functionName: "retrieveMultiple"
+        },
+        config
+      );
+      try {
+        const result = await _runRequest(request, config);
+        RequestUtility.entityNames = {};
+        for (let i = 0; i < result.data.value.length; i++) {
+          RequestUtility.entityNames[result.data.value[i].LogicalName] = result.data.value[i].EntitySetName;
+        }
+        return RequestUtility.findCollectionName(entityName) || entityName;
+      } catch (error) {
+        throw new Error("Unable to fetch EntityDefinitions. Error: " + error.message);
       }
     }
     static _isEntityNameException(entityName) {
@@ -1520,62 +1523,50 @@ ${_RequestUtility.processData(data, config)}`);
       ];
       return exceptions.indexOf(entityName) > -1;
     }
-    static _checkCollectionName(entityName, config, successCallback, errorCallback) {
-      if (!entityName || _RequestClient._isEntityNameException(entityName)) {
-        successCallback(entityName);
-        return;
+    static async _checkCollectionName(entityName, config) {
+      if (!entityName || RequestClient._isEntityNameException(entityName)) {
+        return entityName;
       }
       entityName = entityName.toLowerCase();
       if (!config.useEntityNames) {
-        successCallback(entityName);
-        return;
+        return entityName;
       }
       try {
-        _RequestClient._getCollectionNames(entityName, config, successCallback, errorCallback);
+        return await RequestClient._getCollectionNames(entityName, config);
       } catch (error) {
-        errorCallback({ message: "Unable to fetch Collection Names. Error: " + error.message });
+        throw new Error("Unable to fetch Collection Names. Error: " + error.message);
       }
     }
-    static makeRequest(request, config, resolve, reject) {
+    static async makeRequest(request, config) {
       request.responseParameters = request.responseParameters || {};
-      if (request.isBatch) {
+      if (!request.isBatch) {
+        const collectionName = await RequestClient._checkCollectionName(request.collection, config);
+        request.collection = collectionName;
         request = RequestUtility.compose(request, config);
-        _RequestClient.addResponseParams(request.requestId, request.responseParameters);
-        _RequestClient.addRequestToBatchCollection(request.requestId, request);
-      } else {
-        _RequestClient._checkCollectionName(
-          request.collection,
-          config,
-          (collectionName) => {
-            request.collection = collectionName;
-            request = RequestUtility.compose(request, config);
-            request.responseParameters.convertedToBatch = false;
-            if (request.path.length > 2e3) {
-              const batchRequest = RequestUtility.convertToBatch([request], config);
-              request.method = "POST";
-              request.path = "$batch";
-              request.data = batchRequest.body;
-              request.headers = batchRequest.headers;
-              request.responseParameters.convertedToBatch = true;
-            }
-            _RequestClient.sendRequest(request, config, resolve, reject);
-          },
-          reject
-        );
+        request.responseParameters.convertedToBatch = false;
+        if (request.path.length > 2e3) {
+          const batchRequest = RequestUtility.convertToBatch([request], config);
+          request.method = "POST";
+          request.path = "$batch";
+          request.data = batchRequest.body;
+          request.headers = batchRequest.headers;
+          request.responseParameters.convertedToBatch = true;
+        }
+        return _runRequest(request, config);
       }
+      request = RequestUtility.compose(request, config);
+      _addResponseParams(request.requestId, request.responseParameters);
+      _addRequestToBatchCollection(request.requestId, request);
     }
-    /// #if node
-    static _clearEntityNames() {
+    static _clearTestData() {
       RequestUtility.entityNames = null;
+      _responseParseParams = {};
+      _batchRequestCollection = {};
     }
-    /// #endif
     static getCollectionName(entityName) {
       return RequestUtility.findCollectionName(entityName);
     }
   };
-  var RequestClient = _RequestClient;
-  RequestClient._batchRequestCollection = {};
-  RequestClient._responseParseParams = {};
 
   // src/dynamics-web-api.ts
   var DynamicsWebApi = class {
@@ -1595,12 +1586,11 @@ ${_RequestUtility.processData(data, config)}`);
         dynamicsWebApi.setConfig({ serverUrl: 'https://contoso.api.crm.dynamics.com/' });
       */
       this.setConfig = (config) => ConfigurationUtility.merge(this._config, config);
-      this._makeRequest = (request) => {
+      this._makeRequest = async (request) => {
         request.isBatch = this._isBatch;
-        request.requestId = this._batchRequestId;
-        return new Promise((resolve, reject) => {
-          RequestClient.makeRequest(request, this._config, resolve, reject);
-        });
+        if (this._batchRequestId)
+          request.requestId = this._batchRequestId;
+        return RequestClient.makeRequest(request, this._config);
       };
       /**
        * Sends an asynchronous request to create a new record.
@@ -1624,7 +1614,7 @@ ${_RequestUtility.processData(data, config)}`);
        *const response = await dynamicsWebApi.create(request);
        *
        */
-      this.create = (request) => {
+      this.create = async (request) => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.create", "request");
         let internalRequest;
         if (!request.functionName) {
@@ -1633,9 +1623,8 @@ ${_RequestUtility.processData(data, config)}`);
         } else
           internalRequest = request;
         internalRequest.method = "POST";
-        return this._makeRequest(internalRequest).then(function(response) {
-          return response.data;
-        });
+        const response = await this._makeRequest(internalRequest);
+        return response?.data;
       };
       /**
        * Sends an asynchronous request to retrieve a record.
@@ -1653,7 +1642,7 @@ ${_RequestUtility.processData(data, config)}`);
        *
        *const response = await dynamicsWebApi.retrieve(request);
        */
-      this.retrieve = (request) => {
+      this.retrieve = async (request) => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieve", "request");
         let internalRequest;
         if (!request.functionName) {
@@ -1665,9 +1654,8 @@ ${_RequestUtility.processData(data, config)}`);
         internalRequest.responseParameters = {
           isRef: internalRequest.select?.length === 1 && internalRequest.select[0].endsWith("/$ref")
         };
-        return this._makeRequest(internalRequest).then(function(response) {
-          return response.data;
-        });
+        const response = await this._makeRequest(internalRequest);
+        return response?.data;
       };
       /**
        * Sends an asynchronous request to update a record.
@@ -1675,7 +1663,7 @@ ${_RequestUtility.processData(data, config)}`);
        * @param {DWARequest} request - An object that represents all possible options for a current request.
        * @returns {Promise} D365 Web Api Response
        */
-      this.update = (request) => {
+      this.update = async (request) => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.update", "request");
         let internalRequest;
         if (!request.functionName) {
@@ -1690,14 +1678,15 @@ ${_RequestUtility.processData(data, config)}`);
           internalRequest.ifmatch = "*";
         }
         const ifmatch = internalRequest.ifmatch;
-        return this._makeRequest(internalRequest).then(function(response) {
-          return response.data;
-        }).catch(function(error) {
+        try {
+          const response = await this._makeRequest(internalRequest);
+          return response?.data;
+        } catch (error) {
           if (ifmatch && error.status === 412) {
             return false;
           }
           throw error;
-        });
+        }
       };
       /**
        * Sends an asynchronous request to update a single value in the record.
@@ -1705,7 +1694,7 @@ ${_RequestUtility.processData(data, config)}`);
        * @param request - An object that represents all possible options for a current request.
        * @returns {Promise} D365 Web Api Response
        */
-      this.updateSingleProperty = (request) => {
+      this.updateSingleProperty = async (request) => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.updateSingleProperty", "request");
         ErrorHelper.parameterCheck(request.fieldValuePair, "DynamicsWebApi.updateSingleProperty", "request.fieldValuePair");
         var field = Object.keys(request.fieldValuePair)[0];
@@ -1716,9 +1705,8 @@ ${_RequestUtility.processData(data, config)}`);
         internalRequest.functionName = "updateSingleProperty";
         internalRequest.method = "PUT";
         delete internalRequest["fieldValuePair"];
-        return this._makeRequest(internalRequest).then(function(response) {
-          return response.data;
-        });
+        const response = await this._makeRequest(internalRequest);
+        return response?.data;
       };
       /**
        * Sends an asynchronous request to delete a record.
@@ -1726,7 +1714,7 @@ ${_RequestUtility.processData(data, config)}`);
        * @param request - An object that represents all possible options for a current request.
        * @returns {Promise} D365 Web Api Response
        */
-      this.deleteRecord = (request) => {
+      this.deleteRecord = async (request) => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.deleteRecord", "request");
         let internalRequest;
         if (!request.functionName) {
@@ -1737,15 +1725,15 @@ ${_RequestUtility.processData(data, config)}`);
         internalRequest.method = "DELETE";
         internalRequest.responseParameters = { valueIfEmpty: true };
         const ifmatch = internalRequest.ifmatch;
-        return this._makeRequest(internalRequest).then(function(response) {
-          return response.data;
-        }).catch(function(error) {
+        try {
+          const response = await this._makeRequest(internalRequest);
+          return response?.data;
+        } catch (error) {
           if (ifmatch && error.status === 412) {
             return false;
-          } else {
-            throw error;
           }
-        });
+          throw error;
+        }
       };
       /**
        * Sends an asynchronous request to upsert a record.
@@ -1753,70 +1741,67 @@ ${_RequestUtility.processData(data, config)}`);
        * @param {DWARequest} request - An object that represents all possible options for a current request.
        * @returns {Promise} D365 Web Api Response
        */
-      this.upsert = (request) => {
+      this.upsert = async (request) => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.upsert", "request");
         const internalRequest = Utility.copyRequest(request);
         internalRequest.method = "PATCH";
         internalRequest.functionName = "upsert";
         const ifnonematch = internalRequest.ifnonematch;
         const ifmatch = internalRequest.ifmatch;
-        return this._makeRequest(internalRequest).then(function(response) {
-          return response.data;
-        }).catch(function(error) {
+        try {
+          const response = await this._makeRequest(internalRequest);
+          return response?.data;
+        } catch (error) {
           if (ifnonematch && error.status === 412) {
-            return;
+            return null;
           } else if (ifmatch && error.status === 404) {
-            return;
+            return null;
           }
           throw error;
-        });
+        }
       };
-      this._uploadFileChunk = (request, fileBytes, chunkSize, offset = 0) => {
+      this._uploadFileChunk = async (request, fileBytes, chunkSize, offset = 0) => {
         Utility.setFileChunk(request, fileBytes, chunkSize, offset);
-        return this._makeRequest(request).then(() => {
-          offset += chunkSize;
-          if (offset <= fileBytes.length) {
-            return this._uploadFileChunk(request, fileBytes, chunkSize, offset);
-          }
-          return;
-        });
+        await this._makeRequest(request);
+        offset += chunkSize;
+        if (offset <= fileBytes.length) {
+          return this._uploadFileChunk(request, fileBytes, chunkSize, offset);
+        }
       };
       /**
        * Upload file to a File Attribute
        *
        * @param request - An object that represents all possible options for a current request.
        */
-      this.uploadFile = (request) => {
+      this.uploadFile = async (request) => {
         ErrorHelper.throwBatchIncompatible("DynamicsWebApi.uploadFile", this._isBatch);
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.uploadFile", "request");
         const internalRequest = Utility.copyRequest(request, ["data"]);
         internalRequest.method = "PATCH";
         internalRequest.functionName = "uploadFile";
         internalRequest.transferMode = "chunked";
-        return this._makeRequest(internalRequest).then((response) => {
-          internalRequest.url = response.data.location;
-          delete internalRequest.transferMode;
-          delete internalRequest.fieldName;
-          delete internalRequest.fileName;
-          return this._uploadFileChunk(internalRequest, request.data, response.data.chunkSize);
-        });
+        const response = await this._makeRequest(internalRequest);
+        internalRequest.url = response?.data.location;
+        delete internalRequest.transferMode;
+        delete internalRequest.fieldName;
+        delete internalRequest.fileName;
+        return this._uploadFileChunk(internalRequest, request.data, response?.data.chunkSize);
       };
-      this._downloadFileChunk = (request, bytesDownloaded = 0, data = "") => {
+      this._downloadFileChunk = async (request, bytesDownloaded = 0, data = "") => {
         request.range = "bytes=" + bytesDownloaded + "-" + (bytesDownloaded + Utility.downloadChunkSize - 1);
         request.downloadSize = "full";
-        return this._makeRequest(request).then((response) => {
-          request.url = response.data.location;
-          data += response.data.value;
-          bytesDownloaded += Utility.downloadChunkSize;
-          if (bytesDownloaded <= response.data.fileSize) {
-            return this._downloadFileChunk(request, bytesDownloaded, data);
-          }
-          return {
-            fileName: response.data.fileName,
-            fileSize: response.data.fileSize,
-            data: Utility.convertToFileBuffer(data)
-          };
-        });
+        const response = await this._makeRequest(request);
+        request.url = response?.data.location;
+        data += response?.data.value;
+        bytesDownloaded += Utility.downloadChunkSize;
+        if (bytesDownloaded <= response?.data.fileSize) {
+          return this._downloadFileChunk(request, bytesDownloaded, data);
+        }
+        return {
+          fileName: response?.data.fileName,
+          fileSize: response?.data.fileSize,
+          data: Utility.convertToFileBuffer(data)
+        };
       };
       /**
        * Download a file from a File Attribute
@@ -1838,7 +1823,7 @@ ${_RequestUtility.processData(data, config)}`);
        * @param {string} [nextPageLink] - Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
        * @returns {Promise} D365 Web Api Response
        */
-      this.retrieveMultiple = (request, nextPageLink) => {
+      this.retrieveMultiple = async (request, nextPageLink) => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieveMultiple", "request");
         let internalRequest;
         if (!request.functionName) {
@@ -1851,24 +1836,22 @@ ${_RequestUtility.processData(data, config)}`);
           ErrorHelper.stringParameterCheck(nextPageLink, "DynamicsWebApi.retrieveMultiple", "nextPageLink");
           internalRequest.url = nextPageLink;
         }
-        return this._makeRequest(internalRequest).then(function(response) {
-          return response.data;
-        });
+        const response = await this._makeRequest(internalRequest);
+        return response?.data;
       };
-      this._retrieveAllRequest = (request, nextPageLink, records = []) => {
-        return this.retrieveMultiple(request, nextPageLink).then((response) => {
-          records = records.concat(response.value);
-          const pageLink = response.oDataNextLink;
-          if (pageLink) {
-            return this._retrieveAllRequest(request, pageLink, records);
-          }
-          const result = { value: records };
-          if (response.oDataDeltaLink) {
-            result["@odata.deltaLink"] = response.oDataDeltaLink;
-            result.oDataDeltaLink = response.oDataDeltaLink;
-          }
-          return result;
-        });
+      this._retrieveAllRequest = async (request, nextPageLink, records = []) => {
+        const response = await this.retrieveMultiple(request, nextPageLink);
+        records = records.concat(response.value);
+        const pageLink = response.oDataNextLink;
+        if (pageLink) {
+          return this._retrieveAllRequest(request, pageLink, records);
+        }
+        const result = { value: records };
+        if (response.oDataDeltaLink) {
+          result["@odata.deltaLink"] = response.oDataDeltaLink;
+          result.oDataDeltaLink = response.oDataDeltaLink;
+        }
+        return result;
       };
       /**
        * Sends an asynchronous request to retrieve all records.
@@ -1886,7 +1869,7 @@ ${_RequestUtility.processData(data, config)}`);
        * @param request - An object that represents all possible options for a current request.
        * @returns {Promise} D365 Web Api Response
        */
-      this.count = (request) => {
+      this.count = async (request) => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.count", "request");
         const internalRequest = Utility.copyRequest(request);
         internalRequest.method = "GET";
@@ -1897,21 +1880,19 @@ ${_RequestUtility.processData(data, config)}`);
           internalRequest.navigationProperty = "$count";
         }
         internalRequest.responseParameters = { toCount: internalRequest.count };
-        return this._makeRequest(internalRequest).then(function(response) {
-          return response.data;
-        });
+        const response = await this._makeRequest(internalRequest);
+        return response?.data;
       };
       /**
        * Sends an asynchronous request to count records. Returns: Number
        * @param request - An object that represents all possible options for a current request.
        * @returns {Promise} D365 Web Api Response
        */
-      this.countAll = (request) => {
+      this.countAll = async (request) => {
         ErrorHelper.throwBatchIncompatible("DynamicsWebApi.countAll", this._isBatch);
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.countAll", "request");
-        return this._retrieveAllRequest(request).then(function(response) {
-          return response ? response.value ? response.value.length : 0 : 0;
-        });
+        const response = await this._retrieveAllRequest(request);
+        return response ? response.value ? response.value.length : 0 : 0;
       };
       /**
        * Sends an asynchronous request to execute FetchXml to retrieve records. Returns: DWA.Types.FetchXmlResponse
@@ -1919,7 +1900,7 @@ ${_RequestUtility.processData(data, config)}`);
        * @param request - An object that represents all possible options for a current request.
        * @returns {Promise} D365 Web Api Response
        */
-      this.fetch = (request) => {
+      this.fetch = async (request) => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.fetch", "request");
         const internalRequest = Utility.copyRequest(request);
         internalRequest.method = "GET";
@@ -1940,9 +1921,8 @@ ${_RequestUtility.processData(data, config)}`);
             internalRequest.fetchXml = internalRequest.fetchXml.replace(/^(<fetch)/, replacementString);
         }
         internalRequest.responseParameters = { pageNumber: internalRequest.pageNumber };
-        return this._makeRequest(internalRequest).then(function(response) {
-          return response.data;
-        });
+        const response = await this._makeRequest(internalRequest);
+        return response?.data;
       };
       /**
        * Sends an asynchronous request to execute FetchXml to retrieve all records.
@@ -1950,18 +1930,17 @@ ${_RequestUtility.processData(data, config)}`);
        * @param request - An object that represents all possible options for a current request.
        * @returns {Promise} D365 Web Api Response
        */
-      this.fetchAll = (request) => {
+      this.fetchAll = async (request) => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.fetchAll", "request");
-        const _executeFetchXmlAll = (request2, records = []) => {
-          return this.fetch(request2).then(function(response) {
-            records = records.concat(response.value);
-            if (response.PagingInfo) {
-              request2.pageNumber = response.PagingInfo.nextPage;
-              request2.pagingCookie = response.PagingInfo.cookie;
-              return _executeFetchXmlAll(request2, records);
-            }
-            return { value: records };
-          });
+        const _executeFetchXmlAll = async (request2, records = []) => {
+          const response = await this.fetch(request2);
+          records = records.concat(response.value);
+          if (response.PagingInfo) {
+            request2.pageNumber = response.PagingInfo.nextPage;
+            request2.pagingCookie = response.PagingInfo.cookie;
+            return _executeFetchXmlAll(request2, records);
+          }
+          return { value: records };
         };
         ErrorHelper.throwBatchIncompatible("DynamicsWebApi.fetchAll", this._isBatch);
         return _executeFetchXmlAll(request);
@@ -1972,7 +1951,7 @@ ${_RequestUtility.processData(data, config)}`);
        * @param request - An object that represents all possible options for a current request.
        * @returns {Promise} D365 Web Api Response
        */
-      this.associate = (request) => {
+      this.associate = async (request) => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.associate", "request");
         const internalRequest = Utility.copyRequest(request);
         internalRequest.method = "POST";
@@ -1984,9 +1963,7 @@ ${_RequestUtility.processData(data, config)}`);
         internalRequest.navigationProperty = request.relationshipName + "/$ref";
         internalRequest.key = primaryKey;
         internalRequest.data = { "@odata.id": `${request.relatedCollection}(${relatedKey})` };
-        return this._makeRequest(internalRequest).then(() => {
-          return;
-        });
+        await this._makeRequest(internalRequest);
       };
       /**
        * Disassociate for a collection-valued navigation property.
@@ -1994,7 +1971,7 @@ ${_RequestUtility.processData(data, config)}`);
        * @param request - An object that represents all possible options for a current request.
        * @returns {Promise} D365 Web Api Response
        */
-      this.disassociate = (request) => {
+      this.disassociate = async (request) => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.disassociate", "request");
         const internalRequest = Utility.copyRequest(request);
         internalRequest.method = "DELETE";
@@ -2004,9 +1981,7 @@ ${_RequestUtility.processData(data, config)}`);
         const relatedKey = ErrorHelper.keyParameterCheck(request.relatedKey, "DynamicsWebApi.disassociate", "request.relatedId");
         internalRequest.key = primaryKey;
         internalRequest.navigationProperty = `${request.relationshipName}(${relatedKey})/$ref`;
-        return this._makeRequest(internalRequest).then(() => {
-          return;
-        });
+        await this._makeRequest(internalRequest);
       };
       /**
        * Associate for a single-valued navigation property. (1:N)
@@ -2014,7 +1989,7 @@ ${_RequestUtility.processData(data, config)}`);
        * @param request - An object that represents all possible options for a current request.
        * @returns {Promise} D365 Web Api Response
        */
-      this.associateSingleValued = (request) => {
+      this.associateSingleValued = async (request) => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.associateSingleValued", "request");
         const internalRequest = Utility.copyRequest(request);
         internalRequest.method = "PUT";
@@ -2026,9 +2001,7 @@ ${_RequestUtility.processData(data, config)}`);
         internalRequest.navigationProperty += "/$ref";
         internalRequest.key = primaryKey;
         internalRequest.data = { "@odata.id": `${request.relatedCollection}(${relatedKey})` };
-        return this._makeRequest(internalRequest).then(() => {
-          return;
-        });
+        await this._makeRequest(internalRequest);
       };
       /**
        * Removes a reference to an entity for a single-valued navigation property. (1:N)
@@ -2036,7 +2009,7 @@ ${_RequestUtility.processData(data, config)}`);
        * @param request - An object that represents all possible options for a current request.
        * @returns {Promise} D365 Web Api Response
        */
-      this.disassociateSingleValued = (request) => {
+      this.disassociateSingleValued = async (request) => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.disassociateSingleValued", "request");
         const internalRequest = Utility.copyRequest(request);
         internalRequest.method = "DELETE";
@@ -2045,9 +2018,7 @@ ${_RequestUtility.processData(data, config)}`);
         ErrorHelper.stringParameterCheck(request.navigationProperty, "DynamicsWebApi.disassociateSingleValued", "request.navigationProperty");
         internalRequest.navigationProperty += "/$ref";
         internalRequest.key = primaryKey;
-        return this._makeRequest(internalRequest).then(() => {
-          return;
-        });
+        await this._makeRequest(internalRequest);
       };
       /**
        * Calls a Web API function
@@ -2055,7 +2026,7 @@ ${_RequestUtility.processData(data, config)}`);
        * @param request - An object that represents all possible options for a current request.
        * @returns {Promise} D365 Web Api Response
        */
-      this.callFunction = (request) => {
+      this.callFunction = async (request) => {
         ErrorHelper.parameterCheck(request, `DynamicsWebApi.callFunction`, "request");
         const isObject = Utility.isObject(request);
         const parameterName = isObject ? "request.functionName" : "name";
@@ -2065,9 +2036,8 @@ ${_RequestUtility.processData(data, config)}`);
         internalRequest._additionalUrl = internalRequest.functionName + Utility.buildFunctionParameters(internalRequest.parameters);
         internalRequest._isUnboundRequest = !internalRequest.collection;
         internalRequest.functionName = "callFunction";
-        return this._makeRequest(internalRequest).then(function(response) {
-          return response.data;
-        });
+        const response = await this._makeRequest(internalRequest);
+        return response?.data;
       };
       /**
        * Calls a Web API action
@@ -2075,7 +2045,7 @@ ${_RequestUtility.processData(data, config)}`);
        * @param request - An object that represents all possible options for a current request.
        * @returns {Promise} D365 Web Api Response
        */
-      this.callAction = (request) => {
+      this.callAction = async (request) => {
         ErrorHelper.parameterCheck(request, `DynamicsWebApi.callAction`, "request");
         ErrorHelper.stringParameterCheck(request.actionName, `DynamicsWebApi.callAction`, "request.actionName");
         const internalRequest = Utility.copyRequest(request, ["action"]);
@@ -2084,9 +2054,8 @@ ${_RequestUtility.processData(data, config)}`);
         internalRequest._additionalUrl = request.actionName;
         internalRequest._isUnboundRequest = !internalRequest.collection;
         internalRequest.data = request.action;
-        return this._makeRequest(internalRequest).then((response) => {
-          return response.data;
-        });
+        const response = await this._makeRequest(internalRequest);
+        return response?.data;
       };
       /**
        * Sends an asynchronous request to create an entity definition.
@@ -2398,7 +2367,7 @@ ${_RequestUtility.processData(data, config)}`);
        * @param request - An object that represents all possible options for a current request.
        * @returns {Promise<string>} Unformatted and unparsed CSDL $metadata document.
        */
-      this.retrieveCsdlMetadata = (request) => {
+      this.retrieveCsdlMetadata = async (request) => {
         const internalRequest = !request ? {} : Utility.copyRequest(request);
         internalRequest.collection = "$metadata";
         internalRequest.functionName = "retrieveCsdlMetadata";
@@ -2406,16 +2375,15 @@ ${_RequestUtility.processData(data, config)}`);
           ErrorHelper.boolParameterCheck(request.addAnnotations, "DynamicsWebApi.retrieveCsdlMetadata", "request.addAnnotations");
           internalRequest.includeAnnotations = "*";
         }
-        return this._makeRequest(internalRequest).then((response) => {
-          return response.data;
-        });
+        const response = await this._makeRequest(internalRequest);
+        return response?.data;
       };
       /**
        * Provides a search results page.
        * @param request - An object that represents all possible options for a current request.
        * @returns {Promise<SearchResponse<TValue>>} Search result
        */
-      this.search = (request) => {
+      this.search = async (request) => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.search", "request");
         const isObject = Utility.isObject(request);
         const parameterName = isObject ? "request.query.search" : "term";
@@ -2429,16 +2397,15 @@ ${_RequestUtility.processData(data, config)}`);
         internalRequest.data = internalRequest.query;
         internalRequest.apiConfig = this._config.searchApi;
         delete internalRequest.query;
-        return this._makeRequest(internalRequest).then((response) => {
-          return response.data;
-        });
+        const response = await this._makeRequest(internalRequest);
+        return response?.data;
       };
       /**
        * Provides suggestions as the user enters text into a form field.
        * @param request - An object that represents all possible options for a current request.
        * @returns {Promise<SuggestResponse<TValueDocument>>} Suggestions result
        */
-      this.suggest = (request) => {
+      this.suggest = async (request) => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.suggest", "request");
         const isObject = Utility.isObject(request);
         const parameterName = isObject ? "request.query.search" : "term";
@@ -2451,16 +2418,15 @@ ${_RequestUtility.processData(data, config)}`);
         internalRequest.data = internalRequest.query;
         internalRequest.apiConfig = this._config.searchApi;
         delete internalRequest.query;
-        return this._makeRequest(internalRequest).then((response) => {
-          return response.data;
-        });
+        const response = await this._makeRequest(internalRequest);
+        return response?.data;
       };
       /**
        * Provides autocompletion of input as the user enters text into a form field.
        * @param request - An object that represents all possible options for a current request.
        * @returns {Promise<AutocompleteResponse>} Result of autocomplete
        */
-      this.autocomplete = (request) => {
+      this.autocomplete = async (request) => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.autocomplete", "request");
         const isObject = Utility.isObject(request);
         const parameterName = isObject ? "request.query.search" : "term";
@@ -2474,9 +2440,8 @@ ${_RequestUtility.processData(data, config)}`);
         internalRequest.data = internalRequest.query;
         internalRequest.apiConfig = this._config.searchApi;
         delete internalRequest.query;
-        return this._makeRequest(internalRequest).then((response) => {
-          return response.data;
-        });
+        const response = await this._makeRequest(internalRequest);
+        return response?.data;
       };
       /**
        * Starts/executes a batch request.
@@ -2490,23 +2455,22 @@ ${_RequestUtility.processData(data, config)}`);
        * @param request - An object that represents all possible options for a current request.
        * @returns {Promise} D365 Web Api Response
        */
-      this.executeBatch = (request) => {
+      this.executeBatch = async (request) => {
         ErrorHelper.throwBatchNotStarted(this._isBatch);
         const internalRequest = !request ? {} : Utility.copyRequest(request);
         internalRequest.collection = "$batch";
         internalRequest.method = "POST";
         internalRequest.functionName = "executeBatch";
-        this._isBatch = false;
-        const promise = this._makeRequest(internalRequest).then(function(response) {
-          return response.data;
-        });
+        internalRequest.requestId = this._batchRequestId;
         this._batchRequestId = null;
-        return promise;
+        this._isBatch = false;
+        const response = await this._makeRequest(internalRequest);
+        return response?.data;
       };
       /**
        * Creates a new instance of DynamicsWebApi. If the config is not provided, it is copied from the current instance.
        *
-       * @param config - configuration object.
+       * @param {Config} config - configuration object.
        * @returns {DynamicsWebApi} The new instance of a DynamicsWebApi
        */
       this.initializeInstance = (config) => new DynamicsWebApi(config || this._config);
@@ -2516,7 +2480,7 @@ ${_RequestUtility.processData(data, config)}`);
          * The returned collection name can be null.
          *
          * @param {string} entityName - entity name
-         * @returns {string} a collection name
+         * @returns {string | null} a collection name
          */
         getCollectionName: (entityName) => RequestClient.getCollectionName(entityName)
       };

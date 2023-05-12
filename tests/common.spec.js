@@ -1938,10 +1938,10 @@ describe("RequestClient.makeRequest", function () {
 
         after(function () {
             nock.cleanAll();
-            RequestClient._clearEntityNames();
+            RequestClient._clearTestData();
         });
 
-        it("returns a correct response", function (done) {
+        it("returns a correct response", async function () {
             //{ webApiUrl: mocks.webApiUrl }
             var request = {
                 method: "GET",
@@ -1953,23 +1953,14 @@ describe("RequestClient.makeRequest", function () {
                 dataApi: { url: mocks.webApiUrl },
                 useEntityNames: true,
             };
-            RequestClient.makeRequest(
-                request,
-                config,
-                function (object) {
-                    var expectedO = {
-                        status: 200,
-                        headers: mocks.data.defaultResponseHeaders,
-                        data: mocks.data.testEntity,
-                    };
-                    expect(object).to.deep.equal(expectedO);
-                    done();
-                },
-                function (object) {
-                    expect(object).to.be.undefined;
-                    done();
-                }
-            );
+            const object = await RequestClient.makeRequest(request, config);
+
+            const expectedO = {
+                status: 200,
+                headers: mocks.data.defaultResponseHeaders,
+                data: mocks.data.testEntity,
+            };
+            expect(object).to.deep.equal(expectedO);
         });
 
         it("all requests have been made", function () {
@@ -1993,10 +1984,10 @@ describe("RequestClient.makeRequest", function () {
 
         after(function () {
             nock.cleanAll();
-            RequestClient._clearEntityNames();
+            RequestClient._clearTestData();
         });
 
-        it("returns a correct response", function (done) {
+        it("returns a correct response", async function () {
             var request = {
                 method: "GET",
                 collection: "test",
@@ -2008,46 +1999,30 @@ describe("RequestClient.makeRequest", function () {
                 useEntityNames: true,
             };
 
-            var error = function (object) {
-                expect(object).to.be.undefined;
-                done();
+            const object = await RequestClient.makeRequest(request, config);
+
+            var expectedO = {
+                status: 200,
+                headers: mocks.data.defaultResponseHeaders,
+                data: mocks.data.testEntity,
+            };
+            expect(object).to.deep.equal(expectedO);
+
+            var request2 = {
+                method: "GET",
+                collection: "test",
+                key: mocks.data.testEntityId,
+                functionName: "any",
             };
 
-            RequestClient.makeRequest(
-                request,
-                config,
-                function (object) {
-                    var expectedO = {
-                        status: 200,
-                        headers: mocks.data.defaultResponseHeaders,
-                        data: mocks.data.testEntity,
-                    };
-                    expect(object).to.deep.equal(expectedO);
+            const object1 = await RequestClient.makeRequest(request2, config);
 
-                    var request2 = {
-                        method: "GET",
-                        collection: "test",
-                        key: mocks.data.testEntityId,
-                        functionName: "any",
-                    };
-
-                    RequestClient.makeRequest(
-                        request2,
-                        config,
-                        function (object1) {
-                            var expectedO1 = {
-                                status: 200,
-                                headers: mocks.data.defaultResponseHeaders,
-                                data: mocks.data.testEntity,
-                            };
-                            expect(object1).to.deep.equal(expectedO1);
-                            done();
-                        },
-                        error
-                    );
-                },
-                error
-            );
+            var expectedO1 = {
+                status: 200,
+                headers: mocks.data.defaultResponseHeaders,
+                data: mocks.data.testEntity,
+            };
+            expect(object1).to.deep.equal(expectedO1);
         });
 
         it("all requests have been made", function () {
@@ -2070,10 +2045,10 @@ describe("RequestClient.makeRequest", function () {
 
         after(function () {
             nock.cleanAll();
-            RequestClient._clearEntityNames();
+            RequestClient._clearTestData();
         });
 
-        it("returns a correct response", function (done) {
+        it("returns a correct response", async function () {
             var request = {
                 method: "GET",
                 functionName: "any",
@@ -2084,23 +2059,14 @@ describe("RequestClient.makeRequest", function () {
                 dataApi: { url: mocks.webApiUrl },
                 useEntityNames: true,
             };
-            RequestClient.makeRequest(
-                request,
-                config,
-                function (object) {
-                    var expectedO = {
-                        status: 200,
-                        headers: mocks.data.defaultResponseHeaders,
-                        data: mocks.data.testEntity,
-                    };
-                    expect(object).to.deep.equal(expectedO);
-                    done();
-                },
-                function (object) {
-                    expect(object).to.be.undefined;
-                    done();
-                }
-            );
+            const object = await RequestClient.makeRequest(request, config);
+
+            var expectedO = {
+                status: 200,
+                headers: mocks.data.defaultResponseHeaders,
+                data: mocks.data.testEntity,
+            };
+            expect(object).to.deep.equal(expectedO);
         });
 
         it("all requests have been made", function () {
@@ -2123,10 +2089,10 @@ describe("RequestClient.makeRequest", function () {
 
         after(function () {
             nock.cleanAll();
-            RequestClient._clearEntityNames();
+            RequestClient._clearTestData();
         });
 
-        it("returns a correct response", function (done) {
+        it("returns a correct response", async function () {
             //{ webApiUrl: mocks.webApiUrl }
             var request = {
                 method: "POST",
@@ -2138,23 +2104,14 @@ describe("RequestClient.makeRequest", function () {
                 dataApi: { url: mocks.webApiUrl },
                 useEntityNames: true,
             };
-            RequestClient.makeRequest(
-                request,
-                config,
-                function (object) {
-                    var expectedO = {
-                        status: 200,
-                        headers: mocks.data.defaultResponseHeaders,
-                        data: mocks.data.testEntity,
-                    };
-                    expect(object).to.deep.equal(expectedO);
-                    done();
-                },
-                function (object) {
-                    expect(object).to.be.undefined;
-                    done();
-                }
-            );
+            const object = await RequestClient.makeRequest(request, config);
+
+            var expectedO = {
+                status: 200,
+                headers: mocks.data.defaultResponseHeaders,
+                data: mocks.data.testEntity,
+            };
+            expect(object).to.deep.equal(expectedO);
         });
 
         it("all requests have been made", function () {
@@ -2175,9 +2132,10 @@ describe("RequestClient.makeRequest", function () {
 
         after(function () {
             nock.cleanAll();
+            RequestClient._clearTestData();
         });
 
-        it("returns a correct response", function (done) {
+        it("returns a correct response", async function () {
             var request = {
                 method: "POST",
                 functionName: "any",
@@ -2189,19 +2147,13 @@ describe("RequestClient.makeRequest", function () {
                 dataApi: { url: mocks.webApiUrl },
             };
 
-            RequestClient.makeRequest(
-                request,
-                config,
-                function (object) {
-                    expect(object).to.be.undefined;
-                    done(object);
-                },
-                function (error) {
-                    expect(error.message).to.be.eq("socket hang up");
-                    expect(error.code).to.be.eq("ECONNRESET");
-                    done();
-                }
-            );
+            try {
+                const object = await RequestClient.makeRequest(request, config);
+                expect(object).to.be.undefined;
+            } catch (error) {
+                expect(error.message).to.be.eq("socket hang up");
+                expect(error.code).to.be.eq("ECONNRESET");
+            }
         });
 
         it("all requests have been made", function () {
@@ -2209,7 +2161,7 @@ describe("RequestClient.makeRequest", function () {
         });
     });
 
-    describe("timeout - socket (config)", function () {
+    describe("timeout - socket (config)", async function () {
         var scope;
         var url = "test";
         before(function () {
@@ -2222,9 +2174,10 @@ describe("RequestClient.makeRequest", function () {
 
         after(function () {
             nock.cleanAll();
+            RequestClient._clearTestData();
         });
 
-        it("returns a correct response", function (done) {
+        it("returns a correct response", async function () {
             var request = {
                 method: "POST",
                 functionName: "any",
@@ -2235,20 +2188,13 @@ describe("RequestClient.makeRequest", function () {
                 timeout: 500,
                 dataApi: { url: mocks.webApiUrl },
             };
-
-            RequestClient.makeRequest(
-                request,
-                config,
-                function (object) {
-                    expect(object).to.be.undefined;
-                    done(object);
-                },
-                function (error) {
-                    expect(error.message).to.be.eq("socket hang up");
-                    expect(error.code).to.be.eq("ECONNRESET");
-                    done();
-                }
-            );
+            try {
+                const object = await RequestClient.makeRequest(request, config);
+                expect(object).to.be.undefined;
+            } catch (error) {
+                expect(error.message).to.be.eq("socket hang up");
+                expect(error.code).to.be.eq("ECONNRESET");
+            }
         });
 
         it("all requests have been made", function () {
@@ -2269,9 +2215,10 @@ describe("RequestClient.makeRequest", function () {
 
         after(function () {
             nock.cleanAll();
+            RequestClient._clearTestData();
         });
 
-        it("returns a correct response", function (done) {
+        it("returns a correct response", async function () {
             var request = {
                 method: "POST",
                 functionName: "any",
@@ -2283,19 +2230,13 @@ describe("RequestClient.makeRequest", function () {
                 dataApi: { url: mocks.webApiUrl },
             };
 
-            RequestClient.makeRequest(
-                request,
-                config,
-                function (object) {
-                    expect(object).to.be.undefined;
-                    done(object);
-                },
-                function (error) {
-                    expect(error.message).to.be.eq("socket hang up");
-                    expect(error.code).to.be.eq("ECONNRESET");
-                    done();
-                }
-            );
+            try {
+                const object = await RequestClient.makeRequest(request, config);
+                expect(object).to.be.undefined;
+            } catch (error) {
+                expect(error.message).to.be.eq("socket hang up");
+                expect(error.code).to.be.eq("ECONNRESET");
+            }
         });
 
         it("all requests have been made", function () {
@@ -2316,9 +2257,10 @@ describe("RequestClient.makeRequest", function () {
 
         after(function () {
             nock.cleanAll();
+            RequestClient._clearTestData();
         });
 
-        it("returns a correct response", function (done) {
+        it("returns a correct response", async function () {
             var request = {
                 method: "POST",
                 functionName: "any",
@@ -2330,19 +2272,13 @@ describe("RequestClient.makeRequest", function () {
                 dataApi: { url: mocks.webApiUrl },
             };
 
-            RequestClient.makeRequest(
-                request,
-                config,
-                function (object) {
-                    expect(object).to.be.undefined;
-                    done(object);
-                },
-                function (error) {
-                    expect(error.message).to.be.eq("socket hang up");
-                    expect(error.code).to.be.eq("ECONNRESET");
-                    done();
-                }
-            );
+            try {
+                const object = await RequestClient.makeRequest(request, config);
+                expect(object).to.be.undefined;
+            } catch (error) {
+                expect(error.message).to.be.eq("socket hang up");
+                expect(error.code).to.be.eq("ECONNRESET");
+            }
         });
 
         it("all requests have been made", function () {
@@ -2382,33 +2318,25 @@ describe("RequestClient.makeRequest", function () {
 
         after(function () {
             nock.cleanAll();
+            RequestClient._clearTestData();
         });
 
-        it("returns a correct response", function (done) {
+        it("returns a correct response", async function () {
             var request = {
                 method: "GET",
                 functionName: "test",
                 collection: url,
             };
-            RequestClient.makeRequest(
-                request,
-                { dataApi: { url: mocks.webApiUrl } },
-                function (object) {
-                    var multiple = mocks.responses.multiple();
-                    //delete multiple.oDataContext;
-                    var expectedO = {
-                        status: 200,
-                        headers: mocks.data.defaultTextPlainResponseHeaders,
-                        data: multiple,
-                    };
-                    expect(object).to.deep.equal(expectedO);
-                    done();
-                },
-                function (object) {
-                    expect(object).to.be.undefined;
-                    done();
-                }
-            );
+            const object = await RequestClient.makeRequest(request, { dataApi: { url: mocks.webApiUrl } });
+
+            var multiple = mocks.responses.multiple();
+            //delete multiple.oDataContext;
+            var expectedO = {
+                status: 200,
+                headers: mocks.data.defaultTextPlainResponseHeaders,
+                data: multiple,
+            };
+            expect(object).to.deep.equal(expectedO);
         });
 
         it("all requests have been made", function () {
@@ -2433,26 +2361,20 @@ describe("RequestClient.sendRequest", function () {
 
         after(function () {
             nock.cleanAll();
+            RequestClient._clearTestData();
         });
 
-        it("returns a correct response", function (done) {
-            RequestClient.sendRequest(
+        it("returns a correct response", async function () {
+            const object = await RequestClient.sendRequest(
                 { method: "PATCH", path: url, data: mocks.data.testEntityAdditionalAttributesWithExpand, async: true },
-                { dataApi: { url: mocks.webApiUrl } },
-                function (object) {
-                    var expectedO = {
-                        status: mocks.responses.basicEmptyResponseSuccess.status,
-                        headers: {},
-                        data: undefined,
-                    };
-                    expect(object).to.deep.equal(expectedO);
-                    done();
-                },
-                function (object) {
-                    expect(object).to.be.undefined;
-                    done();
-                }
+                { dataApi: { url: mocks.webApiUrl } }
             );
+            var expectedO = {
+                status: mocks.responses.basicEmptyResponseSuccess.status,
+                headers: {},
+                data: undefined,
+            };
+            expect(object).to.deep.equal(expectedO);
         });
 
         it("all requests have been made", function () {
@@ -2469,21 +2391,19 @@ describe("RequestClient.sendRequest", function () {
 
         after(function () {
             nock.cleanAll();
+            RequestClient._clearTestData();
         });
 
-        it("returns a correct response", function (done) {
-            RequestClient.sendRequest(
-                { method: "POST", path: url, data: mocks.data.testEntityAdditionalAttributes, async: true },
-                { dataApi: { url: mocks.webApiUrl } },
-                function (object) {
-                    expect(object).to.be.undefined;
-                    done(object);
-                },
-                function (object) {
-                    expect(object).to.be.deep.equal({ code: "Error" });
-                    done();
-                }
-            );
+        it("returns a correct response", async function () {
+            try {
+                const object = await RequestClient.sendRequest(
+                    { method: "POST", path: url, data: mocks.data.testEntityAdditionalAttributes, async: true },
+                    { dataApi: { url: mocks.webApiUrl } }
+                );
+                expect(object).to.be.undefined;
+            } catch (object) {
+                expect(object).to.be.deep.equal({ code: "Error" });
+            }
         });
 
         it("all requests have been made", function () {
@@ -2504,22 +2424,20 @@ describe("RequestClient.sendRequest", function () {
 
         after(function () {
             nock.cleanAll();
+            RequestClient._clearTestData();
         });
 
-        it("returns a correct response", function (done) {
-            RequestClient.sendRequest(
-                { method: "POST", path: url, data: mocks.data.testEntityAdditionalAttributes, async: true, timeout: 500 },
-                { dataApi: { url: mocks.webApiUrl } },
-                function (object) {
-                    expect(object).to.be.undefined;
-                    done(object);
-                },
-                function (error) {
-                    expect(error.message).to.be.eq("socket hang up");
-                    expect(error.code).to.be.eq("ECONNRESET");
-                    done();
-                }
-            );
+        it("returns a correct response", async function () {
+            try {
+                const object = await RequestClient.sendRequest(
+                    { method: "POST", path: url, data: mocks.data.testEntityAdditionalAttributes, async: true, timeout: 500 },
+                    { dataApi: { url: mocks.webApiUrl } }
+                );
+                expect(object).to.be.undefined;
+            } catch (error) {
+                expect(error.message).to.be.eq("socket hang up");
+                expect(error.code).to.be.eq("ECONNRESET");
+            }
         });
 
         it("all requests have been made", function () {
@@ -2540,22 +2458,20 @@ describe("RequestClient.sendRequest", function () {
 
         after(function () {
             nock.cleanAll();
+            RequestClient._clearTestData();
         });
 
-        it("returns a correct response", function (done) {
-            RequestClient.sendRequest(
-                { method: "POST", path: url, data: mocks.data.testEntityAdditionalAttributes, async: true, timeout: 500 },
-                { dataApi: { url: mocks.webApiUrl } },
-                function (object) {
-                    expect(object).to.be.undefined;
-                    done(object);
-                },
-                function (error) {
-                    expect(error.message).to.be.eq("socket hang up");
-                    expect(error.code).to.be.eq("ECONNRESET");
-                    done();
-                }
-            );
+        it("returns a correct response", async function () {
+            try {
+                const object = await RequestClient.sendRequest(
+                    { method: "POST", path: url, data: mocks.data.testEntityAdditionalAttributes, async: true, timeout: 500 },
+                    { dataApi: { url: mocks.webApiUrl } }
+                );
+                expect(object).to.be.undefined;
+            } catch (error) {
+                expect(error.message).to.be.eq("socket hang up");
+                expect(error.code).to.be.eq("ECONNRESET");
+            }
         });
 
         it("all requests have been made", function () {
@@ -2565,21 +2481,23 @@ describe("RequestClient.sendRequest", function () {
 });
 
 describe("empty batch payload", function () {
-    it("throws an error", function (done) {
-        RequestClient.sendRequest(
-            { method: "POST", path: "$batch", async: true, timeout: 500 },
-            { dataApi: { url: mocks.webApiUrl } },
-            function (object) {
-                done(object);
-            },
-            function (object) {
-                expect(object.length).to.be.eq(1);
-                expect(object[0].message).to.equal(
-                    "Payload of the batch operation is empty. Please make that you have other operations in between startBatch() and executeBatch() to successfuly build a batch payload."
-                );
-                done();
-            }
-        );
+    after(function () {
+        RequestClient._clearTestData();
+    });
+
+    it("throws an error", async function () {
+        try {
+            const object = await RequestClient.sendRequest(
+                { method: "POST", path: "$batch", async: true, timeout: 500 },
+                { dataApi: { url: mocks.webApiUrl } }
+            );
+            expect(object).to.be.undefined;
+        } catch (object) {
+            expect(object.length).to.be.eq(1);
+            expect(object[0].message).to.equal(
+                "Payload of the batch operation is empty. Please make that you have other operations in between startBatch() and executeBatch() to successfuly build a batch payload."
+            );
+        }
     });
 });
 

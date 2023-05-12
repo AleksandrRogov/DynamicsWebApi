@@ -57,7 +57,7 @@ describe("xhr -", function () {
                     this.requests.push(xhr);
                 };
 
-                var dwaRequest: RetrieveRequest = {
+                const dwaRequest: RetrieveRequest = {
                     key: mocks.data.testEntityId,
                     collection: "tests",
                     expand: [{ property: "prop" }],

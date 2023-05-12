@@ -26,7 +26,7 @@ describe("RequestClient.makeRequest", () => {
             nock.cleanAll();
         });
 
-        it("cancels request", (done) => {
+        it("cancels request", async () => {
             const request: Core.InternalRequest = {
                 method: "POST",
                 functionName: "any",
@@ -50,20 +50,13 @@ describe("RequestClient.makeRequest", () => {
 
             setTimeout(() => controller.abort(), 0);
 
-            RequestClient.makeRequest(
-                request,
-                config,
-                function (object) {
-                    console.log(object);
-                    expect(object).to.be.undefined;
-                    done(object);
-                },
-                function (error) {
-                    expect(error.message).to.be.eq("The operation was aborted");
-                    expect(error.code).to.be.eq("ABORT_ERR");
-                    done();
-                }
-            );
+            try {
+                const object = await RequestClient.makeRequest(request, config);
+                expect(object).to.be.undefined;
+            } catch (error: any) {
+                expect(error.message).to.be.eq("The operation was aborted");
+                expect(error.code).to.be.eq("ABORT_ERR");
+            }
         });
 
         it("request was not completed", function () {

@@ -22,7 +22,7 @@ Browser-compiled script and type definitions can be found in [dist](/dist/) fold
 - **CRUD operations**. Including Fetch XML, Actions and Functions in Microsoft Dataverse Web API.
 - **Table Definitions (Entity Metadata)**. Query and modify Table, Column, Choice (Option Set) and Relationship definitions.
 - **File Fields**. Upload, Download and Delete data stored in the File Fields.
-- **Abort Signal using the Abort Controller** (Browser and Node.js 15+). Abort requests when they are no longer need to be completed. For example: when the user leaves a page without waiting for the data to load.
+- **Abort Signal and Abort Controller** (Browser and Node.js 15+). Abort requests when they are no longer need to be completed.
 - **Node.js and a Browser** support.
 - **Proxy Configuration** support.
 
@@ -72,25 +72,25 @@ Also, please check [suggestions and contributions](#contributions) section to le
   * [Execute Web API actions](#execute-web-api-actions)
   * [Execute Batch Operations](#execute-batch-operations)
   * [Work with Table Definitions (Entity Metadata)](#work-with-table-definitions-entity-metadata)
-    * TABLES
+    * Tables
     * [Create a new Table Definition](#create-a-new-table-definition)
     * [Retrieve Table Definitions](#retrieve-table-definitions)
     * [Update Table Definitions](#update-table-definitions)
     * [Retrieve Multiple Table Definitions](#retrieve-multiple-table-definitions)
-    * COLUMNS
+    * Columns
     * [Create Columns](#create-columns)
     * [Retrieve Columns](#retrieve-columns)
     * [Update Columns](#update-columns)
     * [Retrieve Multiple Columns](#retrieve-multiple-columns)
     * [Use requests to query Table and Column definitions](#use-requests-to-query-table-and-column-definitions)
-    * RELATIONSHIPS
+    * Relationships
 	* [Create Relationship](#create-relationship)
 	* [Update Relationship](#update-relationship)
 	* [Delete Relationship](#delete-relationship)
 	* [Retrieve Relationship](#retrieve-relationship)
 	* [Retrieve Multiple Relationships](#retrieve-multiple-relationships)
     * [Use multi-table lookup columns (Polymorfic Lookup Attributes)](#use-multi-table-lookup-columns-polymorfic-lookup-attributes)
-    * GLOBAL OPTION SETS (CHOICES)
+    * Global Option Sets (Choices)
 	* [Create Global Option Set](#create-global-option-set)
 	* [Update Global Option Set](#update-global-option-set)
 	* [Delete Global Option Set](#delete-global-option-set)
@@ -174,15 +174,20 @@ const cca = new MSAL.ConfidentialClientApplication(msalConfig);
 const serverUrl = 'https://<YOUR ORG HERE>.api.crm.dynamics.com';
 
 //function that acquires a token and passes it to DynamicsWebApi
-const acquireToken = (dynamicsWebApiCallback) => {
-    cca.acquireTokenByClientCredential({
-        scopes: [`${serverUrl}/.default`],
-    }).then(response => {
-        //call DynamicsWebApi callback only when a token has been retrieved successfully
-        dynamicsWebApiCallback(response.accessToken);
-    }).catch((error) => {
-        console.log(error);
-    });
+const acquireToken = async () => {
+    try {
+        return cca.acquireTokenByClientCredential({
+            scopes: [`${serverUrl}/.default`],
+        });
+    }
+    catch (error) {
+        //error logging here
+        //or a fallback authentication
+
+        //to abort a request just return null
+        //or re-throw an error
+        return null;
+    }
 }
 
 //create DynamicsWebApi

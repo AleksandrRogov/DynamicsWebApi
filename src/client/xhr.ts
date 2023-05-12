@@ -3,22 +3,31 @@ import { ErrorHelper } from "./../helpers/ErrorHelper";
 import { parseResponse } from "./helpers/parseResponse";
 import { parseResponseHeaders } from "./helpers/parseResponseHeaders";
 
-export function executeRequest(options: Core.RequestOptions) {
+export function executeRequest(options: Core.RequestOptions): Promise<Core.WebApiResponse> {
+    return new Promise((resolve, reject) => {
+        _executeRequest(options, resolve, reject);
+    });
+}
+
+function _executeRequest(
+    options: Core.RequestOptions,
+    successCallback: (response: Core.WebApiResponse) => void,
+    errorCallback: (error: Core.WebApiErrorResponse | Core.WebApiErrorResponse[]) => void
+) {
     const data = options.data;
     const additionalHeaders = options.additionalHeaders;
     const responseParams = options.responseParams;
-    const successCallback = options.successCallback;
-    const errorCallback = options.errorCallback;
     const signal = options.abortSignal;
 
     if (signal?.aborted) {
         errorCallback(
             ErrorHelper.handleHttpError({
-                message: "Request cancelled",
+                name: "AbortError",
+                code: 20,
+                message: "The user aborted a request.",
             })
         );
 
-        delete responseParams[options.requestId];
         return;
     }
 
@@ -50,7 +59,6 @@ export function executeRequest(options: Core.RequestOptions) {
                         status: request.status,
                     };
 
-                    delete responseParams[options.requestId];
                     request = null as any;
 
                     successCallback(response);
@@ -71,7 +79,6 @@ export function executeRequest(options: Core.RequestOptions) {
                         );
 
                         if (Array.isArray(errorParsed)) {
-                            delete responseParams[options.requestId];
                             errorCallback(errorParsed);
                             break;
                         }
@@ -91,7 +98,6 @@ export function executeRequest(options: Core.RequestOptions) {
                         headers: headers,
                     };
 
-                    delete responseParams[options.requestId];
                     request = null as any;
 
                     errorCallback(ErrorHelper.handleHttpError(error, errorParameters));
@@ -115,7 +121,6 @@ export function executeRequest(options: Core.RequestOptions) {
                 headers: headers,
             })
         );
-        delete responseParams[options.requestId];
         request = null as any;
     };
 
@@ -130,7 +135,6 @@ export function executeRequest(options: Core.RequestOptions) {
                 headers: headers,
             })
         );
-        delete responseParams[options.requestId];
         request = null as any;
     };
 
@@ -147,7 +151,6 @@ export function executeRequest(options: Core.RequestOptions) {
                 headers: headers,
             })
         );
-        delete responseParams[options.requestId];
         request = null as any;
     };
 
@@ -170,7 +173,6 @@ export function executeRequest(options: Core.RequestOptions) {
 
         request.abort();
 
-        delete responseParams[options.requestId];
         request = null as any;
     };
 

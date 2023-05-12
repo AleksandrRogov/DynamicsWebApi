@@ -1,4 +1,6 @@
-﻿export interface DynamicsWebApiError extends Error {
+﻿import { AccessToken } from "../dynamics-web-api";
+
+export interface DynamicsWebApiError extends Error {
     status: number;
 }
 
@@ -128,7 +130,7 @@ export class ErrorHelper {
         }
     }
 
-    static callbackParameterCheck(callbackParameter, functionName: string, parameterName: string): void {
+    static callbackParameterCheck(callbackParameter: () => Promise<string | AccessToken>, functionName: string, parameterName: string): void {
         if (typeof callbackParameter != "function") {
             throwParameterError(functionName, parameterName, "Function");
         }

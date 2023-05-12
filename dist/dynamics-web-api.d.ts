@@ -351,7 +351,7 @@ export declare class DynamicsWebApi {
     /**
      * Creates a new instance of DynamicsWebApi. If the config is not provided, it is copied from the current instance.
      *
-     * @param config - configuration object.
+     * @param {Config} config - configuration object.
      * @returns {DynamicsWebApi} The new instance of a DynamicsWebApi
      */
     initializeInstance: (config?: Config) => DynamicsWebApi;
@@ -361,7 +361,7 @@ export declare class DynamicsWebApi {
          * The returned collection name can be null.
          *
          * @param {string} entityName - entity name
-         * @returns {string} a collection name
+         * @returns {string | null} a collection name
          */
         getCollectionName: (entityName: string) => string | null;
     };
@@ -818,6 +818,9 @@ export interface ApiConfig {
     /** API Path, for example: "data" or "search" */
     path?: string;
 }
+export interface AccessToken {
+    accessToken: string;
+}
 export interface Config {
     /**The url to Dataverse API server, for example: https://contoso.api.crm.dynamics.com/. It is required when used in Node.js application. */
     serverUrl?: string | null;
@@ -826,7 +829,7 @@ export interface Config {
     /**Impersonates a user based on their Azure Active Directory (AAD) object id by passing that value along with the header "CallerObjectId". A String should represent a GUID value. */
     impersonateAAD?: string | null;
     /**A function that is called when a security token needs to be refreshed. */
-    onTokenRefresh?: ((callback: OnTokenAcquiredCallback) => void) | null;
+    onTokenRefresh?: (() => Promise<AccessToken | string>) | null;
     /**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types.*/
     includeAnnotations?: string | null;
     /**Sets the odata.maxpagesize preference value to request the number of entities returned in the response. */
@@ -856,10 +859,9 @@ export interface ProxyConfig {
     };
 }
 /** Callback with an acquired token called by DynamicsWebApi; "token" argument can be a string or an object with a property {accessToken: <token>}  */
-export interface OnTokenAcquiredCallback {
-    (token: any): void;
-}
 export interface RequestError extends Error {
+    /**The name of the error */
+    name: string;
     /**This code is not related to the http status code and is frequently empty */
     code?: string;
     /**A message describing the error */

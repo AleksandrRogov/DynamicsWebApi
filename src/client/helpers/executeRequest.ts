@@ -1,5 +1,5 @@
 import { Core } from "../../types";
 
-export function executeRequest(options: Core.RequestOptions): void {
+export async function executeRequest(options: Core.RequestOptions): Promise<Core.WebApiResponse> {
     return global.DWA_BROWSER ? require("../xhr").executeRequest(options) : require("../http").executeRequest(options);
 }

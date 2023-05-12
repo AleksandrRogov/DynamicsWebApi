@@ -42,16 +42,24 @@ const getAgent = (options: Core.RequestOptions, protocol: string): http.Agent =>
     return agents[agentName];
 };
 
+export function executeRequest(options: Core.RequestOptions): Promise<Core.WebApiResponse> {
+    return new Promise((resolve, reject) => {
+        _executeRequest(options, resolve, reject);
+    });
+}
+
 /**
  * Sends a request to given URL with given parameters
  *
  */
-export function executeRequest(options: Core.RequestOptions) {
+function _executeRequest(
+    options: Core.RequestOptions,
+    successCallback: (response: Core.WebApiResponse) => void,
+    errorCallback: (error: Core.WebApiErrorResponse | Core.WebApiErrorResponse[]) => void
+) {
     const data = options.data;
     const additionalHeaders = options.additionalHeaders;
     const responseParams = options.responseParams;
-    const successCallback = options.successCallback;
-    const errorCallback = options.errorCallback;
     const signal = options.abortSignal;
 
     const headers: http.OutgoingHttpHeaders = {};
@@ -113,11 +121,9 @@ export function executeRequest(options: Core.RequestOptions) {
 
                     let response = {
                         data: responseData,
-                        headers: res.headers,
+                        headers: res.headers as any,
                         status: res.statusCode,
                     };
-
-                    delete responseParams[options.requestId];
 
                     successCallback(response);
                     break;
@@ -129,7 +135,6 @@ export function executeRequest(options: Core.RequestOptions) {
                         var errorParsed = parseResponse(rawData, res.headers, responseParams[options.requestId]);
 
                         if (Array.isArray(errorParsed)) {
-                            delete responseParams[options.requestId];
                             errorCallback(errorParsed);
                             break;
                         }
@@ -142,8 +147,6 @@ export function executeRequest(options: Core.RequestOptions) {
                             crmError = { message: "Unexpected Error" };
                         }
                     }
-
-                    delete responseParams[options.requestId];
 
                     errorCallback(
                         ErrorHelper.handleHttpError(crmError, {
@@ -160,13 +163,11 @@ export function executeRequest(options: Core.RequestOptions) {
 
     if (internalOptions.timeout) {
         request.setTimeout(internalOptions.timeout, function () {
-            delete responseParams[options.requestId];
             request.destroy();
         });
     }
 
     request.on("error", function (error) {
-        delete responseParams[options.requestId];
         errorCallback(error);
     });
 
