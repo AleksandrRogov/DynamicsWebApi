@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.7.8 (c) 2023 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.7.9 (c) 2023 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -1830,214 +1830,211 @@ module.exports = DynamicsWebApi;
 /***/ }),
 
 /***/ 535:
-/***/ ((module) => {
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+var Utility = __webpack_require__(389);
 
 function throwParameterError(functionName, parameterName, type) {
-	throw new Error(
-		type
-			? functionName + " requires the " + parameterName + " parameter to be of type " + type
-			: functionName + " requires the " + parameterName + " parameter."
-	);
+    throw new Error(
+        type
+            ? functionName + " requires the " + parameterName + " parameter to be of type " + type
+            : functionName + " requires the " + parameterName + " parameter."
+    );
 }
 
 var ErrorHelper = {
-	handleErrorResponse: function (req) {
-		///<summary>
-		/// Private function return an Error object to the errorCallback
-		///</summary>
-		///<param name="req" type="XMLHttpRequest">
-		/// The XMLHttpRequest response that returned an error.
-		///</param>
-		///<returns>Error</returns>
-		throw new Error("Error: " + req.status + ": " + req.message);
-	},
+    handleErrorResponse: function (req) {
+        ///<summary>
+        /// Private function return an Error object to the errorCallback
+        ///</summary>
+        ///<param name="req" type="XMLHttpRequest">
+        /// The XMLHttpRequest response that returned an error.
+        ///</param>
+        ///<returns>Error</returns>
+        throw new Error("Error: " + req.status + ": " + req.message);
+    },
 
-	parameterCheck: function (parameter, functionName, parameterName, type) {
-		///<summary>
-		/// Private function used to check whether required parameters are null or undefined
-		///</summary>
-		///<param name="parameter" type="Object">
-		/// The parameter to check;
-		///</param>
-		///<param name="message" type="String">
-		/// The error message text to include when the error is thrown.
-		///</param>
-		if (typeof parameter === "undefined" || parameter === null || parameter == "") {
-			throwParameterError(functionName, parameterName, type);
-		}
-	},
+    parameterCheck: function (parameter, functionName, parameterName, type) {
+        ///<summary>
+        /// Private function used to check whether required parameters are null or undefined
+        ///</summary>
+        ///<param name="parameter" type="Object">
+        /// The parameter to check;
+        ///</param>
+        ///<param name="message" type="String">
+        /// The error message text to include when the error is thrown.
+        ///</param>
+        if (typeof parameter === "undefined" || parameter === null || parameter == "") {
+            throwParameterError(functionName, parameterName, type);
+        }
+    },
 
-	stringParameterCheck: function (parameter, functionName, parameterName) {
-		///<summary>
-		/// Private function used to check whether required parameters are null or undefined
-		///</summary>
-		///<param name="parameter" type="String">
-		/// The string parameter to check;
-		///</param>
-		///<param name="message" type="String">
-		/// The error message text to include when the error is thrown.
-		///</param>
-		if (typeof parameter != "string") {
-			throwParameterError(functionName, parameterName, "String");
-		}
-	},
+    stringParameterCheck: function (parameter, functionName, parameterName) {
+        ///<summary>
+        /// Private function used to check whether required parameters are null or undefined
+        ///</summary>
+        ///<param name="parameter" type="String">
+        /// The string parameter to check;
+        ///</param>
+        ///<param name="message" type="String">
+        /// The error message text to include when the error is thrown.
+        ///</param>
+        if (typeof parameter != "string") {
+            throwParameterError(functionName, parameterName, "String");
+        }
+    },
 
-	arrayParameterCheck: function (parameter, functionName, parameterName) {
-		///<summary>
-		/// Private function used to check whether required parameters are null or undefined
-		///</summary>
-		///<param name="parameter" type="String">
-		/// The string parameter to check;
-		///</param>
-		///<param name="message" type="String">
-		/// The error message text to include when the error is thrown.
-		///</param>
-		if (parameter.constructor !== Array) {
-			throwParameterError(functionName, parameterName, "Array");
-		}
-	},
+    arrayParameterCheck: function (parameter, functionName, parameterName) {
+        ///<summary>
+        /// Private function used to check whether required parameters are null or undefined
+        ///</summary>
+        ///<param name="parameter" type="String">
+        /// The string parameter to check;
+        ///</param>
+        ///<param name="message" type="String">
+        /// The error message text to include when the error is thrown.
+        ///</param>
+        if (parameter.constructor !== Array) {
+            throwParameterError(functionName, parameterName, "Array");
+        }
+    },
 
-	stringOrArrayParameterCheck: function (parameter, functionName, parameterName) {
-		if (parameter.constructor !== Array && typeof parameter != "string") {
-			throwParameterError(functionName, parameterName, "String or Array");
-		}
-	},
+    stringOrArrayParameterCheck: function (parameter, functionName, parameterName) {
+        if (parameter.constructor !== Array && typeof parameter != "string") {
+            throwParameterError(functionName, parameterName, "String or Array");
+        }
+    },
 
-	numberParameterCheck: function (parameter, functionName, parameterName) {
-		///<summary>
-		/// Private function used to check whether required parameters are null or undefined
-		///</summary>
-		///<param name="parameter" type="Number">
-		/// The string parameter to check;
-		///</param>
-		///<param name="message" type="String">
-		/// The error message text to include when the error is thrown.
-		///</param>
-		if (typeof parameter != "number") {
-			if (typeof parameter === "string" && parameter) {
-				if (!isNaN(parseInt(parameter))) {
-					return;
-				}
-			}
-			throwParameterError(functionName, parameterName, "Number");
-		}
-	},
+    numberParameterCheck: function (parameter, functionName, parameterName) {
+        ///<summary>
+        /// Private function used to check whether required parameters are null or undefined
+        ///</summary>
+        ///<param name="parameter" type="Number">
+        /// The string parameter to check;
+        ///</param>
+        ///<param name="message" type="String">
+        /// The error message text to include when the error is thrown.
+        ///</param>
+        if (typeof parameter != "number") {
+            if (typeof parameter === "string" && parameter) {
+                if (!isNaN(parseInt(parameter))) {
+                    return;
+                }
+            }
+            throwParameterError(functionName, parameterName, "Number");
+        }
+    },
 
-	boolParameterCheck: function (parameter, functionName, parameterName) {
-		///<summary>
-		/// Private function used to check whether required parameters are null or undefined
-		///</summary>
-		///<param name="parameter" type="Boolean">
-		/// The string parameter to check;
-		///</param>
-		///<param name="message" type="String">
-		/// The error message text to include when the error is thrown.
-		///</param>
-		if (typeof parameter != "boolean") {
-			throwParameterError(functionName, parameterName, "Boolean");
-		}
-	},
+    boolParameterCheck: function (parameter, functionName, parameterName) {
+        ///<summary>
+        /// Private function used to check whether required parameters are null or undefined
+        ///</summary>
+        ///<param name="parameter" type="Boolean">
+        /// The string parameter to check;
+        ///</param>
+        ///<param name="message" type="String">
+        /// The error message text to include when the error is thrown.
+        ///</param>
+        if (typeof parameter != "boolean") {
+            throwParameterError(functionName, parameterName, "Boolean");
+        }
+    },
 
-	guidParameterCheck: function (parameter, functionName, parameterName) {
-		///<summary>
-		/// Private function used to check whether required parameter is a valid GUID
-		///</summary>
-		///<param name="parameter" type="String">
-		/// The GUID parameter to check;
-		///</param>
-		///<param name="message" type="String">
-		/// The error message text to include when the error is thrown.
-		///</param>
-		/// <returns type="String" />
+    guidParameterCheck: function (parameter, functionName, parameterName) {
+        ///<summary>
+        /// Private function used to check whether required parameter is a valid GUID
+        ///</summary>
+        ///<param name="parameter" type="String">
+        /// The GUID parameter to check;
+        ///</param>
+        ///<param name="message" type="String">
+        /// The error message text to include when the error is thrown.
+        ///</param>
+        /// <returns type="String" />
 
-		try {
-			var match = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(parameter)[0];
+        var match = Utility.extractUuid(parameter);
+        if (!match) throwParameterError(functionName, parameterName, "GUID String");
 
-			return match;
-		} catch (error) {
-			throwParameterError(functionName, parameterName, "GUID String");
-		}
-	},
+        return match;
+    },
 
-	keyParameterCheck: function (parameter, functionName, parameterName) {
-		try {
-			ErrorHelper.stringParameterCheck(parameter, functionName, parameterName);
+    keyParameterCheck: function (parameter, functionName, parameterName) {
+        try {
+            ErrorHelper.stringParameterCheck(parameter, functionName, parameterName);
 
-			//check if the param is a guid
-			var match = /^{?([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})}?$/i.exec(parameter);
-			if (match) {
-				return match[1];
-			}
+            //check if the param is a guid
+            var match = Utility.extractUuid(parameter);
+            if (match) return match;
 
-			//check the alternate key
-			var alternateKeys = parameter.split(",");
+            //check the alternate key
+            var alternateKeys = parameter.split(",");
 
-			if (alternateKeys.length) {
-				for (var i = 0; i < alternateKeys.length; i++) {
-					alternateKeys[i] = alternateKeys[i].trim().replace(/"/g, "'");
-					/^[\w\d\_]+\=(.+)$/i.exec(alternateKeys[i])[0];
-				}
-			}
+            if (alternateKeys.length) {
+                for (var i = 0; i < alternateKeys.length; i++) {
+                    alternateKeys[i] = alternateKeys[i].trim().replace(/"/g, "'");
+                    /^[\w\d\_]+\=(.+)$/i.exec(alternateKeys[i])[0];
+                }
+            }
 
-			return alternateKeys.join(",");
-		} catch (error) {
-			throwParameterError(functionName, parameterName, "String representing GUID or Alternate Key");
-		}
-	},
+            return alternateKeys.join(",");
+        } catch (error) {
+            throwParameterError(functionName, parameterName, "String representing GUID or Alternate Key");
+        }
+    },
 
-	callbackParameterCheck: function (callbackParameter, functionName, parameterName) {
-		///<summary>
-		/// Private function used to check whether required callback parameters are functions
-		///</summary>
-		///<param name="callbackParameter" type="Function">
-		/// The callback parameter to check;
-		///</param>
-		///<param name="message" type="String">
-		/// The error message text to include when the error is thrown.
-		///</param>
-		if (typeof callbackParameter != "function") {
-			throwParameterError(functionName, parameterName, "Function");
-		}
-	},
+    callbackParameterCheck: function (callbackParameter, functionName, parameterName) {
+        ///<summary>
+        /// Private function used to check whether required callback parameters are functions
+        ///</summary>
+        ///<param name="callbackParameter" type="Function">
+        /// The callback parameter to check;
+        ///</param>
+        ///<param name="message" type="String">
+        /// The error message text to include when the error is thrown.
+        ///</param>
+        if (typeof callbackParameter != "function") {
+            throwParameterError(functionName, parameterName, "Function");
+        }
+    },
 
-	batchIncompatible: function (functionName, isBatch) {
-		if (isBatch) {
-			isBatch = false;
-			throw new Error(functionName + " cannot be used in a BATCH request.");
-		}
-	},
+    batchIncompatible: function (functionName, isBatch) {
+        if (isBatch) {
+            isBatch = false;
+            throw new Error(functionName + " cannot be used in a BATCH request.");
+        }
+    },
 
-	batchNotStarted: function (isBatch) {
-		if (!isBatch) {
-			throw new Error(
-				"Batch operation has not been started. Please call a DynamicsWebApi.startBatch() function prior to calling DynamicsWebApi.executeBatch() to perform a batch request correctly."
-			);
-		}
-	},
+    batchNotStarted: function (isBatch) {
+        if (!isBatch) {
+            throw new Error(
+                "Batch operation has not been started. Please call a DynamicsWebApi.startBatch() function prior to calling DynamicsWebApi.executeBatch() to perform a batch request correctly."
+            );
+        }
+    },
 
-	batchIsEmpty: function () {
-		return [
-			new Error(
-				"Payload of the batch operation is empty. Please make that you have other operations in between startBatch() and executeBatch() to successfuly build a batch payload."
-			),
-		];
-	},
+    batchIsEmpty: function () {
+        return [
+            new Error(
+                "Payload of the batch operation is empty. Please make that you have other operations in between startBatch() and executeBatch() to successfuly build a batch payload."
+            ),
+        ];
+    },
 
-	handleHttpError: function (parsedError, parameters) {
-		var error = new Error();
+    handleHttpError: function (parsedError, parameters) {
+        var error = new Error();
 
-		Object.keys(parsedError).forEach(function (k) {
-			error[k] = parsedError[k];
-		});
+        Object.keys(parsedError).forEach(function (k) {
+            error[k] = parsedError[k];
+        });
 
-		if (parameters) {
-			Object.keys(parameters).forEach(function (k) {
-				error[k] = parameters[k];
-			});
-		}
+        if (parameters) {
+            Object.keys(parameters).forEach(function (k) {
+                error[k] = parameters[k];
+            });
+        }
 
-		return error;
-	},
+        return error;
+    },
 };
 
 module.exports = ErrorHelper;
@@ -2109,40 +2106,40 @@ var dateReviver = __webpack_require__(723);
 
 //string es6 polyfill
 if (!String.prototype.endsWith || !String.prototype.startsWith) {
-	__webpack_require__(200);
+    __webpack_require__(200);
 }
 
 function getFormattedKeyValue(keyName, value) {
-	var newKey = null;
-	if (keyName.indexOf("@") !== -1) {
-		var format = keyName.split("@");
-		switch (format[1]) {
-			case "odata.context":
-				newKey = "oDataContext";
-				break;
-			case "odata.count":
-				newKey = "oDataCount";
-				value = value != null ? parseInt(value) : 0;
-				break;
-			case "odata.nextLink":
-				newKey = "oDataNextLink";
-				break;
-			case "odata.deltaLink":
-				newKey = "oDataDeltaLink";
-				break;
-			case DWA.Prefer.Annotations.FormattedValue:
-				newKey = format[0] + "_Formatted";
-				break;
-			case DWA.Prefer.Annotations.AssociatedNavigationProperty:
-				newKey = format[0] + "_NavigationProperty";
-				break;
-			case DWA.Prefer.Annotations.LookupLogicalName:
-				newKey = format[0] + "_LogicalName";
-				break;
-		}
-	}
+    var newKey = null;
+    if (keyName.indexOf("@") !== -1) {
+        var format = keyName.split("@");
+        switch (format[1]) {
+            case "odata.context":
+                newKey = "oDataContext";
+                break;
+            case "odata.count":
+                newKey = "oDataCount";
+                value = value != null ? parseInt(value) : 0;
+                break;
+            case "odata.nextLink":
+                newKey = "oDataNextLink";
+                break;
+            case "odata.deltaLink":
+                newKey = "oDataDeltaLink";
+                break;
+            case DWA.Prefer.Annotations.FormattedValue:
+                newKey = format[0] + "_Formatted";
+                break;
+            case DWA.Prefer.Annotations.AssociatedNavigationProperty:
+                newKey = format[0] + "_NavigationProperty";
+                break;
+            case DWA.Prefer.Annotations.LookupLogicalName:
+                newKey = format[0] + "_LogicalName";
+                break;
+        }
+    }
 
-	return [newKey, value];
+    return [newKey, value];
 }
 
 /**
@@ -2152,116 +2149,116 @@ function getFormattedKeyValue(keyName, value) {
  * @returns {any} parsed batch response
  */
 function parseData(object, parseParams) {
-	if (parseParams) {
-		if (parseParams.isRef && object["@odata.id"] != null) {
-			return Utility.convertToReferenceObject(object);
-		}
+    if (parseParams) {
+        if (parseParams.isRef && object["@odata.id"] != null) {
+            return Utility.convertToReferenceObject(object);
+        }
 
-		if (parseParams.toCount) {
-			return getFormattedKeyValue("@odata.count", object["@odata.count"])[1] || 0;
-		}
-	}
+        if (parseParams.toCount) {
+            return getFormattedKeyValue("@odata.count", object["@odata.count"])[1] || 0;
+        }
+    }
 
-	var keys = Object.keys(object);
+    var keys = Object.keys(object);
 
-	for (var i = 0; i < keys.length; i++) {
-		var currentKey = keys[i];
+    for (var i = 0; i < keys.length; i++) {
+        var currentKey = keys[i];
 
-		if (object[currentKey] != null) {
-			if (object[currentKey].constructor === Array) {
-				for (var j = 0; j < object[currentKey].length; j++) {
-					object[currentKey][j] = parseData(object[currentKey][j]);
-				}
-			} else if (typeof object[currentKey] === "object") {
-				parseData(object[currentKey]);
-			}
-		}
+        if (object[currentKey] != null) {
+            if (object[currentKey].constructor === Array) {
+                for (var j = 0; j < object[currentKey].length; j++) {
+                    object[currentKey][j] = parseData(object[currentKey][j]);
+                }
+            } else if (typeof object[currentKey] === "object") {
+                parseData(object[currentKey]);
+            }
+        }
 
-		//parse formatted values
-		var formattedKeyValue = getFormattedKeyValue(currentKey, object[currentKey]);
-		if (formattedKeyValue[0]) {
-			object[formattedKeyValue[0]] = formattedKeyValue[1];
-		}
+        //parse formatted values
+        var formattedKeyValue = getFormattedKeyValue(currentKey, object[currentKey]);
+        if (formattedKeyValue[0]) {
+            object[formattedKeyValue[0]] = formattedKeyValue[1];
+        }
 
-		//parse aliased values
-		if (currentKey.indexOf("_x002e_") !== -1) {
-			var aliasKeys = currentKey.split("_x002e_");
+        //parse aliased values
+        if (currentKey.indexOf("_x002e_") !== -1) {
+            var aliasKeys = currentKey.split("_x002e_");
 
-			if (!object.hasOwnProperty(aliasKeys[0])) {
-				object[aliasKeys[0]] = { _dwaType: "alias" };
-			}
-			//throw an error if there is already a property which is not an 'alias'
-			else if (
-				typeof object[aliasKeys[0]] !== "object" ||
-				(typeof object[aliasKeys[0]] === "object" && !object[aliasKeys[0]].hasOwnProperty("_dwaType"))
-			) {
-				throw new Error("The alias name of the linked entity must be unique!");
-			}
+            if (!object.hasOwnProperty(aliasKeys[0])) {
+                object[aliasKeys[0]] = { _dwaType: "alias" };
+            }
+            //throw an error if there is already a property which is not an 'alias'
+            else if (
+                typeof object[aliasKeys[0]] !== "object" ||
+                (typeof object[aliasKeys[0]] === "object" && !object[aliasKeys[0]].hasOwnProperty("_dwaType"))
+            ) {
+                throw new Error("The alias name of the linked entity must be unique!");
+            }
 
-			object[aliasKeys[0]][aliasKeys[1]] = object[currentKey];
+            object[aliasKeys[0]][aliasKeys[1]] = object[currentKey];
 
-			//aliases also contain formatted values
-			formattedKeyValue = getFormattedKeyValue(aliasKeys[1], object[currentKey]);
-			if (formattedKeyValue[0]) {
-				object[aliasKeys[0]][formattedKeyValue[0]] = formattedKeyValue[1];
-			}
-		}
-	}
+            //aliases also contain formatted values
+            formattedKeyValue = getFormattedKeyValue(aliasKeys[1], object[currentKey]);
+            if (formattedKeyValue[0]) {
+                object[aliasKeys[0]][formattedKeyValue[0]] = formattedKeyValue[1];
+            }
+        }
+    }
 
-	if (parseParams) {
-		if (parseParams.hasOwnProperty("pageNumber") && object["@" + DWA.Prefer.Annotations.FetchXmlPagingCookie] != null) {
-			object.PagingInfo = Utility.getFetchXmlPagingCookie(object["@" + DWA.Prefer.Annotations.FetchXmlPagingCookie], parseParams.pageNumber);
-		}
-	}
+    if (parseParams) {
+        if (parseParams.hasOwnProperty("pageNumber") && object["@" + DWA.Prefer.Annotations.FetchXmlPagingCookie] != null) {
+            object.PagingInfo = Utility.getFetchXmlPagingCookie(object["@" + DWA.Prefer.Annotations.FetchXmlPagingCookie], parseParams.pageNumber);
+        }
+    }
 
-	return object;
+    return object;
 }
 
 var responseHeaderRegex = /^([^()<>@,;:\\"\/[\]?={} \t]+)\s?:\s?(.*)/;
 
 //partially taken from http://olingo.apache.org/doc/javascript/apidoc/batch.js.html
 function parseBatchHeaders(text) {
-	var headers = {};
-	var parts;
-	var line;
-	var ctx = { position: 0 };
-	var pos;
+    var headers = {};
+    var parts;
+    var line;
+    var ctx = { position: 0 };
+    var pos;
 
-	do {
-		pos = ctx.position;
-		line = readLine(text, ctx);
-		parts = responseHeaderRegex.exec(line);
-		if (parts !== null) {
-			headers[parts[1].toLowerCase()] = parts[2];
-		} else {
-			// Whatever was found is not a header, so reset the context position.
-			ctx.position = pos;
-		}
-	} while (line && parts);
+    do {
+        pos = ctx.position;
+        line = readLine(text, ctx);
+        parts = responseHeaderRegex.exec(line);
+        if (parts !== null) {
+            headers[parts[1].toLowerCase()] = parts[2];
+        } else {
+            // Whatever was found is not a header, so reset the context position.
+            ctx.position = pos;
+        }
+    } while (line && parts);
 
-	return headers;
+    return headers;
 }
 
 //partially taken from http://olingo.apache.org/doc/javascript/apidoc/batch.js.html
 function readLine(text, ctx) {
-	return readTo(text, ctx, "\r\n");
+    return readTo(text, ctx, "\r\n");
 }
 
 //partially taken from http://olingo.apache.org/doc/javascript/apidoc/batch.js.html
 function readTo(text, ctx, str) {
-	var start = ctx.position || 0;
-	var end = text.length;
-	if (str) {
-		end = text.indexOf(str, start);
-		if (end === -1) {
-			return null;
-		}
-		ctx.position = end + str.length;
-	} else {
-		ctx.position = end;
-	}
+    var start = ctx.position || 0;
+    var end = text.length;
+    if (str) {
+        end = text.indexOf(str, start);
+        if (end === -1) {
+            return null;
+        }
+        ctx.position = end + str.length;
+    } else {
+        ctx.position = end;
+    }
 
-	return text.substring(start, end);
+    return text.substring(start, end);
 }
 
 //partially taken from https://github.com/emiltholin/google-api-batch-utils
@@ -2273,115 +2270,114 @@ function readTo(text, ctx, str) {
  * @returns {any} parsed batch response
  */
 function parseBatchResponse(response, parseParams, requestNumber) {
-	// Not the same delimiter in the response as we specify ourselves in the request,
-	// so we have to extract it.
-	var delimiter = response.substr(0, response.indexOf("\r\n"));
-	var batchResponseParts = response.split(delimiter);
-	// The first part will always be an empty string. Just remove it.
-	batchResponseParts.shift();
-	// The last part will be the "--". Just remove it.
-	batchResponseParts.pop();
+    // Not the same delimiter in the response as we specify ourselves in the request,
+    // so we have to extract it.
+    var delimiter = response.substr(0, response.indexOf("\r\n"));
+    var batchResponseParts = response.split(delimiter);
+    // The first part will always be an empty string. Just remove it.
+    batchResponseParts.shift();
+    // The last part will be the "--". Just remove it.
+    batchResponseParts.pop();
 
-	requestNumber = requestNumber || 0;
+    requestNumber = requestNumber || 0;
 
-	var result = [];
-	for (var i = 0; i < batchResponseParts.length; i++) {
-		var batchResponse = batchResponseParts[i];
-		if (batchResponse.indexOf("--changesetresponse_") > -1) {
-			batchResponse = batchResponse.trim();
-			var batchToProcess = batchResponse.substring(batchResponse.indexOf("\r\n") + 1).trim();
+    var result = [];
+    for (var i = 0; i < batchResponseParts.length; i++) {
+        var batchResponse = batchResponseParts[i];
+        if (batchResponse.indexOf("--changesetresponse_") > -1) {
+            batchResponse = batchResponse.trim();
+            var batchToProcess = batchResponse.substring(batchResponse.indexOf("\r\n") + 1).trim();
 
-			result = result.concat(parseBatchResponse(batchToProcess, parseParams, requestNumber));
-		} else {
-			//check http status
-			var httpStatusReg = /HTTP\/?\s*[\d.]*\s+(\d{3})\s+([\w\s]*)$/gm.exec(batchResponse);
-			var httpStatus = parseInt(httpStatusReg[1]);
-			var httpStatusMessage = httpStatusReg[2].trim();
+            result = result.concat(parseBatchResponse(batchToProcess, parseParams, requestNumber));
+        } else {
+            //check http status
+            var httpStatusReg = /HTTP\/?\s*[\d.]*\s+(\d{3})\s+([\w\s]*)$/gm.exec(batchResponse);
+            var httpStatus = parseInt(httpStatusReg[1]);
+            var httpStatusMessage = httpStatusReg[2].trim();
 
-			var responseData = batchResponse.substring(batchResponse.indexOf("{"), batchResponse.lastIndexOf("}") + 1);
+            var responseData = batchResponse.substring(batchResponse.indexOf("{"), batchResponse.lastIndexOf("}") + 1);
 
-			if (!responseData) {
-				if (/Content-Type: text\/plain/i.test(batchResponse)) {
-					var plainContentReg = /\w+$/gi.exec(batchResponse.trim());
-					var plainContent = plainContentReg && plainContentReg.length ? plainContentReg[0] : undefined;
+            if (!responseData) {
+                if (/Content-Type: text\/plain/i.test(batchResponse)) {
+                    var plainContentReg = /\w+$/gi.exec(batchResponse.trim());
+                    var plainContent = plainContentReg && plainContentReg.length ? plainContentReg[0] : undefined;
 
-					//check if a plain content is a number or not
-					result.push(isNaN(plainContent) ? plainContent : parseInt(plainContent));
-				} else if (parseParams.length && parseParams[requestNumber] && parseParams[requestNumber].hasOwnProperty("valueIfEmpty")) {
-					result.push(parseParams[requestNumber].valueIfEmpty);
-				} else {
-					var entityUrl = /OData-EntityId.+/i.exec(batchResponse);
+                    //check if a plain content is a number or not
+                    result.push(isNaN(plainContent) ? plainContent : parseInt(plainContent));
+                } else if (parseParams.length && parseParams[requestNumber] && parseParams[requestNumber].hasOwnProperty("valueIfEmpty")) {
+                    result.push(parseParams[requestNumber].valueIfEmpty);
+                } else {
+                    var entityUrl = /OData-EntityId.+/i.exec(batchResponse);
 
-					if (entityUrl && entityUrl.length) {
-						var guidResult = /([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})\)$/i.exec(entityUrl[0]);
+                    if (entityUrl && entityUrl.length) {
+                        var guidResult = Utility.extractUuidUrl(entityUrl[0]);
+                        result.push(guidResult ? guidResult : undefined);
+                    } else {
+                        result.push(undefined);
+                    }
+                }
+            } else {
+                var parsedResponse = parseData(JSON.parse(responseData, dateReviver), parseParams[requestNumber]);
 
-						result.push(guidResult ? guidResult[1] : undefined);
-					} else {
-						result.push(undefined);
-					}
-				}
-			} else {
-				var parsedResponse = parseData(JSON.parse(responseData, dateReviver), parseParams[requestNumber]);
+                if (httpStatus >= 400) {
+                    var responseHeaders = parseBatchHeaders(
+                        batchResponse.substring(batchResponse.indexOf(httpStatusReg[0]) + httpStatusReg[0].length + 1, batchResponse.indexOf("{"))
+                    );
 
-				if (httpStatus >= 400) {
-					var responseHeaders = parseBatchHeaders(
-						batchResponse.substring(batchResponse.indexOf(httpStatusReg[0]) + httpStatusReg[0].length + 1, batchResponse.indexOf("{"))
-					);
+                    result.push(
+                        ErrorHelper.handleHttpError(parsedResponse, {
+                            status: httpStatus,
+                            statusText: httpStatusMessage,
+                            statusMessage: httpStatusMessage,
+                            headers: responseHeaders,
+                        })
+                    );
+                } else {
+                    result.push(parsedResponse);
+                }
+            }
+        }
 
-					result.push(
-						ErrorHelper.handleHttpError(parsedResponse, {
-							status: httpStatus,
-							statusText: httpStatusMessage,
-							statusMessage: httpStatusMessage,
-							headers: responseHeaders,
-						})
-					);
-				} else {
-					result.push(parsedResponse);
-				}
-			}
-		}
+        requestNumber++;
+    }
 
-		requestNumber++;
-	}
-
-	return result;
+    return result;
 }
 
 function base64ToString(base64) {
-	/* webpack-strip-block:removed */
-		return window.atob(base64);
+    /* webpack-strip-block:removed */
+        return window.atob(base64);
 }
 
 function parseFileResponse(response, responseHeaders, parseParams) {
-	var data = response;
+    var data = response;
 
-	if (parseParams.hasOwnProperty("parse")) {
-		data = JSON.parse(data).value;
-		data = base64ToString(data);
-	}
+    if (parseParams.hasOwnProperty("parse")) {
+        data = JSON.parse(data).value;
+        data = base64ToString(data);
+    }
 
-	var parseResult = {
-		value: data,
-	};
+    var parseResult = {
+        value: data,
+    };
 
-	if (responseHeaders["x-ms-file-name"]) parseResult.fileName = responseHeaders["x-ms-file-name"];
+    if (responseHeaders["x-ms-file-name"]) parseResult.fileName = responseHeaders["x-ms-file-name"];
 
-	if (responseHeaders["x-ms-file-size"]) parseResult.fileSize = parseInt(responseHeaders["x-ms-file-size"]);
+    if (responseHeaders["x-ms-file-size"]) parseResult.fileSize = parseInt(responseHeaders["x-ms-file-size"]);
 
-	if (hasHeader(responseHeaders, "Location")) parseResult.location = getHeader(responseHeaders, "Location");
+    if (hasHeader(responseHeaders, "Location")) parseResult.location = getHeader(responseHeaders, "Location");
 
-	return parseResult;
+    return parseResult;
 }
 
 function hasHeader(headers, name) {
-	return headers.hasOwnProperty(name) || headers.hasOwnProperty(name.toLowerCase());
+    return headers.hasOwnProperty(name) || headers.hasOwnProperty(name.toLowerCase());
 }
 
 function getHeader(headers, name) {
-	if (headers[name]) return headers[name];
+    if (headers[name]) return headers[name];
 
-	return headers[name.toLowerCase()];
+    return headers[name.toLowerCase()];
 }
 
 /**
@@ -2392,42 +2388,42 @@ function getHeader(headers, name) {
  * @returns {any} parsed response
  */
 module.exports = function parseResponse(response, responseHeaders, parseParams) {
-	var parseResult = undefined;
-	if (response.length) {
-		if (response.indexOf("--batchresponse_") > -1) {
-			var batch = parseBatchResponse(response, parseParams);
+    var parseResult = undefined;
+    if (response.length) {
+        if (response.indexOf("--batchresponse_") > -1) {
+            var batch = parseBatchResponse(response, parseParams);
 
-			parseResult = parseParams.length === 1 && parseParams[0].convertedToBatch ? batch[0] : batch;
-		} else {
-			if (hasHeader(responseHeaders, "Content-Disposition")) {
-				parseResult = parseFileResponse(response, responseHeaders, parseParams[0]);
-			} else {
-				parseResult = parseData(JSON.parse(response, dateReviver), parseParams[0]);
-			}
-		}
-	} else {
-		if (parseParams.length && parseParams[0].hasOwnProperty("valueIfEmpty")) {
-			parseResult = parseParams[0].valueIfEmpty;
-		} else if (hasHeader(responseHeaders, "OData-EntityId")) {
-			var entityUrl = getHeader(responseHeaders, "OData-EntityId");
+            parseResult = parseParams.length === 1 && parseParams[0].convertedToBatch ? batch[0] : batch;
+        } else {
+            if (hasHeader(responseHeaders, "Content-Disposition")) {
+                parseResult = parseFileResponse(response, responseHeaders, parseParams[0]);
+            } else {
+                parseResult = parseData(JSON.parse(response, dateReviver), parseParams[0]);
+            }
+        }
+    } else {
+        if (parseParams.length && parseParams[0].hasOwnProperty("valueIfEmpty")) {
+            parseResult = parseParams[0].valueIfEmpty;
+        } else if (hasHeader(responseHeaders, "OData-EntityId")) {
+            var entityUrl = getHeader(responseHeaders, "OData-EntityId");
 
-			var guidResult = /([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})\)$/i.exec(entityUrl);
+            var guidResult = Utility.extractUuidUrl(entityUrl);
 
-			if (guidResult) {
-				parseResult = guidResult[1];
-			}
-		} else if (hasHeader(responseHeaders, "Location")) {
-			parseResult = {
-				location: getHeader(responseHeaders, "Location"),
-			};
+            if (guidResult) {
+                parseResult = guidResult;
+            }
+        } else if (hasHeader(responseHeaders, "Location")) {
+            parseResult = {
+                location: getHeader(responseHeaders, "Location"),
+            };
 
-			if (responseHeaders["x-ms-chunk-size"]) parseResult.chunkSize = parseInt(responseHeaders["x-ms-chunk-size"]);
-		}
-	}
+            if (responseHeaders["x-ms-chunk-size"]) parseResult.chunkSize = parseInt(responseHeaders["x-ms-chunk-size"]);
+        }
+    }
 
-	//parseParams.length = 0;
+    //parseParams.length = 0;
 
-	return parseResult;
+    return parseResult;
 };
 
 
@@ -3394,196 +3390,137 @@ module.exports = RequestConverter;
 /* webpack-strip-block:removed */
 
 function getCrypto() {
-	/* webpack-strip-block:removed */
-		return window.crypto;
+    /* webpack-strip-block:removed */
 }
 
 function isNull(value) {
-	return typeof value === "undefined" || value == null;
+    return typeof value === "undefined" || value == null;
 }
 
 function generateRandomBytes() {
-	var uCrypto = getCrypto();
-	/* webpack-strip-block:removed */
-		return uCrypto.getRandomValues(new Uint8Array(1));
-		/* webpack-strip-block:removed */
+    var uCrypto = getCrypto();
+    /* webpack-strip-block:removed */
+        return uCrypto.getRandomValues(new Uint8Array(1));
+        /* webpack-strip-block:removed */
 }
 
 function generateUUID() {
-	return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
-		(c ^ generateRandomBytes()[0] & 15 >> c / 4).toString(16)
-	);
+    return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) => (c ^ (generateRandomBytes()[0] & (15 >> (c / 4)))).toString(16));
 }
 
 function getXrmContext() {
-	if (typeof GetGlobalContext !== 'undefined') {
-		return GetGlobalContext();
-	}
-	else {
-		if (typeof Xrm !== 'undefined') {
-			//d365 v.9.0
-			if (!isNull(Xrm.Utility) && !isNull(Xrm.Utility.getGlobalContext)) {
-				return Xrm.Utility.getGlobalContext();
-			}
-			else if (!isNull(Xrm.Page) && !isNull(Xrm.Page.context)) {
-				return Xrm.Page.context;
-			}
-		}
-	}
+    if (typeof GetGlobalContext !== "undefined") {
+        return GetGlobalContext();
+    } else {
+        if (typeof Xrm !== "undefined") {
+            //d365 v.9.0
+            if (!isNull(Xrm.Utility) && !isNull(Xrm.Utility.getGlobalContext)) {
+                return Xrm.Utility.getGlobalContext();
+            } else if (!isNull(Xrm.Page) && !isNull(Xrm.Page.context)) {
+                return Xrm.Page.context;
+            }
+        }
+    }
 
-	throw new Error('Xrm Context is not available. In most cases, it can be resolved by adding a reference to a ClientGlobalContext.js.aspx. Please refer to MSDN documentation for more details.');
+    throw new Error(
+        "Xrm Context is not available. In most cases, it can be resolved by adding a reference to a ClientGlobalContext.js.aspx. Please refer to MSDN documentation for more details."
+    );
 }
 
 function getClientUrl() {
-	var context = getXrmContext();
+    var context = getXrmContext();
 
-	var clientUrl = context.getClientUrl();
+    var clientUrl = context.getClientUrl();
 
-	if (clientUrl.match(/\/$/)) {
-		clientUrl = clientUrl.substring(0, clientUrl.length - 1);
-	}
-	return clientUrl;
+    if (clientUrl.match(/\/$/)) {
+        clientUrl = clientUrl.substring(0, clientUrl.length - 1);
+    }
+    return clientUrl;
 }
 
 function initWebApiUrl(version) {
-	return getClientUrl() + '/api/data/v' + version + '/';
+    return getClientUrl() + "/api/data/v" + version + "/";
 }
 
 function getXrmInternal() {
-	//todo: Xrm.Internal namespace is not supported
-	return typeof Xrm !== "undefined" ? Xrm.Internal : null;
+    //todo: Xrm.Internal namespace is not supported
+    return typeof Xrm !== "undefined" ? Xrm.Internal : null;
 }
 
 function getXrmUtility() {
-	return typeof Xrm !== "undefined" ? Xrm.Utility : null;
+    return typeof Xrm !== "undefined" ? Xrm.Utility : null;
 }
 
 function _isObject(obj) {
-	var type = typeof obj;
-	return type === 'object' && !!obj;
+    var type = typeof obj;
+    return type === "object" && !!obj;
+}
+
+var uuidRegex = "[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}";
+
+function isUuid(value) {
+    var match = new RegExp(uuidRegex, "i").exec(value);
+    return !!match;
+}
+
+function extractUuid(value) {
+    var match = new RegExp("^{?(" + uuidRegex + ")}?$", "i").exec(value);
+    return match ? match[1] : null;
+}
+
+function extractUuidUrl(url) {
+    var match = new RegExp("(" + uuidRegex + ")\\)$", "i").exec(url);
+    return match ? match[1] : null;
 }
 
 function copyObject(src) {
-	var target = {};
-	for (var prop in src) {
-		if (src.hasOwnProperty(prop)) {
-			// if the value is a nested object, recursively copy all its properties
-			if (_isObject(src[prop]) && Object.prototype.toString.call(src[prop]) !== '[object Date]') {
-				if (!Array.isArray(src[prop])) {
-					target[prop] = copyObject(src[prop]);
-				}
-				else {
-					target[prop] = src[prop].slice();
-				}
-
-			} else {
-				target[prop] = src[prop];
-			}
-		}
-	}
-	return target;
+    var target = {};
+    for (var prop in src) {
+        if (src.hasOwnProperty(prop)) {
+            // if the value is a nested object, recursively copy all its properties
+            if (_isObject(src[prop]) && Object.prototype.toString.call(src[prop]) !== "[object Date]") {
+                if (!Array.isArray(src[prop])) {
+                    target[prop] = copyObject(src[prop]);
+                } else {
+                    target[prop] = src[prop].slice();
+                }
+            } else {
+                target[prop] = src[prop];
+            }
+        }
+    }
+    return target;
 }
 
 function setFileChunk(request, fileBuffer, chunkSize, offset) {
-	offset = offset || 0;
+    offset = offset || 0;
 
-	var count = (offset + chunkSize) > fileBuffer.length
-		? fileBuffer.length % chunkSize
-		: chunkSize;
+    var count = offset + chunkSize > fileBuffer.length ? fileBuffer.length % chunkSize : chunkSize;
 
-	var content;
+    var content;
 
-	/* webpack-strip-block:removed */
-		content = new Uint8Array(count);
-		for (var i = 0; i < count; i++) {
-			content[i] = fileBuffer[offset + i];
-		}
-		/* webpack-strip-block:removed */
+    /* webpack-strip-block:removed */
+        content = new Uint8Array(count);
+        for (var i = 0; i < count; i++) {
+            content[i] = fileBuffer[offset + i];
+        }
+        /* webpack-strip-block:removed */
 
-	request.data = content;
-	request.contentRange = "bytes " + offset + "-" + (offset + count - 1) + "/" + fileBuffer.length;
+    request.data = content;
+    request.contentRange = "bytes " + offset + "-" + (offset + count - 1) + "/" + fileBuffer.length;
 }
 
 function convertToFileBuffer(binaryString) {
-	/* webpack-strip-block:removed */
-		var bytes = new Uint8Array(binaryString.length);
-		for (var i = 0; i < binaryString.length; i++) {
-			bytes[i] = binaryString.charCodeAt(i);
-		}
-		return bytes;
-		/* webpack-strip-block:removed */
+    /* webpack-strip-block:removed */
+        var bytes = new Uint8Array(binaryString.length);
+        for (var i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        return bytes;
+        /* webpack-strip-block:removed */
 }
 
-var downloadChunkSize = 4194304;
-
-var Utility = {
-	/**
-	 * Builds parametes for a funciton. Returns '()' (if no parameters) or '([params])?[query]'
-	 *
-	 * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
-	 * @returns {string}
-	 */
-	buildFunctionParameters: __webpack_require__(390),
-
-	/**
-	 * Parses a paging cookie returned in response
-	 *
-	 * @param {string} pageCookies - Page cookies returned in @Microsoft.Dynamics.CRM.fetchxmlpagingcookie.
-	 * @param {number} currentPageNumber - A current page number. Fix empty paging-cookie for complex fetch xmls.
-	 * @returns {{ cookie: "", number: 0, next: 1 }}
-	 */
-	getFetchXmlPagingCookie: __webpack_require__(458),
-
-	/**
-	 * Converts a response to a reference object
-	 *
-	 * @param {Object} responseData - Response object
-	 * @returns {ReferenceObject}
-	 */
-	convertToReferenceObject: __webpack_require__(875),
-
-	/**
-	 * Checks whether the value is JS Null.
-	 * @param {Object} value
-	 * @returns {boolean}
-	 */
-	isNull: isNull,
-
-	generateUUID: generateUUID,
-
-	getXrmContext: getXrmContext,
-
-	getXrmInternal: getXrmInternal,
-
-	getXrmUtility: getXrmUtility,
-
-	getClientUrl: getClientUrl,
-
-	initWebApiUrl: initWebApiUrl,
-
-	copyObject: copyObject,
-
-	setFileChunk: setFileChunk,
-
-	convertToFileBuffer: convertToFileBuffer,
-
-	downloadChunkSize: downloadChunkSize
-};
-
-module.exports = Utility;
-
-/***/ }),
-
-/***/ 390:
-/***/ ((module) => {
-
-/**
- * Builds parametes for a funciton. Returns '()' (if no parameters) or '([params])?[query]'
- *
- * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
- * @returns {string} - Function parameter result
- */
-module.exports = function buildFunctionParameters(parameters) {
+function buildFunctionParameters(parameters) {
     if (parameters) {
         var parameterNames = Object.keys(parameters);
         var functionParameters = "";
@@ -3593,10 +3530,9 @@ module.exports = function buildFunctionParameters(parameters) {
             var parameterName = parameterNames[i - 1];
             var value = parameters[parameterName];
 
-            if (value === null)
-                continue;
+            if (value === null) continue;
 
-            if (typeof value === "string" && !value.startsWith("Microsoft.Dynamics.CRM")) {
+            if (typeof value === "string" && !value.startsWith("Microsoft.Dynamics.CRM") && !isUuid(value)) {
                 value = "'" + value + "'";
             }
             //fix #45
@@ -3610,15 +3546,79 @@ module.exports = function buildFunctionParameters(parameters) {
             }
 
             functionParameters += parameterName + "=@p" + i;
-            urlQuery += "@p" + i + "=" + value;
+            urlQuery += "@p" + i + "=" + (extractUuid(value) || value);
         }
 
         return "(" + functionParameters + ")?" + urlQuery;
-    }
-    else {
+    } else {
         return "()";
     }
+}
+
+var downloadChunkSize = 4194304;
+
+var Utility = {
+    /**
+     * Builds parametes for a funciton. Returns '()' (if no parameters) or '([params])?[query]'
+     *
+     * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
+     * @returns {string}
+     */
+    buildFunctionParameters: buildFunctionParameters,
+
+    /**
+     * Parses a paging cookie returned in response
+     *
+     * @param {string} pageCookies - Page cookies returned in @Microsoft.Dynamics.CRM.fetchxmlpagingcookie.
+     * @param {number} currentPageNumber - A current page number. Fix empty paging-cookie for complex fetch xmls.
+     * @returns {{ cookie: "", number: 0, next: 1 }}
+     */
+    getFetchXmlPagingCookie: __webpack_require__(458),
+
+    /**
+     * Converts a response to a reference object
+     *
+     * @param {Object} responseData - Response object
+     * @returns {ReferenceObject}
+     */
+    convertToReferenceObject: __webpack_require__(875),
+
+    /**
+     * Checks whether the value is JS Null.
+     * @param {Object} value
+     * @returns {boolean}
+     */
+    isNull: isNull,
+
+    generateUUID: generateUUID,
+
+    getXrmContext: getXrmContext,
+
+    getXrmInternal: getXrmInternal,
+
+    getXrmUtility: getXrmUtility,
+
+    getClientUrl: getClientUrl,
+
+    initWebApiUrl: initWebApiUrl,
+
+    copyObject: copyObject,
+
+    setFileChunk: setFileChunk,
+
+    convertToFileBuffer: convertToFileBuffer,
+
+    uuidRegex: uuidRegex,
+
+    isUuid: isUuid,
+    extractUuid: extractUuid,
+    extractUuidUrl: extractUuidUrl,
+
+    downloadChunkSize: downloadChunkSize,
 };
+
+module.exports = Utility;
+
 
 /***/ }),
 
