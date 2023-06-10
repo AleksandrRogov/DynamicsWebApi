@@ -130,6 +130,7 @@ export declare namespace Core {
         pageNumber?: number;
         pagingCookie?: string;
         requestId?: string | null;
+        inChangeSet?: boolean | null;
         transferMode?: string;
         range?: string;
         downloadSize?: string;

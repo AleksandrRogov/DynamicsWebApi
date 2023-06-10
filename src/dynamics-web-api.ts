@@ -1192,6 +1192,8 @@ export interface BaseRequest {
     timeout?: number;
     /**The AbortSignal interface represents a signal object that allows you to communicate with a DOM request and abort it if required via an AbortController object. */
     signal?: AbortSignal;
+    /**Indicates if an operation must be included in a Change Set or not. Works in Batch Operations only. By default, it's "true", except for GET operations - they are not allowed in Change Sets. */
+    inChangeSet?: boolean;
 }
 
 export interface Request extends BaseRequest {

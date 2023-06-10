@@ -1117,6 +1117,11 @@
         if (request.isBatch) {
           ErrorHelper.boolParameterCheck(request.isBatch, `DynamicsWebApi.${request.functionName}`, "request.isBatch");
         }
+        if (!Utility.isNull(request.inChangeSet)) {
+          ErrorHelper.boolParameterCheck(request.inChangeSet, `DynamicsWebApi.${request.functionName}`, "request.inChangeSet");
+        }
+        if (request.isBatch && Utility.isNull(request.inChangeSet))
+          request.inChangeSet = true;
         if (request.timeout) {
           ErrorHelper.numberParameterCheck(request.timeout, `DynamicsWebApi.${request.functionName}`, "request.timeout");
         }
@@ -1279,8 +1284,8 @@
       let contentId = 1e5;
       requests.forEach((internalRequest) => {
         internalRequest.functionName = "executeBatch";
-        const isGet = internalRequest.method === "GET";
-        if (isGet && currentChangeSet) {
+        const inChangeSet = internalRequest.method === "GET" ? false : !!internalRequest.inChangeSet;
+        if (!inChangeSet && currentChangeSet) {
           batchBody.push(`
 --${currentChangeSet}--`);
           currentChangeSet = null;
@@ -1289,18 +1294,18 @@
         if (!currentChangeSet) {
           batchBody.push(`
 --${batchBoundary}`);
-          if (!isGet) {
+          if (inChangeSet) {
             currentChangeSet = `changeset_${Utility.generateUUID()}`;
             batchBody.push("Content-Type: multipart/mixed;boundary=" + currentChangeSet);
           }
         }
-        if (!isGet) {
+        if (inChangeSet) {
           batchBody.push(`
 --${currentChangeSet}`);
         }
         batchBody.push("Content-Type: application/http");
         batchBody.push("Content-Transfer-Encoding: binary");
-        if (!isGet) {
+        if (inChangeSet) {
           const contentIdValue = internalRequest.headers.hasOwnProperty("Content-ID") ? internalRequest.headers["Content-ID"] : ++contentId;
           batchBody.push(`Content-ID: ${contentIdValue}`);
         }
@@ -1311,7 +1316,7 @@ ${internalRequest.method} ${config.dataApi.url}${internalRequest.path} HTTP/1.1`
           batchBody.push(`
 ${internalRequest.method} ${internalRequest.path} HTTP/1.1`);
         }
-        if (isGet) {
+        if (!inChangeSet) {
           batchBody.push("Accept: application/json");
         } else {
           batchBody.push("Content-Type: application/json");
@@ -1322,7 +1327,7 @@ ${internalRequest.method} ${internalRequest.path} HTTP/1.1`);
           batchBody.push(`${key}: ${internalRequest.headers[key]}`);
         }
         const data = internalRequest.data;
-        if (!isGet && data) {
+        if (inChangeSet && data) {
           batchBody.push(`
 ${_RequestUtility.processData(data, config)}`);
         }

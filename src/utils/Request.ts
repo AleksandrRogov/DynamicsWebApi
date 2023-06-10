@@ -226,6 +226,12 @@ export class RequestUtility {
                 ErrorHelper.boolParameterCheck(request.isBatch, `DynamicsWebApi.${request.functionName}`, "request.isBatch");
             }
 
+            if (!Utility.isNull(request.inChangeSet)) {
+                ErrorHelper.boolParameterCheck(request.inChangeSet, `DynamicsWebApi.${request.functionName}`, "request.inChangeSet");
+            }
+
+            if (request.isBatch && Utility.isNull(request.inChangeSet)) request.inChangeSet = true;
+
             if (request.timeout) {
                 ErrorHelper.numberParameterCheck(request.timeout, `DynamicsWebApi.${request.functionName}`, "request.timeout");
             }
@@ -422,9 +428,9 @@ export class RequestUtility {
 
         requests.forEach((internalRequest) => {
             internalRequest.functionName = "executeBatch";
-            const isGet = internalRequest.method === "GET";
+            const inChangeSet = internalRequest.method === "GET" ? false : !!internalRequest.inChangeSet;
 
-            if (isGet && currentChangeSet) {
+            if (!inChangeSet && currentChangeSet) {
                 //end current change set
                 batchBody.push(`\n--${currentChangeSet}--`);
 
@@ -435,20 +441,20 @@ export class RequestUtility {
             if (!currentChangeSet) {
                 batchBody.push(`\n--${batchBoundary}`);
 
-                if (!isGet) {
+                if (inChangeSet) {
                     currentChangeSet = `changeset_${Utility.generateUUID()}`;
                     batchBody.push("Content-Type: multipart/mixed;boundary=" + currentChangeSet);
                 }
             }
 
-            if (!isGet) {
+            if (inChangeSet) {
                 batchBody.push(`\n--${currentChangeSet}`);
             }
 
             batchBody.push("Content-Type: application/http");
             batchBody.push("Content-Transfer-Encoding: binary");
 
-            if (!isGet) {
+            if (inChangeSet) {
                 const contentIdValue = internalRequest.headers.hasOwnProperty("Content-ID") ? internalRequest.headers["Content-ID"] : ++contentId;
 
                 batchBody.push(`Content-ID: ${contentIdValue}`);
@@ -460,7 +466,7 @@ export class RequestUtility {
                 batchBody.push(`\n${internalRequest.method} ${internalRequest.path} HTTP/1.1`);
             }
 
-            if (isGet) {
+            if (!inChangeSet) {
                 batchBody.push("Accept: application/json");
             } else {
                 batchBody.push("Content-Type: application/json");
@@ -474,7 +480,7 @@ export class RequestUtility {
 
             const data = internalRequest.data;
 
-            if (!isGet && data) {
+            if (inChangeSet && data) {
                 batchBody.push(`\n${RequestUtility.processData(data, config)}`);
             }
         });
