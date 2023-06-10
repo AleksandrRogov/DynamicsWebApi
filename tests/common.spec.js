@@ -16,28 +16,39 @@ var { parseResponse } = require("../lib/client/helpers/parseResponse");
 describe("Utility.", function () {
     describe("buildFunctionParameters - ", function () {
         it("no parameters", function () {
-            var result = Utility.buildFunctionParameters();
+            const result = Utility.buildFunctionParameters();
             expect(result).to.equal("()");
         });
         it("1 parameter", function () {
-            var result = Utility.buildFunctionParameters({ param1: "value1" });
+            const result = Utility.buildFunctionParameters({ param1: "value1" });
             expect(result).to.equal("(param1=@p1)?@p1='value1'");
         });
         it("2 parameters", function () {
-            var result = Utility.buildFunctionParameters({ param1: "value1", param2: 2 });
+            const result = Utility.buildFunctionParameters({ param1: "value1", param2: 2 });
             expect(result).to.equal("(param1=@p1,param2=@p2)?@p1='value1'&@p2=2");
         });
         it("3 parameters", function () {
-            var result = Utility.buildFunctionParameters({ param1: "value1", param2: 2, param3: "value2" });
+            const result = Utility.buildFunctionParameters({ param1: "value1", param2: 2, param3: "value2" });
             expect(result).to.equal("(param1=@p1,param2=@p2,param3=@p3)?@p1='value1'&@p2=2&@p3='value2'");
         });
         it("object parameter", function () {
-            var result = Utility.buildFunctionParameters({ param1: { test1: "value", "@odata.type": "account" } });
+            const result = Utility.buildFunctionParameters({ param1: { test1: "value", "@odata.type": "account" } });
             expect(result).to.equal('(param1=@p1)?@p1={"test1":"value","@odata.type":"account"}');
         });
         it("Microsoft.Dynamics.CRM namespace parameter", function () {
-            var result = Utility.buildFunctionParameters({ param1: "Microsoft.Dynamics.CRM.Enum'Type'", param2: 2, param3: "value2" });
+            const result = Utility.buildFunctionParameters({ param1: "Microsoft.Dynamics.CRM.Enum'Type'", param2: 2, param3: "value2" });
             expect(result).to.equal("(param1=@p1,param2=@p2,param3=@p3)?@p1=Microsoft.Dynamics.CRM.Enum'Type'&@p2=2&@p3='value2'");
+        });
+        it("Guid parameter", function () {
+            const result = Utility.buildFunctionParameters({
+                param1: "Microsoft.Dynamics.CRM.Enum'Type'",
+                param2: 2,
+                param3: "value2",
+                param4: "fb15ee32-524d-41be-b6a0-7d0f28055d52",
+            });
+            expect(result).to.equal(
+                "(param1=@p1,param2=@p2,param3=@p3,param4=@p4)?@p1=Microsoft.Dynamics.CRM.Enum'Type'&@p2=2&@p3='value2'&@p4=fb15ee32-524d-41be-b6a0-7d0f28055d52"
+            );
         });
     });
 

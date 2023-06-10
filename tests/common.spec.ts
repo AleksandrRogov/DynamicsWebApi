@@ -5,6 +5,54 @@ import * as mocks from "./stubs";
 import { RequestClient } from "../src/client/RequestClient";
 import { InternalConfig } from "../src/utils/Config";
 import { Core } from "../src/types";
+import * as Regex from "../src/helpers/Regex";
+
+describe("Regex.", () => {
+    describe("isUuid -", () => {
+        it("uuid === true", () => {
+            const result = Regex.isUuid("fb15ee32-524d-41be-b6a0-7d0f28055d52");
+            expect(result).to.be.true;
+            const result2 = Regex.isUuid("{fb15ee32-524d-41be-b6a0-7d0f28055d52}");
+            expect(result2).to.be.true;
+        });
+
+        it("uuid === false", function () {
+            const result = Regex.isUuid("something");
+            expect(result).to.be.false;
+            const result2 = Regex.isUuid(<any>null);
+            expect(result2).to.be.false;
+        });
+    });
+
+    describe("extractUuid -", function () {
+        it("uuid", function () {
+            const result = Regex.extractUuid("fb15ee32-524d-41be-b6a0-7d0f28055d52");
+            expect(result).to.equal("fb15ee32-524d-41be-b6a0-7d0f28055d52");
+            const result2 = Regex.extractUuid("{fb15ee32-524d-41be-b6a0-7d0f28055d52}");
+            expect(result2).to.equal("fb15ee32-524d-41be-b6a0-7d0f28055d52");
+        });
+        it("not uuid - returns null", function () {
+            const result = Regex.extractUuid("fb15ee32-524d-41be-b6a0");
+            expect(result).to.be.null;
+            const result2 = Regex.extractUuid("something");
+            expect(result2).to.be.null;
+            const result3 = Regex.extractUuid("test{fb15ee32-524d-41be-b6a0-7d0f28055d52}");
+            expect(result3).to.be.null;
+        });
+    });
+    describe("extractUuidFromUrl -", function () {
+        it("uuid", function () {
+            const result = Regex.extractUuidFromUrl(mocks.webApiUrl + "tests(fb15ee32-524d-41be-b6a0-7d0f28055d52)");
+            expect(result).to.equal("fb15ee32-524d-41be-b6a0-7d0f28055d52");
+        });
+        it("not uuid - returns null", function () {
+            const result = Regex.extractUuidFromUrl(mocks.webApiUrl + "fb15ee32-524d-41be-b6a0-7d0f28055d52/something-else");
+            expect(result).to.be.null;
+            const result2 = Regex.extractUuidFromUrl(mocks.webApiUrl + "fb15ee32-524d-41be-b6a0-7d0f28055d52");
+            expect(result2).to.be.null;
+        });
+    });
+});
 
 describe("RequestClient.makeRequest", () => {
     before(() => {

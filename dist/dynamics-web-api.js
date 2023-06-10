@@ -37,6 +37,27 @@
     }
   });
 
+  // src/helpers/Regex.ts
+  function isUuid(value) {
+    const match = new RegExp(uuid, "i").exec(value);
+    return !!match;
+  }
+  function extractUuid(value) {
+    const match = new RegExp("^{?(" + uuid + ")}?$", "i").exec(value);
+    return match ? match[1] : null;
+  }
+  function extractUuidFromUrl(url) {
+    const match = new RegExp("(" + uuid + ")\\)$", "i").exec(url);
+    return match ? match[1] : null;
+  }
+  var uuid;
+  var init_Regex = __esm({
+    "src/helpers/Regex.ts"() {
+      "use strict";
+      uuid = "[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}";
+    }
+  });
+
   // src/utils/Utility.ts
   function isNodeEnv() {
     return Object.prototype.toString.call(typeof process !== "undefined" ? process : 0) === "[object process]";
@@ -46,6 +67,7 @@
     "src/utils/Utility.ts"() {
       "use strict";
       init_Crypto();
+      init_Regex();
       downloadChunkSize = 4194304;
       _Utility = class {
         /**
@@ -64,7 +86,7 @@
               let value = parameters[parameterName];
               if (value === null)
                 continue;
-              if (typeof value === "string" && !value.startsWith("Microsoft.Dynamics.CRM")) {
+              if (typeof value === "string" && !value.startsWith("Microsoft.Dynamics.CRM") && !isUuid(value)) {
                 value = "'" + value + "'";
               } else if (typeof value === "object") {
                 value = JSON.stringify(value);
@@ -74,7 +96,7 @@
                 urlQuery += "&";
               }
               functionParameters += parameterName + "=@p" + i;
-              urlQuery += "@p" + i + "=" + value;
+              urlQuery += "@p" + i + "=" + (extractUuid(value) || value);
             }
             return "(" + functionParameters + ")?" + urlQuery;
           } else {
@@ -223,6 +245,7 @@
   var init_ErrorHelper = __esm({
     "src/helpers/ErrorHelper.ts"() {
       "use strict";
+      init_Regex();
       ErrorHelper = class {
         static handleErrorResponse(req) {
           throw new Error(`Error: ${req.status}: ${req.message}`);
@@ -296,20 +319,17 @@
          * @returns
          */
         static guidParameterCheck(parameter, functionName, parameterName) {
-          try {
-            const match = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(parameter)[0];
-            return match;
-          } catch (error) {
+          const match = extractUuid(parameter);
+          if (!match)
             throwParameterError(functionName, parameterName, "GUID String");
-          }
+          return match;
         }
         static keyParameterCheck(parameter, functionName, parameterName) {
           try {
             ErrorHelper.stringParameterCheck(parameter, functionName, parameterName);
-            const match = /^{?([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})}?$/i.exec(parameter);
-            if (match) {
-              return match[1];
-            }
+            const match = extractUuid(parameter);
+            if (match)
+              return match;
             const alternateKeys = parameter.split(",");
             if (alternateKeys.length) {
               for (let i = 0; i < alternateKeys.length; i++) {
@@ -518,8 +538,8 @@
             } else {
               const entityUrl = /OData-EntityId.+/i.exec(batchResponse);
               if (entityUrl && entityUrl.length) {
-                const guidResult = /([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})\)$/i.exec(entityUrl[0]);
-                result.push(guidResult ? guidResult[1] : void 0);
+                const guidResult = extractUuidFromUrl(entityUrl[0]);
+                result.push(guidResult ? guidResult : void 0);
               } else {
                 result.push(void 0);
               }
@@ -605,9 +625,9 @@
         parseResult = parseParams[0].valueIfEmpty;
       } else if (hasHeader(responseHeaders, "OData-EntityId")) {
         const entityUrl = getHeader(responseHeaders, "OData-EntityId");
-        const guidResult = /([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})\)$/i.exec(entityUrl);
+        const guidResult = extractUuidFromUrl(entityUrl);
         if (guidResult) {
-          parseResult = guidResult[1];
+          parseResult = guidResult;
         }
       } else if (hasHeader(responseHeaders, "Location")) {
         parseResult = {
@@ -627,6 +647,7 @@
       init_Utility();
       init_ErrorHelper();
       init_dateReviver();
+      init_Regex();
       responseHeaderRegex = /^([^()<>@,;:\\"\/[\]?={} \t]+)\s?:\s?(.*)/;
     }
   });

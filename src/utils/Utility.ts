@@ -1,5 +1,6 @@
 ﻿import { Core } from "../types";
 import { generateRandomBytes } from "../helpers/Crypto";
+import { isUuid, extractUuid } from "../helpers/Regex";
 
 declare var GetGlobalContext: any;
 declare var Xrm: any;
@@ -34,7 +35,7 @@ export class Utility {
 
                 if (value === null) continue;
 
-                if (typeof value === "string" && !value.startsWith("Microsoft.Dynamics.CRM")) {
+                if (typeof value === "string" && !value.startsWith("Microsoft.Dynamics.CRM") && !isUuid(value)) {
                     value = "'" + value + "'";
                 } else if (typeof value === "object") {
                     value = JSON.stringify(value);
@@ -46,7 +47,7 @@ export class Utility {
                 }
 
                 functionParameters += parameterName + "=@p" + i;
-                urlQuery += "@p" + i + "=" + value;
+                urlQuery += "@p" + i + "=" + (extractUuid(value) || value);
             }
 
             return "(" + functionParameters + ")?" + urlQuery;

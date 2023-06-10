@@ -1,4 +1,5 @@
 ﻿import { AccessToken } from "../dynamics-web-api";
+import { extractUuid } from "./Regex";
 
 export interface DynamicsWebApiError extends Error {
     status: number;
@@ -95,13 +96,11 @@ export class ErrorHelper {
      * @param parameterName
      * @returns
      */
-    static guidParameterCheck(parameter, functionName: string, parameterName: string): string | undefined {
-        try {
-            const match = /[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}/i.exec(parameter)![0];
-            return match;
-        } catch (error) {
-            throwParameterError(functionName, parameterName, "GUID String");
-        }
+    static guidParameterCheck(parameter, functionName: string, parameterName: string): string | null {
+        const match = extractUuid(parameter);
+        if (!match) throwParameterError(functionName, parameterName, "GUID String");
+
+        return match;
     }
 
     static keyParameterCheck(parameter, functionName: string, parameterName: string): string | undefined {
@@ -109,10 +108,8 @@ export class ErrorHelper {
             ErrorHelper.stringParameterCheck(parameter, functionName, parameterName);
 
             //check if the param is a guid
-            const match = /^{?([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})}?$/i.exec(parameter);
-            if (match) {
-                return match[1];
-            }
+            const match = extractUuid(parameter);
+            if (match) return match;
 
             //check the alternate key
             const alternateKeys = parameter.split(",");
