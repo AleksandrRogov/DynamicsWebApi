@@ -419,7 +419,7 @@ export class RequestUtility {
         return prefer.join(",");
     }
 
-    static convertToBatch(requests: Core.InternalRequest[], config: InternalConfig): Core.InternalBatchRequest {
+    static convertToBatch(requests: Core.InternalRequest[], config: InternalConfig, batchRequest?: Core.InternalRequest): Core.InternalBatchRequest {
         const batchBoundary = `dwa_batch_${Utility.generateUUID()}`;
 
         const batchBody: string[] = [];
@@ -428,6 +428,7 @@ export class RequestUtility {
 
         requests.forEach((internalRequest) => {
             internalRequest.functionName = "executeBatch";
+            if (batchRequest?.inChangeSet === false) internalRequest.inChangeSet = false;
             const inChangeSet = internalRequest.method === "GET" ? false : !!internalRequest.inChangeSet;
 
             if (!inChangeSet && currentChangeSet) {
@@ -466,7 +467,7 @@ export class RequestUtility {
                 batchBody.push(`\n${internalRequest.method} ${internalRequest.path} HTTP/1.1`);
             }
 
-            if (!inChangeSet) {
+            if (internalRequest.method === "GET") {
                 batchBody.push("Accept: application/json");
             } else {
                 batchBody.push("Content-Type: application/json");
@@ -478,10 +479,8 @@ export class RequestUtility {
                 batchBody.push(`${key}: ${internalRequest.headers[key]}`);
             }
 
-            const data = internalRequest.data;
-
-            if (inChangeSet && data) {
-                batchBody.push(`\n${RequestUtility.processData(data, config)}`);
+            if (internalRequest.data) {
+                batchBody.push(`\n${RequestUtility.processData(internalRequest.data, config)}`);
             }
         });
 

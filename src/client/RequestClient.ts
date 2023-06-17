@@ -63,7 +63,7 @@ export class RequestClient {
 
             if (!batchRequest) throw ErrorHelper.batchIsEmpty();
 
-            const batchResult = RequestUtility.convertToBatch(batchRequest, config);
+            const batchResult = RequestUtility.convertToBatch(batchRequest, config, request);
 
             processedData = batchResult.body;
             request.headers = { ...batchResult.headers, ...request.headers };

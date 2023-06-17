@@ -1,4 +1,4 @@
-/*! dynamics-web-api v2.0.0-alpha.1 (c) 2023 Aleksandr Rogov */
+/*! dynamics-web-api v2.0.0-beta.1 (c) 2023 Aleksandr Rogov */
 "use strict";
 var __create = Object.create;
 var __defProp = Object.defineProperty;
@@ -1262,7 +1262,7 @@ var _RequestUtility = class {
     }
     return prefer.join(",");
   }
-  static convertToBatch(requests, config) {
+  static convertToBatch(requests, config, batchRequest) {
     const batchBoundary = `dwa_batch_${Utility.generateUUID()}`;
     const batchBody = [];
     let currentChangeSet = null;
@@ -1270,6 +1270,8 @@ var _RequestUtility = class {
     requests.forEach((internalRequest) => {
       var _a2;
       internalRequest.functionName = "executeBatch";
+      if ((batchRequest == null ? void 0 : batchRequest.inChangeSet) === false)
+        internalRequest.inChangeSet = false;
       const inChangeSet = internalRequest.method === "GET" ? false : !!internalRequest.inChangeSet;
       if (!inChangeSet && currentChangeSet) {
         batchBody.push(`
@@ -1302,7 +1304,7 @@ ${internalRequest.method} ${config.dataApi.url}${internalRequest.path} HTTP/1.1`
         batchBody.push(`
 ${internalRequest.method} ${internalRequest.path} HTTP/1.1`);
       }
-      if (!inChangeSet) {
+      if (internalRequest.method === "GET") {
         batchBody.push("Accept: application/json");
       } else {
         batchBody.push("Content-Type: application/json");
@@ -1312,10 +1314,9 @@ ${internalRequest.method} ${internalRequest.path} HTTP/1.1`);
           continue;
         batchBody.push(`${key}: ${internalRequest.headers[key]}`);
       }
-      const data = internalRequest.data;
-      if (inChangeSet && data) {
+      if (internalRequest.data) {
         batchBody.push(`
-${_RequestUtility.processData(data, config)}`);
+${_RequestUtility.processData(internalRequest.data, config)}`);
       }
     });
     if (currentChangeSet) {
@@ -1454,7 +1455,7 @@ var RequestClient = class {
       const batchRequest = _batchRequestCollection[request.requestId];
       if (!batchRequest)
         throw ErrorHelper.batchIsEmpty();
-      const batchResult = RequestUtility.convertToBatch(batchRequest, config);
+      const batchResult = RequestUtility.convertToBatch(batchRequest, config, request);
       processedData = batchResult.body;
       request.headers = { ...batchResult.headers, ...request.headers };
       delete _batchRequestCollection[request.requestId];

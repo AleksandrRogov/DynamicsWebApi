@@ -69,3 +69,174 @@ describe("dynamicsWebApi.retrieveMultiple -", () => {
         });
     });
 });
+
+describe("dynamicsWebApi.executeBatch -", () => {
+    describe("non-atomic global - create / create (Content-ID in a header gets cleared)", function () {
+        let scope;
+        const rBody = mocks.data.batchCreateContentIDPayloadNonAtomic;
+        const rBodys = rBody.split("\n");
+        let checkBody = "";
+        for (let i = 0; i < rBodys.length; i++) {
+            checkBody += rBodys[i];
+        }
+        before(function () {
+            const response = mocks.responses.batchUpdateDelete;
+            scope = nock(mocks.webApiUrl)
+                .filteringRequestBody((body) => {
+                    body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
+                    body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "changeset_XXX");
+                    const bodys = body.split("\n");
+
+                    let resultBody = "";
+                    for (let i = 0; i < bodys.length; i++) {
+                        resultBody += bodys[i];
+                    }
+
+                    return resultBody;
+                })
+                .post("/$batch", checkBody)
+                .reply(response.status, response.responseText, response.responseHeaders);
+        });
+
+        after(function () {
+            nock.cleanAll();
+        });
+
+        it("returns a correct response", async () => {
+            dynamicsWebApiTest.startBatch();
+
+            dynamicsWebApiTest.create({ collection: "records", data: { firstname: "Test", lastname: "Batch!" }, contentId: "1" });
+            dynamicsWebApiTest.create({ collection: "tests", data: { firstname: "Test1", lastname: "Batch!", "prop@odata.bind": "$1" } });
+
+            try {
+                const object = await dynamicsWebApiTest.executeBatch({
+                    inChangeSet: false,
+                });
+
+                expect(object.length).to.be.eq(2);
+
+                expect(object[0]).to.be.eq(mocks.data.testEntityId);
+                expect(object[1]).to.be.undefined;
+            } catch (error) {
+                console.error(error);
+                throw error;
+            }
+        });
+
+        it("all requests have been made", () => {
+            expect(scope.isDone()).to.be.true;
+        });
+    });
+
+    describe("non-atomic per request - create / create (Content-ID in a header gets cleared)", function () {
+        let scope;
+        const rBody = mocks.data.batchCreateContentIDPayloadNonAtomic;
+        const rBodys = rBody.split("\n");
+        let checkBody = "";
+        for (let i = 0; i < rBodys.length; i++) {
+            checkBody += rBodys[i];
+        }
+        before(function () {
+            const response = mocks.responses.batchUpdateDelete;
+            scope = nock(mocks.webApiUrl)
+                .filteringRequestBody((body) => {
+                    body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
+                    body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "changeset_XXX");
+                    const bodys = body.split("\n");
+
+                    let resultBody = "";
+                    for (let i = 0; i < bodys.length; i++) {
+                        resultBody += bodys[i];
+                    }
+
+                    return resultBody;
+                })
+                .post("/$batch", checkBody)
+                .reply(response.status, response.responseText, response.responseHeaders);
+        });
+
+        after(function () {
+            nock.cleanAll();
+        });
+
+        it("returns a correct response", async () => {
+            dynamicsWebApiTest.startBatch();
+
+            dynamicsWebApiTest.create({ collection: "records", data: { firstname: "Test", lastname: "Batch!" }, contentId: "1", inChangeSet: false });
+            dynamicsWebApiTest.create({ collection: "tests", data: { firstname: "Test1", lastname: "Batch!", "prop@odata.bind": "$1" }, inChangeSet: false });
+
+            try {
+                const object = await dynamicsWebApiTest.executeBatch();
+
+                expect(object.length).to.be.eq(2);
+
+                expect(object[0]).to.be.eq(mocks.data.testEntityId);
+                expect(object[1]).to.be.undefined;
+            } catch (error) {
+                console.error(error);
+                throw error;
+            }
+        });
+
+        it("all requests have been made", () => {
+            expect(scope.isDone()).to.be.true;
+        });
+    });
+
+    describe("non-atomic & atomic mixed - create / create (Content-ID in a payload)", function () {
+        let scope;
+        const rBody = mocks.data.batchCreateContentIDPayloadNonAtomicMixed;
+        const rBodys = rBody.split("\n");
+        let checkBody = "";
+        for (let i = 0; i < rBodys.length; i++) {
+            checkBody += rBodys[i];
+        }
+        before(function () {
+            const response = mocks.responses.batchUpdateDelete;
+            scope = nock(mocks.webApiUrl)
+                .filteringRequestBody((body) => {
+                    body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
+                    body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "changeset_XXX");
+                    const bodys = body.split("\n");
+
+                    let resultBody = "";
+                    for (let i = 0; i < bodys.length; i++) {
+                        resultBody += bodys[i];
+                    }
+
+                    console.log(checkBody);
+                    console.log(resultBody);
+                    return resultBody;
+                })
+                .post("/$batch", checkBody)
+                .reply(response.status, response.responseText, response.responseHeaders);
+        });
+
+        after(function () {
+            nock.cleanAll();
+        });
+
+        it("returns a correct response", async () => {
+            dynamicsWebApiTest.startBatch();
+
+            dynamicsWebApiTest.create({ collection: "records", data: { firstname: "Test", lastname: "Batch!" }, contentId: "1", inChangeSet: false });
+            dynamicsWebApiTest.create({ collection: "tests", data: { firstname: "Test1", lastname: "Batch!", "prop@odata.bind": "$1" } });
+
+            try {
+                const object = await dynamicsWebApiTest.executeBatch();
+
+                expect(object.length).to.be.eq(2);
+
+                expect(object[0]).to.be.eq(mocks.data.testEntityId);
+                expect(object[1]).to.be.undefined;
+            } catch (error) {
+                console.error(error);
+                throw error;
+            }
+        });
+
+        it("all requests have been made", () => {
+            expect(scope.isDone()).to.be.true;
+        });
+    });
+});
