@@ -78,10 +78,7 @@
         "version": "npm run build && git add -A dist",
         "postversion": "git push && git push --tags",
         "release-patch": "npm version patch -m \"Release v%s\"",
-        "release-minor": "npm version minor -m \"Release v%s\"",
-        "old-build:bundle": "webpack --mode=production",
-        "old-build": "rimraf dist && rimraf lib && rimraf coverage && rimraf .nyc_output && tsc && webpack --mode=production",
-        "old-test": "tsc && mocha"
+        "release-minor": "npm version minor -m \"Release v%s\""
     },
     "repository": {
         "type": "git",
