@@ -10,7 +10,7 @@ DynamicsWebApi is a Microsoft Dataverse Web API helper library written in Typesc
 It is compatible with: Microsoft Dataverse, Microsoft Dynamics 365: Customer Service, Field Service, Marketing, Project Operations, Talents, Sales and any application built on Microsoft Power Apps platform. 
 As well as Microsoft Dynamics 365 CE (online), Microsoft Dynamics 365 CE (on-premises), Microsoft Dynamics CRM 2016, Microsoft Dynamics CRM Online.
 
-**Please Note!** This documentation is for Version 2. If you are working with v1, please check [this instead](/tree/v1).
+### **This documentation is for version 2+. If you are working with version 1.x, please check [this instead](https://github.com/AleksandrRogov/DynamicsWebApi/tree/v1).**
 
 Please check [DynamicsWebApi Wiki](../../wiki/) where you will find documentation to DynamicsWebApi API and more.
 
