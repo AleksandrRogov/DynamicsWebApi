@@ -1,10 +1,7 @@
 /*! dynamics-web-api v2.0.0-beta.0 (c) 2023 Aleksandr Rogov */
-"use strict";
-var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __esm = (fn, res) => function __init() {
   return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
@@ -21,29 +18,20 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-  // If the importer is in node compatibility mode or this is not an ESM
-  // file that has been converted to a CommonJS file using a Babel-
-  // compatible transform (i.e. "__esModule" has not been set), then set
-  // "default" to the CommonJS "module.exports" for node compatibility.
-  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
-  mod
-));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
 // src/helpers/Crypto.ts
 function getCrypto() {
-  return false ? global.window.crypto : nCrypto;
+  return true ? window.crypto : nCrypto;
 }
 function generateRandomBytes() {
-  return false ? getCrypto().getRandomValues(new Uint8Array(1)) : getCrypto().randomBytes(1);
+  return true ? getCrypto().getRandomValues(new Uint8Array(1)) : getCrypto().randomBytes(1);
 }
-var nCrypto;
 var init_Crypto = __esm({
   "src/helpers/Crypto.ts"() {
     "use strict";
-    if (true)
-      nCrypto = require("crypto");
+    if (false)
+      nCrypto = null;
   }
 });
 
@@ -56,8 +44,8 @@ function extractUuid(value) {
   const match = new RegExp("^{?(" + uuid + ")}?$", "i").exec(value);
   return match ? match[1] : null;
 }
-function extractUuidFromUrl(url2) {
-  const match = new RegExp("(" + uuid + ")\\)$", "i").exec(url2);
+function extractUuidFromUrl(url) {
+  const match = new RegExp("(" + uuid + ")\\)$", "i").exec(url);
   return match ? match[1] : null;
 }
 var uuid;
@@ -193,7 +181,7 @@ var init_Utility = __esm({
       static copyObject(src, excludeProps) {
         let target = {};
         for (let prop in src) {
-          if (src.hasOwnProperty(prop) && !(excludeProps == null ? void 0 : excludeProps.includes(prop))) {
+          if (src.hasOwnProperty(prop) && !excludeProps?.includes(prop)) {
             if (_Utility.isObject(src[prop])) {
               target[prop] = _Utility.copyObject(src[prop]);
             } else if (Array.isArray(src[prop])) {
@@ -662,9 +650,32 @@ var init_parseResponse = __esm({
   }
 });
 
-// src/client/http.ts
-var http_exports = {};
-__export(http_exports, {
+// src/client/helpers/parseResponseHeaders.ts
+function parseResponseHeaders(headerStr) {
+  const headers = {};
+  if (!headerStr) {
+    return headers;
+  }
+  const headerPairs = headerStr.split("\r\n");
+  for (let i = 0, ilen = headerPairs.length; i < ilen; i++) {
+    const headerPair = headerPairs[i];
+    const index = headerPair.indexOf(": ");
+    if (index > 0) {
+      headers[headerPair.substring(0, index)] = headerPair.substring(index + 2);
+    }
+  }
+  return headers;
+}
+var init_parseResponseHeaders = __esm({
+  "src/client/helpers/parseResponseHeaders.ts"() {
+    "use strict";
+  }
+});
+
+// src/client/xhr.ts
+var xhr_exports = {};
+__export(xhr_exports, {
+  XhrWrapper: () => XhrWrapper,
   executeRequest: () => executeRequest
 });
 function executeRequest(options) {
@@ -673,155 +684,158 @@ function executeRequest(options) {
   });
 }
 function _executeRequest(options, successCallback, errorCallback) {
-  var _a2;
   const data = options.data;
   const additionalHeaders = options.additionalHeaders;
   const responseParams = options.responseParams;
   const signal = options.abortSignal;
-  const headers = {};
-  if (data) {
-    headers["Content-Type"] = additionalHeaders["Content-Type"];
-    headers["Content-Length"] = data.length;
-    delete additionalHeaders["Content-Type"];
+  if (signal?.aborted) {
+    errorCallback(
+      ErrorHelper.handleHttpError({
+        name: "AbortError",
+        code: 20,
+        message: "The user aborted a request."
+      })
+    );
+    return;
   }
+  let request = new XMLHttpRequest();
+  request.open(options.method, options.uri, options.isAsync || false);
   for (let key in additionalHeaders) {
-    headers[key] = additionalHeaders[key];
+    request.setRequestHeader(key, additionalHeaders[key]);
   }
-  const parsedUrl = url.parse(options.uri);
-  const protocol = ((_a2 = parsedUrl.protocol) == null ? void 0 : _a2.slice(0, -1)) || "https";
-  const protocolInterface = protocol === "http" ? http : https;
-  const internalOptions = {
-    hostname: parsedUrl.hostname,
-    port: parsedUrl.port,
-    path: parsedUrl.path,
-    method: options.method,
-    timeout: options.timeout || 0,
-    headers,
-    signal
-  };
-  if (!options.proxy && process.env[`${protocol}_proxy`]) {
-    options.proxy = {
-      url: process.env[`${protocol}_proxy`]
-    };
-  }
-  internalOptions.agent = getAgent(options, protocol);
-  if (options.proxy) {
-    const hostHeader = url.parse(options.proxy.url).host;
-    if (hostHeader)
-      headers.host = hostHeader;
-  }
-  const request = protocolInterface.request(internalOptions, function(res) {
-    let rawData = "";
-    res.setEncoding("utf8");
-    res.on("data", function(chunk) {
-      rawData += chunk;
-    });
-    res.on("end", function() {
-      switch (res.statusCode) {
+  request.onreadystatechange = function() {
+    if (request.readyState === 4) {
+      if (signal)
+        signal.removeEventListener("abort", abort);
+      switch (request.status) {
         case 200:
         case 201:
         case 204:
         case 206:
         case 304: {
-          let responseData = parseResponse(rawData, res.headers, responseParams[options.requestId]);
-          let response = {
+          const responseHeaders = parseResponseHeaders(request.getAllResponseHeaders());
+          const responseData = parseResponse(request.responseText, responseHeaders, responseParams[options.requestId]);
+          const response = {
             data: responseData,
-            headers: res.headers,
-            status: res.statusCode
+            headers: responseHeaders,
+            status: request.status
           };
+          request = null;
           successCallback(response);
           break;
         }
         default:
-          let crmError;
+          if (!request)
+            break;
+          let error;
+          let headers;
           try {
-            var errorParsed = parseResponse(rawData, res.headers, responseParams[options.requestId]);
+            headers = parseResponseHeaders(request.getAllResponseHeaders());
+            const errorParsed = parseResponse(
+              request.responseText,
+              parseResponseHeaders(request.getAllResponseHeaders()),
+              responseParams[options.requestId]
+            );
             if (Array.isArray(errorParsed)) {
               errorCallback(errorParsed);
               break;
             }
-            crmError = errorParsed.hasOwnProperty("error") && errorParsed.error ? errorParsed.error : { message: errorParsed.Message };
+            error = errorParsed.error;
           } catch (e) {
-            if (rawData.length > 0) {
-              crmError = { message: rawData };
+            if (request.response.length > 0) {
+              error = { message: request.response };
             } else {
-              crmError = { message: "Unexpected Error" };
+              error = { message: "Unexpected Error" };
             }
           }
-          errorCallback(
-            ErrorHelper.handleHttpError(crmError, {
-              status: res.statusCode,
-              statusText: "",
-              statusMessage: res.statusMessage,
-              headers: res.headers
-            })
-          );
+          const errorParameters = {
+            status: request.status,
+            statusText: request.statusText,
+            headers
+          };
+          request = null;
+          errorCallback(ErrorHelper.handleHttpError(error, errorParameters));
           break;
       }
-    });
-  });
-  if (internalOptions.timeout) {
-    request.setTimeout(internalOptions.timeout, function() {
-      request.destroy();
-    });
+    }
+  };
+  if (options.timeout) {
+    request.timeout = options.timeout;
   }
-  request.on("error", function(error) {
-    errorCallback(error);
-  });
-  if (data) {
-    request.write(data);
+  request.onerror = function() {
+    const headers = parseResponseHeaders(request.getAllResponseHeaders());
+    errorCallback(
+      ErrorHelper.handleHttpError({
+        status: request.status,
+        statusText: request.statusText,
+        message: request.responseText || "Network Error",
+        headers
+      })
+    );
+    request = null;
+  };
+  request.ontimeout = function() {
+    const headers = parseResponseHeaders(request.getAllResponseHeaders());
+    errorCallback(
+      ErrorHelper.handleHttpError({
+        name: "TimeoutError",
+        status: request.status,
+        statusText: request.statusText,
+        message: request.responseText || "Request Timed Out",
+        headers
+      })
+    );
+    request = null;
+  };
+  request.onabort = function() {
+    if (!request)
+      return;
+    const headers = parseResponseHeaders(request.getAllResponseHeaders());
+    errorCallback(
+      ErrorHelper.handleHttpError({
+        status: request.status,
+        statusText: request.statusText,
+        message: "Request aborted",
+        headers
+      })
+    );
+    request = null;
+  };
+  const abort = () => {
+    if (!request)
+      return;
+    const headers = parseResponseHeaders(request.getAllResponseHeaders());
+    errorCallback(
+      ErrorHelper.handleHttpError({
+        name: "AbortError",
+        code: 20,
+        status: request.status,
+        statusText: request.statusText,
+        message: "The user aborted a request.",
+        headers
+      })
+    );
+    request.abort();
+    request = null;
+  };
+  if (signal) {
+    signal.addEventListener("abort", abort);
   }
-  request.end();
+  data ? request.send(data) : request.send();
+  if (XhrWrapper.afterSendEvent)
+    XhrWrapper.afterSendEvent();
 }
-var http, https, url, import_http_proxy_agent, import_https_proxy_agent, agents, getAgent;
-var init_http = __esm({
-  "src/client/http.ts"() {
+var XhrWrapper;
+var init_xhr = __esm({
+  "src/client/xhr.ts"() {
     "use strict";
-    http = __toESM(require("http"));
-    https = __toESM(require("https"));
-    url = __toESM(require("url"));
-    import_http_proxy_agent = require("http-proxy-agent");
-    import_https_proxy_agent = require("https-proxy-agent");
     init_ErrorHelper();
     init_parseResponse();
-    agents = {};
-    getAgent = (options, protocol) => {
-      const isHttp = protocol === "http";
-      const proxy = options.proxy;
-      const agentName = proxy ? proxy.url : protocol;
-      if (!agents[agentName]) {
-        if (proxy) {
-          const parsedProxyUrl = url.parse(proxy.url);
-          const proxyAgent = isHttp ? import_http_proxy_agent.HttpProxyAgent : import_https_proxy_agent.HttpsProxyAgent;
-          const proxyOptions = {
-            host: parsedProxyUrl.hostname,
-            port: parsedProxyUrl.port,
-            protocol: parsedProxyUrl.protocol
-          };
-          if (proxy.auth)
-            proxyOptions.auth = proxy.auth.username + ":" + proxy.auth.password;
-          else if (parsedProxyUrl.auth)
-            proxyOptions.auth = parsedProxyUrl.auth;
-          agents[agentName] = new proxyAgent(proxyOptions);
-        } else {
-          const protocolInterface = isHttp ? http : https;
-          agents[agentName] = new protocolInterface.Agent({
-            keepAlive: true,
-            maxSockets: Infinity
-          });
-        }
-      }
-      return agents[agentName];
+    init_parseResponseHeaders();
+    XhrWrapper = class {
     };
   }
 });
-
-// src/dynamics-web-api.ts
-var dynamics_web_api_exports = {};
-__export(dynamics_web_api_exports, {
-  DynamicsWebApi: () => DynamicsWebApi
-});
-module.exports = __toCommonJS(dynamics_web_api_exports);
 
 // src/utils/Config.ts
 init_Utility();
@@ -833,11 +847,11 @@ var getApiUrl = (serverUrl, apiConfig) => {
 };
 var mergeApiConfigs = (apiConfig, apiType, internalConfig) => {
   const internalApiConfig = internalConfig[apiType];
-  if (apiConfig == null ? void 0 : apiConfig.version) {
+  if (apiConfig?.version) {
     ErrorHelper.stringParameterCheck(apiConfig.version, "DynamicsWebApi.setConfig", `config.${apiType}.version`);
     internalApiConfig.version = apiConfig.version;
   }
-  if (apiConfig == null ? void 0 : apiConfig.path) {
+  if (apiConfig?.path) {
     ErrorHelper.stringParameterCheck(apiConfig.path, "DynamicsWebApi.setConfig", `config.${apiType}.path`);
     internalApiConfig.path = apiConfig.path;
   }
@@ -845,43 +859,43 @@ var mergeApiConfigs = (apiConfig, apiType, internalConfig) => {
 };
 var ConfigurationUtility = class {
   static merge(internalConfig, config) {
-    if (config == null ? void 0 : config.serverUrl) {
+    if (config?.serverUrl) {
       ErrorHelper.stringParameterCheck(config.serverUrl, "DynamicsWebApi.setConfig", "config.serverUrl");
       internalConfig.serverUrl = config.serverUrl;
     }
-    mergeApiConfigs(config == null ? void 0 : config.dataApi, "dataApi", internalConfig);
-    mergeApiConfigs(config == null ? void 0 : config.searchApi, "searchApi", internalConfig);
-    if (config == null ? void 0 : config.impersonate) {
+    mergeApiConfigs(config?.dataApi, "dataApi", internalConfig);
+    mergeApiConfigs(config?.searchApi, "searchApi", internalConfig);
+    if (config?.impersonate) {
       internalConfig.impersonate = ErrorHelper.guidParameterCheck(config.impersonate, "DynamicsWebApi.setConfig", "config.impersonate");
     }
-    if (config == null ? void 0 : config.impersonateAAD) {
+    if (config?.impersonateAAD) {
       internalConfig.impersonateAAD = ErrorHelper.guidParameterCheck(config.impersonateAAD, "DynamicsWebApi.setConfig", "config.impersonateAAD");
     }
-    if (config == null ? void 0 : config.onTokenRefresh) {
+    if (config?.onTokenRefresh) {
       ErrorHelper.callbackParameterCheck(config.onTokenRefresh, "DynamicsWebApi.setConfig", "config.onTokenRefresh");
       internalConfig.onTokenRefresh = config.onTokenRefresh;
     }
-    if (config == null ? void 0 : config.includeAnnotations) {
+    if (config?.includeAnnotations) {
       ErrorHelper.stringParameterCheck(config.includeAnnotations, "DynamicsWebApi.setConfig", "config.includeAnnotations");
       internalConfig.includeAnnotations = config.includeAnnotations;
     }
-    if (config == null ? void 0 : config.timeout) {
+    if (config?.timeout) {
       ErrorHelper.numberParameterCheck(config.timeout, "DynamicsWebApi.setConfig", "config.timeout");
       internalConfig.timeout = config.timeout;
     }
-    if (config == null ? void 0 : config.maxPageSize) {
+    if (config?.maxPageSize) {
       ErrorHelper.numberParameterCheck(config.maxPageSize, "DynamicsWebApi.setConfig", "config.maxPageSize");
       internalConfig.maxPageSize = config.maxPageSize;
     }
-    if (config == null ? void 0 : config.returnRepresentation) {
+    if (config?.returnRepresentation) {
       ErrorHelper.boolParameterCheck(config.returnRepresentation, "DynamicsWebApi.setConfig", "config.returnRepresentation");
       internalConfig.returnRepresentation = config.returnRepresentation;
     }
-    if (config == null ? void 0 : config.useEntityNames) {
+    if (config?.useEntityNames) {
       ErrorHelper.boolParameterCheck(config.useEntityNames, "DynamicsWebApi.setConfig", "config.useEntityNames");
       internalConfig.useEntityNames = config.useEntityNames;
     }
-    if (config == null ? void 0 : config.proxy) {
+    if (config?.proxy) {
       ErrorHelper.parameterCheck(config.proxy, "DynamicsWebApi.setConfig", "config.proxy");
       if (config.proxy.url) {
         ErrorHelper.stringParameterCheck(config.proxy.url, "DynamicsWebApi.setConfig", "config.proxy.url");
@@ -993,20 +1007,19 @@ var _RequestUtility = class {
    * @param {Object} [config] - DynamicsWebApi config
    * @returns {ConvertedRequestOptions} Additional options in request
    */
-  static composeUrl(request, config, url2 = "", joinSymbol = "&") {
-    var _a2, _b2, _c;
+  static composeUrl(request, config, url = "", joinSymbol = "&") {
     const queryArray = [];
     if (request) {
       if (request.navigationProperty) {
         ErrorHelper.stringParameterCheck(request.navigationProperty, `DynamicsWebApi.${request.functionName}`, "request.navigationProperty");
-        url2 += "/" + request.navigationProperty;
+        url += "/" + request.navigationProperty;
         if (request.navigationPropertyKey) {
           let navigationKey = ErrorHelper.keyParameterCheck(
             request.navigationPropertyKey,
             `DynamicsWebApi.${request.functionName}`,
             "request.navigationPropertyKey"
           );
-          url2 += "(" + navigationKey + ")";
+          url += "(" + navigationKey + ")";
         }
         if (request.navigationProperty === "Attributes") {
           if (request.metadataAttributeType) {
@@ -1015,18 +1028,18 @@ var _RequestUtility = class {
               `DynamicsWebApi.${request.functionName}`,
               "request.metadataAttributeType"
             );
-            url2 += "/" + request.metadataAttributeType;
+            url += "/" + request.metadataAttributeType;
           }
         }
       }
-      if ((_a2 = request.select) == null ? void 0 : _a2.length) {
+      if (request.select?.length) {
         ErrorHelper.arrayParameterCheck(request.select, `DynamicsWebApi.${request.functionName}`, "request.select");
         if (request.functionName == "retrieve" && request.select.length == 1 && request.select[0].endsWith("/$ref")) {
-          url2 += "/" + request.select[0];
+          url += "/" + request.select[0];
         } else {
           if (request.select[0].startsWith("/") && request.functionName == "retrieve") {
             if (request.navigationProperty == null) {
-              url2 += request.select.shift();
+              url += request.select.shift();
             } else {
               request.select.shift();
             }
@@ -1052,7 +1065,7 @@ var _RequestUtility = class {
       }
       if (request.fieldName) {
         ErrorHelper.stringParameterCheck(request.fieldName, `DynamicsWebApi.${request.functionName}`, "request.fieldName");
-        url2 += "/" + request.fieldName;
+        url += "/" + request.fieldName;
       }
       if (request.savedQuery) {
         queryArray.push(
@@ -1088,7 +1101,7 @@ var _RequestUtility = class {
         ErrorHelper.stringParameterCheck(request.downloadSize, `DynamicsWebApi.${request.functionName}`, "request.downloadSize");
         queryArray.push("size=" + request.downloadSize);
       }
-      if ((_b2 = request.queryParams) == null ? void 0 : _b2.length) {
+      if (request.queryParams?.length) {
         ErrorHelper.arrayParameterCheck(request.queryParams, `DynamicsWebApi.${request.functionName}`, "request.queryParams");
         queryArray.push(request.queryParams.join("&"));
       }
@@ -1110,7 +1123,7 @@ var _RequestUtility = class {
       if (request.timeout) {
         ErrorHelper.numberParameterCheck(request.timeout, `DynamicsWebApi.${request.functionName}`, "request.timeout");
       }
-      if ((_c = request.expand) == null ? void 0 : _c.length) {
+      if (request.expand?.length) {
         ErrorHelper.stringOrArrayParameterCheck(request.expand, `DynamicsWebApi.${request.functionName}`, "request.expand");
         if (typeof request.expand === "string") {
           queryArray.push("$expand=" + request.expand);
@@ -1133,7 +1146,7 @@ var _RequestUtility = class {
         }
       }
     }
-    return !queryArray.length ? url2 : url2 + "?" + queryArray.join(joinSymbol);
+    return !queryArray.length ? url : url + "?" + queryArray.join(joinSymbol);
   }
   static composeHeaders(request, config) {
     const headers = {};
@@ -1217,6 +1230,7 @@ var _RequestUtility = class {
     let includeAnnotations = request.includeAnnotations;
     let maxPageSize = request.maxPageSize;
     let trackChanges = request.trackChanges;
+    let continueOnError = request.continueOnError;
     let prefer = [];
     if (request.prefer && request.prefer.length) {
       ErrorHelper.stringOrArrayParameterCheck(request.prefer, `DynamicsWebApi.${request.functionName}`, "request.prefer");
@@ -1227,12 +1241,14 @@ var _RequestUtility = class {
         let item = prefer[i].trim();
         if (item === "return=representation") {
           returnRepresentation = true;
-        } else if (item.indexOf("odata.include-annotations=") > -1) {
+        } else if (item.includes("odata.include-annotations=")) {
           includeAnnotations = item.replace("odata.include-annotations=", "").replace(/"/g, "");
         } else if (item.startsWith("odata.maxpagesize=")) {
           maxPageSize = Number(item.replace("odata.maxpagesize=", "").replace(/"/g, "")) || 0;
-        } else if (item.indexOf("odata.track-changes") > -1) {
+        } else if (item.includes("odata.track-changes")) {
           trackChanges = true;
+        } else if (item.includes("odata.continue-on-error")) {
+          continueOnError = true;
         }
       }
     }
@@ -1260,6 +1276,10 @@ var _RequestUtility = class {
       ErrorHelper.boolParameterCheck(trackChanges, `DynamicsWebApi.${request.functionName}`, "request.trackChanges");
       prefer.push("odata.track-changes");
     }
+    if (continueOnError) {
+      ErrorHelper.boolParameterCheck(continueOnError, `DynamicsWebApi.${request.functionName}`, "request.continueOnError");
+      prefer.push("odata.continue-on-error");
+    }
     return prefer.join(",");
   }
   static convertToBatch(requests, config, batchRequest) {
@@ -1268,9 +1288,8 @@ var _RequestUtility = class {
     let currentChangeSet = null;
     let contentId = 1e5;
     requests.forEach((internalRequest) => {
-      var _a2;
       internalRequest.functionName = "executeBatch";
-      if ((batchRequest == null ? void 0 : batchRequest.inChangeSet) === false)
+      if (batchRequest?.inChangeSet === false)
         internalRequest.inChangeSet = false;
       const inChangeSet = internalRequest.method === "GET" ? false : !!internalRequest.inChangeSet;
       if (!inChangeSet && currentChangeSet) {
@@ -1297,7 +1316,7 @@ var _RequestUtility = class {
         const contentIdValue = internalRequest.headers.hasOwnProperty("Content-ID") ? internalRequest.headers["Content-ID"] : ++contentId;
         batchBody.push(`Content-ID: ${contentIdValue}`);
       }
-      if (!((_a2 = internalRequest.path) == null ? void 0 : _a2.startsWith("$"))) {
+      if (!internalRequest.path?.startsWith("$")) {
         batchBody.push(`
 ${internalRequest.method} ${config.dataApi.url}${internalRequest.path} HTTP/1.1`);
       } else {
@@ -1402,7 +1421,7 @@ init_ErrorHelper();
 
 // src/client/helpers/executeRequest.ts
 async function executeRequest2(options) {
-  return false ? null.executeRequest(options) : (init_http(), __toCommonJS(http_exports)).executeRequest(options);
+  return true ? (init_xhr(), __toCommonJS(xhr_exports)).executeRequest(options) : null.executeRequest(options);
 }
 
 // src/client/RequestClient.ts
@@ -1482,10 +1501,10 @@ var RequestClient = class {
       }
       request.headers["Authorization"] = "Bearer " + (token.hasOwnProperty("accessToken") ? token.accessToken : token);
     }
-    const url2 = request.apiConfig ? request.apiConfig.url : config.dataApi.url;
+    const url = request.apiConfig ? request.apiConfig.url : config.dataApi.url;
     return await executeRequest2({
       method: request.method,
-      uri: url2 + request.path,
+      uri: url + request.path,
       data: processedData,
       additionalHeaders: request.headers,
       responseParams: _responseParseParams,
@@ -1637,7 +1656,7 @@ var DynamicsWebApi = class {
         internalRequest = request;
       internalRequest.method = "POST";
       const response = await this._makeRequest(internalRequest);
-      return response == null ? void 0 : response.data;
+      return response?.data;
     };
     /**
      * Sends an asynchronous request to retrieve a record.
@@ -1656,7 +1675,6 @@ var DynamicsWebApi = class {
      *const response = await dynamicsWebApi.retrieve(request);
      */
     this.retrieve = async (request) => {
-      var _a2;
       ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieve", "request");
       let internalRequest;
       if (!request.functionName) {
@@ -1666,10 +1684,10 @@ var DynamicsWebApi = class {
         internalRequest = request;
       internalRequest.method = "GET";
       internalRequest.responseParameters = {
-        isRef: ((_a2 = internalRequest.select) == null ? void 0 : _a2.length) === 1 && internalRequest.select[0].endsWith("/$ref")
+        isRef: internalRequest.select?.length === 1 && internalRequest.select[0].endsWith("/$ref")
       };
       const response = await this._makeRequest(internalRequest);
-      return response == null ? void 0 : response.data;
+      return response?.data;
     };
     /**
      * Sends an asynchronous request to update a record.
@@ -1694,7 +1712,7 @@ var DynamicsWebApi = class {
       const ifmatch = internalRequest.ifmatch;
       try {
         const response = await this._makeRequest(internalRequest);
-        return response == null ? void 0 : response.data;
+        return response?.data;
       } catch (error) {
         if (ifmatch && error.status === 412) {
           return false;
@@ -1720,7 +1738,7 @@ var DynamicsWebApi = class {
       internalRequest.method = "PUT";
       delete internalRequest["fieldValuePair"];
       const response = await this._makeRequest(internalRequest);
-      return response == null ? void 0 : response.data;
+      return response?.data;
     };
     /**
      * Sends an asynchronous request to delete a record.
@@ -1741,7 +1759,7 @@ var DynamicsWebApi = class {
       const ifmatch = internalRequest.ifmatch;
       try {
         const response = await this._makeRequest(internalRequest);
-        return response == null ? void 0 : response.data;
+        return response?.data;
       } catch (error) {
         if (ifmatch && error.status === 412) {
           return false;
@@ -1764,7 +1782,7 @@ var DynamicsWebApi = class {
       const ifmatch = internalRequest.ifmatch;
       try {
         const response = await this._makeRequest(internalRequest);
-        return response == null ? void 0 : response.data;
+        return response?.data;
       } catch (error) {
         if (ifnonematch && error.status === 412) {
           return null;
@@ -1795,25 +1813,25 @@ var DynamicsWebApi = class {
       internalRequest.functionName = "uploadFile";
       internalRequest.transferMode = "chunked";
       const response = await this._makeRequest(internalRequest);
-      internalRequest.url = response == null ? void 0 : response.data.location;
+      internalRequest.url = response?.data.location;
       delete internalRequest.transferMode;
       delete internalRequest.fieldName;
       delete internalRequest.fileName;
-      return this._uploadFileChunk(internalRequest, request.data, response == null ? void 0 : response.data.chunkSize);
+      return this._uploadFileChunk(internalRequest, request.data, response?.data.chunkSize);
     };
     this._downloadFileChunk = async (request, bytesDownloaded = 0, data = "") => {
       request.range = "bytes=" + bytesDownloaded + "-" + (bytesDownloaded + Utility.downloadChunkSize - 1);
       request.downloadSize = "full";
       const response = await this._makeRequest(request);
-      request.url = response == null ? void 0 : response.data.location;
-      data += response == null ? void 0 : response.data.value;
+      request.url = response?.data.location;
+      data += response?.data.value;
       bytesDownloaded += Utility.downloadChunkSize;
-      if (bytesDownloaded <= (response == null ? void 0 : response.data.fileSize)) {
+      if (bytesDownloaded <= response?.data.fileSize) {
         return this._downloadFileChunk(request, bytesDownloaded, data);
       }
       return {
-        fileName: response == null ? void 0 : response.data.fileName,
-        fileSize: response == null ? void 0 : response.data.fileSize,
+        fileName: response?.data.fileName,
+        fileSize: response?.data.fileSize,
         data: Utility.convertToFileBuffer(data)
       };
     };
@@ -1851,7 +1869,7 @@ var DynamicsWebApi = class {
         internalRequest.url = nextPageLink;
       }
       const response = await this._makeRequest(internalRequest);
-      return response == null ? void 0 : response.data;
+      return response?.data;
     };
     this._retrieveAllRequest = async (request, nextPageLink, records = []) => {
       const response = await this.retrieveMultiple(request, nextPageLink);
@@ -1884,19 +1902,18 @@ var DynamicsWebApi = class {
      * @returns {Promise} D365 Web Api Response
      */
     this.count = async (request) => {
-      var _a2;
       ErrorHelper.parameterCheck(request, "DynamicsWebApi.count", "request");
       const internalRequest = Utility.copyRequest(request);
       internalRequest.method = "GET";
       internalRequest.functionName = "count";
-      if ((_a2 = internalRequest.filter) == null ? void 0 : _a2.length) {
+      if (internalRequest.filter?.length) {
         internalRequest.count = true;
       } else {
         internalRequest.navigationProperty = "$count";
       }
       internalRequest.responseParameters = { toCount: internalRequest.count };
       const response = await this._makeRequest(internalRequest);
-      return response == null ? void 0 : response.data;
+      return response?.data;
     };
     /**
      * Sends an asynchronous request to count records. Returns: Number
@@ -1937,7 +1954,7 @@ var DynamicsWebApi = class {
       }
       internalRequest.responseParameters = { pageNumber: internalRequest.pageNumber };
       const response = await this._makeRequest(internalRequest);
-      return response == null ? void 0 : response.data;
+      return response?.data;
     };
     /**
      * Sends an asynchronous request to execute FetchXml to retrieve all records.
@@ -2052,7 +2069,7 @@ var DynamicsWebApi = class {
       internalRequest._isUnboundRequest = !internalRequest.collection;
       internalRequest.functionName = "callFunction";
       const response = await this._makeRequest(internalRequest);
-      return response == null ? void 0 : response.data;
+      return response?.data;
     };
     /**
      * Calls a Web API action
@@ -2070,7 +2087,7 @@ var DynamicsWebApi = class {
       internalRequest._isUnboundRequest = !internalRequest.collection;
       internalRequest.data = request.action;
       const response = await this._makeRequest(internalRequest);
-      return response == null ? void 0 : response.data;
+      return response?.data;
     };
     /**
      * Sends an asynchronous request to create an entity definition.
@@ -2371,7 +2388,7 @@ var DynamicsWebApi = class {
       const internalRequest = !request ? {} : Utility.copyRequest(request);
       internalRequest.collection = "GlobalOptionSetDefinitions";
       internalRequest.functionName = "retrieveGlobalOptionSets";
-      if (request == null ? void 0 : request.castType) {
+      if (request?.castType) {
         ErrorHelper.stringParameterCheck(request.castType, "DynamicsWebApi.retrieveGlobalOptionSets", "request.castType");
         internalRequest.navigationProperty = request.castType;
       }
@@ -2386,12 +2403,12 @@ var DynamicsWebApi = class {
       const internalRequest = !request ? {} : Utility.copyRequest(request);
       internalRequest.collection = "$metadata";
       internalRequest.functionName = "retrieveCsdlMetadata";
-      if (request == null ? void 0 : request.addAnnotations) {
+      if (request?.addAnnotations) {
         ErrorHelper.boolParameterCheck(request.addAnnotations, "DynamicsWebApi.retrieveCsdlMetadata", "request.addAnnotations");
         internalRequest.includeAnnotations = "*";
       }
       const response = await this._makeRequest(internalRequest);
-      return response == null ? void 0 : response.data;
+      return response?.data;
     };
     /**
      * Provides a search results page.
@@ -2413,7 +2430,7 @@ var DynamicsWebApi = class {
       internalRequest.apiConfig = this._config.searchApi;
       delete internalRequest.query;
       const response = await this._makeRequest(internalRequest);
-      return response == null ? void 0 : response.data;
+      return response?.data;
     };
     /**
      * Provides suggestions as the user enters text into a form field.
@@ -2434,7 +2451,7 @@ var DynamicsWebApi = class {
       internalRequest.apiConfig = this._config.searchApi;
       delete internalRequest.query;
       const response = await this._makeRequest(internalRequest);
-      return response == null ? void 0 : response.data;
+      return response?.data;
     };
     /**
      * Provides autocompletion of input as the user enters text into a form field.
@@ -2456,7 +2473,7 @@ var DynamicsWebApi = class {
       internalRequest.apiConfig = this._config.searchApi;
       delete internalRequest.query;
       const response = await this._makeRequest(internalRequest);
-      return response == null ? void 0 : response.data;
+      return response?.data;
     };
     /**
      * Starts/executes a batch request.
@@ -2480,7 +2497,7 @@ var DynamicsWebApi = class {
       this._batchRequestId = null;
       this._isBatch = false;
       const response = await this._makeRequest(internalRequest);
-      return response == null ? void 0 : response.data;
+      return response?.data;
     };
     /**
      * Creates a new instance of DynamicsWebApi. If the config is not provided, it is copied from the current instance.
@@ -2502,8 +2519,7 @@ var DynamicsWebApi = class {
     ConfigurationUtility.merge(this._config, config);
   }
 };
-// Annotate the CommonJS export names for ESM import in node:
-0 && (module.exports = {
+export {
   DynamicsWebApi
-});
-//# sourceMappingURL=dynamics-web-api.cjs.js.map
+};
+//# sourceMappingURL=dynamics-web-api.js.map

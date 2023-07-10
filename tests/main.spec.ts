@@ -204,8 +204,6 @@ describe("dynamicsWebApi.executeBatch -", () => {
                         resultBody += bodys[i];
                     }
 
-                    console.log(checkBody);
-                    console.log(resultBody);
                     return resultBody;
                 })
                 .post("/$batch", checkBody)

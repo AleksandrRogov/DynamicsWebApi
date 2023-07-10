@@ -347,7 +347,7 @@ export declare class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    executeBatch: (request?: BaseRequest) => Promise<any[]>;
+    executeBatch: (request?: BatchRequest) => Promise<any[]>;
     /**
      * Creates a new instance of DynamicsWebApi. If the config is not provided, it is copied from the current instance.
      *
@@ -397,6 +397,9 @@ export interface BaseRequest {
     signal?: AbortSignal;
     /**Indicates if an operation must be included in a Change Set or not. Works in Batch Operations only. By default, it's "true", except for GET operations - they are not allowed in Change Sets. */
     inChangeSet?: boolean;
+}
+export interface BatchRequest extends BaseRequest {
+    continueOnError?: boolean;
 }
 export interface Request extends BaseRequest {
     /**A name of the Entity Collection or Entity Logical name. */

@@ -1,6 +1,6 @@
 /*! dynamics-web-api v2.0.0-beta.0 (c) 2023 Aleksandr Rogov */
 "use strict";
-(() => {
+var _dynamicsWebApiExports = (() => {
   var __defProp = Object.defineProperty;
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
   var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -839,6 +839,12 @@
     }
   });
 
+  // src/dynamics-web-api.ts
+  var dynamics_web_api_exports = {};
+  __export(dynamics_web_api_exports, {
+    DynamicsWebApi: () => DynamicsWebApi
+  });
+
   // src/utils/Config.ts
   init_Utility();
   init_ErrorHelper();
@@ -1232,6 +1238,7 @@
       let includeAnnotations = request.includeAnnotations;
       let maxPageSize = request.maxPageSize;
       let trackChanges = request.trackChanges;
+      let continueOnError = request.continueOnError;
       let prefer = [];
       if (request.prefer && request.prefer.length) {
         ErrorHelper.stringOrArrayParameterCheck(request.prefer, `DynamicsWebApi.${request.functionName}`, "request.prefer");
@@ -1242,12 +1249,14 @@
           let item = prefer[i].trim();
           if (item === "return=representation") {
             returnRepresentation = true;
-          } else if (item.indexOf("odata.include-annotations=") > -1) {
+          } else if (item.includes("odata.include-annotations=")) {
             includeAnnotations = item.replace("odata.include-annotations=", "").replace(/"/g, "");
           } else if (item.startsWith("odata.maxpagesize=")) {
             maxPageSize = Number(item.replace("odata.maxpagesize=", "").replace(/"/g, "")) || 0;
-          } else if (item.indexOf("odata.track-changes") > -1) {
+          } else if (item.includes("odata.track-changes")) {
             trackChanges = true;
+          } else if (item.includes("odata.continue-on-error")) {
+            continueOnError = true;
           }
         }
       }
@@ -1274,6 +1283,10 @@
       if (trackChanges) {
         ErrorHelper.boolParameterCheck(trackChanges, `DynamicsWebApi.${request.functionName}`, "request.trackChanges");
         prefer.push("odata.track-changes");
+      }
+      if (continueOnError) {
+        ErrorHelper.boolParameterCheck(continueOnError, `DynamicsWebApi.${request.functionName}`, "request.continueOnError");
+        prefer.push("odata.continue-on-error");
       }
       return prefer.join(",");
     }
@@ -2514,5 +2527,7 @@ ${_RequestUtility.processData(internalRequest.data, config)}`);
       ConfigurationUtility.merge(this._config, config);
     }
   };
+  return __toCommonJS(dynamics_web_api_exports);
 })();
+var DynamicsWebApi = _dynamicsWebApiExports.DynamicsWebApi
 //# sourceMappingURL=dynamics-web-api.js.map

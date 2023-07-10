@@ -363,6 +363,7 @@ export class RequestUtility {
         let includeAnnotations: string | null | undefined = request.includeAnnotations;
         let maxPageSize: number | null | undefined = request.maxPageSize;
         let trackChanges: boolean | null | undefined = request.trackChanges;
+        let continueOnError: boolean | null | undefined = request.continueOnError;
 
         let prefer: string[] = [];
 
@@ -375,12 +376,14 @@ export class RequestUtility {
                 let item = prefer[i].trim();
                 if (item === "return=representation") {
                     returnRepresentation = true;
-                } else if (item.indexOf("odata.include-annotations=") > -1) {
+                } else if (item.includes("odata.include-annotations=")) {
                     includeAnnotations = item.replace("odata.include-annotations=", "").replace(/"/g, "");
                 } else if (item.startsWith("odata.maxpagesize=")) {
                     maxPageSize = Number(item.replace("odata.maxpagesize=", "").replace(/"/g, "")) || 0;
-                } else if (item.indexOf("odata.track-changes") > -1) {
+                } else if (item.includes("odata.track-changes")) {
                     trackChanges = true;
+                } else if (item.includes("odata.continue-on-error")) {
+                    continueOnError = true;
                 }
             }
         }
@@ -414,6 +417,11 @@ export class RequestUtility {
         if (trackChanges) {
             ErrorHelper.boolParameterCheck(trackChanges, `DynamicsWebApi.${request.functionName}`, "request.trackChanges");
             prefer.push("odata.track-changes");
+        }
+
+        if (continueOnError) {
+            ErrorHelper.boolParameterCheck(continueOnError, `DynamicsWebApi.${request.functionName}`, "request.continueOnError");
+            prefer.push("odata.continue-on-error");
         }
 
         return prefer.join(",");

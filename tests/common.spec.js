@@ -1182,6 +1182,16 @@ describe("RequestUtility.composeHeaders -", function () {
         expect(result).to.deep.equal({ Prefer: "odata.maxpagesize=10" });
     });
 
+    it("continueOnError", function () {
+        var dwaRequest = {
+            continueOnError: true,
+            functionName: "",
+        };
+
+        var result = RequestUtility.composeHeaders(dwaRequest);
+        expect(result).to.deep.equal({ Prefer: "odata.continue-on-error" });
+    });
+
     it("returnRepresentation empty", function () {
         var dwaRequest = {
             returnRepresentation: false,
@@ -1295,6 +1305,19 @@ describe("RequestUtility.composeHeaders -", function () {
 
         var result = RequestUtility.composeHeaders(dwaRequest);
         expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="*",odata.maxpagesize=20' });
+    });
+
+    it("includeAnnotations & returnRepresentation & maxPageSize & continueOnError", function () {
+        var dwaRequest = {
+            returnRepresentation: true,
+            includeAnnotations: "*",
+            maxPageSize: 20,
+            continueOnError: true,
+            functionName: "",
+        };
+
+        var result = RequestUtility.composeHeaders(dwaRequest);
+        expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="*",odata.maxpagesize=20,odata.continue-on-error' });
     });
 
     it("includeAnnotations & maxPageSize", function () {

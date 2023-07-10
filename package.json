@@ -1,26 +1,38 @@
 {
     "name": "dynamics-web-api",
-    "version": "2.0.0-beta.0",
+    "version": "2.0.0-beta.1",
     "description": "DynamicsWebApi is a Microsoft Dynamics CRM Web API helper library",
     "keywords": [
-        "crm",
-        "cds",
+        "d365",
+        "dynamics-365",
+        "dataverse",
         "web-api",
         "helper",
-        "d365",
+        "crm",
         "dynamics-crm",
-        "dynamics-365",
+        "cds",
         "common-data-service",
-        "dataverse",
         "microsoft-dataverse",
         "dynamics-crm-webapi",
         "dynamics-crm-online"
     ],
-    "browser": "dist/dynamics-web-api.js",
-    "main": "dist/dynamics-web-api.cjs.js",
-    "types": "dist/dynamics-web-api.d.ts",
+    "main": "dist/cjs/dynamics-web-api.js",
+    "types": "./dist/dynamics-web-api.d.ts",
+    "exports": {
+        "types": "./dist/dynamics-web-api.d.ts",
+        "browser": {
+            "import": "./dist/browser/esm/dynamics-web-api.js",
+            "require": "./dist/browser/esm/dynamics-web-api.js",
+            "default": "./dist/dynamics-web-api.js"
+        },
+        "default": {
+            "import": "./dist/esm/dynamics-web-api.mjs",
+            "require": "./dist/cjs/dynamics-web-api.js"
+        }
+    },
     "files": [
         "dist/**/*.js",
+        "dist/**/*.mjs",
         "dist/**/*.d.ts"
     ],
     "author": {

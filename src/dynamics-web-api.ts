@@ -1125,7 +1125,7 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    executeBatch = async (request?: BaseRequest): Promise<any[]> => {
+    executeBatch = async (request?: BatchRequest): Promise<any[]> => {
         ErrorHelper.throwBatchNotStarted(this._isBatch);
 
         const internalRequest: Core.InternalRequest = !request ? {} : Utility.copyRequest(request);
@@ -1194,6 +1194,11 @@ export interface BaseRequest {
     signal?: AbortSignal;
     /**Indicates if an operation must be included in a Change Set or not. Works in Batch Operations only. By default, it's "true", except for GET operations - they are not allowed in Change Sets. */
     inChangeSet?: boolean;
+}
+
+export interface BatchRequest extends BaseRequest{
+    //Sets Prefer header to "odata.continue-on-error" that allows more requests be processed when errors occur. The batch request will return '200 OK' and individual response errors will be returned in the batch response body.
+    continueOnError?: boolean;
 }
 
 export interface Request extends BaseRequest {

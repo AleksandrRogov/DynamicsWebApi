@@ -138,6 +138,7 @@ export declare namespace Core {
         apiConfig?: InternalApiConfig;
         query?: any;
         signal?: AbortSignal;
+        continueOnError?: boolean;
     }
 
     interface FileParseResult {

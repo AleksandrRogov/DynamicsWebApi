@@ -1,54 +1,52 @@
 import * as esbuild from "esbuild";
 import { getBanner } from "./banner.mjs";
 
-const browserPlugin = {
-    name: "browserPlugin",
-    setup(build) {
-        build.onResolve({ filter: /platform\/node-/ }, async (args) => {
-            const newPath = args.path.replace("node-", "browser-");
-            const result = await build.resolve(newPath, {
-                kind: args.kind,
-                resolveDir: args.resolveDir,
-            });
-            if (result.errors.length > 0) {
-                return { errors: result.errors };
-            }
-            return { path: result.path };
-        });
-    },
-};
-
 const banner = `/*! ${getBanner()} */`;
 
 const esbuilds = [];
 
-["dist/dynamics-web-api.cjs.js", "dist/dynamics-web-api.cjs.min.js", "dist/dynamics-web-api.js", "dist/dynamics-web-api.min.js"].forEach(function (outfile) {
-    const minify = outfile.endsWith("min.js");
-    const isNode = outfile.includes("cjs");
+["", "cjs/", "esm/", "browser/esm/"].forEach((folder) => {
+    const isBrowser = folder.startsWith("browser") || folder === "";
+    const platform = folder.endsWith("esm/") ? "neutral" : isBrowser ? "browser" : "node";
+    const extension = !isBrowser && platform === "neutral" ? ".mjs" : ".js"; //only for node esm modules
 
-    const config = {
-        entryPoints: ["src/dynamics-web-api.ts"],
-        bundle: true,
-        target: ["es2020"],
-        platform: isNode ? "node" : "browser",
-        packages: isNode ? "external" : undefined,
-        minify: minify,
-        outfile: outfile,
-        banner: { js: banner },
-        sourcemap: true,
-        define: {
-            "global.DWA_BROWSER": isNode ? "false" : "true",
-        },
-    };
+    let minify = folder !== "";
 
-    if (isNode) {
-        config.target.push("node15.0");
-    } else {
-        config.plugins = [browserPlugin];
-        config.define["global.window"] = "window";
-    }
+    do {
+        minify = !minify;
 
-    esbuilds.push(esbuild.build(config));
+        const config = {
+            entryPoints: ["src/dynamics-web-api.ts"],
+            bundle: true,
+            target: ["es2020"],
+            platform: platform,
+            packages: !isBrowser ? "external" : undefined,
+            minify: minify,
+            outfile: `dist/${folder}dynamics-web-api${minify ? ".min" : ""}${extension}`,
+            banner: { js: banner },
+            sourcemap: true,
+            define: {
+                "global.DWA_BROWSER": isBrowser ? "true" : "false",
+            },
+        };
+
+        if (!isBrowser) {
+            config.target.push("node15.0");
+            if (platform === "neutral") {
+                config.outExtension = { ".js": ".mjs" };
+            }
+        } else {
+            config.define["global.window"] = "window";
+
+            //for iife only
+            if (folder === "") {
+                config.globalName = "_dynamicsWebApiExports";
+                config.footer = { js: "var DynamicsWebApi = _dynamicsWebApiExports.DynamicsWebApi" };
+            }
+        }
+
+        esbuilds.push(esbuild.build(config));
+    } while (minify);
 });
 
 try {
