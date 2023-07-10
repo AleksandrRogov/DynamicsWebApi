@@ -10,7 +10,7 @@ DynamicsWebApi is a Microsoft Dataverse Web API helper library written in Typesc
 It is compatible with: Microsoft Dataverse, Microsoft Dynamics 365: Customer Service, Field Service, Marketing, Project Operations, Talents, Sales and any application built on Microsoft Power Apps platform. 
 As well as Microsoft Dynamics 365 CE (online), Microsoft Dynamics 365 CE (on-premises), Microsoft Dynamics CRM 2016, Microsoft Dynamics CRM Online.
 
-### **This documentation is for version 2+. If you are working with version 1.x, please check [this instead](https://github.com/AleksandrRogov/DynamicsWebApi/tree/v1).**
+### **This documentation is for version 2.x. If you are working with version 1.x, please check [this instead](https://github.com/AleksandrRogov/DynamicsWebApi/tree/v1).**
 
 Please check [DynamicsWebApi Wiki](../../wiki/) where you will find documentation to DynamicsWebApi API and more.
 
@@ -978,7 +978,7 @@ Batch requests bundle multiple operations into a single one and have the followi
 
 DynamicsWebApi provides a straightforward way to execute Batch operations which may not always be simple to compose.
 
-**Please Note!** By default, all operations that modify data, such as: CREATE, UPDATE, UPSERT, PUT and DELETE - are automatically made atomic (combined in Change Sets). You can change this behaviour by setting `inChangeSet` to `false`. [More Info]()
+**Please Note!** By default, all operations that modify data, such as: CREATE, UPDATE, UPSERT, PUT and DELETE - are automatically made atomic (combined in Change Sets). You can change this behaviour by setting `inChangeSet` to `false`. [More Info](#controlling-change-sets)
 
 The following example bundles 2 retrieve multiple operations and an update:
 
