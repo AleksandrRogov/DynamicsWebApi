@@ -878,6 +878,15 @@ describe("RequestConverter.convertRequestOptions -", function () {
         expect(result).to.deep.equal({ url: stubUrl, query: "", headers: { Prefer: "odata.maxpagesize=10" } });
     });
 
+    it("continueOnError", function () {
+        var dwaRequest = {
+            continueOnError: true,
+        };
+
+        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
+        expect(result).to.deep.equal({ url: stubUrl, query: "", headers: { Prefer: "odata.continue-on-error" } });
+    });
+
     it("navigationProperty empty", function () {
         var dwaRequest = {
             navigationProperty: "",
@@ -1287,6 +1296,24 @@ describe("RequestConverter.convertRequestOptions -", function () {
             query: "",
             headers: {
                 Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="*",odata.maxpagesize=20',
+            },
+        });
+    });
+
+    it("includeAnnotations & returnRepresentation & maxPageSize & continueOnError", function () {
+        var dwaRequest = {
+            returnRepresentation: true,
+            includeAnnotations: "*",
+            maxPageSize: 20,
+            continueOnError: true
+        };
+
+        var result = RequestConverter.convertRequestOptions(dwaRequest, "", stubUrl);
+        expect(result).to.deep.equal({
+            url: stubUrl,
+            query: "",
+            headers: {
+                Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="*",odata.maxpagesize=20,odata.continue-on-error',
             },
         });
     });

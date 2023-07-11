@@ -507,7 +507,7 @@ declare class DynamicsWebApi {
     /**
      * Executes a batch request. Please call DynamicsWebApi.startBatch() first to start a batch request.
      */
-    executeBatch(request?: DynamicsWebApi.RequestBase): Promise<any[]>;
+    executeBatch(request?: DynamicsWebApi.BatchRequest): Promise<any[]>;
     /**
      * Creates a new instance of DynamicsWebApi
      *
@@ -554,6 +554,11 @@ declare namespace DynamicsWebApi {
         token?: string;
         /**Sets a number of milliseconds before a request times out. */
         timeout?: number;
+    }
+
+    interface BatchRequest extends RequestBase{
+        //Sets Prefer header to "odata.continue-on-error" that allows more requests be processed when errors occur. The batch request will return '200 OK' and individual response errors will be returned in the batch response body.
+        continueOnError?: boolean;
     }
 
     interface Request extends RequestBase {

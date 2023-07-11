@@ -819,7 +819,7 @@ declare class DynamicsWebApi {
      * @param errorCallback - The function that will be passed through and be called by a failed response.
      * @param request
      */
-    executeBatch(successCallback: Function, errorCallback: Function, request?: DynamicsWebApi.RequestBase): void;
+    executeBatch(successCallback: Function, errorCallback: Function, request?: DynamicsWebApi.BatchRequest): void;
     /**
      * Creates a new instance of DynamicsWebApi
      *
@@ -866,6 +866,11 @@ declare namespace DynamicsWebApi {
         token?: string;
         /**Sets a number of milliseconds before a request times out. */
         timeout?: number;
+    }
+
+    interface BatchRequest extends RequestBase{
+        //Sets Prefer header to "odata.continue-on-error" that allows more requests be processed when errors occur. The batch request will return '200 OK' and individual response errors will be returned in the batch response body.
+        continueOnError?: boolean;
     }
 
     interface Request extends RequestBase {
