@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.7.9 (c) 2023 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.7.10 (c) 2023 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -3640,6 +3640,7 @@ module.exports = function buildPreferHeader(request, functionName, config) {
     var includeAnnotations = request.includeAnnotations;
     var maxPageSize = request.maxPageSize;
     var trackChanges = request.trackChanges;
+    var continueOnError = request.continueOnError;
 
     var prefer;
 
@@ -3647,21 +3648,20 @@ module.exports = function buildPreferHeader(request, functionName, config) {
         ErrorHelper.stringOrArrayParameterCheck(request.prefer, "DynamicsWebApi." + functionName, "request.prefer");
         prefer = request.prefer;
         if (typeof prefer === "string") {
-            prefer = prefer.split(',');
+            prefer = prefer.split(",");
         }
         for (var i in prefer) {
             var item = prefer[i].trim();
             if (item === DWA.Prefer.ReturnRepresentation) {
                 returnRepresentation = true;
-            }
-            else if (item.indexOf("odata.include-annotations=") > -1) {
-                includeAnnotations = item.replace('odata.include-annotations=', '').replace(/"/g, '');
-            }
-            else if (item.startsWith("odata.maxpagesize=")) {
-                maxPageSize = item.replace('odata.maxpagesize=', '').replace(/"/g, '');
-            }
-            else if (item.indexOf("odata.track-changes") > -1) {
+            } else if (item.indexOf("odata.include-annotations=") > -1) {
+                includeAnnotations = item.replace("odata.include-annotations=", "").replace(/"/g, "");
+            } else if (item.startsWith("odata.maxpagesize=")) {
+                maxPageSize = item.replace("odata.maxpagesize=", "").replace(/"/g, "");
+            } else if (item.indexOf("odata.track-changes") > -1) {
                 trackChanges = true;
+            } else if (item.includes("odata.continue-on-error")) {
+                continueOnError = true;
             }
         }
     }
@@ -3688,16 +3688,22 @@ module.exports = function buildPreferHeader(request, functionName, config) {
 
     if (maxPageSize && maxPageSize > 0) {
         ErrorHelper.numberParameterCheck(maxPageSize, "DynamicsWebApi." + functionName, "request.maxPageSize");
-        prefer.push('odata.maxpagesize=' + maxPageSize);
+        prefer.push("odata.maxpagesize=" + maxPageSize);
     }
 
     if (trackChanges) {
         ErrorHelper.boolParameterCheck(trackChanges, "DynamicsWebApi." + functionName, "request.trackChanges");
-        prefer.push('odata.track-changes');
+        prefer.push("odata.track-changes");
     }
 
-    return prefer.join(',');
-}
+    if (continueOnError) {
+        ErrorHelper.boolParameterCheck(continueOnError, "DynamicsWebApi." + functionName, "request.continueOnError");
+        prefer.push("odata.continue-on-error");
+    }
+
+    return prefer.join(",");
+};
+
 
 /***/ }),
 
