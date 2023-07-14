@@ -1,11 +1,12 @@
 import { expect } from "chai";
 import nock from "nock";
-import * as mocks from "./stubs";
+import stubs, * as mocks from "./stubs";
 
 import { RequestClient } from "../src/client/RequestClient";
 import { InternalConfig } from "../src/utils/Config";
 import { Core } from "../src/types";
 import * as Regex from "../src/helpers/Regex";
+import { RequestUtility } from "../src/utils/Request";
 
 describe("Regex.", () => {
     describe("isUuid -", () => {
@@ -112,3 +113,30 @@ describe("RequestClient.makeRequest", () => {
         });
     });
 });
+
+describe("RequestUtility.", () => {
+    describe("processData", () => {
+        const config = {
+            serverUrl: stubs.serverUrl,
+            dataApi: {
+                url: "data",
+                version: "9.2"
+            },
+            searchApi: {
+                url: "search",
+                version: "9.2"
+            }
+        }
+
+        it ("removes brackets from the guids & adds a slash in front", () => {
+            const guid = "00000000-0000-0000-0000-000000000001";
+            const data = {
+                "ref1@odata.bind": `contacts({${guid}})`
+            }
+
+            const result = RequestUtility.processData(data, config);
+
+            expect(result).to.be.eq('{"ref1@odata.bind":"/contacts(00000000-0000-0000-0000-000000000001)"}');
+        })
+    });
+})

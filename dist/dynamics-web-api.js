@@ -1,4 +1,4 @@
-/*! dynamics-web-api v2.0.0-beta.0 (c) 2023 Aleksandr Rogov */
+/*! dynamics-web-api v2.0.0-beta.3 (c) 2023 Aleksandr Rogov */
 "use strict";
 var _dynamicsWebApiExports = (() => {
   var __defProp = Object.defineProperty;
@@ -59,9 +59,6 @@ var _dynamicsWebApiExports = (() => {
   });
 
   // src/utils/Utility.ts
-  function isNodeEnv() {
-    return Object.prototype.toString.call(typeof process !== "undefined" ? process : 0) === "[object process]";
-  }
   var downloadChunkSize, _Utility, Utility;
   var init_Utility = __esm({
     "src/utils/Utility.ts"() {
@@ -69,7 +66,7 @@ var _dynamicsWebApiExports = (() => {
       init_Crypto();
       init_Regex();
       downloadChunkSize = 4194304;
-      _Utility = class {
+      _Utility = class _Utility {
         /**
          * Builds parametes for a funciton. Returns '()' (if no parameters) or '([params])?[query]'
          *
@@ -166,9 +163,9 @@ var _dynamicsWebApiExports = (() => {
             "Xrm Context is not available. In most cases, it can be resolved by adding a reference to a ClientGlobalContext.js.aspx. Please refer to MSDN documentation for more details."
           );
         }
-        static getXrmUtility() {
-          return typeof Xrm !== "undefined" ? Xrm.Utility : null;
-        }
+        // static getXrmUtility(): any {
+        //     return typeof Xrm !== "undefined" ? Xrm.Utility : null;
+        // }
         static getClientUrl() {
           const context = _Utility.getXrmContext();
           let clientUrl = context.getClientUrl();
@@ -229,9 +226,9 @@ var _dynamicsWebApiExports = (() => {
           }
         }
       };
+      // static isNodeEnv = isNodeEnv;
+      _Utility.downloadChunkSize = downloadChunkSize;
       Utility = _Utility;
-      Utility.isNodeEnv = isNodeEnv;
-      Utility.downloadChunkSize = downloadChunkSize;
     }
   });
 
@@ -246,7 +243,7 @@ var _dynamicsWebApiExports = (() => {
     "src/helpers/ErrorHelper.ts"() {
       "use strict";
       init_Regex();
-      ErrorHelper = class {
+      ErrorHelper = class _ErrorHelper {
         static handleErrorResponse(req) {
           throw new Error(`Error: ${req.status}: ${req.message}`);
         }
@@ -326,7 +323,7 @@ var _dynamicsWebApiExports = (() => {
         }
         static keyParameterCheck(parameter, functionName, parameterName) {
           try {
-            ErrorHelper.stringParameterCheck(parameter, functionName, parameterName);
+            _ErrorHelper.stringParameterCheck(parameter, functionName, parameterName);
             const match = extractUuid(parameter);
             if (match)
               return match;
@@ -369,15 +366,15 @@ var _dynamicsWebApiExports = (() => {
   var init_dwa = __esm({
     "src/dwa.ts"() {
       "use strict";
-      _DWA = class {
+      _DWA = class _DWA {
       };
-      DWA = _DWA;
-      DWA.Prefer = (_b = class {
+      _DWA.Prefer = (_b = class {
         static get(annotation) {
           return `${_DWA.Prefer.IncludeAnnotations}="${annotation}"`;
         }
       }, _b.ReturnRepresentation = "return=representation", _b.Annotations = (_a = class {
       }, _a.AssociatedNavigationProperty = "Microsoft.Dynamics.CRM.associatednavigationproperty", _a.LookupLogicalName = "Microsoft.Dynamics.CRM.lookuplogicalname", _a.All = "*", _a.FormattedValue = "OData.Community.Display.V1.FormattedValue", _a.FetchXmlPagingCookie = "Microsoft.Dynamics.CRM.fetchxmlpagingcookie", _a), _b.IncludeAnnotations = "odata.include-annotations", _b);
+      DWA = _DWA;
     }
   });
 
@@ -726,6 +723,8 @@ var _dynamicsWebApiExports = (() => {
             successCallback(response);
             break;
           }
+          case 0:
+            break;
           default:
             if (!request)
               break;
@@ -735,7 +734,7 @@ var _dynamicsWebApiExports = (() => {
               headers = parseResponseHeaders(request.getAllResponseHeaders());
               const errorParsed = parseResponse(
                 request.responseText,
-                parseResponseHeaders(request.getAllResponseHeaders()),
+                headers,
                 responseParams[options.requestId]
               );
               if (Array.isArray(errorParsed)) {
@@ -951,7 +950,7 @@ var _dynamicsWebApiExports = (() => {
   // src/utils/Request.ts
   init_Utility();
   init_ErrorHelper();
-  var _RequestUtility = class {
+  var _RequestUtility = class _RequestUtility {
     /**
      * Converts a request object to URL link
      *
@@ -1421,8 +1420,8 @@ ${_RequestUtility.processData(internalRequest.data, config)}`);
       return headers;
     }
   };
+  _RequestUtility.entityNames = null;
   var RequestUtility = _RequestUtility;
-  RequestUtility.entityNames = null;
 
   // src/client/RequestClient.ts
   init_ErrorHelper();
@@ -1464,7 +1463,7 @@ ${_RequestUtility.processData(internalRequest.data, config)}`);
   };
   var _batchRequestCollection = {};
   var _responseParseParams = {};
-  var RequestClient = class {
+  var RequestClient = class _RequestClient {
     /**
      * Sends a request to given URL with given parameters
      *
@@ -1564,7 +1563,7 @@ ${_RequestUtility.processData(internalRequest.data, config)}`);
       return exceptions.indexOf(entityName) > -1;
     }
     static async _checkCollectionName(entityName, config) {
-      if (!entityName || RequestClient._isEntityNameException(entityName)) {
+      if (!entityName || _RequestClient._isEntityNameException(entityName)) {
         return entityName;
       }
       entityName = entityName.toLowerCase();
@@ -1572,7 +1571,7 @@ ${_RequestUtility.processData(internalRequest.data, config)}`);
         return entityName;
       }
       try {
-        return await RequestClient._getCollectionNames(entityName, config);
+        return await _RequestClient._getCollectionNames(entityName, config);
       } catch (error) {
         throw new Error("Unable to fetch Collection Names. Error: " + error.message);
       }
@@ -1580,7 +1579,7 @@ ${_RequestUtility.processData(internalRequest.data, config)}`);
     static async makeRequest(request, config) {
       request.responseParameters = request.responseParameters || {};
       if (!request.isBatch) {
-        const collectionName = await RequestClient._checkCollectionName(request.collection, config);
+        const collectionName = await _RequestClient._checkCollectionName(request.collection, config);
         request.collection = collectionName;
         request = RequestUtility.compose(request, config);
         request.responseParameters.convertedToBatch = false;
@@ -1609,7 +1608,7 @@ ${_RequestUtility.processData(internalRequest.data, config)}`);
   };
 
   // src/dynamics-web-api.ts
-  var DynamicsWebApi = class {
+  var DynamicsWebApi = class _DynamicsWebApi {
     /**
      * Initializes a new instance of DynamicsWebApi
      * @param config - Configuration object
@@ -2513,7 +2512,7 @@ ${_RequestUtility.processData(internalRequest.data, config)}`);
        * @param {Config} config - configuration object.
        * @returns {DynamicsWebApi} The new instance of a DynamicsWebApi
        */
-      this.initializeInstance = (config) => new DynamicsWebApi(config || this._config);
+      this.initializeInstance = (config) => new _DynamicsWebApi(config || this._config);
       this.Utility = {
         /**
          * Searches for a collection name by provided entity name in a cached entity metadata.

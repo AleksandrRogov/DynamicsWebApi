@@ -5,14 +5,14 @@ import { isUuid, extractUuid } from "../helpers/Regex";
 declare var GetGlobalContext: any;
 declare var Xrm: any;
 
-function isNodeEnv(): boolean {
-    // tslint:disable:strict-type-predicates
-    return Object.prototype.toString.call(typeof process !== "undefined" ? process : 0) === "[object process]";
-}
+// function isNodeEnv(): boolean {
+//     // tslint:disable:strict-type-predicates
+//     return Object.prototype.toString.call(typeof process !== "undefined" ? process : 0) === "[object process]";
+// }
 
-function getGlobalObject<T>(): T {
-    return (isNodeEnv() ? global : typeof window !== "undefined" ? window : typeof self !== "undefined" ? self : {}) as T;
-}
+// function getGlobalObject<T>(): T {
+//     return (isNodeEnv() ? global : typeof window !== "undefined" ? window : typeof self !== "undefined" ? self : {}) as T;
+// }
 
 const downloadChunkSize = 4194304;
 
@@ -90,7 +90,7 @@ export class Utility {
         }
     }
 
-    static isNodeEnv = isNodeEnv;
+    // static isNodeEnv = isNodeEnv;
 
     static downloadChunkSize = downloadChunkSize;
 
@@ -138,9 +138,9 @@ export class Utility {
         );
     }
 
-    static getXrmUtility(): any {
-        return typeof Xrm !== "undefined" ? Xrm.Utility : null;
-    }
+    // static getXrmUtility(): any {
+    //     return typeof Xrm !== "undefined" ? Xrm.Utility : null;
+    // }
 
     static getClientUrl(): string {
         const context = Utility.getXrmContext();

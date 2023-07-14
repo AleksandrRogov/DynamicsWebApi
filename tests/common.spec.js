@@ -1444,6 +1444,16 @@ describe("RequestUtility.composeHeaders -", function () {
         expect(result).to.deep.equal({ Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.AssociatedNavigationProperty + '",odata.track-changes' });
     });
 
+    it("prefer - odata.continue-on-error", function () {
+        var dwaRequest = {
+            prefer: 'odata.continue-on-error',
+            functionName: "",
+        };
+
+        var result = RequestUtility.composeHeaders(dwaRequest);
+        expect(result).to.deep.equal({ Prefer: 'odata.continue-on-error' });
+    });
+
     it("prefer - includeAnnotations & returnRepresentation & maxPageSize & trackChanges", function () {
         var dwaRequest = {
             prefer: 'return=representation,odata.include-annotations="*",odata.track-changes,odata.maxpagesize=20',
@@ -1452,6 +1462,16 @@ describe("RequestUtility.composeHeaders -", function () {
 
         var result = RequestUtility.composeHeaders(dwaRequest);
         expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="*",odata.maxpagesize=20,odata.track-changes' });
+    });
+
+    it("prefer - includeAnnotations & returnRepresentation & maxPageSize & trackChanges & continueOnError", function () {
+        var dwaRequest = {
+            prefer: 'return=representation,odata.include-annotations="*",odata.track-changes,odata.maxpagesize=20,odata.continue-on-error',
+            functionName: "",
+        };
+
+        var result = RequestUtility.composeHeaders(dwaRequest);
+        expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="*",odata.maxpagesize=20,odata.track-changes,odata.continue-on-error' });
     });
 
     it("returnRepresentation: false & config.returnRepresentation: true", function () {

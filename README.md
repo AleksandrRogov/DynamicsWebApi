@@ -26,9 +26,9 @@ Browser-compiled script and type definitions can be found in a [dist](/dist/) fo
 
 **Please note!** "Dynamics 365" in this readme refers to Microsoft Dataverse (formerly known as Microsoft Common Data Service) / Microsoft Dynamics 365 Customer Engagement / Micorosft Dynamics CRM. **NOT** Microsoft Dynamics 365 Finance and Operations.
 
-### For a full documentation please check [DynamicsWebApi on GitHub](https://github.com/AleksandrRogov/DynamicsWebApi).
+## Usage examples
 
-## Usage samples
+### For a full documentation please check [DynamicsWebApi on GitHub](https://github.com/AleksandrRogov/DynamicsWebApi).
 
 ### Dynamics 365 Web Resource
 To use DynamicsWebApi inside Dynamics 365 you need to download a browser version of the library, it can be found in [dist](/dist/) folder.
@@ -86,6 +86,8 @@ const responses = await dynamicsWebApi.executeBatch();
 const contactId = responses[0];
 const salesorderId = responses[1];
 ```
+
+### For a full documentation please check [DynamicsWebApi on GitHub](https://github.com/AleksandrRogov/DynamicsWebApi).
 
 ## Contributions
 

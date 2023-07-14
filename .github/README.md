@@ -12,14 +12,14 @@ As well as Microsoft Dynamics 365 CE (online), Microsoft Dynamics 365 CE (on-pre
 
 ### **This documentation is for version 2.x. If you are working with version 1.x, please check [this instead](https://github.com/AleksandrRogov/DynamicsWebApi/tree/v1).**
 
-Please check [DynamicsWebApi Wiki](../../wiki/) where you will find documentation to DynamicsWebApi API and more.
+Please check [DynamicsWebApi Wiki](../../../wiki/) where you will find documentation to DynamicsWebApi API and more.
 
 Browser-compiled script and type definitions can be found in a [dist](/dist/) folder.
 
 ## Main Features
 
-- **Microsoft Dataverse Search API**. Access full power of its Search, Suggestion and Autocomplete capabilities.
-- **Batch Requests**. Convert all requests into a Batch operation with a single line of code.
+- **Microsoft Dataverse Search API**. Access the full power of its Search, Suggestion and Autocomplete capabilities.
+- **Batch Requests**. Convert all requests into a Batch operation with two lines of code.
 - **Simplicity and Automation**. Such as automated paging, big file downloading/uploading in chunks of data, automated conversion of requests with long URLs into a Batch Request in the background and more!
 - **CRUD operations**. Including Fetch XML, Actions and Functions in Microsoft Dataverse Web API.
 - **Table Definitions (Entity Metadata)**. Query and modify Table, Column, Choice (Option Set) and Relationship definitions.
@@ -46,6 +46,8 @@ Also, please check [suggestions and contributions](#contributions) section to le
 
 ## Table of Contents
 
+* v2 breaking changes are [here](/.github/BREAKING_CHANGES_V2.md)
+* List of new features in v2 is [here](/.github/NEW_IN_V2.md)
 * [Getting Started](#getting-started)
   * [Dynamics 365 Web Resource](#dynamics-365-web-resource)
   * [Node.js](#nodejs)
@@ -121,7 +123,7 @@ Also, please check [suggestions and contributions](#contributions) section to le
 ### Dynamics 365 Web Resource
 To use DynamicsWebApi inside Dynamics 365 you need to download a browser version of the library, it can be found in [dist](/dist/) folder.
 
-Upload a script as a JavaScript Web Resource, add it to a table form or reference it in your HTML Web Resource and then initialize the main object:
+Upload a script as a JavaScript Web Resource, add it to a table form or reference it in the HTML Web Resource and then initialize the main object:
 
 ```ts
 //By default DynamicsWebApi makes calls to 
@@ -192,16 +194,15 @@ const acquireToken = async () => {
     }
 }
 
-//create DynamicsWebApi
+//create DynamicsWebApi;
+//By default DynamicsWebApi makes calls to 
+//Web API v9.2 and Search API v1.0
 const dynamicsWebApi = new DynamicsWebApi({
     serverUrl: serverUrl,
-    dataApi: {
-        version: "9.2"
-    },
     onTokenRefresh: acquireToken
 });
 
-try{
+try {
     //call any function
     const response = await dynamicsWebApi.callFunction("WhoAmI");
     console.log(`Hello from Dynamics 365! My id is: ${response.UserId}`);
@@ -269,7 +270,7 @@ If you are using `DynamicsWebApi` **outside Microsoft Dynamics 365** and set `us
 | path | `string` | A path to API, for example: "data" or "search". Optional. |
 | version | `string` | API Version, for example: "1.0" or "9.2". Optional. |
 
-Both `dataApi` and `seatchApi` can be omitted from a configuration. Their default values are:
+Both `dataApi` and `searchApi` can be omitted from a configuration. Their default values are:
 
 ```js
 //dataApi
@@ -293,7 +294,7 @@ Both `dataApi` and `seatchApi` can be omitted from a configuration. Their defaul
 
 ## Request Examples
 
-Please use [DynamicsWebApi Wiki](../../wiki/) for an object reference. It is automatically generated and I could not find a better doc generator, pardon me for that. If you know a good ".d.ts -> .md" doc generator - let me know!
+Please use [DynamicsWebApi Wiki](./../../wiki/) for an object reference. It is automatically generated and I could not find a better doc generator, pardon me for that. If you know a good ".d.ts -> .md" doc generator - let me know!
 
 The following table describes all __possible__ properties that can be set in `request` object.
 
@@ -2373,7 +2374,8 @@ If you are developing CRM Web Resources with TypeScript (and are not using NPM),
 The declaration file is an ESM module, so if you are not using any bundler, you will have to add another d.ts file (let's call it `dynamics-web-api.browser.d.ts` and put it in the `types` folder) that will make DynamicsWebApi available globally. Here is an example (the same folder structure as mentioned above):
 
 ```ts
-//import a class from dynamics-web-api.d.ts file
+//dynamics-web-api.browser.d.ts
+//import a DynamicsWebApi class from dynamics-web-api.d.ts file
 import { DynamicsWebApi } from "./dynamicsWebApi"
 //make the DynamicsWebApi class available globally
 export = DynamicsWebApi;
@@ -2408,7 +2410,7 @@ the config option "formatted" will enable developers to retrieve all information
 - [X] Full proxy support. `Added in v.1.7.2`.
 - [X] Refactoring and conversion to TypeScript - coming with `v.2.0`! Stay tuned!
 - [X] Implement [Dataverse Search API](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/relevance-search). 
-- [ ] Allow custom headers to be passed to the request. #151
+- [ ] Allow custom headers to be passed to the request. [#151](https://github.com/AleksandrRogov/DynamicsWebApi/issues/151)
 
 Many more features to come!
 
