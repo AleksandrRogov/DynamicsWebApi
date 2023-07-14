@@ -2744,6 +2744,7 @@ let xhrWrapper = {
 
 						break;
 					}
+					case 0: break; // This will be handled in onerror.
 					default: // All other statuses are error cases.
 						var error;
 						try {
@@ -3179,6 +3180,8 @@ module.exports = RequestConverter;
 
 function getCrypto() {
     /* webpack-strip-block:removed */
+        return window.crypto;
+        /* webpack-strip-block:removed */
 }
 
 function isNull(value) {

@@ -101,6 +101,8 @@ dynamicsWebApi.executeBatch()
 
 ```
 
+### For a full v1.x documentation please check [DynamicsWebApi project on GitHub](https://github.com/AleksandrRogov/DynamicsWebApi/tree/v1).
+
 ## Contributions
 
 First of all, I would like to thank you for using `DynamicsWebApi` library in your Dynamics 365 CE / Common Data Service project, the fact that my project helps someone to achieve their development goals already makes me happy. 

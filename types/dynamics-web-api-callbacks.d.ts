@@ -1,4 +1,4 @@
-﻿// Type definitions for dynamics-web-api-callbacks v1.7.8
+﻿// Type definitions for dynamics-web-api-callbacks v1.7.11
 // Project: https://github.com/AleksandrRogov/DynamicsWebApi
 // Definitions by: Aleksandr Rogov https://github.com/AleksandrRogov/
 

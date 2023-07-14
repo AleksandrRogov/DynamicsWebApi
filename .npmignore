@@ -11,6 +11,8 @@ obj
 /types/dynamics-web-api-callbacks.d.ts
 /tests
 /dist
+/.github
+/extra
 .nyc_output/
 
 *.d.ts.map

@@ -28,7 +28,7 @@ I am planning to continue supporting v1 for at least a year, beginning from Augu
 
 By supporting I mean that v1 will not be getting new features but only bug fixes and, in rare cases, minor additions to its core functionality (like, adding new properties to requests).
 
-I would highly recommend to use v2 for all new projects moving forward. For old/existing projects here is the list of [breaking changes](https://github.com/AleksandrRogov/DynamicsWebApi/issues/135), in case you decide to migrate and if you want to learn about new features - here is a summary of [what's new in v2](https://github.com/AleksandrRogov/DynamicsWebApi/issues/146).
+I would highly recommend to use v2 for all new projects moving forward. For old/existing projects here is the list of [breaking changes](https://github.com/AleksandrRogov/DynamicsWebApi/blob/master/.github/BREAKING_CHANGES_V2.md), in case you decide to migrate and if you want to learn about new features - here is a summary of [what's new in v2](https://github.com/AleksandrRogov/DynamicsWebApi/blob/master/.github/NEW_IN_V2.md).
 
 ## Table of Contents
 
