@@ -7,7 +7,7 @@
 
 DynamicsWebApi is a Microsoft Dataverse Web API helper library written in Typescript.
 
-It is compatible with: Microsoft Dataverse, Microsoft Dynamics 365: Customer Service, Field Service, Marketing, Project Operations, Talents, Sales and any application built on Microsoft Power Apps platform. 
+It is compatible with: Microsoft Dataverse; Microsoft Dynamics 365: Customer Service, Field Service, Marketing, Project Operations, Talents, Sales and any model-driven application built on Microsoft Power Apps platform. 
 As well as Microsoft Dynamics 365 CE (online), Microsoft Dynamics 365 CE (on-premises), Microsoft Dynamics CRM 2016, Microsoft Dynamics CRM Online.
 
 ### **This documentation is for version 2.x. If you are working with version 1.x, please check [this instead](https://github.com/AleksandrRogov/DynamicsWebApi/tree/v1).**
@@ -46,8 +46,7 @@ Also, please check [suggestions and contributions](#contributions) section to le
 
 ## Table of Contents
 
-* v2 breaking changes are [here](/.github/BREAKING_CHANGES_V2.md)
-* List of new features in v2 is [here](/.github/NEW_IN_V2.md)
+v2 breaking changes are [here](/.github/BREAKING_CHANGES_V2.md). List of new features in v2 is [here](/.github/NEW_IN_V2.md).
 * [Getting Started](#getting-started)
   * [Dynamics 365 Web Resource](#dynamics-365-web-resource)
   * [Node.js](#nodejs)
@@ -251,6 +250,7 @@ includeAnnotations | `string` | Defaults Prefer header with value "odata.include
 maxPageSize | `number` | Defaults the odata.maxpagesize preference. Use to set the number of entities returned in the response.
 onTokenRefresh | `Function` | A callback function that triggered when DynamicsWebApi requests a new OAuth token. (At this moment it is done before each call to Dynamics 365, as [recommended by Microsoft](https://msdn.microsoft.com/en-ca/library/gg327838.aspx#Anchor_2)).
 organizationUrl | `string` | Dynamics 365 Web Api organization URL. It is required when used in Node.js application (outside web resource). Example: "https://myorg.api.crm.dynamics.com/".
+proxy | `Object` | Proxy configuration object. [More Info](#using-proxy)
 returnRepresentation | `boolean` | Defaults Prefer header with value "return=representation". Use this property to return just created or updated entity in a single request.
 searchApi | `ApiConfig` | Configuration object for Dataverse Search API. The name is based on the url path `search`.
 serverUrl | `string` | The url to Dataverse API server, for example: https://contoso.api.crm.dynamics.com/. It is required when used in Node.js application.
@@ -289,12 +289,18 @@ Both `dataApi` and `searchApi` can be omitted from a configuration. Their defaul
 **dataApi** properties:
 | Property Name | Type | Description |
 |--------|--------|--------|
-| path | `String` | Optional. A path to API, for example: "data". |
-| version | `String` | Optional. API Version, for example: "9.1" or "9.2". |
+| path | `String` | Optional. A path to API, default: "data". |
+| version | `String` | Optional. API Version, default: "9.2". |
+
+**searchApi** properties:
+| Property Name | Type | Description |
+|--------|--------|--------|
+| path | `String` | Optional. A path to API, default: "search". |
+| version | `String` | Optional. API Version, default: "1.0". |
 
 ## Request Examples
 
-Please use [DynamicsWebApi Wiki](./../../wiki/) for an object reference. It is automatically generated and I could not find a better doc generator, pardon me for that. If you know a good ".d.ts -> .md" doc generator - let me know!
+Please use [DynamicsWebApi Wiki](../../../wiki/) for an object reference. It is automatically generated and I could not find a better doc generator, pardon me for that. If you know a good ".d.ts -> .md" doc generator - let me know!
 
 The following table describes all __possible__ properties that can be set in `request` object.
 
@@ -338,7 +344,6 @@ pageNumber | `number` | `fetch` | Sets a page number for Fetch XML request ONLY!
 pagingCookie | `string` | `fetch` | Sets a paging cookie for Fetch XML request ONLY!
 parameters | `Object` | `callFunction` | Function's input parameters. Example: `{ param1: "test", param2: 3 }`. 
 partitionId | `string` | `create`, `update`, `upsert`, `delete`, `retrieve`, `retrieveMultiple` | Sets a unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. [More Info](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/azure-storage-partitioning)
-proxy | `Object` | Proxy configuration object. [More Info](#using-proxy)
 queryParams | `string[]` | `retrieveMultiple`, `retrieveAll` | Additional query parameters that either have not been implemented yet or they are [parameter aliases](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/query-data-web-api#use-parameter-aliases-with-system-query-options) for "$filter" and "$orderBy". **Important!** These parameters ARE NOT URI encoded!
 returnRepresentation | `boolean` | `create`, `update`, `upsert` | Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
 savedQuery | `string` | `retrieve` | A String representing the GUID value of the saved query.
@@ -2400,16 +2405,17 @@ the config option "formatted" will enable developers to retrieve all information
 - [X] Entity and Attribute Metadata helpers. `Implemented in v.1.4.3`
 - [X] Entity Relationships and Global Option Sets helpers. `Implemented in v.1.4.6`
 - [X] Batch requests. `Implemented in v.1.5.0`
-- [X] TypeScript declaration files `d.ts` `Added in v.1.5.3`.
-- [X] Implement `Content-ID` header to reference a request in a Change Set in a batch operation `Added in v.1.5.6`.
-- [X] Change Tracking `Added in v.1.5.11`.
-- [X] Support for Aggregate and Grouping results `Added in v1.6.4`.
-- [X] Support for Timeout option in the configuration `Added in v1.6.10`.
-- [X] Impersonate a user based on their Azure Active Directory (AAD) object id. `Added in v.1.6.12`.
-- [X] File upload/download/delete for a File Field. `Added in v.1.7.0`.
-- [X] Full proxy support. `Added in v.1.7.2`.
-- [X] Refactoring and conversion to TypeScript - coming with `v.2.0`! Stay tuned!
-- [X] Implement [Dataverse Search API](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/relevance-search). 
+- [X] TypeScript declaration files `d.ts` `Added in v.1.5.3`
+- [X] Implement `Content-ID` header to reference a request in a Change Set in a batch operation `Added in v.1.5.6`
+- [X] Change Tracking `Added in v.1.5.11`
+- [X] Support for Aggregate and Grouping results `Added in v1.6.4`
+- [X] Support for Timeout option in the configuration `Added in v1.6.10`
+- [X] Impersonate a user based on their Azure Active Directory (AAD) object id. `Added in v.1.6.12`
+- [X] File upload/download/delete for a File Field. `Added in v.1.7.0`
+- [X] Full proxy support. `Added in v.1.7.2`
+- [X] Full proxy support. `Added in v.1.7.2`
+- [X] Refactoring and conversion to TypeScript. `Added in v.2.0`
+- [X] Implement [Dataverse Search API](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/relevance-search). `Added in v.2.0`
 - [ ] Allow custom headers to be passed to the request. [#151](https://github.com/AleksandrRogov/DynamicsWebApi/issues/151)
 
 Many more features to come!

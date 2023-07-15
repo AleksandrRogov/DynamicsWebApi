@@ -7,12 +7,12 @@
 
 DynamicsWebApi is a Microsoft Dataverse Web API helper library written in Typescript.
 
-It is compatible with: Microsoft Dataverse, Microsoft Dynamics 365: Customer Service, Field Service, Marketing, Project Operations, Talents, Sales and any application built on Microsoft Power Apps platform. 
+It is compatible with: Microsoft Dataverse; Microsoft Dynamics 365: Customer Service, Field Service, Marketing, Project Operations, Talents, Sales and any model-driven application built on Microsoft Power Apps platform. 
 As well as Microsoft Dynamics 365 CE (online), Microsoft Dynamics 365 CE (on-premises), Microsoft Dynamics CRM 2016, Microsoft Dynamics CRM Online.
 
 ## Main Features
 
-- **Microsoft Dataverse Search API**. Access full power of its Search, Suggestion and Autocomplete capabilities.
+- **Microsoft Dataverse Search API**. Access the full power of its Search, Suggestion and Autocomplete capabilities.
 - **Batch Requests**. Convert all requests into a Batch operation with a single line of code.
 - **Simplicity and Automation**. Such as automated paging, big file downloading/uploading in chunks of data, automated conversion of requests with long URLs into a Batch Request in the background and more!
 - **CRUD operations**. Including Fetch XML, Actions and Functions in Microsoft Dataverse Web API.

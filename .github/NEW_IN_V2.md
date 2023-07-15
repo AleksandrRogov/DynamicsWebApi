@@ -19,10 +19,10 @@ Retrieve the org's CSDL $metadata document with a single call of `retrieveCsdlMe
 
 ### NPM Package contents
 NPM package now includes a pre-bundled code of DynamicsWebApi to simplify a compilation process of the projects that depend on it. There are 4 separate bundles: 
-- `dist/dynamics-web-api.js` - a Browser ready version (to use as a Dynamics 365 web resource) [IIFE] + it's minified version `.min.js`.
+- `dist/dynamics-web-api.js` - a Browser ready version (to use as a Dynamics 365 web resource) + it's minified version `.min.js` [IIFE].
 - `dist/cjs/dynamics-web-api.js` - a Node.js module [CommonJS].
 - `dist/esm/dynamics-web-api.mjs` - a Node.js module [ESM].
-- `dist/browser/esm/dynamics-web-api.js` - an ESM module for a Browser (to use as a Dynamics 365 web resource).
+- `dist/browser/esm/dynamics-web-api.js` - an ES module for the Browser (to use as a Dynamics 365 web resource).
 
 Type definition for the library also moved into the `dist` folder.
 
@@ -32,10 +32,11 @@ Please let me know (create an issue) if we need to add a `cjs` bundle for the Br
 Not all changes are visible outside, some changes and fixes I've done were in the core of the library itself. Here are some of them:
 - All request objects passed as function parameters are fully cloned and remain untouched. Which means, whatever has been passed into the functions is not getting modified in any way. This was not always true in v1 (and I admit that it was my mistake). It is a positive change because _input parameters should never be changed inside the functions_ (there are exceptions but not in this case).
 - All deprecated JavaScript functions used by the library have been replaced with their modern alternatives.
+- The library code is now written with a `use strict;` directive! :) With additional strict rules set in `tsconfig.json`.
 - The core has been _promisified_, except for `xhr` and `http` modules. This makes the overall code cleaner and easier to follow.
 - Rewriting to TypeScript gave me a chance to go through the code line by line and identify suboptimal functions/features which were successfully tweaked or removed.
 
-...and other.
+...and more.
 
 ### Migration
 
