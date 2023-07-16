@@ -1,4 +1,4 @@
-/*! dynamics-web-api v2.0.0-beta.3 (c) 2023 Aleksandr Rogov */
+/*! dynamics-web-api v2.0.0-beta.4 (c) 2023 Aleksandr Rogov */
 "use strict";
 var __create = Object.create;
 var __defProp = Object.defineProperty;
