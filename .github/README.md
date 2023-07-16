@@ -73,32 +73,36 @@ v2 breaking changes are [here](/.github/BREAKING_CHANGES_V2.md). List of new fea
     * [Fetch All records](#fetch-all-records)
   * [Execute Web API functions](#execute-web-api-functions)
   * [Execute Web API actions](#execute-web-api-actions)
-  * [Execute Batch Operations](#execute-batch-operations)
-  * [Work with Table Definitions (Entity Metadata)](#work-with-table-definitions-entity-metadata)
-    * Tables
-    * [Create a new Table Definition](#create-a-new-table-definition)
-    * [Retrieve Table Definitions](#retrieve-table-definitions)
-    * [Update Table Definitions](#update-table-definitions)
-    * [Retrieve Multiple Table Definitions](#retrieve-multiple-table-definitions)
-    * Columns
-    * [Create Columns](#create-columns)
-    * [Retrieve Columns](#retrieve-columns)
-    * [Update Columns](#update-columns)
-    * [Retrieve Multiple Columns](#retrieve-multiple-columns)
-    * [Use requests to query Table and Column definitions](#use-requests-to-query-table-and-column-definitions)
-    * Relationships
-	* [Create Relationship](#create-relationship)
-	* [Update Relationship](#update-relationship)
-	* [Delete Relationship](#delete-relationship)
-	* [Retrieve Relationship](#retrieve-relationship)
-	* [Retrieve Multiple Relationships](#retrieve-multiple-relationships)
-    * [Use multi-table lookup columns (Polymorfic Lookup Attributes)](#use-multi-table-lookup-columns-polymorfic-lookup-attributes)
-    * Global Option Sets (Choices)
-	* [Create Global Option Set](#create-global-option-set)
-	* [Update Global Option Set](#update-global-option-set)
-	* [Delete Global Option Set](#delete-global-option-set)
-	* [Retrieve Global Option Set](#retrieve-global-option-set)
-	* [Retrieve Multiple Global Option Sets](#retrieve-multiple-global-option-sets)
+* [Batch Operations](#batch-operations)
+  * [Content-ID to reference requests in a Change Set](#use-content-id-to-reference-requests-in-a-change-set)
+  * [Content-ID inside a request payload](#use-content-id-inside-a-request-payload)
+  * [Controlling Change Sets](#controlling-change-sets)
+  * [Limitations](#batch-operation-limitations)
+* [Work with Table Definitions (Entity Metadata)](#work-with-table-definitions-entity-metadata)
+  * Tables
+  * [Create a new Table Definition](#create-a-new-table-definition)
+  * [Retrieve Table Definitions](#retrieve-table-definitions)
+  * [Update Table Definitions](#update-table-definitions)
+  * [Retrieve Multiple Table Definitions](#retrieve-multiple-table-definitions)
+  * Columns
+  * [Create Columns](#create-columns)
+  * [Retrieve Columns](#retrieve-columns)
+  * [Update Columns](#update-columns)
+  * [Retrieve Multiple Columns](#retrieve-multiple-columns)
+  * [Use requests to query Table and Column definitions](#use-requests-to-query-table-and-column-definitions)
+  * Relationships
+  * [Create Relationship](#create-relationship)
+  * [Update Relationship](#update-relationship)
+  * [Delete Relationship](#delete-relationship)
+  * [Retrieve Relationship](#retrieve-relationship)
+  * [Retrieve Multiple Relationships](#retrieve-multiple-relationships)
+  * [Use multi-table lookup columns (Polymorfic Lookup Attributes)](#use-multi-table-lookup-columns-polymorfic-lookup-attributes)
+  * Global Option Sets (Choices)
+  * [Create Global Option Set](#create-global-option-set)
+  * [Update Global Option Set](#update-global-option-set)
+  * [Delete Global Option Set](#delete-global-option-set)
+  * [Retrieve Global Option Set](#retrieve-global-option-set)
+  * [Retrieve Multiple Global Option Sets](#retrieve-multiple-global-option-sets)
 * [Retrieve CSDL $metadata document](#retrieve-csdl-metadata-document)
 * [Formatted Values and Lookup Columns](#formatted-values-and-lookup-columns)
 * [Using Alternate Keys](#using-alternate-keys)
@@ -974,15 +978,15 @@ const actionRequest: DynamicsWebApi.UnboundActionRequest<WinOpportunityAction> =
 await dynamicsWebApi.callAction(actionRequest);
 ```
 
-## Execute Batch Operations
+## Batch Operations
 
-Batch requests bundle multiple operations into a single one and have the following advantages:
+Batch Operations bundle multiple requests into a single one and have the following advantages:
 
 * Reduces a number of requests sent to the Web API server. `Each user is allowed up to 60,000 API requests, per organization instance, within five minute sliding interval.` [More Info](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/api-limits)
 * Provides a way to run multiple operations in a single transaction. If any operation that changes data (within a single changeset) fails all completed ones will be rolled back.
 * All operations within a batch request run consequently (FIFO).
 
-DynamicsWebApi provides a straightforward way to execute Batch operations which may not always be simple to compose.
+DynamicsWebApi provides a straightforward way to execute Batch Operations which may not always be simple to compose.
 
 **Please Note!** By default, all operations that modify data, such as: CREATE, UPDATE, UPSERT, PUT and DELETE - are automatically made atomic (combined in Change Sets). You can change this behaviour by setting `inChangeSet` to `false`. [More Info](#controlling-change-sets)
 
@@ -1197,7 +1201,7 @@ const responses = await dynamicsWebApi.executeBatch();
 
 The first two requests will be atomic (included in a Change Set) and the last one will be executed separately. So, if for some reason, there was an error during creation of an Email record, the whole operation won't be rolled back and the Contact and Order records will be created in the system.
 
-**Be extra careful** with an order of requests in a Batch Operation, especially if it has a combination of atomic and non-atomic operations in it. For example, if in an example above we move the creation of an Email record above Order it will create 2 separate change sets for the Contact and for the Order records.
+**Be extra careful** with an order of requests in a Batch Operation, especially if it has a combination of atomic and non-atomic operations in it. For example, if in an example above we move the creation of an Email record above Order - it will create 2 separate change sets for the Contact and for the Order records.
 
 ```ts
 dynamicsWebApi.startBatch();
