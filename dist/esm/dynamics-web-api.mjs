@@ -3,13 +3,6 @@ var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require : typeof Proxy !== "undefined" ? new Proxy(x, {
-  get: (a, b) => (typeof require !== "undefined" ? require : a)[b]
-}) : x)(function(x) {
-  if (typeof require !== "undefined")
-    return require.apply(this, arguments);
-  throw Error('Dynamic require of "' + x + '" is not supported');
-});
 var __esm = (fn, res) => function __init() {
   return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
 };
@@ -27,19 +20,31 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// src/helpers/Crypto.ts
+// src/helpers/crypto/node.ts
+var node_exports = {};
+__export(node_exports, {
+  getCrypto: () => getCrypto
+});
+import nCrypto from "node:crypto";
 function getCrypto() {
-  return false ? global.window.crypto : nCrypto;
+  return nCrypto;
+}
+var init_node = __esm({
+  "src/helpers/crypto/node.ts"() {
+    "use strict";
+  }
+});
+
+// src/helpers/Crypto.ts
+function getCrypto2() {
+  return false ? global.window.crypto : (init_node(), __toCommonJS(node_exports)).getCrypto();
 }
 function generateRandomBytes() {
-  return false ? getCrypto().getRandomValues(new Uint8Array(1)) : getCrypto().randomBytes(1);
+  return false ? getCrypto2().getRandomValues(new Uint8Array(1)) : getCrypto2().randomBytes(1);
 }
-var nCrypto;
 var init_Crypto = __esm({
   "src/helpers/Crypto.ts"() {
     "use strict";
-    if (true)
-      nCrypto = __require("crypto");
   }
 });
 
@@ -663,8 +668,8 @@ __export(http_exports, {
 import * as http from "http";
 import * as https from "https";
 import * as url from "url";
-import { HttpProxyAgent } from "http-proxy-agent";
-import { HttpsProxyAgent } from "https-proxy-agent";
+import HttpProxyAgent from "http-proxy-agent";
+import HttpsProxyAgent from "https-proxy-agent";
 function executeRequest(options) {
   return new Promise((resolve, reject) => {
     _executeRequest(options, resolve, reject);
@@ -704,7 +709,7 @@ function _executeRequest(options, successCallback, errorCallback) {
   }
   internalOptions.agent = getAgent(options, protocol);
   if (options.proxy) {
-    const hostHeader = url.parse(options.proxy.url).host;
+    const hostHeader = new URL(options.proxy.url).host;
     if (hostHeader)
       headers.host = hostHeader;
   }
@@ -784,8 +789,8 @@ var init_http = __esm({
       const agentName = proxy ? proxy.url : protocol;
       if (!agents[agentName]) {
         if (proxy) {
-          const parsedProxyUrl = url.parse(proxy.url);
-          const proxyAgent = isHttp ? HttpProxyAgent : HttpsProxyAgent;
+          const parsedProxyUrl = new URL(proxy.url);
+          const proxyAgent = isHttp ? HttpProxyAgent.HttpProxyAgent : HttpsProxyAgent.HttpsProxyAgent;
           const proxyOptions = {
             host: parsedProxyUrl.hostname,
             port: parsedProxyUrl.port,
@@ -793,8 +798,8 @@ var init_http = __esm({
           };
           if (proxy.auth)
             proxyOptions.auth = proxy.auth.username + ":" + proxy.auth.password;
-          else if (parsedProxyUrl.auth)
-            proxyOptions.auth = parsedProxyUrl.auth;
+          else if (parsedProxyUrl.username && parsedProxyUrl.password)
+            proxyOptions.auth = `${parsedProxyUrl.username}:${parsedProxyUrl.password}`;
           agents[agentName] = new proxyAgent(proxyOptions);
         } else {
           const protocolInterface = isHttp ? http : https;
@@ -2371,9 +2376,9 @@ var DynamicsWebApi = class _DynamicsWebApi {
       return this.retrieveMultiple(internalRequest);
     };
     /**
-     * Retrieves CSDL Document Metadata
+     * Retrieves a CSDL Document Metadata
      * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise<string>} Unformatted and unparsed CSDL $metadata document.
+     * @returns {Promise<string>} A raw CSDL $metadata document.
      */
     this.retrieveCsdlMetadata = async (request) => {
       const internalRequest = !request ? {} : Utility.copyRequest(request);

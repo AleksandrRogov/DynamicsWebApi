@@ -1113,14 +1113,27 @@ As mentioned before, by default, all operations that modify data: CREATE, UPDATE
 
 In some cases this can be an undesirable behaviour and with v2 there are several ways to make those operations non-atomic: per batch operation and per request. Let's use a code sample above and make **all** operations non-atomic. It can be done by setting `inChangeSet` property to `false`.
 
+**Important!** `contentId` can **only** be used inside the Change Sets. Any `contentId` set in a request won't be included in a non-atomic batch operation! If `$1` parameter was used outside of Change Set you will get an error similar to the following: `Error identified in Payload provided by the user for Entity :'<entity name>'`.
+
 Per batch operation:
 
 ```ts
+const contact = {
+    firstname: "John",
+    lastname: "Doe"
+};
+
+const order = {
+    name: "1 year membership",
+    //reference a request in a navigation property
+    //"customerid_contact@odata.bind": "$1" <--- commented out because we don't want to get an error
+};
+
 dynamicsWebApi.startBatch();
 dynamicsWebApi.create({ 
     data: contact, 
     collection: "contacts", 
-    contentId: "1", 
+    contentId: "1", //<--- will not be used
 });
 dynamicsWebApi.create({ 
     data: order, 
@@ -1132,6 +1145,8 @@ const responses = await dynamicsWebApi.executeBatch({
 });
 ```
 
+**Important!** There seem to be a bug in Dynamics 365 Web Api (Checked: July 16, 2023) where it does not process the last operation in a batch request (Change Sets work fine). As a workaround, you can add any "GET" operation at the end to make it work, like in the following example. Please let me know if this bug was fixed.
+
 Per request:
 
 ```ts
@@ -1139,13 +1154,19 @@ dynamicsWebApi.startBatch();
 dynamicsWebApi.create({ 
     data: contact, 
     collection: "contacts", 
-    contentId: "1", 
     inChangeSet: false //<--- do not include in a change set
 });
 dynamicsWebApi.create({ 
     data: order, 
     collection: "salesorders", 
     inChangeSet: false //<--- do not include in a change set
+});
+
+//this is a workaround a D365 bug (checked on July 16, 2023)
+dynamicsWebApi.retrieveMutliple({
+    collection: "contacts",
+    top: 1,
+    select: ["firstname"]
 });
 
 const responses = await dynamicsWebApi.executeBatch();
@@ -1160,7 +1181,6 @@ dynamicsWebApi.startBatch();
 dynamicsWebApi.create({ 
     data: contact, 
     collection: "contacts", 
-    contentId: "1", 
 });
 dynamicsWebApi.create({ 
     data: order, 
@@ -1197,6 +1217,8 @@ dynamicsWebApi.create({
 dynamicsWebApi.create({ 
     data: order, 
     collection: "salesorders", 
+    //"$1" parameter cannot be used here because it is defined in a Change Set A
+    //otherwise, you will get an error
 });
 //Change Set B ends
 

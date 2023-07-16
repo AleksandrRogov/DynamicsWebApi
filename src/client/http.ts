@@ -1,8 +1,8 @@
 ﻿import * as http from "http";
 import * as https from "https";
 import * as url from "url";
-import { HttpProxyAgent, HttpProxyAgentOptions } from "http-proxy-agent";
-import { HttpsProxyAgent, HttpsProxyAgentOptions } from "https-proxy-agent";
+import HttpProxyAgent from "http-proxy-agent";
+import HttpsProxyAgent from "https-proxy-agent";
 import { Core } from "../types";
 import { ErrorHelper } from "./../helpers/ErrorHelper";
 import { parseResponse } from "./helpers/parseResponse";
@@ -16,17 +16,17 @@ const getAgent = (options: Core.RequestOptions, protocol: string): http.Agent =>
 
     if (!agents[agentName]) {
         if (proxy) {
-            const parsedProxyUrl = url.parse(proxy.url);
-            const proxyAgent = isHttp ? HttpProxyAgent : HttpsProxyAgent;
+            const parsedProxyUrl = new URL(proxy.url);
+            const proxyAgent = isHttp ? HttpProxyAgent.HttpProxyAgent : HttpsProxyAgent.HttpsProxyAgent;
 
-            const proxyOptions: HttpProxyAgentOptions | HttpsProxyAgentOptions = {
+            const proxyOptions: HttpProxyAgent.HttpProxyAgentOptions | HttpsProxyAgent.HttpsProxyAgentOptions = {
                 host: parsedProxyUrl.hostname,
                 port: parsedProxyUrl.port,
                 protocol: parsedProxyUrl.protocol,
             };
 
             if (proxy.auth) proxyOptions.auth = proxy.auth.username + ":" + proxy.auth.password;
-            else if (parsedProxyUrl.auth) proxyOptions.auth = parsedProxyUrl.auth;
+            else if (parsedProxyUrl.username && parsedProxyUrl.password) proxyOptions.auth = `${parsedProxyUrl.username}:${parsedProxyUrl.password}`;
 
             agents[agentName] = new proxyAgent(proxyOptions);
         } else {
@@ -99,7 +99,7 @@ function _executeRequest(
     internalOptions.agent = getAgent(options, protocol);
 
     if (options.proxy) {
-        const hostHeader = url.parse(options.proxy.url).host;
+        const hostHeader =new URL(options.proxy.url).host;
         if (hostHeader) headers.host = hostHeader;
     }
 

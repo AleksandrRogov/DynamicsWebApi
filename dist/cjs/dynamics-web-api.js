@@ -31,19 +31,32 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 ));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// src/helpers/Crypto.ts
+// src/helpers/crypto/node.ts
+var node_exports = {};
+__export(node_exports, {
+  getCrypto: () => getCrypto
+});
 function getCrypto() {
-  return false ? global.window.crypto : nCrypto;
+  return import_node_crypto.default;
+}
+var import_node_crypto;
+var init_node = __esm({
+  "src/helpers/crypto/node.ts"() {
+    "use strict";
+    import_node_crypto = __toESM(require("node:crypto"));
+  }
+});
+
+// src/helpers/Crypto.ts
+function getCrypto2() {
+  return false ? global.window.crypto : (init_node(), __toCommonJS(node_exports)).getCrypto();
 }
 function generateRandomBytes() {
-  return false ? getCrypto().getRandomValues(new Uint8Array(1)) : getCrypto().randomBytes(1);
+  return false ? getCrypto2().getRandomValues(new Uint8Array(1)) : getCrypto2().randomBytes(1);
 }
-var nCrypto;
 var init_Crypto = __esm({
   "src/helpers/Crypto.ts"() {
     "use strict";
-    if (true)
-      nCrypto = require("crypto");
   }
 });
 
@@ -703,7 +716,7 @@ function _executeRequest(options, successCallback, errorCallback) {
   }
   internalOptions.agent = getAgent(options, protocol);
   if (options.proxy) {
-    const hostHeader = url.parse(options.proxy.url).host;
+    const hostHeader = new URL(options.proxy.url).host;
     if (hostHeader)
       headers.host = hostHeader;
   }
@@ -777,8 +790,8 @@ var init_http = __esm({
     http = __toESM(require("http"));
     https = __toESM(require("https"));
     url = __toESM(require("url"));
-    import_http_proxy_agent = require("http-proxy-agent");
-    import_https_proxy_agent = require("https-proxy-agent");
+    import_http_proxy_agent = __toESM(require("http-proxy-agent"));
+    import_https_proxy_agent = __toESM(require("https-proxy-agent"));
     init_ErrorHelper();
     init_parseResponse();
     agents = {};
@@ -788,8 +801,8 @@ var init_http = __esm({
       const agentName = proxy ? proxy.url : protocol;
       if (!agents[agentName]) {
         if (proxy) {
-          const parsedProxyUrl = url.parse(proxy.url);
-          const proxyAgent = isHttp ? import_http_proxy_agent.HttpProxyAgent : import_https_proxy_agent.HttpsProxyAgent;
+          const parsedProxyUrl = new URL(proxy.url);
+          const proxyAgent = isHttp ? import_http_proxy_agent.default.HttpProxyAgent : import_https_proxy_agent.default.HttpsProxyAgent;
           const proxyOptions = {
             host: parsedProxyUrl.hostname,
             port: parsedProxyUrl.port,
@@ -797,8 +810,8 @@ var init_http = __esm({
           };
           if (proxy.auth)
             proxyOptions.auth = proxy.auth.username + ":" + proxy.auth.password;
-          else if (parsedProxyUrl.auth)
-            proxyOptions.auth = parsedProxyUrl.auth;
+          else if (parsedProxyUrl.username && parsedProxyUrl.password)
+            proxyOptions.auth = `${parsedProxyUrl.username}:${parsedProxyUrl.password}`;
           agents[agentName] = new proxyAgent(proxyOptions);
         } else {
           const protocolInterface = isHttp ? http : https;
@@ -2382,9 +2395,9 @@ var DynamicsWebApi = class _DynamicsWebApi {
       return this.retrieveMultiple(internalRequest);
     };
     /**
-     * Retrieves CSDL Document Metadata
+     * Retrieves a CSDL Document Metadata
      * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise<string>} Unformatted and unparsed CSDL $metadata document.
+     * @returns {Promise<string>} A raw CSDL $metadata document.
      */
     this.retrieveCsdlMetadata = async (request) => {
       const internalRequest = !request ? {} : Utility.copyRequest(request);

@@ -24,7 +24,7 @@ var _dynamicsWebApiExports = (() => {
 
   // src/helpers/Crypto.ts
   function getCrypto() {
-    return true ? window.crypto : nCrypto;
+    return true ? window.crypto : null.getCrypto();
   }
   function generateRandomBytes() {
     return true ? getCrypto().getRandomValues(new Uint8Array(1)) : getCrypto().randomBytes(1);
@@ -32,8 +32,6 @@ var _dynamicsWebApiExports = (() => {
   var init_Crypto = __esm({
     "src/helpers/Crypto.ts"() {
       "use strict";
-      if (false)
-        nCrypto = null;
     }
   });
 
@@ -2402,9 +2400,9 @@ ${_RequestUtility.processData(internalRequest.data, config)}`);
         return this.retrieveMultiple(internalRequest);
       };
       /**
-       * Retrieves CSDL Document Metadata
+       * Retrieves a CSDL Document Metadata
        * @param request - An object that represents all possible options for a current request.
-       * @returns {Promise<string>} Unformatted and unparsed CSDL $metadata document.
+       * @returns {Promise<string>} A raw CSDL $metadata document.
        */
       this.retrieveCsdlMetadata = async (request) => {
         const internalRequest = !request ? {} : Utility.copyRequest(request);

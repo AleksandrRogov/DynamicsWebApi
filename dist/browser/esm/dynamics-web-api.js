@@ -22,7 +22,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 
 // src/helpers/Crypto.ts
 function getCrypto() {
-  return true ? window.crypto : nCrypto;
+  return true ? window.crypto : null.getCrypto();
 }
 function generateRandomBytes() {
   return true ? getCrypto().getRandomValues(new Uint8Array(1)) : getCrypto().randomBytes(1);
@@ -30,8 +30,6 @@ function generateRandomBytes() {
 var init_Crypto = __esm({
   "src/helpers/Crypto.ts"() {
     "use strict";
-    if (false)
-      nCrypto = null;
   }
 });
 
@@ -2394,9 +2392,9 @@ var DynamicsWebApi = class _DynamicsWebApi {
       return this.retrieveMultiple(internalRequest);
     };
     /**
-     * Retrieves CSDL Document Metadata
+     * Retrieves a CSDL Document Metadata
      * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise<string>} Unformatted and unparsed CSDL $metadata document.
+     * @returns {Promise<string>} A raw CSDL $metadata document.
      */
     this.retrieveCsdlMetadata = async (request) => {
       const internalRequest = !request ? {} : Utility.copyRequest(request);

@@ -127,7 +127,7 @@ export class ErrorHelper {
         }
     }
 
-    static callbackParameterCheck(callbackParameter: () => Promise<string | AccessToken>, functionName: string, parameterName: string): void {
+    static callbackParameterCheck(callbackParameter: () => Promise<string | AccessToken | null>, functionName: string, parameterName: string): void {
         if (typeof callbackParameter != "function") {
             throwParameterError(functionName, parameterName, "Function");
         }

@@ -1,8 +1,5 @@
-let nCrypto;
-if (!global.DWA_BROWSER) nCrypto = require("crypto");
-
 export function getCrypto<T = any>(): T {
-    return global.DWA_BROWSER ? global.window.crypto : nCrypto;
+    return global.DWA_BROWSER ? global.window.crypto : require("./crypto/node").getCrypto();
 }
 
 export function generateRandomBytes() {

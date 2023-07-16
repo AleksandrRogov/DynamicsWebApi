@@ -315,9 +315,9 @@ export declare class DynamicsWebApi {
      */
     retrieveGlobalOptionSets: <T = any>(request?: RetrieveGlobalOptionSetsRequest) => Promise<RetrieveMultipleResponse<T>>;
     /**
-     * Retrieves CSDL Document Metadata
+     * Retrieves a CSDL Document Metadata
      * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise<string>} Unformatted and unparsed CSDL $metadata document.
+     * @returns {Promise<string>} A raw CSDL $metadata document.
      */
     retrieveCsdlMetadata: (request?: CsdlMetadataRequest) => Promise<string>;
     /**
@@ -399,6 +399,7 @@ export interface BaseRequest {
     inChangeSet?: boolean;
 }
 export interface BatchRequest extends BaseRequest {
+    /** Sets Prefer header to "odata.continue-on-error" that allows more requests be processed when errors occur. The batch request will return '200 OK' and individual response errors will be returned in the batch response body. */
     continueOnError?: boolean;
 }
 export interface Request extends BaseRequest {
@@ -430,7 +431,7 @@ export interface FetchXmlRequest extends FetchAllRequest {
     pagingCookie?: string;
 }
 export interface CreateRequest<T = any> extends CRUDRequest {
-    /**v.1.7.5+ If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. */
+    /**If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. */
     bypassCustomPluginExecution?: boolean;
     /**Web API v9+ only! Boolean that enables duplicate detection. */
     duplicateDetection?: boolean;
@@ -450,11 +451,11 @@ export interface CreateRequest<T = any> extends CRUDRequest {
     returnRepresentation?: boolean;
     /**BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */
     contentId?: string;
-    /**v.1.7.7+ A unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. */
+    /**A unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. */
     partitionId?: string;
 }
 export interface UpdateRequestBase<T = any> extends CRUDRequest {
-    /**v.1.7.5+ If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. */
+    /**If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. */
     bypassCustomPluginExecution?: boolean;
     /**Web API v9+ only! Boolean that enables duplicate detection. */
     duplicateDetection?: boolean;
@@ -478,7 +479,7 @@ export interface UpdateRequestBase<T = any> extends CRUDRequest {
     navigationProperty?: string;
     /**A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata). */
     navigationPropertyKey?: string;
-    /**v.1.7.7+ A unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. */
+    /**A unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. */
     partitionId?: string;
 }
 export interface UpdateRequest<T = any> extends UpdateRequestBase<T> {
@@ -508,7 +509,7 @@ export interface UpsertRequest<T = any> extends UpdateRequestBase<T> {
     ifnonematch?: string;
 }
 export interface DeleteRequest extends CRUDRequest {
-    /**v.1.7.5+ If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. */
+    /**If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. */
     bypassCustomPluginExecution?: boolean;
     /**Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests.*/
     ifmatch?: string;
@@ -538,7 +539,7 @@ export interface RetrieveRequest extends CRUDRequest {
     select?: string[];
     /**A String representing the GUID value of the user query. */
     userQuery?: string;
-    /**v.1.7.7+ A unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. */
+    /**A unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. */
     partitionId?: string;
 }
 export interface RetrieveMultipleRequest extends Request {
@@ -562,9 +563,9 @@ export interface RetrieveMultipleRequest extends Request {
     top?: number;
     /**Sets Prefer header with value 'odata.track-changes' to request that a delta link be returned which can subsequently be used to retrieve entity changes. */
     trackChanges?: boolean;
-    /**v.1.7.7+ A unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. */
+    /**A unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. */
     partitionId?: string;
-    /**v.1.7.7+ Additional query parameters that either have not been implemented yet or they are parameter aliases for "$filter" and "$orderBy". Important! These parameters ARE NOT URI encoded! */
+    /**Additional query parameters that either have not been implemented yet or they are parameter aliases for "$filter" and "$orderBy". Important! These parameters ARE NOT URI encoded! */
     queryParams?: string[];
 }
 export interface AssociateRequest extends Request {
@@ -824,6 +825,7 @@ export interface ApiConfig {
     path?: string;
 }
 export interface AccessToken {
+    /** Access Token */
     accessToken: string;
 }
 export interface Config {
@@ -834,7 +836,7 @@ export interface Config {
     /**Impersonates a user based on their Azure Active Directory (AAD) object id by passing that value along with the header "CallerObjectId". A String should represent a GUID value. */
     impersonateAAD?: string | null;
     /**A function that is called when a security token needs to be refreshed. */
-    onTokenRefresh?: (() => Promise<AccessToken | string>) | null;
+    onTokenRefresh?: (() => Promise<AccessToken | string | null>) | null;
     /**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types.*/
     includeAnnotations?: string | null;
     /**Sets the odata.maxpagesize preference value to request the number of entities returned in the response. */
