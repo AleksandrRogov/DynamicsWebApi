@@ -12,6 +12,8 @@ As well as Microsoft Dynamics 365 CE (online), Microsoft Dynamics 365 CE (on-pre
 
 ### **This documentation is for version 2.x. If you are working with version 1.x, please check [this instead](https://github.com/AleksandrRogov/DynamicsWebApi/tree/v1).**
 
+If you want to upgrade from v1 - v2 breaking changes are [here](/.github/BREAKING_CHANGES_V2.md). List of new features in v2 is [here](/.github/NEW_IN_V2.md).
+
 Please check [DynamicsWebApi Wiki](../../../wiki/) where you will find documentation to DynamicsWebApi API and more.
 
 Browser-compiled script and type definitions can be found in a [dist](/dist/) folder.
@@ -27,6 +29,7 @@ Browser-compiled script and type definitions can be found in a [dist](/dist/) fo
 - **Abort Signal and Abort Controller** (Browser and Node.js 15+). Abort requests when they are no longer need to be completed.
 - **Node.js and a Browser** support.
 - **Proxy Configuration** support.
+
 
 ## Terminology
 
@@ -1166,7 +1169,7 @@ dynamicsWebApi.create({
     inChangeSet: false //<--- do not include in a change set
 });
 
-//this is a workaround a D365 bug (checked on July 16, 2023)
+//this is a workaround to a D365 bug (checked on July 16, 2023)
 dynamicsWebApi.retrieveMutliple({
     collection: "contacts",
     top: 1,
@@ -1975,24 +1978,26 @@ The `csdlDocument` will be the type of `string`. DynamicsWebApi does not parse t
 
 ## Formatted Values and Lookup Columns
 
-Starting from version 1.3.0 it became easier to access formatted values for properties and lookup data in response objects. 
+With DynamicsWebApi it is easier (less code) to access formatted values for the columns as well as the lookup data in response objects. 
 DynamicsWebApi automatically creates aliases for each property that contains a formatted value or lookup data.
 For example:
 
 ```ts
-//before v.1.3.0 a formatted value for account.donotpostalmail field could be accessed as following:
+//DynamicsWebApi supports an access to formatted values in both ways
+
+//normally you would access a formatted value for account.donotpostalmail field could as following:
 let doNotPostEmailFormatted = response['donotpostalmail@OData.Community.Display.V1.FormattedValue'];
 
-//starting with v.1.3.0 it can be simplified
+//with DynamicsWebApi it can be access like this:
 doNotPostEmailFormatted = response.donotpostalmail_Formatted;
 
 //same for lookup data
-//before v.1.3.0
+//normally
 let customerName = response['_customerid_value@OData.Community.Display.V1.FormattedValue'];
 let customerEntityLogicalName = response['_customerid_value@Microsoft.Dynamics.CRM.lookuplogicalname'];
 let customerNavigationProperty = response['_customerid_value@Microsoft.Dynamics.CRM.associatednavigationproperty'];
 
-//starting with v.1.3.0
+//with DynamicsWebApi
 customerName = response._customerid_value_Formatted;
 customerEntityLogicalName = response._customerid_value_LogicalName;
 customerNavigationProperty = response._customerid_value_NavigationProperty;
