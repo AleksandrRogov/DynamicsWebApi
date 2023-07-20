@@ -252,7 +252,6 @@ typesold/
 
 *.tgz
 lib/
-*.js.map
 
 # Webstorm
 .idea
