@@ -13,10 +13,13 @@ export interface InternalConfig extends Config {
     searchApi: InternalApiConfig;
 }
 
-const getApiUrl = (serverUrl: string | undefined | null, apiConfig: ApiConfig): string => {
-    if (!serverUrl) serverUrl = Utility.getClientUrl();
-
-    return `${serverUrl}/api/${apiConfig.path}/v${apiConfig.version}/`;
+const getApiUrl = (serverUrl: string | undefined | null, apiConfig: ApiConfig, portalsApi: boolean | undefined | null): string => {
+    if (portalsApi) {
+        return `${window.location.origin}/_api/`;
+    } else {
+        if (!serverUrl) serverUrl = Utility.getClientUrl();
+        return `${serverUrl}/api/${apiConfig.path}/v${apiConfig.version}/`;
+    }
 };
 
 const mergeApiConfigs = (apiConfig: ApiConfig | undefined, apiType: ApiType, internalConfig: InternalConfig): void => {
@@ -32,7 +35,7 @@ const mergeApiConfigs = (apiConfig: ApiConfig | undefined, apiType: ApiType, int
         internalApiConfig.path = apiConfig.path;
     }
 
-    internalApiConfig.url = getApiUrl(internalConfig.serverUrl, internalApiConfig);
+    internalApiConfig.url = getApiUrl(internalConfig.serverUrl, internalApiConfig, internalConfig.portalsApi);
 };
 
 export class ConfigurationUtility {
@@ -124,6 +127,7 @@ export class ConfigurationUtility {
                 version: "1.0",
                 url: "",
             },
+            portalsApi: null,
         };
     }
 }
