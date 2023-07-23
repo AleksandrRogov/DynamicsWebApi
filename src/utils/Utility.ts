@@ -154,7 +154,7 @@ export class Utility {
     }
 
     /**
-     * Checks whether whether the app is currently running in a Dynamics Portals Environment.
+     * Checks whether the app is currently running in a Dynamics Portals Environment.
      *
      * In that case we switch to the Web API for Dynamics Portals.
      * @returns {boolean}
