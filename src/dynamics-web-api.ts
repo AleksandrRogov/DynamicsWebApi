@@ -1703,8 +1703,6 @@ export interface Config {
     dataApi?: ApiConfig;
     /**Configuration object for Dataverse Search API (with path "search") */
     searchApi?: ApiConfig;
-    /**A flag that switches to the Dynamics Portals Web API. Official Docs: https://learn.microsoft.com/en-us/power-pages/configure/web-api-overview  */
-    portalsApi?: boolean | null;
 }
 
 export interface ProxyConfig {

@@ -13,8 +13,8 @@ export interface InternalConfig extends Config {
     searchApi: InternalApiConfig;
 }
 
-const getApiUrl = (serverUrl: string | undefined | null, apiConfig: ApiConfig, portalsApi: boolean | undefined | null): string => {
-    if (portalsApi) {
+const getApiUrl = (serverUrl: string | undefined | null, apiConfig: ApiConfig): string => {
+    if (Utility.isRunningWithinPortals()) {
         return `${window.location.origin}/_api/`;
     } else {
         if (!serverUrl) serverUrl = Utility.getClientUrl();
@@ -35,7 +35,7 @@ const mergeApiConfigs = (apiConfig: ApiConfig | undefined, apiType: ApiType, int
         internalApiConfig.path = apiConfig.path;
     }
 
-    internalApiConfig.url = getApiUrl(internalConfig.serverUrl, internalApiConfig, internalConfig.portalsApi);
+    internalApiConfig.url = getApiUrl(internalConfig.serverUrl, internalApiConfig);
 };
 
 export class ConfigurationUtility {
@@ -127,7 +127,6 @@ export class ConfigurationUtility {
                 version: "1.0",
                 url: "",
             },
-            portalsApi: null,
         };
     }
 }

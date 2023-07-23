@@ -153,6 +153,16 @@ export class Utility {
         return clientUrl;
     }
 
+    /**
+     * Checks whether whether the app is currently running in a Dynamics Portals Environment.
+     *
+     * In that case we switch to the Web API for Dynamics Portals.
+     * @returns {boolean}
+     */
+    static isRunningWithinPortals(): boolean {
+        return !!(window as any).shell;
+    }
+
     static isObject(obj: any): boolean {
         return typeof obj === "object" && !!obj && !Array.isArray(obj) && Object.prototype.toString.call(obj) !== "[object Date]";
     }
