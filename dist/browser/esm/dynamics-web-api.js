@@ -170,6 +170,15 @@ var init_Utility = __esm({
         }
         return clientUrl;
       }
+      /**
+       * Checks whether the app is currently running in a Dynamics Portals Environment.
+       *
+       * In that case we switch to the Web API for Dynamics Portals.
+       * @returns {boolean}
+       */
+      static isRunningWithinPortals() {
+        return true ? !!window.shell : false;
+      }
       static isObject(obj) {
         return typeof obj === "object" && !!obj && !Array.isArray(obj) && Object.prototype.toString.call(obj) !== "[object Date]";
       }
@@ -199,27 +208,25 @@ var init_Utility = __esm({
         offset = offset || 0;
         const count = offset + chunkSize > fileBuffer.length ? fileBuffer.length % chunkSize : chunkSize;
         let content;
-        if (typeof window === "undefined") {
-          content = fileBuffer.slice(offset, offset + count);
-        } else {
+        if (true) {
           content = new Uint8Array(count);
           for (let i = 0; i < count; i++) {
             content[i] = fileBuffer[offset + i];
           }
+        } else {
+          content = fileBuffer.slice(offset, offset + count);
         }
         request.data = content;
         request.contentRange = "bytes " + offset + "-" + (offset + count - 1) + "/" + fileBuffer.length;
       }
       static convertToFileBuffer(binaryString) {
-        if (typeof window === "undefined") {
+        if (false)
           return Buffer.from(binaryString, "binary");
-        } else {
-          const bytes = new Uint8Array(binaryString.length);
-          for (var i = 0; i < binaryString.length; i++) {
-            bytes[i] = binaryString.charCodeAt(i);
-          }
-          return bytes;
+        const bytes = new Uint8Array(binaryString.length);
+        for (var i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
         }
+        return bytes;
       }
     };
     // static isNodeEnv = isNodeEnv;
@@ -563,12 +570,7 @@ function parseBatchResponse(response, parseParams, requestNumber = 0) {
   return result;
 }
 function base64ToString(base64) {
-  if (typeof process !== "undefined") {
-    return Buffer.from(base64, "base64").toString("binary");
-  } else if (typeof window !== "undefined")
-    return window.atob(base64);
-  else
-    return null;
+  return true ? window.atob(base64) : Buffer.from(base64, "base64").toString("binary");
 }
 function parseFileResponse(response, responseHeaders, parseParams) {
   let data = response;
@@ -838,9 +840,13 @@ var init_xhr = __esm({
 init_Utility();
 init_ErrorHelper();
 var getApiUrl = (serverUrl, apiConfig) => {
-  if (!serverUrl)
-    serverUrl = Utility.getClientUrl();
-  return `${serverUrl}/api/${apiConfig.path}/v${apiConfig.version}/`;
+  if (Utility.isRunningWithinPortals()) {
+    return `/_api/`;
+  } else {
+    if (!serverUrl)
+      serverUrl = Utility.getClientUrl();
+    return `${serverUrl}/api/${apiConfig.path}/v${apiConfig.version}/`;
+  }
 };
 var mergeApiConfigs = (apiConfig, apiType, internalConfig) => {
   const internalApiConfig = internalConfig[apiType];
@@ -892,7 +898,7 @@ var ConfigurationUtility = class {
       ErrorHelper.boolParameterCheck(config.useEntityNames, "DynamicsWebApi.setConfig", "config.useEntityNames");
       internalConfig.useEntityNames = config.useEntityNames;
     }
-    if (config?.proxy) {
+    if (false) {
       ErrorHelper.parameterCheck(config.proxy, "DynamicsWebApi.setConfig", "config.proxy");
       if (config.proxy.url) {
         ErrorHelper.stringParameterCheck(config.proxy.url, "DynamicsWebApi.setConfig", "config.proxy.url");
@@ -1507,9 +1513,7 @@ var RequestClient = class _RequestClient {
       responseParams: _responseParseParams,
       isAsync: request.async,
       timeout: request.timeout || config.timeout,
-      /// #if node
       proxy: config.proxy,
-      /// #endif
       requestId: request.requestId,
       abortSignal: request.signal
     });

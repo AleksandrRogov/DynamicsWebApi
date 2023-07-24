@@ -160,7 +160,7 @@ export class Utility {
      * @returns {boolean}
      */
     static isRunningWithinPortals(): boolean {
-        return !!(window as any).shell;
+        return global.DWA_BROWSER ? !!(global.window as any).shell : false;
     }
 
     static isObject(obj: any): boolean {
@@ -199,38 +199,29 @@ export class Utility {
 
         const count = offset + chunkSize > fileBuffer.length ? fileBuffer.length % chunkSize : chunkSize;
 
-        let content;
+        let content: any;
 
-        /// #if node
-        if (typeof window === "undefined") {
-            content = fileBuffer.slice(offset, offset + count);
-        } else {
-            /// #endif
+        if (global.DWA_BROWSER) {
             content = new Uint8Array(count);
             for (let i = 0; i < count; i++) {
                 content[i] = fileBuffer[offset + i];
             }
-            /// #if node
+        } else {
+            content = fileBuffer.slice(offset, offset + count);
         }
-        /// #endif
 
         request.data = content;
         request.contentRange = "bytes " + offset + "-" + (offset + count - 1) + "/" + fileBuffer.length;
     }
 
     static convertToFileBuffer(binaryString: string): Uint8Array | Buffer {
-        /// #if node
-        if (typeof window === "undefined") {
+        if (!global.DWA_BROWSER)
             return Buffer.from(binaryString, "binary");
-        } else {
-            /// #endif
-            const bytes = new Uint8Array(binaryString.length);
-            for (var i = 0; i < binaryString.length; i++) {
-                bytes[i] = binaryString.charCodeAt(i);
-            }
-            return bytes;
-            /// #if node
+
+        const bytes = new Uint8Array(binaryString.length);
+        for (var i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
         }
-        /// #endif
+        return bytes;
     }
 }

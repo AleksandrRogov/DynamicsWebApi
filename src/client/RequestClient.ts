@@ -109,9 +109,7 @@ export class RequestClient {
             responseParams: _responseParseParams,
             isAsync: request.async,
             timeout: request.timeout || config.timeout,
-            /// #if node
             proxy: config.proxy,
-            /// #endif
             requestId: request.requestId!,
             abortSignal: request.signal,
         });

@@ -15,7 +15,7 @@ export interface InternalConfig extends Config {
 
 const getApiUrl = (serverUrl: string | undefined | null, apiConfig: ApiConfig): string => {
     if (Utility.isRunningWithinPortals()) {
-        return `${window.location.origin}/_api/`;
+        return `/_api/`;
     } else {
         if (!serverUrl) serverUrl = Utility.getClientUrl();
         return `${serverUrl}/api/${apiConfig.path}/v${apiConfig.version}/`;
@@ -88,8 +88,7 @@ export class ConfigurationUtility {
             internalConfig.useEntityNames = config.useEntityNames;
         }
 
-        /// #if node
-        if (config?.proxy) {
+        if (!global.DWA_BROWSER && config?.proxy) {
             ErrorHelper.parameterCheck(config.proxy, "DynamicsWebApi.setConfig", "config.proxy");
 
             if (config.proxy.url) {
@@ -104,7 +103,6 @@ export class ConfigurationUtility {
 
             internalConfig.proxy = config.proxy;
         }
-        /// #endif
     }
 
     static default(): InternalConfig {
