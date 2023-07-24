@@ -14,9 +14,12 @@ export interface InternalConfig extends Config {
 }
 
 const getApiUrl = (serverUrl: string | undefined | null, apiConfig: ApiConfig): string => {
-    if (!serverUrl) serverUrl = Utility.getClientUrl();
-
-    return `${serverUrl}/api/${apiConfig.path}/v${apiConfig.version}/`;
+    if (Utility.isRunningWithinPortals()) {
+        return `${window.location.origin}/_api/`;
+    } else {
+        if (!serverUrl) serverUrl = Utility.getClientUrl();
+        return `${serverUrl}/api/${apiConfig.path}/v${apiConfig.version}/`;
+    }
 };
 
 const mergeApiConfigs = (apiConfig: ApiConfig | undefined, apiType: ApiType, internalConfig: InternalConfig): void => {
