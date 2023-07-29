@@ -16,7 +16,7 @@ If you want to upgrade from v1 - v2 breaking changes are [here](/.github/BREAKIN
 
 Please check [DynamicsWebApi Wiki](../../../wiki/) where you will find documentation to DynamicsWebApi API and more.
 
-Browser-compiled script and type definitions can be found in a [dist](/dist/) folder.
+Browser-compiled script and type definitions can be found in a v2 [dist](https://github.com/AleksandrRogov/DynamicsWebApi/tree/v2/dist) folder.
 
 ## Main Features
 
@@ -30,13 +30,6 @@ Browser-compiled script and type definitions can be found in a [dist](/dist/) fo
 - **Node.js and a Browser** support.
 - **Proxy Configuration** support.
 
-
-## Terminology
-
-Check out [Dataverse Terminology](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/understand-terminology). Microsoft has done some changes in the namings of the objects and components of D365 and since DynamicsWebApi has been developing for many years there may be _conflicting_ naming, such as: `createEntity` - which _right now_ means "Create a Table Definition". Dataverse SDK terminology is what the library has been based on. I have no plans on changing that (except in documentation), mainly because Microsoft may change the namings again in the future which will lead to naming issues ...again.
-
-**Please note!** "Dynamics 365" in this readme refers to Microsoft Dataverse (formerly known as Microsoft Common Data Service) / Microsoft Dynamics 365 Customer Engagement / Micorosft Dynamics CRM. **NOT** Microsoft Dynamics 365 Finance and Operations.
-
 ***
 
 I maintain this project in my free time and it takes a considerable amount of time to make sure that the library has all new features, 
@@ -46,6 +39,12 @@ then please feel free to sponsor it through [GitHub Sponsors](https://github.com
 Also, please check [suggestions and contributions](#contributions) section to learn more about how you can help to improve the library.
 
 ***
+
+## Terminology
+
+Check out [Dataverse Terminology](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/understand-terminology). Microsoft has done some changes in the namings of the objects and components of D365 and since DynamicsWebApi has been developing for many years there may be _conflicting_ naming, such as: `createEntity` - which _right now_ means "Create a Table Definition". Dataverse SDK terminology is what the library has been based on. I have no plans on changing that (except in documentation), mainly because Microsoft may change the namings again in the future which will lead to naming issues ...again.
+
+**Please note!** "Dynamics 365" in this readme refers to Microsoft Dataverse (formerly known as Microsoft Common Data Service) / Microsoft Dynamics 365 Customer Engagement / Micorosft Dynamics CRM. **NOT** Microsoft Dynamics 365 Finance and Operations.
 
 ## Table of Contents
 
@@ -127,7 +126,7 @@ v2 breaking changes are [here](/.github/BREAKING_CHANGES_V2.md). List of new fea
 ## Getting Started
 
 ### Dynamics 365 Web Resource
-To use DynamicsWebApi inside Dynamics 365 you need to download a browser version of the library, it can be found in [dist](/dist/) folder.
+To use DynamicsWebApi inside Dynamics 365 you need to download a browser version of the library, it can be found in v2 [dist](https://github.com/AleksandrRogov/DynamicsWebApi/tree/v2/dist) folder.
 
 Upload a script as a JavaScript Web Resource, add it to a table form or reference it in the HTML Web Resource and then initialize the main object:
 
@@ -2387,7 +2386,7 @@ import { DynamicsWebApi, Config } from "dynamics-web-api";
 ```
 
 ### Dynamics 365 web resource
-If you are developing CRM Web Resources with TypeScript (and are not using NPM), you can download a TypeScript declaration file `dynamics-web-api.d.ts` manually from [dist](/dist/) folder. I usually put all declarations in the "./types/" folder of my web resources project. For example:
+If you are developing CRM Web Resources with TypeScript (and are not using NPM), you can download a TypeScript declaration file `dynamics-web-api.d.ts` manually from v2 [dist](https://github.com/AleksandrRogov/DynamicsWebApi/tree/v2/dist) folder. I usually put all declarations in the "./types/" folder of my web resources project. For example:
 
 ```
 [project root]/
@@ -2448,6 +2447,7 @@ the config option "formatted" will enable developers to retrieve all information
 - [X] Refactoring and conversion to TypeScript. `Added in v.2.0`
 - [X] Implement [Dataverse Search API](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/relevance-search). `Added in v.2.0`
 - [ ] Allow custom headers to be passed to the request. [#151](https://github.com/AleksandrRogov/DynamicsWebApi/issues/151)
+- [ ] Support Microsoft Power Pages.
 
 Many more features to come!
 

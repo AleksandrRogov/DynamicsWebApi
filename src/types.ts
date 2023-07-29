@@ -1,4 +1,4 @@
-﻿import { ProxyConfig, Expand, RequestError } from "./dynamics-web-api";
+﻿import { ProxyConfig, Expand, RequestError, HeaderCollection } from "./dynamics-web-api";
 import { InternalApiConfig } from "./utils/Config";
 
 export declare namespace Core {
@@ -40,8 +40,8 @@ export declare namespace Core {
     }
 
     interface InternalBatchRequest {
-        body?: any;
-        headers?: any;
+        body: any;
+        headers: HeaderCollection;
     }
 
     interface InternalRequest {
@@ -126,7 +126,8 @@ export declare namespace Core {
         functionName?: string;
         responseParameters?: any;
         path?: string;
-        headers?: any;
+        headers?: HeaderCollection;
+        userHeaders?: HeaderCollection;
         pageNumber?: number;
         pagingCookie?: string;
         requestId?: string | null;

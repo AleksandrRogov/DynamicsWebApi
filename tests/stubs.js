@@ -1,6 +1,7 @@
 ﻿//<cookie pagenumber="2" pagingcookie="<cookie page="1"><accountid last="{EF72AE29-B3DE-E611-8102-5065F38A7BF1}" first="{475B158C-541C-E511-80D3-3863BB347BA8}" /></cookie>" istracking="False" />
 //<cookie pagenumber="2" pagingcookie="<cookie page="2"><accountid last="{F972AE29-B3DE-E611-8102-5065F38A7BF1}" first="{F172AE29-B3DE-E611-8102-5065F38A7BF1}" /></cookie>" istracking="False" />
 const serverUrl = "http://testorg.crm.dynamics.com";
+const portalUrl = "https://portal.com";
 
 global.Xrm = {
     Page: {
@@ -12,15 +13,16 @@ global.Xrm = {
     },
 };
 
-var webApiUrl = `${serverUrl}/api/data/v8.2/`;
-var webApiUrl81 = `${serverUrl}/api/data/v8.1/`;
-var webApiUrl80 = `${serverUrl}/api/data/v8.0/`;
-var webApiUrl90 = `${serverUrl}/api/data/v9.0/`;
-var webApiUrl91 = `${serverUrl}/api/data/v9.1/`;
-var webApiUrl92 = `${serverUrl}/api/data/v9.2/`;
+const webApiUrl = `${serverUrl}/api/data/v8.2/`;
+const webApiUrl81 = `${serverUrl}/api/data/v8.1/`;
+const webApiUrl80 = `${serverUrl}/api/data/v8.0/`;
+const webApiUrl90 = `${serverUrl}/api/data/v9.0/`;
+const webApiUrl91 = `${serverUrl}/api/data/v9.1/`;
+const webApiUrl92 = `${serverUrl}/api/data/v9.2/`;
 const searchApiUrl = `${serverUrl}/api/search/v1.0/`;
+const powerPagesApiUrl = `${portalUrl}/_api/`;
 
-var dataStubs = {
+const dataStubs = {
     testEntityId: "00000000-0000-0000-0000-000000000001",
     testEntityId2: "00000000-0000-0000-0000-000000000002",
     testEntityId3: "00000000-0000-0000-0000-000000000003",
@@ -533,6 +535,33 @@ var dataStubs = {
         '{"firstname":"Test1","lastname":"Batch!","prop@odata.bind":"$1"}\n' +
         "\n" +
         "--changeset_XXX--\n" +
+        "\n" +
+        "--dwa_batch_XXX--",
+    batchCreateContentIDPayloadNonAtomicCustomHeaders:
+        "--dwa_batch_XXX\n" +
+        "Content-Type: application/http\n" +
+        "Content-Transfer-Encoding: binary\n" +
+        "\n" +
+        "POST " +
+        webApiUrl +
+        "records HTTP/1.1\n" +
+        "Content-Type: application/json\n" +
+        "my-header: success!\n" +
+        "custom: header\n" +
+        "\n" +
+        '{"firstname":"Test","lastname":"Batch!"}\n' +
+        "\n" +
+        "--dwa_batch_XXX\n" +
+        "Content-Type: application/http\n" +
+        "Content-Transfer-Encoding: binary\n" +
+        "\n" +
+        "POST " +
+        webApiUrl +
+        "tests HTTP/1.1\n" +
+        "Content-Type: application/json\n" +
+        "my-header: success!\n" +
+        "\n" +
+        '{"firstname":"Test1","lastname":"Batch!","prop@odata.bind":"$1"}\n' +
         "\n" +
         "--dwa_batch_XXX--",
     batchRetrieveMultipleDeleteRetrieveMultiple:
@@ -1374,4 +1403,6 @@ module.exports = {
     utils: utils,
     searchApiUrl: searchApiUrl,
     serverUrl: serverUrl,
+    powerPagesApiUrl: powerPagesApiUrl,
+    portalUrl: portalUrl,
 };

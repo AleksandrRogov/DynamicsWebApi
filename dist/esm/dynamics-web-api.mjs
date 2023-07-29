@@ -1,4 +1,4 @@
-/*! dynamics-web-api v2.0.0 (c) 2023 Aleksandr Rogov */
+/*! dynamics-web-api v2.1.0-rc.0 (c) 2023 Aleksandr Rogov */
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -77,7 +77,7 @@ var init_Utility = __esm({
     init_Crypto();
     init_Regex();
     downloadChunkSize = 4194304;
-    _Utility = class _Utility {
+    _Utility = class {
       /**
        * Builds parametes for a funciton. Returns '()' (if no parameters) or '([params])?[query]'
        *
@@ -92,7 +92,7 @@ var init_Utility = __esm({
           for (var i = 1; i <= parameterNames.length; i++) {
             const parameterName = parameterNames[i - 1];
             let value = parameters[parameterName];
-            if (value === null)
+            if (value == null)
               continue;
             if (typeof value === "string" && !value.startsWith("Microsoft.Dynamics.CRM") && !isUuid(value)) {
               value = "'" + value + "'";
@@ -106,7 +106,9 @@ var init_Utility = __esm({
             functionParameters += parameterName + "=@p" + i;
             urlQuery += "@p" + i + "=" + (extractUuid(value) || value);
           }
-          return "(" + functionParameters + ")?" + urlQuery;
+          if (urlQuery)
+            urlQuery = "?" + urlQuery;
+          return "(" + functionParameters + ")" + urlQuery;
         } else {
           return "()";
         }
@@ -244,9 +246,9 @@ var init_Utility = __esm({
         return bytes;
       }
     };
-    // static isNodeEnv = isNodeEnv;
-    _Utility.downloadChunkSize = downloadChunkSize;
     Utility = _Utility;
+    // static isNodeEnv = isNodeEnv;
+    Utility.downloadChunkSize = downloadChunkSize;
   }
 });
 
@@ -261,7 +263,7 @@ var init_ErrorHelper = __esm({
   "src/helpers/ErrorHelper.ts"() {
     "use strict";
     init_Regex();
-    ErrorHelper = class _ErrorHelper {
+    ErrorHelper = class {
       static handleErrorResponse(req) {
         throw new Error(`Error: ${req.status}: ${req.message}`);
       }
@@ -341,7 +343,7 @@ var init_ErrorHelper = __esm({
       }
       static keyParameterCheck(parameter, functionName, parameterName) {
         try {
-          _ErrorHelper.stringParameterCheck(parameter, functionName, parameterName);
+          ErrorHelper.stringParameterCheck(parameter, functionName, parameterName);
           const match = extractUuid(parameter);
           if (match)
             return match;
@@ -384,15 +386,15 @@ var _a, _b, _DWA, DWA;
 var init_dwa = __esm({
   "src/dwa.ts"() {
     "use strict";
-    _DWA = class _DWA {
+    _DWA = class {
     };
-    _DWA.Prefer = (_b = class {
+    DWA = _DWA;
+    DWA.Prefer = (_b = class {
       static get(annotation) {
         return `${_DWA.Prefer.IncludeAnnotations}="${annotation}"`;
       }
     }, _b.ReturnRepresentation = "return=representation", _b.Annotations = (_a = class {
     }, _a.AssociatedNavigationProperty = "Microsoft.Dynamics.CRM.associatednavigationproperty", _a.LookupLogicalName = "Microsoft.Dynamics.CRM.lookuplogicalname", _a.All = "*", _a.FormattedValue = "OData.Community.Display.V1.FormattedValue", _a.FetchXmlPagingCookie = "Microsoft.Dynamics.CRM.fetchxmlpagingcookie", _a), _b.IncludeAnnotations = "odata.include-annotations", _b);
-    DWA = _DWA;
   }
 });
 
@@ -821,7 +823,7 @@ init_Utility();
 init_ErrorHelper();
 var getApiUrl = (serverUrl, apiConfig) => {
   if (Utility.isRunningWithinPortals()) {
-    return `/_api/`;
+    return `${global.window.location.origin}/_api/`;
   } else {
     if (!serverUrl)
       serverUrl = Utility.getClientUrl();
@@ -878,6 +880,9 @@ var ConfigurationUtility = class {
       ErrorHelper.boolParameterCheck(config.useEntityNames, "DynamicsWebApi.setConfig", "config.useEntityNames");
       internalConfig.useEntityNames = config.useEntityNames;
     }
+    if (config == null ? void 0 : config.headers) {
+      internalConfig.headers = config.headers;
+    }
     if (config == null ? void 0 : config.proxy) {
       ErrorHelper.parameterCheck(config.proxy, "DynamicsWebApi.setConfig", "config.proxy");
       if (config.proxy.url) {
@@ -926,7 +931,7 @@ init_Utility();
 // src/utils/Request.ts
 init_Utility();
 init_ErrorHelper();
-var _RequestUtility = class _RequestUtility {
+var _RequestUtility = class {
   /**
    * Converts a request object to URL link
    *
@@ -1133,7 +1138,7 @@ var _RequestUtility = class _RequestUtility {
     return !queryArray.length ? url2 : url2 + "?" + queryArray.join(joinSymbol);
   }
   static composeHeaders(request, config) {
-    const headers = {};
+    const headers = { ...config.headers, ...request.userHeaders };
     const prefer = _RequestUtility.composePreferHeader(request, config);
     if (prefer.length) {
       headers["Prefer"] = prefer;
@@ -1329,7 +1334,7 @@ ${_RequestUtility.processData(internalRequest.data, config)}`);
     }
     batchBody.push(`
 --${batchBoundary}--`);
-    const headers = _RequestUtility.setStandardHeaders();
+    const headers = _RequestUtility.setStandardHeaders(batchRequest == null ? void 0 : batchRequest.userHeaders);
     headers["Content-Type"] = `multipart/mixed;boundary=${batchBoundary}`;
     return { headers, body: batchBody.join("\n") };
   }
@@ -1348,7 +1353,7 @@ ${_RequestUtility.processData(internalRequest.data, config)}`);
     return collectionName;
   }
   static processData(data, config) {
-    let stringifiedData;
+    let stringifiedData = null;
     if (data) {
       if (data instanceof Uint8Array || data instanceof Uint16Array || data instanceof Uint32Array)
         return data;
@@ -1384,7 +1389,7 @@ ${_RequestUtility.processData(internalRequest.data, config)}`);
         return value;
       });
       stringifiedData = stringifiedData.replace(/[\u007F-\uFFFF]/g, function(chr) {
-        return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substr(-4);
+        return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).slice(-4);
       });
     }
     return stringifiedData;
@@ -1392,14 +1397,19 @@ ${_RequestUtility.processData(internalRequest.data, config)}`);
   static setStandardHeaders(headers = {}) {
     if (!headers["Accept"])
       headers["Accept"] = "application/json";
-    headers["OData-MaxVersion"] = "4.0";
-    headers["OData-Version"] = "4.0";
-    headers["Content-Type"] = headers["Content-Range"] ? "application/octet-stream" : "application/json; charset=utf-8";
+    if (!headers["OData-MaxVersion"])
+      headers["OData-MaxVersion"] = "4.0";
+    if (!headers["OData-Version"])
+      headers["OData-Version"] = "4.0";
+    if (headers["Content-Range"])
+      headers["Content-Type"] = "application/octet-stream";
+    else if (!headers["Content-Type"])
+      headers["Content-Type"] = "application/json; charset=utf-8";
     return headers;
   }
 };
-_RequestUtility.entityNames = null;
 var RequestUtility = _RequestUtility;
+RequestUtility.entityNames = null;
 
 // src/client/RequestClient.ts
 init_ErrorHelper();
@@ -1441,7 +1451,7 @@ var _runRequest = async (request, config) => {
 };
 var _batchRequestCollection = {};
 var _responseParseParams = {};
-var RequestClient = class _RequestClient {
+var RequestClient = class {
   /**
    * Sends a request to given URL with given parameters
    *
@@ -1449,12 +1459,13 @@ var RequestClient = class _RequestClient {
    * @param {InternalConfig} config - DynamicsWebApi config.
    */
   static async sendRequest(request, config) {
+    var _a2;
     request.headers = request.headers || {};
     request.responseParameters = request.responseParameters || {};
     request.requestId = request.requestId || Utility.generateUUID();
     _addResponseParams(request.requestId, request.responseParameters);
     let processedData = null;
-    const isBatchConverted = request.responseParameters != null && request.responseParameters.convertedToBatch;
+    const isBatchConverted = (_a2 = request.responseParameters) == null ? void 0 : _a2.convertedToBatch;
     if (request.path === "$batch" && !isBatchConverted) {
       const batchRequest = _batchRequestCollection[request.requestId];
       if (!batchRequest)
@@ -1514,16 +1525,12 @@ var RequestClient = class _RequestClient {
       },
       config
     );
-    try {
-      const result = await _runRequest(request, config);
-      RequestUtility.entityNames = {};
-      for (let i = 0; i < result.data.value.length; i++) {
-        RequestUtility.entityNames[result.data.value[i].LogicalName] = result.data.value[i].EntitySetName;
-      }
-      return RequestUtility.findCollectionName(entityName) || entityName;
-    } catch (error) {
-      throw new Error("Unable to fetch EntityDefinitions. Error: " + error.message);
+    const result = await _runRequest(request, config);
+    RequestUtility.entityNames = {};
+    for (let i = 0; i < result.data.value.length; i++) {
+      RequestUtility.entityNames[result.data.value[i].LogicalName] = result.data.value[i].EntitySetName;
     }
+    return RequestUtility.findCollectionName(entityName) || entityName;
   }
   static _isEntityNameException(entityName) {
     const exceptions = [
@@ -1539,7 +1546,7 @@ var RequestClient = class _RequestClient {
     return exceptions.indexOf(entityName) > -1;
   }
   static async _checkCollectionName(entityName, config) {
-    if (!entityName || _RequestClient._isEntityNameException(entityName)) {
+    if (!entityName || RequestClient._isEntityNameException(entityName)) {
       return entityName;
     }
     entityName = entityName.toLowerCase();
@@ -1547,29 +1554,31 @@ var RequestClient = class _RequestClient {
       return entityName;
     }
     try {
-      return await _RequestClient._getCollectionNames(entityName, config);
+      return await RequestClient._getCollectionNames(entityName, config);
     } catch (error) {
       throw new Error("Unable to fetch Collection Names. Error: " + error.message);
     }
   }
   static async makeRequest(request, config) {
     request.responseParameters = request.responseParameters || {};
+    request.userHeaders = request.headers;
+    delete request.headers;
     if (!request.isBatch) {
-      const collectionName = await _RequestClient._checkCollectionName(request.collection, config);
+      const collectionName = await RequestClient._checkCollectionName(request.collection, config);
       request.collection = collectionName;
-      request = RequestUtility.compose(request, config);
+      RequestUtility.compose(request, config);
       request.responseParameters.convertedToBatch = false;
       if (request.path.length > 2e3) {
         const batchRequest = RequestUtility.convertToBatch([request], config);
         request.method = "POST";
         request.path = "$batch";
         request.data = batchRequest.body;
-        request.headers = batchRequest.headers;
+        request.headers = { ...batchRequest.headers, ...request.userHeaders };
         request.responseParameters.convertedToBatch = true;
       }
       return _runRequest(request, config);
     }
-    request = RequestUtility.compose(request, config);
+    RequestUtility.compose(request, config);
     _addResponseParams(request.requestId, request.responseParameters);
     _addRequestToBatchCollection(request.requestId, request);
   }
@@ -1584,7 +1593,7 @@ var RequestClient = class _RequestClient {
 };
 
 // src/dynamics-web-api.ts
-var DynamicsWebApi = class _DynamicsWebApi {
+var DynamicsWebApi = class {
   /**
    * Initializes a new instance of DynamicsWebApi
    * @param config - Configuration object
@@ -2490,7 +2499,7 @@ var DynamicsWebApi = class _DynamicsWebApi {
      * @param {Config} config - configuration object.
      * @returns {DynamicsWebApi} The new instance of a DynamicsWebApi
      */
-    this.initializeInstance = (config) => new _DynamicsWebApi(config || this._config);
+    this.initializeInstance = (config) => new DynamicsWebApi(config || this._config);
     this.Utility = {
       /**
        * Searches for a collection name by provided entity name in a cached entity metadata.

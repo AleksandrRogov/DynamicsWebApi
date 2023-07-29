@@ -238,3 +238,214 @@ describe("dynamicsWebApi.executeBatch -", () => {
         });
     });
 });
+
+describe("dynamicsWebApi: custom headers - ", () => {
+    describe("in a request", () => {
+        let scope: nock.Scope;
+        before(function () {
+            const response = mocks.responses.multipleResponse;
+            scope = nock(mocks.webApiUrl, {
+                reqheaders: {
+                    "my-header": "success!",
+                },
+            })
+                .get("/tests")
+                .reply(response.status, response.responseText, response.responseHeaders);
+        });
+
+        after(function () {
+            nock.cleanAll();
+        });
+
+        it("sends a request to the right end point and adds a custom header to it", function (done) {
+            dynamicsWebApiTest
+                .retrieveMultiple({ collection: "tests", headers: { "my-header": "success!" } })
+                .then(function (object) {
+                    expect(object).to.deep.equal(mocks.responses.multiple());
+                    done();
+                })
+                .catch(function (object) {
+                    done(object);
+                });
+        });
+
+        it("all requests have been done", function () {
+            expect(scope.isDone()).to.be.true;
+        });
+    });
+
+    describe("in a config - with multiple requests", () => {
+        let scope: nock.Scope;
+        const dynamicsWebApiTestWithHeaders = dynamicsWebApiTest.initializeInstance({
+            dataApi: {
+                version: "8.2",
+            },
+            headers: { "my-header": "success!", "another-header": "success 2!" },
+        });
+        before(function () {
+            const response = mocks.responses.multipleResponse;
+            const response2 = mocks.responses.response200;
+            scope = nock(mocks.webApiUrl, {
+                reqheaders: {
+                    "my-header": "success!",
+                    "another-header": "success 2!",
+                },
+            })
+                .get("/tests")
+                .reply(response.status, response.responseText, response.responseHeaders)
+                .get(mocks.responses.testEntityUrl)
+                .reply(response2.status, response2.responseText, response2.responseHeaders);
+        });
+
+        after(function () {
+            nock.cleanAll();
+        });
+
+        it("sends all requests to the right end point and adds custom headers to them", async () => {
+            try {
+                const object = await dynamicsWebApiTestWithHeaders.retrieveMultiple({ collection: "tests" });
+                const object2 = await dynamicsWebApiTestWithHeaders.retrieve({ key: mocks.data.testEntityId, collection: "tests" });
+
+                expect(object).to.deep.equal(mocks.responses.multiple());
+                expect(object2).to.deep.equal(mocks.data.testEntity);
+            } catch (error) {
+                console.error(error);
+                throw error;
+            }
+        });
+
+        it("all requests have been done", function () {
+            expect(scope.isDone()).to.be.true;
+        });
+    });
+
+    describe("request headers merge with config headers", () => {
+        let scope: nock.Scope;
+        const dynamicsWebApiTestWithHeaders = dynamicsWebApiTest.initializeInstance({
+            dataApi: {
+                version: "8.2",
+            },
+            headers: { "my-header": "success!", "another-header": "success 2!" },
+        });
+        before(function () {
+            const response = mocks.responses.multipleResponse;
+            const response2 = mocks.responses.response200;
+            scope = nock(mocks.webApiUrl, {
+                reqheaders: {
+                    "my-header": "bla",
+                    "another-header": "success 2!",
+                    something: "else",
+                },
+            })
+                .get("/tests")
+                .reply(response.status, response.responseText, response.responseHeaders)
+                .get(mocks.responses.testEntityUrl)
+                .reply(response2.status, response2.responseText, response2.responseHeaders);
+        });
+
+        after(function () {
+            nock.cleanAll();
+        });
+
+        it("sends all requests to the right end point and adds custom headers to them", async () => {
+            try {
+                const object = await dynamicsWebApiTestWithHeaders.retrieveMultiple({
+                    collection: "tests",
+                    headers: { "my-header": "bla", something: "else" },
+                });
+                const object2 = await dynamicsWebApiTestWithHeaders.retrieve({
+                    key: mocks.data.testEntityId,
+                    collection: "tests",
+                    headers: { "my-header": "bla", something: "else" },
+                });
+
+                expect(object).to.deep.equal(mocks.responses.multiple());
+                expect(object2).to.deep.equal(mocks.data.testEntity);
+            } catch (error) {
+                console.error(error);
+                throw error;
+            }
+        });
+
+        it("all requests have been done", function () {
+            expect(scope.isDone()).to.be.true;
+        });
+    });
+
+    describe("in a batch request", function () {
+        const dynamicsWebApiTestWithHeaders = dynamicsWebApiTest.initializeInstance({
+            dataApi: {
+                version: "8.2",
+            },
+            headers: { "my-header": "success!" },
+        });
+        let scope;
+        const rBody = mocks.data.batchCreateContentIDPayloadNonAtomicCustomHeaders;
+        const rBodys = rBody.split("\n");
+        let checkBody = "";
+        for (let i = 0; i < rBodys.length; i++) {
+            checkBody += rBodys[i];
+        }
+        before(function () {
+            const response = mocks.responses.batchUpdateDelete;
+            scope = nock(mocks.webApiUrl, {
+                reqheaders: {
+                    "my-header": "success!",
+                },
+            })
+                .filteringRequestBody((body) => {
+                    body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
+                    body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "changeset_XXX");
+                    const bodys = body.split("\n");
+
+                    let resultBody = "";
+                    for (let i = 0; i < bodys.length; i++) {
+                        resultBody += bodys[i];
+                    }
+
+                    return resultBody;
+                })
+                .post("/$batch", checkBody)
+                .reply(response.status, response.responseText, response.responseHeaders);
+        });
+
+        after(function () {
+            nock.cleanAll();
+        });
+
+        it("returns a correct response", async () => {
+            dynamicsWebApiTestWithHeaders.startBatch();
+
+            dynamicsWebApiTestWithHeaders.create({
+                collection: "records",
+                data: { firstname: "Test", lastname: "Batch!" },
+                contentId: "1",
+                inChangeSet: false,
+                headers: {
+                    custom: "header",
+                },
+            });
+            dynamicsWebApiTestWithHeaders.create({
+                collection: "tests",
+                data: { firstname: "Test1", lastname: "Batch!", "prop@odata.bind": "$1" },
+                inChangeSet: false,
+            });
+
+            try {
+                const object = await dynamicsWebApiTestWithHeaders.executeBatch();
+
+                expect(object.length).to.be.eq(2);
+
+                expect(object[0]).to.be.eq(mocks.data.testEntityId);
+                expect(object[1]).to.be.undefined;
+            } catch (error) {
+                console.error(error);
+                throw error;
+            }
+        });
+
+        it("all requests have been made", () => {
+            expect(scope.isDone()).to.be.true;
+        });
+    });
+});

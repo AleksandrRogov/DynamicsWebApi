@@ -33,7 +33,7 @@ export class Utility {
                 const parameterName = parameterNames[i - 1];
                 let value = parameters[parameterName];
 
-                if (value === null) continue;
+                if (value == null) continue;
 
                 if (typeof value === "string" && !value.startsWith("Microsoft.Dynamics.CRM") && !isUuid(value)) {
                     value = "'" + value + "'";
@@ -50,7 +50,9 @@ export class Utility {
                 urlQuery += "@p" + i + "=" + (extractUuid(value) || value);
             }
 
-            return "(" + functionParameters + ")?" + urlQuery;
+            if (urlQuery) urlQuery = "?" + urlQuery;
+
+            return "(" + functionParameters + ")" + urlQuery;
         } else {
             return "()";
         }
@@ -215,8 +217,7 @@ export class Utility {
     }
 
     static convertToFileBuffer(binaryString: string): Uint8Array | Buffer {
-        if (!global.DWA_BROWSER)
-            return Buffer.from(binaryString, "binary");
+        if (!global.DWA_BROWSER) return Buffer.from(binaryString, "binary");
 
         const bytes = new Uint8Array(binaryString.length);
         for (var i = 0; i < binaryString.length; i++) {

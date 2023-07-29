@@ -1,4 +1,4 @@
-/*! dynamics-web-api v2.0.0 (c) 2023 Aleksandr Rogov */
+/*! dynamics-web-api v2.1.0-rc.0 (c) 2023 Aleksandr Rogov */
 /// <reference types="node" />
 /**
  * Microsoft Dynamics CRM Web API helper library written in JavaScript.
@@ -397,6 +397,8 @@ export interface BaseRequest {
     signal?: AbortSignal;
     /**Indicates if an operation must be included in a Change Set or not. Works in Batch Operations only. By default, it's "true", except for GET operations - they are not allowed in Change Sets. */
     inChangeSet?: boolean;
+    /**Headers to supply with a request. These headers will override configuraiton headers if the identical ones were set. */
+    headers?: HeaderCollection;
 }
 export interface BatchRequest extends BaseRequest {
     /** Sets Prefer header to "odata.continue-on-error" that allows more requests be processed when errors occur. The batch request will return '200 OK' and individual response errors will be returned in the batch response body. */
@@ -851,9 +853,16 @@ export interface Config {
     proxy?: ProxyConfig | null;
     /**Configuration object for Dataverse Web API (with path "data"). */
     dataApi?: ApiConfig;
-    /**Configuration object for Dataverse Search API (with path "search") */
+    /**Configuration object for Dataverse Search API (with path "search"). */
     searchApi?: ApiConfig;
+    /**Default headers to supply with each request. */
+    headers?: HeaderCollection;
 }
+/**Header collection type */
+export type HeaderCollection = {
+    /**key-value */
+    [key: string]: string;
+};
 export interface ProxyConfig {
     /**Proxy server url */
     url: string;
