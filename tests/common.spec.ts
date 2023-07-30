@@ -120,23 +120,53 @@ describe("RequestUtility.", () => {
             serverUrl: stubs.serverUrl,
             dataApi: {
                 url: "data",
-                version: "9.2"
+                version: "9.2",
             },
             searchApi: {
                 url: "search",
-                version: "9.2"
-            }
-        }
+                version: "9.2",
+            },
+        };
 
-        it ("removes brackets from the guids & adds a slash in front", () => {
+        it("removes brackets from the guids & adds a slash in front", () => {
             const guid = "00000000-0000-0000-0000-000000000001";
             const data = {
-                "ref1@odata.bind": `contacts({${guid}})`
-            }
+                "ref1@odata.bind": `contacts({${guid}})`,
+            };
 
             const result = RequestUtility.processData(data, config);
 
             expect(result).to.be.eq('{"ref1@odata.bind":"/contacts(00000000-0000-0000-0000-000000000001)"}');
-        })
+        });
     });
-})
+});
+
+describe("RequestUtility.composeHeaders -", () => {
+    it("custom headers: request overrides config", () => {
+        const config = {
+            headers: { "custom-header": "1" },
+        };
+
+        const dwaRequest = {
+            userHeaders: { "custom-header": "10" },
+            functionName: "",
+        };
+
+        const result = RequestUtility.composeHeaders(dwaRequest, config);
+        expect(result).to.deep.equal({ "custom-header": "10" });
+    });
+
+    it("custom headers: request merges with config", () => {
+        const config = {
+            headers: { "custom-header": "1", something: "else" },
+        };
+
+        const dwaRequest = {
+            userHeaders: { "custom-header": "10", john: "doe" },
+            functionName: "",
+        };
+
+        const result = RequestUtility.composeHeaders(dwaRequest, config);
+        expect(result).to.deep.equal({ "custom-header": "10", something: "else", john: "doe" });
+    });
+});

@@ -1,4 +1,4 @@
-/*! dynamics-web-api v2.0.0 (c) 2023 Aleksandr Rogov */
+/*! dynamics-web-api v2.1.0-rc.0 (c) 2023 Aleksandr Rogov */
 "use strict";
 var _dynamicsWebApiExports = (() => {
   var __defProp = Object.defineProperty;
@@ -64,7 +64,7 @@ var _dynamicsWebApiExports = (() => {
       init_Crypto();
       init_Regex();
       downloadChunkSize = 4194304;
-      _Utility = class _Utility {
+      _Utility = class {
         /**
          * Builds parametes for a funciton. Returns '()' (if no parameters) or '([params])?[query]'
          *
@@ -79,7 +79,7 @@ var _dynamicsWebApiExports = (() => {
             for (var i = 1; i <= parameterNames.length; i++) {
               const parameterName = parameterNames[i - 1];
               let value = parameters[parameterName];
-              if (value === null)
+              if (value == null)
                 continue;
               if (typeof value === "string" && !value.startsWith("Microsoft.Dynamics.CRM") && !isUuid(value)) {
                 value = "'" + value + "'";
@@ -93,7 +93,9 @@ var _dynamicsWebApiExports = (() => {
               functionParameters += parameterName + "=@p" + i;
               urlQuery += "@p" + i + "=" + (extractUuid(value) || value);
             }
-            return "(" + functionParameters + ")?" + urlQuery;
+            if (urlQuery)
+              urlQuery = "?" + urlQuery;
+            return "(" + functionParameters + ")" + urlQuery;
           } else {
             return "()";
           }
@@ -172,6 +174,15 @@ var _dynamicsWebApiExports = (() => {
           }
           return clientUrl;
         }
+        /**
+         * Checks whether the app is currently running in a Dynamics Portals Environment.
+         *
+         * In that case we switch to the Web API for Dynamics Portals.
+         * @returns {boolean}
+         */
+        static isRunningWithinPortals() {
+          return true ? !!window.shell : false;
+        }
         static isObject(obj) {
           return typeof obj === "object" && !!obj && !Array.isArray(obj) && Object.prototype.toString.call(obj) !== "[object Date]";
         }
@@ -201,32 +212,30 @@ var _dynamicsWebApiExports = (() => {
           offset = offset || 0;
           const count = offset + chunkSize > fileBuffer.length ? fileBuffer.length % chunkSize : chunkSize;
           let content;
-          if (typeof window === "undefined") {
-            content = fileBuffer.slice(offset, offset + count);
-          } else {
+          if (true) {
             content = new Uint8Array(count);
             for (let i = 0; i < count; i++) {
               content[i] = fileBuffer[offset + i];
             }
+          } else {
+            content = fileBuffer.slice(offset, offset + count);
           }
           request.data = content;
           request.contentRange = "bytes " + offset + "-" + (offset + count - 1) + "/" + fileBuffer.length;
         }
         static convertToFileBuffer(binaryString) {
-          if (typeof window === "undefined") {
+          if (false)
             return Buffer.from(binaryString, "binary");
-          } else {
-            const bytes = new Uint8Array(binaryString.length);
-            for (var i = 0; i < binaryString.length; i++) {
-              bytes[i] = binaryString.charCodeAt(i);
-            }
-            return bytes;
+          const bytes = new Uint8Array(binaryString.length);
+          for (var i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
           }
+          return bytes;
         }
       };
-      // static isNodeEnv = isNodeEnv;
-      _Utility.downloadChunkSize = downloadChunkSize;
       Utility = _Utility;
+      // static isNodeEnv = isNodeEnv;
+      Utility.downloadChunkSize = downloadChunkSize;
     }
   });
 
@@ -241,7 +250,7 @@ var _dynamicsWebApiExports = (() => {
     "src/helpers/ErrorHelper.ts"() {
       "use strict";
       init_Regex();
-      ErrorHelper = class _ErrorHelper {
+      ErrorHelper = class {
         static handleErrorResponse(req) {
           throw new Error(`Error: ${req.status}: ${req.message}`);
         }
@@ -321,7 +330,7 @@ var _dynamicsWebApiExports = (() => {
         }
         static keyParameterCheck(parameter, functionName, parameterName) {
           try {
-            _ErrorHelper.stringParameterCheck(parameter, functionName, parameterName);
+            ErrorHelper.stringParameterCheck(parameter, functionName, parameterName);
             const match = extractUuid(parameter);
             if (match)
               return match;
@@ -364,15 +373,15 @@ var _dynamicsWebApiExports = (() => {
   var init_dwa = __esm({
     "src/dwa.ts"() {
       "use strict";
-      _DWA = class _DWA {
+      _DWA = class {
       };
-      _DWA.Prefer = (_b = class {
+      DWA = _DWA;
+      DWA.Prefer = (_b = class {
         static get(annotation) {
           return `${_DWA.Prefer.IncludeAnnotations}="${annotation}"`;
         }
       }, _b.ReturnRepresentation = "return=representation", _b.Annotations = (_a = class {
       }, _a.AssociatedNavigationProperty = "Microsoft.Dynamics.CRM.associatednavigationproperty", _a.LookupLogicalName = "Microsoft.Dynamics.CRM.lookuplogicalname", _a.All = "*", _a.FormattedValue = "OData.Community.Display.V1.FormattedValue", _a.FetchXmlPagingCookie = "Microsoft.Dynamics.CRM.fetchxmlpagingcookie", _a), _b.IncludeAnnotations = "odata.include-annotations", _b);
-      DWA = _DWA;
     }
   });
 
@@ -565,12 +574,7 @@ var _dynamicsWebApiExports = (() => {
     return result;
   }
   function base64ToString(base64) {
-    if (typeof process !== "undefined") {
-      return Buffer.from(base64, "base64").toString("binary");
-    } else if (typeof window !== "undefined")
-      return window.atob(base64);
-    else
-      return null;
+    return true ? window.atob(base64) : Buffer.from(base64, "base64").toString("binary");
   }
   function parseFileResponse(response, responseHeaders, parseParams) {
     let data = response;
@@ -730,11 +734,7 @@ var _dynamicsWebApiExports = (() => {
             let headers;
             try {
               headers = parseResponseHeaders(request.getAllResponseHeaders());
-              const errorParsed = parseResponse(
-                request.responseText,
-                headers,
-                responseParams[options.requestId]
-              );
+              const errorParsed = parseResponse(request.responseText, headers, responseParams[options.requestId]);
               if (Array.isArray(errorParsed)) {
                 errorCallback(errorParsed);
                 break;
@@ -846,9 +846,13 @@ var _dynamicsWebApiExports = (() => {
   init_Utility();
   init_ErrorHelper();
   var getApiUrl = (serverUrl, apiConfig) => {
-    if (!serverUrl)
-      serverUrl = Utility.getClientUrl();
-    return `${serverUrl}/api/${apiConfig.path}/v${apiConfig.version}/`;
+    if (Utility.isRunningWithinPortals()) {
+      return `${window.location.origin}/_api/`;
+    } else {
+      if (!serverUrl)
+        serverUrl = Utility.getClientUrl();
+      return `${serverUrl}/api/${apiConfig.path}/v${apiConfig.version}/`;
+    }
   };
   var mergeApiConfigs = (apiConfig, apiType, internalConfig) => {
     const internalApiConfig = internalConfig[apiType];
@@ -900,7 +904,10 @@ var _dynamicsWebApiExports = (() => {
         ErrorHelper.boolParameterCheck(config.useEntityNames, "DynamicsWebApi.setConfig", "config.useEntityNames");
         internalConfig.useEntityNames = config.useEntityNames;
       }
-      if (config?.proxy) {
+      if (config?.headers) {
+        internalConfig.headers = config.headers;
+      }
+      if (false) {
         ErrorHelper.parameterCheck(config.proxy, "DynamicsWebApi.setConfig", "config.proxy");
         if (config.proxy.url) {
           ErrorHelper.stringParameterCheck(config.proxy.url, "DynamicsWebApi.setConfig", "config.proxy.url");
@@ -948,7 +955,7 @@ var _dynamicsWebApiExports = (() => {
   // src/utils/Request.ts
   init_Utility();
   init_ErrorHelper();
-  var _RequestUtility = class _RequestUtility {
+  var _RequestUtility = class {
     /**
      * Converts a request object to URL link
      *
@@ -1154,7 +1161,7 @@ var _dynamicsWebApiExports = (() => {
       return !queryArray.length ? url : url + "?" + queryArray.join(joinSymbol);
     }
     static composeHeaders(request, config) {
-      const headers = {};
+      const headers = { ...config.headers, ...request.userHeaders };
       const prefer = _RequestUtility.composePreferHeader(request, config);
       if (prefer.length) {
         headers["Prefer"] = prefer;
@@ -1349,7 +1356,7 @@ ${_RequestUtility.processData(internalRequest.data, config)}`);
       }
       batchBody.push(`
 --${batchBoundary}--`);
-      const headers = _RequestUtility.setStandardHeaders();
+      const headers = _RequestUtility.setStandardHeaders(batchRequest?.userHeaders);
       headers["Content-Type"] = `multipart/mixed;boundary=${batchBoundary}`;
       return { headers, body: batchBody.join("\n") };
     }
@@ -1368,7 +1375,7 @@ ${_RequestUtility.processData(internalRequest.data, config)}`);
       return collectionName;
     }
     static processData(data, config) {
-      let stringifiedData;
+      let stringifiedData = null;
       if (data) {
         if (data instanceof Uint8Array || data instanceof Uint16Array || data instanceof Uint32Array)
           return data;
@@ -1404,7 +1411,7 @@ ${_RequestUtility.processData(internalRequest.data, config)}`);
           return value;
         });
         stringifiedData = stringifiedData.replace(/[\u007F-\uFFFF]/g, function(chr) {
-          return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substr(-4);
+          return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).slice(-4);
         });
       }
       return stringifiedData;
@@ -1412,14 +1419,19 @@ ${_RequestUtility.processData(internalRequest.data, config)}`);
     static setStandardHeaders(headers = {}) {
       if (!headers["Accept"])
         headers["Accept"] = "application/json";
-      headers["OData-MaxVersion"] = "4.0";
-      headers["OData-Version"] = "4.0";
-      headers["Content-Type"] = headers["Content-Range"] ? "application/octet-stream" : "application/json; charset=utf-8";
+      if (!headers["OData-MaxVersion"])
+        headers["OData-MaxVersion"] = "4.0";
+      if (!headers["OData-Version"])
+        headers["OData-Version"] = "4.0";
+      if (headers["Content-Range"])
+        headers["Content-Type"] = "application/octet-stream";
+      else if (!headers["Content-Type"])
+        headers["Content-Type"] = "application/json; charset=utf-8";
       return headers;
     }
   };
-  _RequestUtility.entityNames = null;
   var RequestUtility = _RequestUtility;
+  RequestUtility.entityNames = null;
 
   // src/client/RequestClient.ts
   init_ErrorHelper();
@@ -1461,7 +1473,7 @@ ${_RequestUtility.processData(internalRequest.data, config)}`);
   };
   var _batchRequestCollection = {};
   var _responseParseParams = {};
-  var RequestClient = class _RequestClient {
+  var RequestClient = class {
     /**
      * Sends a request to given URL with given parameters
      *
@@ -1474,7 +1486,7 @@ ${_RequestUtility.processData(internalRequest.data, config)}`);
       request.requestId = request.requestId || Utility.generateUUID();
       _addResponseParams(request.requestId, request.responseParameters);
       let processedData = null;
-      const isBatchConverted = request.responseParameters != null && request.responseParameters.convertedToBatch;
+      const isBatchConverted = request.responseParameters?.convertedToBatch;
       if (request.path === "$batch" && !isBatchConverted) {
         const batchRequest = _batchRequestCollection[request.requestId];
         if (!batchRequest)
@@ -1515,9 +1527,7 @@ ${_RequestUtility.processData(internalRequest.data, config)}`);
         responseParams: _responseParseParams,
         isAsync: request.async,
         timeout: request.timeout || config.timeout,
-        /// #if node
         proxy: config.proxy,
-        /// #endif
         requestId: request.requestId,
         abortSignal: request.signal
       });
@@ -1536,16 +1546,12 @@ ${_RequestUtility.processData(internalRequest.data, config)}`);
         },
         config
       );
-      try {
-        const result = await _runRequest(request, config);
-        RequestUtility.entityNames = {};
-        for (let i = 0; i < result.data.value.length; i++) {
-          RequestUtility.entityNames[result.data.value[i].LogicalName] = result.data.value[i].EntitySetName;
-        }
-        return RequestUtility.findCollectionName(entityName) || entityName;
-      } catch (error) {
-        throw new Error("Unable to fetch EntityDefinitions. Error: " + error.message);
+      const result = await _runRequest(request, config);
+      RequestUtility.entityNames = {};
+      for (let i = 0; i < result.data.value.length; i++) {
+        RequestUtility.entityNames[result.data.value[i].LogicalName] = result.data.value[i].EntitySetName;
       }
+      return RequestUtility.findCollectionName(entityName) || entityName;
     }
     static _isEntityNameException(entityName) {
       const exceptions = [
@@ -1561,7 +1567,7 @@ ${_RequestUtility.processData(internalRequest.data, config)}`);
       return exceptions.indexOf(entityName) > -1;
     }
     static async _checkCollectionName(entityName, config) {
-      if (!entityName || _RequestClient._isEntityNameException(entityName)) {
+      if (!entityName || RequestClient._isEntityNameException(entityName)) {
         return entityName;
       }
       entityName = entityName.toLowerCase();
@@ -1569,29 +1575,31 @@ ${_RequestUtility.processData(internalRequest.data, config)}`);
         return entityName;
       }
       try {
-        return await _RequestClient._getCollectionNames(entityName, config);
+        return await RequestClient._getCollectionNames(entityName, config);
       } catch (error) {
         throw new Error("Unable to fetch Collection Names. Error: " + error.message);
       }
     }
     static async makeRequest(request, config) {
       request.responseParameters = request.responseParameters || {};
+      request.userHeaders = request.headers;
+      delete request.headers;
       if (!request.isBatch) {
-        const collectionName = await _RequestClient._checkCollectionName(request.collection, config);
+        const collectionName = await RequestClient._checkCollectionName(request.collection, config);
         request.collection = collectionName;
-        request = RequestUtility.compose(request, config);
+        RequestUtility.compose(request, config);
         request.responseParameters.convertedToBatch = false;
         if (request.path.length > 2e3) {
           const batchRequest = RequestUtility.convertToBatch([request], config);
           request.method = "POST";
           request.path = "$batch";
           request.data = batchRequest.body;
-          request.headers = batchRequest.headers;
+          request.headers = { ...batchRequest.headers, ...request.userHeaders };
           request.responseParameters.convertedToBatch = true;
         }
         return _runRequest(request, config);
       }
-      request = RequestUtility.compose(request, config);
+      RequestUtility.compose(request, config);
       _addResponseParams(request.requestId, request.responseParameters);
       _addRequestToBatchCollection(request.requestId, request);
     }
@@ -1606,7 +1614,7 @@ ${_RequestUtility.processData(internalRequest.data, config)}`);
   };
 
   // src/dynamics-web-api.ts
-  var DynamicsWebApi = class _DynamicsWebApi {
+  var DynamicsWebApi = class {
     /**
      * Initializes a new instance of DynamicsWebApi
      * @param config - Configuration object
@@ -2510,7 +2518,7 @@ ${_RequestUtility.processData(internalRequest.data, config)}`);
        * @param {Config} config - configuration object.
        * @returns {DynamicsWebApi} The new instance of a DynamicsWebApi
        */
-      this.initializeInstance = (config) => new _DynamicsWebApi(config || this._config);
+      this.initializeInstance = (config) => new DynamicsWebApi(config || this._config);
       this.Utility = {
         /**
          * Searches for a collection name by provided entity name in a cached entity metadata.

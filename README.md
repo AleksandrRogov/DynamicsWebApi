@@ -13,7 +13,7 @@ As well as Microsoft Dynamics 365 CE (online), Microsoft Dynamics 365 CE (on-pre
 ## Main Features
 
 - **Microsoft Dataverse Search API**. Access the full power of its Search, Suggestion and Autocomplete capabilities.
-- **Batch Requests**. Convert all requests into a Batch operation with a single line of code.
+- **Batch Requests**. Convert all requests into a Batch operation with twi lines of code.
 - **Simplicity and Automation**. Such as automated paging, big file downloading/uploading in chunks of data, automated conversion of requests with long URLs into a Batch Request in the background and more!
 - **CRUD operations**. Including Fetch XML, Actions and Functions in Microsoft Dataverse Web API.
 - **Table Definitions (Entity Metadata)**. Query and modify Table, Column, Choice (Option Set) and Relationship definitions.
@@ -22,7 +22,7 @@ As well as Microsoft Dynamics 365 CE (online), Microsoft Dynamics 365 CE (on-pre
 - **Node.js and a Browser** support.
 - **Proxy Configuration** support.
 
-Browser-compiled script and type definitions can be found in a [dist](/dist/) folder.
+Browser-compiled script and type definitions can be found in a v2 [dist](https://github.com/AleksandrRogov/DynamicsWebApi/tree/v2/dist) folder.
 
 **Please note!** "Dynamics 365" in this readme refers to Microsoft Dataverse (formerly known as Microsoft Common Data Service) / Microsoft Dynamics 365 Customer Engagement / Micorosft Dynamics CRM. **NOT** Microsoft Dynamics 365 Finance and Operations.
 
@@ -31,7 +31,7 @@ Browser-compiled script and type definitions can be found in a [dist](/dist/) fo
 ### For a full documentation please check [DynamicsWebApi on GitHub](https://github.com/AleksandrRogov/DynamicsWebApi).
 
 ### Dynamics 365 Web Resource
-To use DynamicsWebApi inside Dynamics 365 you need to download a browser version of the library, it can be found in [dist](/dist/) folder.
+To use DynamicsWebApi inside Dynamics 365 you need to download a browser version of the library, it can be found in v2 [dist](https://github.com/AleksandrRogov/DynamicsWebApi/tree/v2/dist) folder.
 
 Upload a script as a JavaScript Web Resource, add it to a table form or reference it in your HTML Web Resource and then initialize the main object:
 

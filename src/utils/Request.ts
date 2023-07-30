@@ -1,5 +1,5 @@
 import { Utility } from "./Utility";
-import { Config } from "../dynamics-web-api";
+import { Config, HeaderCollection } from "../dynamics-web-api";
 import { ErrorHelper } from "../helpers/ErrorHelper";
 import { Core } from "../types";
 import { InternalConfig } from "./Config";
@@ -263,10 +263,10 @@ export class RequestUtility {
         return !queryArray.length ? url : url + "?" + queryArray.join(joinSymbol);
     }
 
-    static composeHeaders(request: Core.InternalRequest, config: Config): any {
-        const headers: any = {};
-        const prefer = RequestUtility.composePreferHeader(request, config);
+    static composeHeaders(request: Core.InternalRequest, config: Config): HeaderCollection {
+        const headers: HeaderCollection = { ...config.headers, ...request.userHeaders };
 
+        const prefer = RequestUtility.composePreferHeader(request, config);
         if (prefer.length) {
             headers["Prefer"] = prefer;
         }
@@ -464,7 +464,7 @@ export class RequestUtility {
             batchBody.push("Content-Transfer-Encoding: binary");
 
             if (inChangeSet) {
-                const contentIdValue = internalRequest.headers.hasOwnProperty("Content-ID") ? internalRequest.headers["Content-ID"] : ++contentId;
+                const contentIdValue = internalRequest.headers!.hasOwnProperty("Content-ID") ? internalRequest.headers!["Content-ID"] : ++contentId;
 
                 batchBody.push(`Content-ID: ${contentIdValue}`);
             }
@@ -498,7 +498,7 @@ export class RequestUtility {
 
         batchBody.push(`\n--${batchBoundary}--`);
 
-        const headers = RequestUtility.setStandardHeaders();
+        const headers = RequestUtility.setStandardHeaders(batchRequest?.userHeaders);
         headers["Content-Type"] = `multipart/mixed;boundary=${batchBoundary}`;
 
         return { headers: headers, body: batchBody.join("\n") };
@@ -523,8 +523,8 @@ export class RequestUtility {
         return collectionName;
     }
 
-    static processData(data: any, config: InternalConfig): any {
-        let stringifiedData;
+    static processData(data: any, config: InternalConfig): string | Uint8Array | Uint16Array | Uint32Array | null {
+        let stringifiedData: string | null = null;
         if (data) {
             if (data instanceof Uint8Array || data instanceof Uint16Array || data instanceof Uint32Array) return data;
 
@@ -567,19 +567,20 @@ export class RequestUtility {
                 return value;
             });
 
-            stringifiedData = stringifiedData.replace(/[\u007F-\uFFFF]/g, function (chr) {
-                return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substr(-4);
+            stringifiedData = stringifiedData.replace(/[\u007F-\uFFFF]/g, function (chr: string) {
+                return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).slice(-4);
             });
         }
 
         return stringifiedData;
     }
 
-    static setStandardHeaders(headers: any = {}): any {
+    static setStandardHeaders(headers: HeaderCollection = {}): any {
         if (!headers["Accept"]) headers["Accept"] = "application/json";
-        headers["OData-MaxVersion"] = "4.0";
-        headers["OData-Version"] = "4.0";
-        headers["Content-Type"] = headers["Content-Range"] ? "application/octet-stream" : "application/json; charset=utf-8";
+        if (!headers["OData-MaxVersion"]) headers["OData-MaxVersion"] = "4.0";
+        if (!headers["OData-Version"]) headers["OData-Version"] = "4.0";
+        if (headers["Content-Range"]) headers["Content-Type"] = "application/octet-stream";
+        else if (!headers["Content-Type"]) headers["Content-Type"] = "application/json; charset=utf-8";
 
         return headers;
     }

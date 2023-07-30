@@ -242,16 +242,8 @@ function parseBatchResponse(response: string, parseParams: any, requestNumber: n
     return result;
 }
 
-function base64ToString(base64: string): string | null {
-    /// #if node
-    if (typeof process !== "undefined") {
-        return Buffer.from(base64, "base64").toString("binary");
-    } else if (typeof window !== "undefined")
-        /// #endif
-        return window.atob(base64);
-    /// #if node
-    else return null;
-    /// #endif
+function base64ToString(base64: string): string {
+    return global.DWA_BROWSER ? global.window.atob(base64) : Buffer.from(base64, "base64").toString("binary");
 }
 
 function parseFileResponse(response: any, responseHeaders: any, parseParams: any): Core.FileParseResult {

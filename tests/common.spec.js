@@ -19,6 +19,10 @@ describe("Utility.", function () {
             const result = Utility.buildFunctionParameters();
             expect(result).to.equal("()");
         });
+        it("1 parameter == null", function () {
+            const result = Utility.buildFunctionParameters({ param1: null });
+            expect(result).to.equal("()");
+        });
         it("1 parameter", function () {
             const result = Utility.buildFunctionParameters({ param1: "value1" });
             expect(result).to.equal("(param1=@p1)?@p1='value1'");
@@ -307,6 +311,16 @@ describe("RequestUtility.composeUrl -", function () {
 
         result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(stubUrl);
+    });
+
+    it("expand - is a string", function () {
+        var dwaRequest = {
+            expand: "string",
+            functionName: "",
+        };
+
+        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        expect(result).to.equal(`${stubUrl}?$expand=string`);
     });
 
     it("expand - property", function () {
@@ -943,7 +957,7 @@ describe("RequestUtility.composeUrl -", function () {
         dwaRequest.expand = null;
         dwaRequest.returnRepresentation = true;
 
-        result = RequestUtility.compose(dwaRequest);
+        result = RequestUtility.compose(dwaRequest, {});
 
         var expectedObject = Utility.copyObject(dwaRequest);
         expectedObject.path = "tests?$select=name,subject&$top=5&$orderby=order";
@@ -956,7 +970,7 @@ describe("RequestUtility.composeUrl -", function () {
         dwaRequest.count = true;
         dwaRequest.impersonate = mocks.data.testEntityId;
 
-        result = RequestUtility.compose(dwaRequest);
+        result = RequestUtility.compose(dwaRequest, {});
 
         expectedObject = Utility.copyObject(dwaRequest);
         expectedObject.path = "tests?$select=name,subject&$count=true&$orderby=order";
@@ -968,7 +982,7 @@ describe("RequestUtility.composeUrl -", function () {
         dwaRequest.impersonate = null;
         dwaRequest.navigationProperty = "nav";
 
-        result = RequestUtility.compose(dwaRequest);
+        result = RequestUtility.compose(dwaRequest, {});
 
         expectedObject = Utility.copyObject(dwaRequest);
         expectedObject.path = "tests/nav?$select=name,subject&$count=true&$orderby=order";
@@ -983,7 +997,7 @@ describe("RequestUtility.composeUrl -", function () {
         dwaRequest.select[0] = "/nav";
         dwaRequest.functionName = "retrieve";
 
-        result = RequestUtility.compose(dwaRequest);
+        result = RequestUtility.compose(dwaRequest, {});
 
         expectedObject = Utility.copyObject(dwaRequest);
         expectedObject.path = "tests/nav?$select=subject&$count=true&$orderby=order";
@@ -1001,7 +1015,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ "MSCRM.MergeLabels": "true" });
     });
 
@@ -1011,7 +1025,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
     });
 
@@ -1021,7 +1035,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ "If-Match": "*" });
     });
 
@@ -1031,7 +1045,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
 
         dwaRequest = {
@@ -1039,7 +1053,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        result = RequestUtility.composeHeaders(dwaRequest);
+        result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
     });
 
@@ -1049,7 +1063,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ "If-None-Match": "*" });
     });
 
@@ -1061,7 +1075,7 @@ describe("RequestUtility.composeHeaders -", function () {
         };
 
         expect(function () {
-            RequestUtility.composeHeaders(dwaRequest);
+            RequestUtility.composeHeaders(dwaRequest, {});
         }).to.throw("DynamicsWebApi.fun. Either one of request.ifmatch or request.ifnonematch parameters should be used in a call, not both.");
     });
 
@@ -1071,7 +1085,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
 
         dwaRequest = {
@@ -1079,7 +1093,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        result = RequestUtility.composeHeaders(dwaRequest);
+        result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
     });
 
@@ -1089,7 +1103,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ MSCRMCallerID: mocks.data.testEntityId });
     });
 
@@ -1098,14 +1112,14 @@ describe("RequestUtility.composeHeaders -", function () {
             impersonateAAD: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
 
         dwaRequest = {
             impersonateAAD: null,
         };
 
-        result = RequestUtility.composeHeaders(dwaRequest);
+        result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
     });
 
@@ -1114,7 +1128,7 @@ describe("RequestUtility.composeHeaders -", function () {
             impersonateAAD: mocks.data.testEntityId,
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ CallerObjectId: mocks.data.testEntityId });
     });
 
@@ -1124,7 +1138,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
 
         dwaRequest = {
@@ -1132,7 +1146,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        result = RequestUtility.composeHeaders(dwaRequest);
+        result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
     });
 
@@ -1142,7 +1156,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.AssociatedNavigationProperty + '"' });
     });
 
@@ -1152,7 +1166,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
 
         dwaRequest = {
@@ -1160,7 +1174,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        result = RequestUtility.composeHeaders(dwaRequest);
+        result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
 
         dwaRequest = {
@@ -1168,7 +1182,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        result = RequestUtility.composeHeaders(dwaRequest);
+        result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
     });
 
@@ -1178,7 +1192,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: "odata.maxpagesize=10" });
     });
 
@@ -1188,7 +1202,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: "odata.continue-on-error" });
     });
 
@@ -1198,7 +1212,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
     });
 
@@ -1208,7 +1222,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
     });
 
@@ -1218,7 +1232,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation });
     });
 
@@ -1228,7 +1242,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
     });
 
@@ -1238,7 +1252,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        result = result = RequestUtility.composeHeaders(dwaRequest);
+        result = result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
     });
 
@@ -1248,7 +1262,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ "MSCRM.SuppressDuplicateDetection": "false" });
     });
 
@@ -1258,7 +1272,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
     });
 
@@ -1268,7 +1282,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
     });
 
@@ -1278,7 +1292,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ "MSCRM.BypassCustomPluginExecution": "true" });
     });
 
@@ -1289,7 +1303,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({
             Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="' + DWA.Prefer.Annotations.AssociatedNavigationProperty + '"',
         });
@@ -1303,7 +1317,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="*",odata.maxpagesize=20' });
     });
 
@@ -1316,8 +1330,10 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
-        expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="*",odata.maxpagesize=20,odata.continue-on-error' });
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        expect(result).to.deep.equal({
+            Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="*",odata.maxpagesize=20,odata.continue-on-error',
+        });
     });
 
     it("includeAnnotations & maxPageSize", function () {
@@ -1327,7 +1343,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: 'odata.include-annotations="*",odata.maxpagesize=20' });
     });
 
@@ -1338,7 +1354,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation + ",odata.maxpagesize=20" });
     });
 
@@ -1348,7 +1364,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation });
     });
 
@@ -1358,7 +1374,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: 'odata.include-annotations="*"' });
     });
 
@@ -1368,7 +1384,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: "odata.maxpagesize=20" });
     });
 
@@ -1378,7 +1394,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({
             Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="' + DWA.Prefer.Annotations.AssociatedNavigationProperty + '"',
         });
@@ -1390,7 +1406,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="*",odata.maxpagesize=20' });
     });
 
@@ -1400,7 +1416,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: 'odata.include-annotations="*",odata.maxpagesize=20' });
     });
 
@@ -1410,7 +1426,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: 'odata.include-annotations="*",odata.maxpagesize=20' });
     });
 
@@ -1420,7 +1436,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation + ",odata.maxpagesize=20" });
     });
 
@@ -1430,7 +1446,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: "odata.maxpagesize=20,odata.track-changes" });
     });
 
@@ -1440,18 +1456,18 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.AssociatedNavigationProperty + '",odata.track-changes' });
     });
 
     it("prefer - odata.continue-on-error", function () {
         var dwaRequest = {
-            prefer: 'odata.continue-on-error',
+            prefer: "odata.continue-on-error",
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
-        expect(result).to.deep.equal({ Prefer: 'odata.continue-on-error' });
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        expect(result).to.deep.equal({ Prefer: "odata.continue-on-error" });
     });
 
     it("prefer - includeAnnotations & returnRepresentation & maxPageSize & trackChanges", function () {
@@ -1460,7 +1476,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="*",odata.maxpagesize=20,odata.track-changes' });
     });
 
@@ -1470,8 +1486,10 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest);
-        expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="*",odata.maxpagesize=20,odata.track-changes,odata.continue-on-error' });
+        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        expect(result).to.deep.equal({
+            Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="*",odata.maxpagesize=20,odata.track-changes,odata.continue-on-error',
+        });
     });
 
     it("returnRepresentation: false & config.returnRepresentation: true", function () {
@@ -1488,7 +1506,7 @@ describe("RequestUtility.composeHeaders -", function () {
         expect(result).to.deep.equal({});
     });
 
-    it("returnRepresentation: false & config.returnRepresentation: true", function () {
+    it("returnRepresentation: true & config.returnRepresentation: false", function () {
         var config = {
             returnRepresentation: false,
         };
@@ -1536,7 +1554,7 @@ describe("RequestUtility.compose -", function () {
             collection: "cols",
         };
 
-        var result = RequestUtility.compose(dwaRequest);
+        var result = RequestUtility.compose(dwaRequest, {});
 
         let expected = Utility.copyObject(dwaRequest);
         expected.path = "cols";
@@ -1551,7 +1569,7 @@ describe("RequestUtility.compose -", function () {
             collection: "Cols",
         };
 
-        var result = RequestUtility.compose(dwaRequest);
+        var result = RequestUtility.compose(dwaRequest, {});
 
         let expected = Utility.copyObject(dwaRequest);
         expected.path = "Cols";
@@ -1566,7 +1584,7 @@ describe("RequestUtility.compose -", function () {
             collection: "EntityDefinitions",
         };
 
-        var result = RequestUtility.compose(dwaRequest);
+        var result = RequestUtility.compose(dwaRequest, {});
 
         let expected = Utility.copyObject(dwaRequest);
         expected.path = "EntityDefinitions";
@@ -1582,7 +1600,7 @@ describe("RequestUtility.compose -", function () {
         };
 
         var test = function () {
-            RequestUtility.compose(dwaRequest);
+            RequestUtility.compose(dwaRequest, {});
         };
 
         expect(test).to.throw(/request\.collection/);
@@ -1600,7 +1618,7 @@ describe("RequestUtility.compose -", function () {
             key: null,
         };
 
-        var result = RequestUtility.compose(dwaRequest);
+        var result = RequestUtility.compose(dwaRequest, {});
 
         let expected = Utility.copyObject(dwaRequest);
         expected.path = "cols";
@@ -1611,7 +1629,7 @@ describe("RequestUtility.compose -", function () {
 
         dwaRequest.key = "";
 
-        result = RequestUtility.compose(dwaRequest);
+        result = RequestUtility.compose(dwaRequest, {});
 
         expected = Utility.copyObject(dwaRequest);
         expected.path = "cols";
@@ -1628,7 +1646,7 @@ describe("RequestUtility.compose -", function () {
         };
 
         var test = function () {
-            RequestUtility.compose(dwaRequest);
+            RequestUtility.compose(dwaRequest, {});
         };
 
         expect(test).to.throw(/request\.key/);
@@ -1640,7 +1658,7 @@ describe("RequestUtility.compose -", function () {
             key: mocks.data.testEntityId,
         };
 
-        var result = RequestUtility.compose(dwaRequest);
+        var result = RequestUtility.compose(dwaRequest, {});
 
         let expected = Utility.copyObject(dwaRequest);
         expected.path = "cols(" + mocks.data.testEntityId + ")";
@@ -1656,7 +1674,7 @@ describe("RequestUtility.compose -", function () {
             key: "{" + mocks.data.testEntityId + "}",
         };
 
-        var result = RequestUtility.compose(dwaRequest);
+        var result = RequestUtility.compose(dwaRequest, {});
 
         let expected = Utility.copyObject(dwaRequest);
         expected.path = "cols(" + mocks.data.testEntityId + ")";
@@ -1674,7 +1692,7 @@ describe("RequestUtility.compose -", function () {
             returnRepresentation: true,
         };
 
-        var result = RequestUtility.compose(dwaRequest);
+        var result = RequestUtility.compose(dwaRequest, {});
 
         let expected = Utility.copyObject(dwaRequest);
         expected.path = "cols(" + mocks.data.testEntityId + ")?$select=name";
@@ -1685,7 +1703,7 @@ describe("RequestUtility.compose -", function () {
 
         dwaRequest.navigationProperty = "nav";
 
-        result = RequestUtility.compose(dwaRequest);
+        result = RequestUtility.compose(dwaRequest, {});
 
         expected = Utility.copyObject(dwaRequest);
         expected.path = "cols(" + mocks.data.testEntityId + ")/nav?$select=name";
@@ -1701,7 +1719,7 @@ describe("RequestUtility.compose -", function () {
             async: false,
         };
 
-        var result = RequestUtility.compose(dwaRequest);
+        var result = RequestUtility.compose(dwaRequest, {});
 
         let expected = Utility.copyObject(dwaRequest);
         expected.path = "cols";
@@ -1712,7 +1730,7 @@ describe("RequestUtility.compose -", function () {
 
         dwaRequest.async = true;
 
-        result = RequestUtility.compose(dwaRequest);
+        result = RequestUtility.compose(dwaRequest, {});
 
         expected = Utility.copyObject(dwaRequest);
         expected.path = "cols";
@@ -1723,7 +1741,7 @@ describe("RequestUtility.compose -", function () {
 
         delete dwaRequest.async;
 
-        result = RequestUtility.compose(dwaRequest);
+        result = RequestUtility.compose(dwaRequest, {});
 
         expected = Utility.copyObject(dwaRequest);
         expected.path = "cols";
@@ -1740,7 +1758,7 @@ describe("RequestUtility.compose -", function () {
         };
 
         var test = function () {
-            RequestUtility.compose(dwaRequest);
+            RequestUtility.compose(dwaRequest, {});
         };
 
         expect(test).to.throw(/request\.async/);
@@ -1853,6 +1871,32 @@ describe("ErrorHelper.callbackParameterCheck", function () {
         expect(function () {
             ErrorHelper.callbackParameterCheck("a word", "fun", "param");
         }).to.throw("fun requires a param parameter to be of type Function");
+    });
+});
+
+describe("ErrorHelper.maxLengthStringParameterCheck", function () {
+    it("does not return anything if param is null", function () {
+        var result = ErrorHelper.maxLengthStringParameterCheck(null, "fun", "param", 20);
+        expect(result).to.be.undefined;
+    });
+    it("does not return anything", function () {
+        var result = ErrorHelper.maxLengthStringParameterCheck("not long enough", "fun", "param", 20);
+        expect(result).to.be.undefined;
+    });
+    it("when parameter is too long it throws an error", function () {
+        expect(function () {
+            ErrorHelper.maxLengthStringParameterCheck("tooo long", "fun", "param", 3);
+        }).to.throw("param has a 3 character limit.");
+    });
+});
+
+describe("ErrorHelper.throwBatchNotStarted", function () {
+    it("false - throws an error", function () {
+        expect(function () {
+            ErrorHelper.throwBatchNotStarted(false);
+        }).to.throw(
+            "Batch operation has not been started. Please call a DynamicsWebApi.startBatch() function prior to calling DynamicsWebApi.executeBatch() to perform a batch request correctly."
+        );
     });
 });
 

@@ -10,7 +10,7 @@ var { DynamicsWebApi } = require("../lib/dynamics-web-api");
 var { Utility } = require("../lib/utils/Utility");
 Utility.downloadChunkSize = 15;
 
-var dynamicsWebApiTest = new DynamicsWebApi({ dataApi: { version: "8.2" } });
+var dynamicsWebApiTest = new DynamicsWebApi({ serverUrl: mocks.serverUrl, dataApi: { version: "8.2" } });
 
 describe("dynamicsWebApi.create -", function () {
     before(() => {
@@ -5711,6 +5711,49 @@ describe("dynamicsWebApi.constructor -", function () {
 
         it("all requests have been made", function () {
             expect(scope.isDone()).to.be.true;
+        });
+    });
+
+    describe("authorization - token is empty", function () {
+        var scope;
+        before(function () {
+            var response = mocks.responses.multipleResponse;
+            scope = nock(mocks.webApiUrl, {
+                reqheaders: {
+                    Authorization: "Bearer token001",
+                },
+            })
+                .get("/tests")
+                .reply(response.status, response.responseText, response.responseHeaders);
+        });
+
+        after(function () {
+            nock.cleanAll();
+        });
+
+        it("sends the request to the right end point and returns a response", async () => {
+            const getToken = async function () {
+                const adalCallback = async function (token) {
+                    return token;
+                };
+
+                const token = await adalCallback(null);
+
+                return token;
+            };
+
+            const dynamicsWebApiAuth = new DynamicsWebApi({ onTokenRefresh: getToken, dataApi: { version: "8.2" } });
+
+            try {
+                const object = await dynamicsWebApiAuth.retrieveMultiple({ collection: "tests" });
+                expect(object).to.be.undefined;
+            } catch (error) {
+                expect(error).to.deep.equal(new Error("Token is empty. Request is aborted."));
+            }
+        });
+
+        it("all requests have been made", function () {
+            expect(scope.isDone()).to.be.false;
         });
     });
 

@@ -64,7 +64,8 @@ function _executeRequest(
                     successCallback(response);
                     break;
                 }
-                case 0 : break; //response will be handled by onerror
+                case 0:
+                    break; //response will be handled by onerror
                 default:
                     if (!request) break; //response was handled somewhere else
 
@@ -73,10 +74,7 @@ function _executeRequest(
                     let headers;
                     try {
                         headers = parseResponseHeaders(request.getAllResponseHeaders());
-                        const errorParsed = parseResponse(
-                            request.responseText, headers,
-                            responseParams[options.requestId]
-                        );
+                        const errorParsed = parseResponse(request.responseText, headers, responseParams[options.requestId]);
 
                         if (Array.isArray(errorParsed)) {
                             errorCallback(errorParsed);

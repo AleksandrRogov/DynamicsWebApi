@@ -16,13 +16,13 @@ export class ErrorHelper {
         throw new Error(`Error: ${req.status}: ${req.message}`);
     }
 
-    static parameterCheck(parameter, functionName: string, parameterName: string, type?: string): void {
+    static parameterCheck(parameter: any, functionName: string, parameterName: string, type?: string): void {
         if (typeof parameter === "undefined" || parameter === null || parameter === "") {
             throwParameterError(functionName, parameterName, type);
         }
     }
 
-    static stringParameterCheck(parameter, functionName: string, parameterName: string): void {
+    static stringParameterCheck(parameter: any, functionName: string, parameterName: string): void {
         if (typeof parameter !== "string") {
             throwParameterError(functionName, parameterName, "String");
         }
@@ -36,19 +36,19 @@ export class ErrorHelper {
         }
     }
 
-    static arrayParameterCheck(parameter, functionName: string, parameterName: string): void {
+    static arrayParameterCheck(parameter: any, functionName: string, parameterName: string): void {
         if (parameter.constructor !== Array) {
             throwParameterError(functionName, parameterName, "Array");
         }
     }
 
-    static stringOrArrayParameterCheck(parameter, functionName: string, parameterName: string): void {
+    static stringOrArrayParameterCheck(parameter: any, functionName: string, parameterName: string): void {
         if (parameter.constructor !== Array && typeof parameter !== "string") {
             throwParameterError(functionName, parameterName, "String or Array");
         }
     }
 
-    static numberParameterCheck(parameter, functionName: string, parameterName: string): void {
+    static numberParameterCheck(parameter: any, functionName: string, parameterName: string): void {
         if (typeof parameter != "number") {
             if (typeof parameter === "string" && parameter) {
                 if (!isNaN(parseInt(parameter))) {
@@ -83,7 +83,7 @@ export class ErrorHelper {
         return <DynamicsWebApiError>error;
     }
 
-    static boolParameterCheck(parameter, functionName: string, parameterName: string): void {
+    static boolParameterCheck(parameter: any, functionName: string, parameterName: string): void {
         if (typeof parameter != "boolean") {
             throwParameterError(functionName, parameterName, "Boolean");
         }
@@ -96,14 +96,14 @@ export class ErrorHelper {
      * @param parameterName
      * @returns
      */
-    static guidParameterCheck(parameter, functionName: string, parameterName: string): string | null {
+    static guidParameterCheck(parameter: any, functionName: string, parameterName: string): string {
         const match = extractUuid(parameter);
         if (!match) throwParameterError(functionName, parameterName, "GUID String");
 
-        return match;
+        return match!;
     }
 
-    static keyParameterCheck(parameter, functionName: string, parameterName: string): string | undefined {
+    static keyParameterCheck(parameter: any, functionName: string, parameterName: string): string | undefined {
         try {
             ErrorHelper.stringParameterCheck(parameter, functionName, parameterName);
 
