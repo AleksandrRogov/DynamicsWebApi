@@ -99,6 +99,15 @@ export class RequestClient {
             request.headers["Authorization"] = "Bearer " + (token.hasOwnProperty("accessToken") ? (token as AccessToken).accessToken : token);
         }
 
+        if (Utility.isRunningWithinPortals()) {
+            try {
+                const token = await (window as any).shell.getTokenDeferred();
+                request.headers["__RequestVerificationToken"] = token;
+            } catch (error) {
+                throw new Error("Unable to fetch token from shell. Error: " + (error as Error)?.message);
+            }
+        }
+
         const url = request.apiConfig ? request.apiConfig.url : config.dataApi.url;
 
         return await executeRequest({
