@@ -162,7 +162,7 @@ export class Utility {
      * @returns {boolean}
      */
     static isRunningWithinPortals(): boolean {
-        return global.DWA_BROWSER ? !!(global.window as any).shell : false;
+        return global.DWA_BROWSER ? !!global.window.shell : false;
     }
 
     static isObject(obj: any): boolean {

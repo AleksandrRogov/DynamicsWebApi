@@ -93,19 +93,11 @@ export class RequestClient {
         }
 
         if (token) {
-            if (!request.headers) {
-                request.headers = {};
-            }
-            request.headers["Authorization"] = "Bearer " + (token.hasOwnProperty("accessToken") ? (token as AccessToken).accessToken : token);
+            request.headers!["Authorization"] = "Bearer " + (token.hasOwnProperty("accessToken") ? (token as AccessToken).accessToken : token);
         }
 
         if (Utility.isRunningWithinPortals()) {
-            try {
-                const token = await (window as any).shell.getTokenDeferred();
-                request.headers["__RequestVerificationToken"] = token;
-            } catch (error) {
-                throw new Error("Unable to fetch token from shell. Error: " + (error as Error)?.message);
-            }
+            request.headers!["__RequestVerificationToken"] = await global.window.shell!.getTokenDeferred();
         }
 
         const url = request.apiConfig ? request.apiConfig.url : config.dataApi.url;

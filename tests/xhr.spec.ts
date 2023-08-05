@@ -126,7 +126,11 @@ describe("xhr -", () => {
                 };
 
                 //@ts-ignore
-                global.window.shell = {};
+                global.window.shell = {
+                    getTokenDeferred: async () => {
+                        return "token";
+                    },
+                };
                 //@ts-ignore
                 global.window.location = {};
                 //@ts-ignore
@@ -175,6 +179,10 @@ describe("xhr -", () => {
 
             it("does not send data", function () {
                 expect(requests[0].requestBody).to.be.undefined;
+            });
+
+            it("sends the correct __RequestVerificationToken header", function () {
+                expect(requests[0].requestHeaders["__RequestVerificationToken"]).to.be.eq("token");
             });
 
             it("sends the correct If-Match header", function () {

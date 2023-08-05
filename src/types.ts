@@ -167,3 +167,11 @@ export declare namespace Core {
         async?: boolean;
     }
 }
+
+declare global {
+    interface Window {
+        shell?: {
+            getTokenDeferred: () => Promise<string>;
+        };
+    }
+}
