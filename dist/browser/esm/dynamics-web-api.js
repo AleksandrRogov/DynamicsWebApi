@@ -1,4 +1,4 @@
-/*! dynamics-web-api v2.1.0-rc.0 (c) 2023 Aleksandr Rogov */
+/*! dynamics-web-api v2.1.0-rc.1 (c) 2023 Aleksandr Rogov */
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -1505,10 +1505,10 @@ var RequestClient = class {
         throw new Error("Token is empty. Request is aborted.");
     }
     if (token) {
-      if (!request.headers) {
-        request.headers = {};
-      }
       request.headers["Authorization"] = "Bearer " + (token.hasOwnProperty("accessToken") ? token.accessToken : token);
+    }
+    if (Utility.isRunningWithinPortals()) {
+      request.headers["__RequestVerificationToken"] = await window.shell.getTokenDeferred();
     }
     const url = request.apiConfig ? request.apiConfig.url : config.dataApi.url;
     return await executeRequest2({
