@@ -16,7 +16,7 @@ If you want to upgrade from v1 - v2 breaking changes are [here](/.github/BREAKIN
 
 Please check [DynamicsWebApi Wiki](../../../wiki/) where you will find documentation to DynamicsWebApi API and more.
 
-Browser-compiled script and type definitions can be found in a [dist](/dist/) folder.
+Browser-compiled script and type definitions can be found in a v2 [dist](https://github.com/AleksandrRogov/DynamicsWebApi/tree/v2/dist) folder.
 
 ## Main Features
 
@@ -127,7 +127,7 @@ v2 breaking changes are [here](/.github/BREAKING_CHANGES_V2.md). List of new fea
 ## Getting Started
 
 ### Dynamics 365 Web Resource
-To use DynamicsWebApi inside Dynamics 365 you need to download a browser version of the library, it can be found in [dist](/dist/) folder.
+To use DynamicsWebApi inside Dynamics 365 you need to download a browser version of the library, it can be found in v2 [dist](https://github.com/AleksandrRogov/DynamicsWebApi/tree/v2/dist) folder.
 
 Upload a script as a JavaScript Web Resource, add it to a table form or reference it in the HTML Web Resource and then initialize the main object:
 
@@ -2387,7 +2387,7 @@ import { DynamicsWebApi, Config } from "dynamics-web-api";
 ```
 
 ### Dynamics 365 web resource
-If you are developing CRM Web Resources with TypeScript (and are not using NPM), you can download a TypeScript declaration file `dynamics-web-api.d.ts` manually from [dist](/dist/) folder. I usually put all declarations in the "./types/" folder of my web resources project. For example:
+If you are developing CRM Web Resources with TypeScript (and are not using NPM), you can download a TypeScript declaration file `dynamics-web-api.d.ts` manually from v2 [dist](https://github.com/AleksandrRogov/DynamicsWebApi/tree/v2/dist) folder. I usually put all declarations in the "./types/" folder of my web resources project. For example:
 
 ```
 [project root]/
