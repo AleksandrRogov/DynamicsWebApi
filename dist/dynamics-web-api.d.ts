@@ -1,4 +1,4 @@
-/*! dynamics-web-api v2.1.0-rc.1 (c) 2023 Aleksandr Rogov */
+/*! dynamics-web-api v2.1.0-rc.2 (c) 2023 Aleksandr Rogov */
 /// <reference types="node" />
 /**
  * Microsoft Dynamics CRM Web API helper library written in JavaScript.

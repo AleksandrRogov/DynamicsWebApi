@@ -18,7 +18,7 @@ const _addRequestToBatchCollection = (requestId, request) => {
 
 const _clearRequestData = (requestId: string): void => {
     delete _responseParseParams[requestId];
-    if (Object.hasOwn(_batchRequestCollection, requestId)) delete _batchRequestCollection[requestId];
+    if (_batchRequestCollection.hasOwnProperty(requestId)) delete _batchRequestCollection[requestId];
 };
 
 const _runRequest = async (request: Core.InternalRequest, config: InternalConfig): Promise<Core.WebApiResponse> => {
