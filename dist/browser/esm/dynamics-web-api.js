@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 /*! dynamics-web-api v2.1.0 (c) 2023 Aleksandr Rogov */
-=======
-/*! dynamics-web-api v2.1.0-rc.2 (c) 2023 Aleksandr Rogov */
->>>>>>> fff77b50d2f5a624a9422b190d420edf697d754d
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
