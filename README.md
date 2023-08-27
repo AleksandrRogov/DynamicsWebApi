@@ -1,4 +1,4 @@
-# DynamicsWebApi for Microsoft Dynamics 365 CE (CRM) / Microsoft Dataverse Web API (formerly known as Microsoft Common Data Service Web API) 
+# DynamicsWebApi for Microsoft Dataverse Web API / Microsoft Power Pages / Microsoft Dynamics 365 (CRM)
 
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/AleksandrRogov/DynamicsWebApi/build-test-coverage.yml?style=flat-square)](https://github.com/AleksandrRogov/DynamicsWebApi/actions/workflows/build-test-coverage.yml)
 [![Coveralls](https://img.shields.io/coveralls/AleksandrRogov/DynamicsWebApi.svg?style=flat-square)](https://coveralls.io/github/AleksandrRogov/DynamicsWebApi)
@@ -7,7 +7,7 @@
 
 DynamicsWebApi is a Microsoft Dataverse Web API helper library written in Typescript.
 
-It is compatible with: Microsoft Dataverse; Microsoft Dynamics 365: Customer Service, Field Service, Marketing, Project Operations, Talents, Sales and any model-driven application built on Microsoft Power Apps platform. 
+Compatible with: Microsoft Dataverse; Microsoft Dynamics 365: Customer Service, Field Service, Marketing, Project Operations, Talents, Sales and any model-driven application built on Microsoft Power Apps platform. 
 As well as Microsoft Dynamics 365 CE (online), Microsoft Dynamics 365 CE (on-premises), Microsoft Dynamics CRM 2016, Microsoft Dynamics CRM Online.
 
 ## Main Features
@@ -21,6 +21,7 @@ As well as Microsoft Dynamics 365 CE (online), Microsoft Dynamics 365 CE (on-pre
 - **Abort Signal and Abort Controller** (Browser and Node.js 15+). Abort requests when they are no longer need to be completed.
 - **Node.js and a Browser** support.
 - **Proxy Configuration** support.
+- Works with **Microsoft Power Pages** (aka Microsoft Portal). `v2.1.0+`
 
 Browser-compiled script and type definitions can be found in a v2 [dist](https://github.com/AleksandrRogov/DynamicsWebApi/tree/v2/dist) folder.
 
@@ -43,6 +44,25 @@ const dynamicsWebApi = new DynamicsWebApi();
 const response = await dynamicsWebApi.callFunction("WhoAmI");
 Xrm.Navigation.openAlertDialog({ text: `Hello Dynamics 365! My id is: ${response.UserId}` });
 ```
+
+### Microsoft Power Pages (Microsoft Portal)
+`v.2.1.0+`
+
+There are two ways to include DynamicsWebApi in your portal: upload as a Web File or use CDN, such as `unpkg`.
+
+It is possible to upload the library as a Web File in Microsoft Power Pages. Usually, the `.js` extensions are forbidden to upload but it is still possible to do, here's a [workaround](https://debajmecrm.com/how-to-upload-a-custom-javascript-web-file-in-power-apps-portals/).
+
+Once the web file is uploaded, it can be included in a template, a page or a form the following way:
+```html
+<script type="text/javascript" src="~/dynamicsWebApi.min.js"></script>
+```
+
+With CDN, it is a bit easier: no need to create and upload a web file - just include the script in your template, page or a form:
+```html
+<script type="text/javascript" src="https://unpkg.com/dynamics-web-api@2.1.0/dist/dynamics-web-api.min.js"></script>
+```
+
+And you are good to go! DynamicsWebApi will automatically detect if the library is running on Power Pages and will supply an anti-forgery token with each request.
 
 ### Node.js
 To use DynamicsWebApi in Node.js install the `dynamics-web-api` package from NPM:

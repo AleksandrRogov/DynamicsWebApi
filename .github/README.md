@@ -1,4 +1,4 @@
-# DynamicsWebApi for Microsoft Dynamics 365 CE (CRM) / Microsoft Dataverse Web API (formerly known as Microsoft Common Data Service Web API) 
+# DynamicsWebApi for Microsoft Dataverse Web API / Microsoft Power Pages / Microsoft Dynamics 365 (CRM)
 
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/AleksandrRogov/DynamicsWebApi/build-test-coverage.yml?style=flat-square)](https://github.com/AleksandrRogov/DynamicsWebApi/actions/workflows/build-test-coverage.yml)
 [![Coveralls](https://img.shields.io/coveralls/AleksandrRogov/DynamicsWebApi.svg?style=flat-square)](https://coveralls.io/github/AleksandrRogov/DynamicsWebApi)
@@ -7,7 +7,7 @@
 
 DynamicsWebApi is a Microsoft Dataverse Web API helper library written in Typescript.
 
-It is compatible with: Microsoft Dataverse; Microsoft Dynamics 365: Customer Service, Field Service, Marketing, Project Operations, Talents, Sales and any model-driven application built on Microsoft Power Apps platform. 
+Compatible with: Microsoft Dataverse; Microsoft Dynamics 365: Customer Service, Field Service, Marketing, Project Operations, Talents, Sales and any model-driven application built on Microsoft Power Apps platform. 
 As well as Microsoft Dynamics 365 CE (online), Microsoft Dynamics 365 CE (on-premises), Microsoft Dynamics CRM 2016, Microsoft Dynamics CRM Online.
 
 ### **This documentation is for version 2.x. If you are working with version 1.x, please check [this instead](https://github.com/AleksandrRogov/DynamicsWebApi/tree/v1).**
@@ -29,6 +29,7 @@ Browser-compiled script and type definitions can be found in a v2 [dist](https:/
 - **Abort Signal and Abort Controller** (Browser and Node.js 15+). Abort requests when they are no longer need to be completed.
 - **Node.js and a Browser** support.
 - **Proxy Configuration** support.
+- Works with **Microsoft Power Pages** (aka Microsoft Portal). `v2.1.0+`
 
 ***
 
@@ -51,6 +52,7 @@ Check out [Dataverse Terminology](https://learn.microsoft.com/en-us/power-apps/d
 v2 breaking changes are [here](/.github/BREAKING_CHANGES_V2.md). List of new features in v2 is [here](/.github/NEW_IN_V2.md).
 * [Getting Started](#getting-started)
   * [Dynamics 365 Web Resource](#dynamics-365-web-resource)
+  * [Microsoft Power Pages](#microsoft-power-pages-microsoft-portal)
   * [Node.js](#nodejs)
   * [Configuration](#configuration)
     * [Configuration Parameters](#configuration-parameters)
@@ -138,6 +140,25 @@ const dynamicsWebApi = new DynamicsWebApi();
 const response = await dynamicsWebApi.callFunction("WhoAmI");
 Xrm.Navigation.openAlertDialog({ text: `Hello Dynamics 365! My id is: ${response.UserId}` });
 ```
+
+### Microsoft Power Pages (Microsoft Portal)
+`v.2.1.0+`
+
+There are two ways to include DynamicsWebApi in your portal: upload as a Web File or use CDN, such as `unpkg`.
+
+It is possible to upload the library as a Web File in Microsoft Power Pages. Usually, the `.js` extensions are forbidden to upload but it is still possible to do, here's a [workaround](https://debajmecrm.com/how-to-upload-a-custom-javascript-web-file-in-power-apps-portals/).
+
+Once the web file is uploaded, it can be included in a template, a page or a form the following way:
+```html
+<script type="text/javascript" src="~/dynamicsWebApi.min.js"></script>
+```
+
+With CDN, it is a bit easier: no need to create and upload a web file - just include the script in your template, page or a form:
+```html
+<script type="text/javascript" src="https://unpkg.com/dynamics-web-api@2.1.0/dist/dynamics-web-api.min.js"></script>
+```
+
+And you are good to go! DynamicsWebApi will automatically detect if the library is running on Power Pages and will supply an anti-forgery token with each request.
 
 ### Node.js
 To use DynamicsWebApi in Node.js install the `dynamics-web-api` package from NPM:
@@ -250,6 +271,7 @@ dynamicsWebApi.setConfig({ dataApi: { version: "9.0" } });
 Property Name | Type | Description
 ------------ | ------------- | -------------
 dataApi | `ApiConfig` | Configuration object for Dataverse Web API. The name is based on the url path `data`.
+headers | `Object` | `v2.1+` Custom default headers to supply with each request. For example: `{ "my-header": "value", "another-header": "another-value" }`.
 impersonate | `string` | Impersonates a user based on their systemuserid by adding a "MSCRMCallerID" header. A String representing the GUID value for the Dynamics 365 systemuserid. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/impersonate-another-user-web-api)
 impersonateAAD | `string` | Impersonates a user based on their Azure Active Directory (AAD) object id by passing that value along with the header "CallerObjectId". A String should represent a GUID value. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/impersonate-another-user-web-api)
 includeAnnotations | `string` | Defaults Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
@@ -332,6 +354,7 @@ fetchXml | `string` | `fetch`, `fetchAll` | Property that sets FetchXML - a prop
 fieldName | `string` | `uploadFile`, `downloadFile`, `deleteRequest` | **D365 Web API v9.1+** Use this option to specify the name of the file attribute in Dynamics 365. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/file-attributes)
 fileName | `string` | `uploadFile` | **D365 Web API v9.1+** Specifies the name of the filefilter | String | `retrieve`, `retrieveMultiple`, `retrieveAll` | Use the $filter system query option to set criteria for which entities will be returned.
 functionName | `string` | `callFunction` | Name of a D365 Web Api function.
+headers | `Object` | All | `v2.1+` Custom headers to supply with a request. These headers will override configuraiton headers if the identical ones were set. For example: `{ "my-header": "value", "another-header": "another-value" }`.
 ifmatch | `string` | `retrieve`, `update`, `upsert`, `deleteRecord` | Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests. [More Info](https://msdn.microsoft.com/en-us/library/mt607711.aspx)
 ifnonematch | `string` | `retrieve`, `upsert` | Sets If-None-Match header value that enables to use conditional retrieval in applicable requests. [More Info](https://msdn.microsoft.com/en-us/library/mt607711.aspx).
 impersonate | `string` | All | Impersonates a user based on their systemuserid by adding a "MSCRMCallerID" header. A String representing the GUID value for the Dynamics 365 systemuserid. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/impersonate-another-user-web-api)
@@ -2444,10 +2467,10 @@ the config option "formatted" will enable developers to retrieve all information
 - [X] File upload/download/delete for a File Field. `Added in v.1.7.0`
 - [X] Full proxy support. `Added in v.1.7.2`
 - [X] Full proxy support. `Added in v.1.7.2`
-- [X] Refactoring and conversion to TypeScript. `Added in v.2.0`
-- [X] Implement [Dataverse Search API](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/relevance-search). `Added in v.2.0`
-- [ ] Allow custom headers to be passed to the request. [#151](https://github.com/AleksandrRogov/DynamicsWebApi/issues/151)
-- [ ] Support Microsoft Power Pages.
+- [X] Refactoring and conversion to TypeScript. `Added in v.2.0.0`
+- [X] Implement [Dataverse Search API](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/relevance-search). `Added in v.2.0.0`
+- [X] Allow custom headers to be passed to the request. [#151](https://github.com/AleksandrRogov/DynamicsWebApi/issues/151). `Added in v.2.1.0`
+- [X] Support Microsoft Power Pages. `Added in v.2.1.0`
 
 Many more features to come!
 
