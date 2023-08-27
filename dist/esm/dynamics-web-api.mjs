@@ -1434,7 +1434,7 @@ var _addRequestToBatchCollection = (requestId, request) => {
 };
 var _clearRequestData = (requestId) => {
   delete _responseParseParams[requestId];
-  if (Object.hasOwn(_batchRequestCollection, requestId))
+  if (_batchRequestCollection.hasOwnProperty(requestId))
     delete _batchRequestCollection[requestId];
 };
 var _runRequest = async (request, config) => {

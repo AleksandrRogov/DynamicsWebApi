@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 /*! dynamics-web-api v2.1.0 (c) 2023 Aleksandr Rogov */
+=======
+/*! dynamics-web-api v2.1.0-rc.2 (c) 2023 Aleksandr Rogov */
+>>>>>>> fff77b50d2f5a624a9422b190d420edf697d754d
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -1448,7 +1452,7 @@ var _addRequestToBatchCollection = (requestId, request) => {
 };
 var _clearRequestData = (requestId) => {
   delete _responseParseParams[requestId];
-  if (Object.hasOwn(_batchRequestCollection, requestId))
+  if (_batchRequestCollection.hasOwnProperty(requestId))
     delete _batchRequestCollection[requestId];
 };
 var _runRequest = async (request, config) => {
