@@ -44,7 +44,7 @@ export declare class DynamicsWebApi {
      *const response = await dynamicsWebApi.create(request);
      *
      */
-    create: <TData = any>(request: CreateRequest<TData>) => Promise<string | TData>;
+    create: <TData = any>(request: CreateRequest<TData>) => Promise<TData>;
     /**
      * Sends an asynchronous request to retrieve a record.
      *

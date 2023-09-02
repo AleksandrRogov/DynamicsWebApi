@@ -58,7 +58,7 @@ export class DynamicsWebApi {
      *const response = await dynamicsWebApi.create(request);
      *
      */
-    create = async <TData = any>(request: CreateRequest<TData>): Promise<TData | string> => {
+    create = async <TData = any>(request: CreateRequest<TData>): Promise<TData> => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.create", "request");
 
         let internalRequest: Core.InternalRequest;
