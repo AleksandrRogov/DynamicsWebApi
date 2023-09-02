@@ -1,4 +1,4 @@
-/*! dynamics-web-api v2.1.0 (c) 2023 Aleksandr Rogov */
+/*! dynamics-web-api v2.1.1 (c) 2023 Aleksandr Rogov */
 /// <reference types="node" />
 /**
  * Microsoft Dynamics CRM Web API helper library written in JavaScript.
@@ -44,7 +44,7 @@ export declare class DynamicsWebApi {
      *const response = await dynamicsWebApi.create(request);
      *
      */
-    create: <TData = any>(request: CreateRequest<TData>) => Promise<TData>;
+    create: <TData = any>(request: CreateRequest<TData>) => Promise<string | TData>;
     /**
      * Sends an asynchronous request to retrieve a record.
      *
@@ -399,6 +399,8 @@ export interface BaseRequest {
     inChangeSet?: boolean;
     /**Headers to supply with a request. These headers will override configuraiton headers if the identical ones were set. */
     headers?: HeaderCollection;
+    /**Custom query parameters. Can be used to set parameter aliases for "$filter" and "$orderBy". Important! These parameters ARE NOT URI encoded! */
+    queryParams?: string[];
 }
 export interface BatchRequest extends BaseRequest {
     /** Sets Prefer header to "odata.continue-on-error" that allows more requests be processed when errors occur. The batch request will return '200 OK' and individual response errors will be returned in the batch response body. */
@@ -567,8 +569,6 @@ export interface RetrieveMultipleRequest extends Request {
     trackChanges?: boolean;
     /**A unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. */
     partitionId?: string;
-    /**Additional query parameters that either have not been implemented yet or they are parameter aliases for "$filter" and "$orderBy". Important! These parameters ARE NOT URI encoded! */
-    queryParams?: string[];
 }
 export interface AssociateRequest extends Request {
     /**Primary entity record id/key. */

@@ -1,8 +1,8 @@
-﻿import { ConfigurationUtility, InternalConfig } from "./utils/Config";
+﻿import { ConfigurationUtility } from "./utils/Config";
 import { Utility } from "./utils/Utility";
 import { ErrorHelper } from "./helpers/ErrorHelper";
 import { RequestClient } from "./client/RequestClient";
-import { Core } from "./types";
+import type { Core } from "./types";
 
 /**
  * Microsoft Dynamics CRM Web API helper library written in JavaScript.
@@ -58,7 +58,7 @@ export class DynamicsWebApi {
      *const response = await dynamicsWebApi.create(request);
      *
      */
-    create = async <TData = any>(request: CreateRequest<TData>): Promise<TData> => {
+    create = async <TData = any>(request: CreateRequest<TData>): Promise<TData | string> => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.create", "request");
 
         let internalRequest: Core.InternalRequest;
@@ -1196,6 +1196,8 @@ export interface BaseRequest {
     inChangeSet?: boolean;
     /**Headers to supply with a request. These headers will override configuraiton headers if the identical ones were set. */
     headers?: HeaderCollection;
+    /**Custom query parameters. Can be used to set parameter aliases for "$filter" and "$orderBy". Important! These parameters ARE NOT URI encoded! */
+    queryParams?: string[];
 }
 
 export interface BatchRequest extends BaseRequest {
@@ -1377,8 +1379,6 @@ export interface RetrieveMultipleRequest extends Request {
     trackChanges?: boolean;
     /**A unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. */
     partitionId?: string;
-    /**Additional query parameters that either have not been implemented yet or they are parameter aliases for "$filter" and "$orderBy". Important! These parameters ARE NOT URI encoded! */
-    queryParams?: string[];
 }
 
 export interface AssociateRequest extends Request {

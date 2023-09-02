@@ -1,5 +1,5 @@
-﻿import { ProxyConfig, Expand, RequestError, HeaderCollection } from "./dynamics-web-api";
-import { InternalApiConfig } from "./utils/Config";
+﻿import type { ProxyConfig, Expand, RequestError, HeaderCollection } from "./dynamics-web-api";
+import type { InternalApiConfig } from "./utils/Config";
 
 export declare namespace Core {
     interface RequestOptions {

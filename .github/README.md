@@ -330,7 +330,7 @@ Both `dataApi` and `searchApi` can be omitted from a configuration. Their defaul
 
 Please use [DynamicsWebApi Wiki](../../../wiki/) for an object reference. It is automatically generated and I could not find a better doc generator, pardon me for that. If you know a good ".d.ts -> .md" doc generator - let me know!
 
-The following table describes all __possible__ properties that can be set in `request` object.
+The following table describes all __possible__ properties that can be set in `request` object. Some parameters may still be absent in a table, please refer to [DynamicsWebApi Wiki](../../../wiki/).
 
 __Please note!__ Not all operaions accept all properties and if 
 by mistake an invalid property has been specified you will receive either an error saying that the request is invalid or the response will not have expected results.
@@ -352,7 +352,8 @@ duplicateDetection | `boolean` | `create`, `update`, `upsert` | **D365 Web API v
 expand | `Expand[]` | `retrieve`, `retrieveMultiple`, `create`, `update`, `upsert` | An array of Expand Objects (described below the table) representing the $expand OData System Query Option value to control which related records are also returned.
 fetchXml | `string` | `fetch`, `fetchAll` | Property that sets FetchXML - a proprietary query language that provides capabilities to perform aggregation.
 fieldName | `string` | `uploadFile`, `downloadFile`, `deleteRequest` | **D365 Web API v9.1+** Use this option to specify the name of the file attribute in Dynamics 365. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/file-attributes)
-fileName | `string` | `uploadFile` | **D365 Web API v9.1+** Specifies the name of the filefilter | String | `retrieve`, `retrieveMultiple`, `retrieveAll` | Use the $filter system query option to set criteria for which entities will be returned.
+fileName | `string` | `uploadFile` | **D365 Web API v9.1+** Specifies the name of the file
+filter | String | `retrieve`, `retrieveMultiple`, `retrieveAll` | Use the $filter system query option to set criteria for which entities will be returned.
 functionName | `string` | `callFunction` | Name of a D365 Web Api function.
 headers | `Object` | All | `v2.1+` Custom headers to supply with a request. These headers will override configuraiton headers if the identical ones were set. For example: `{ "my-header": "value", "another-header": "another-value" }`.
 ifmatch | `string` | `retrieve`, `update`, `upsert`, `deleteRecord` | Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests. [More Info](https://msdn.microsoft.com/en-us/library/mt607711.aspx)
@@ -373,7 +374,7 @@ pageNumber | `number` | `fetch` | Sets a page number for Fetch XML request ONLY!
 pagingCookie | `string` | `fetch` | Sets a paging cookie for Fetch XML request ONLY!
 parameters | `Object` | `callFunction` | Function's input parameters. Example: `{ param1: "test", param2: 3 }`. 
 partitionId | `string` | `create`, `update`, `upsert`, `delete`, `retrieve`, `retrieveMultiple` | Sets a unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. [More Info](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/azure-storage-partitioning)
-queryParams | `string[]` | `retrieveMultiple`, `retrieveAll` | Additional query parameters that either have not been implemented yet or they are [parameter aliases](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/query-data-web-api#use-parameter-aliases-with-system-query-options) for "$filter" and "$orderBy". **Important!** These parameters ARE NOT URI encoded!
+queryParams | `string[]` | All | Custom query parameters. Can also be used to set the [parameter aliases](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/query-data-web-api#use-parameter-aliases-with-system-query-options) for "$filter" and "$orderBy". **Important!** These parameters ARE NOT URI encoded!
 returnRepresentation | `boolean` | `create`, `update`, `upsert` | Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
 savedQuery | `string` | `retrieve` | A String representing the GUID value of the saved query.
 select | `string[]` | `retrieve`, `retrieveMultiple`, `retrieveAll`, `update`, `upsert` | An array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
@@ -2408,7 +2409,7 @@ import { DynamicsWebApi, Config } from "dynamics-web-api";
 //const DynamicsWebApi = require("dynamics-web-api");
 ```
 
-### Dynamics 365 web resource
+### Browsers and Dynamics 365 web resource
 If you are developing CRM Web Resources with TypeScript (and are not using NPM), you can download a TypeScript declaration file `dynamics-web-api.d.ts` manually from v2 [dist](https://github.com/AleksandrRogov/DynamicsWebApi/tree/v2/dist) folder. I usually put all declarations in the "./types/" folder of my web resources project. For example:
 
 ```
@@ -2429,19 +2430,67 @@ If you are developing CRM Web Resources with TypeScript (and are not using NPM),
 ]
 ```
 
-The declaration file is an ESM module, so if you are not using any bundler, you will have to add another d.ts file (let's call it `dynamics-web-api.browser.d.ts` and put it in the `types` folder) that will make DynamicsWebApi available globally. Here is an example (the same folder structure as mentioned above):
+The declaration file is an ESM module, so if you are not using any bundler, you will have to add another d.ts file (let's call it `dynamics-web-api.umd.d.ts` and put it in the `types` folder) that will make DynamicsWebApi available globally. Here is an example (the same folder structure as mentioned above):
 
 ```ts
-//dynamics-web-api.browser.d.ts
+//dynamics-web-api.umd.d.ts
 //import a DynamicsWebApi class from dynamics-web-api.d.ts file
-import { DynamicsWebApi } from "./dynamicsWebApi"
+import { DynamicsWebApi } from "./dynamics-web-api"
 //make the DynamicsWebApi class available globally
 export = DynamicsWebApi;
-//wrap all other exports with a namespace called DynamicsWebApi
+//wrap all other exports with in namespace
 export as namespace DynamicsWebApi;
 ```
 
-You can now access `DynamicsWebApi` anywhere in your source code without needing to import the declarations.
+`DynamicsWebApi` will now be a global object.
+
+If you need to access other types that `DynamicsWebApi` exports, you will have to create an additional `d.ts` file, unfortunately. I could not find a way to do this in a single file (mostly because of `export =` which cannot be combined with any other exports except for "as namespace"). If anyone knows a way to do that - let me know. Here's an example with a seprate file:
+
+```ts
+//dynamics-web-api.types.umd.d.ts
+export type { 
+    RetrieveMultipleRequest, 
+    CreateRequest
+    /* Other exports here if needed */ 
+} from "./dynamics-web-api";
+export as namespace Dwa;
+```
+
+These types can then be used anywhere in the code the following way:
+
+```ts
+const createRequest: Dwa.CreateRequest<Account> = {
+    collection: "accounts",
+    data: {
+        name: "Example"
+    }
+}
+
+const id = await dynamicsWebApi.create(createRequest) as string;
+```
+
+**DynamicsWebApi as an external library.** For those who use bundlers, but want to keep DynamicsWebApi as an external library (meaning that you don't want to bundle the library but reference it separately in a script tag somewhere): 1. you will have to make sure that your bundler supports `externals` configuraiton. 2. you will need to set the replacement for the import of `dynamics-web-api` with `_dynamicsWebApiExports`. For example, in webpack's case, you will have something like that:
+```json
+{
+    //...your bundle configuration
+    "externals": {
+        "dynamics-web-api" : "_dynamicsWebApiExports"
+    }
+}
+```
+
+This will work __only__ if in your scripts you import the library like this: `import { DynamicsWebApi } from "dynamics-web-api"`. In case if you don't install the package with npm but just keep the declaration files somewhere and import it with relative paths, you can set the [paths](https://www.typescriptlang.org/tsconfig#paths) option in your `tsconfig.json` which will create a consistent alias for all your relative import paths.
+
+```json
+{
+    "compilerOptions": {
+        //...your compiler options
+        "paths": {
+            "dynamics-web-api": ["./types/dynamics-web-api"]
+        }
+    }
+}
+```
 
 ### In Progress / Feature List
 
