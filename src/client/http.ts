@@ -1,6 +1,5 @@
 ﻿import * as http from "http";
 import * as https from "https";
-import * as url from "url";
 import HttpProxyAgent from "http-proxy-agent";
 import HttpsProxyAgent from "https-proxy-agent";
 import { Core } from "../types";
@@ -75,14 +74,14 @@ function _executeRequest(
     for (let key in additionalHeaders) {
         headers[key] = additionalHeaders[key];
     }
-    const parsedUrl = url.parse(options.uri);
+    const parsedUrl = new URL(options.uri);
     const protocol = parsedUrl.protocol?.slice(0, -1) || "https";
     const protocolInterface = protocol === "http" ? http : https;
 
     const internalOptions: http.RequestOptions = {
         hostname: parsedUrl.hostname,
         port: parsedUrl.port,
-        path: parsedUrl.path,
+        path: parsedUrl.pathname + parsedUrl.search,
         method: options.method,
         timeout: options.timeout || 0,
         headers: headers,
@@ -99,7 +98,7 @@ function _executeRequest(
     internalOptions.agent = getAgent(options, protocol);
 
     if (options.proxy) {
-        const hostHeader =new URL(options.proxy.url).host;
+        const hostHeader = new URL(options.proxy.url).host;
         if (hostHeader) headers.host = hostHeader;
     }
 

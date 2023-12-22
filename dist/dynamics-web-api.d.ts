@@ -1,4 +1,4 @@
-/*! dynamics-web-api v2.1.1 (c) 2023 Aleksandr Rogov */
+/*! dynamics-web-api v2.1.2 (c) 2023 Aleksandr Rogov */
 /// <reference types="node" />
 /**
  * Microsoft Dynamics CRM Web API helper library written in JavaScript.
@@ -349,10 +349,10 @@ export declare class DynamicsWebApi {
      */
     executeBatch: (request?: BatchRequest) => Promise<any[]>;
     /**
-     * Creates a new instance of DynamicsWebApi. If the config is not provided, it is copied from the current instance.
+     * Creates a new instance of DynamicsWebApi. If config is not provided, it is copied from a current instance.
      *
-     * @param {Config} config - configuration object.
-     * @returns {DynamicsWebApi} The new instance of a DynamicsWebApi
+     * @param {Config} config configuration object.
+     * @returns {DynamicsWebApi} A new instance of DynamicsWebApi
      */
     initializeInstance: (config?: Config) => DynamicsWebApi;
     Utility: {
@@ -360,8 +360,8 @@ export declare class DynamicsWebApi {
          * Searches for a collection name by provided entity name in a cached entity metadata.
          * The returned collection name can be null.
          *
-         * @param {string} entityName - entity name
-         * @returns {string | null} a collection name
+         * @param {string} entityName entity name
+         * @returns {string | null} collection name
          */
         getCollectionName: (entityName: string) => string | null;
     };
@@ -902,7 +902,9 @@ export interface MultipleResponse<T = any> {
     /**Multiple respone entities */
     value: T[];
     oDataCount?: number;
+    "@odata.count"?: number;
     oDataContext?: string;
+    "@odata.context"?: number;
 }
 export interface AllResponse<T> extends MultipleResponse<T> {
     /**@odata.deltaLink value */
@@ -915,6 +917,8 @@ export interface RetrieveMultipleResponse<T> extends MultipleResponse<T> {
     oDataNextLink?: string;
     /**@odata.deltaLink value */
     oDataDeltaLink?: string;
+    "@odata.deltaLink"?: string;
+    "@odata.nextLink"?: string;
 }
 export interface FetchXmlResponse<T> extends MultipleResponse<T> {
     "@Microsoft.Dynamics.CRM.totalrecordcount"?: number;

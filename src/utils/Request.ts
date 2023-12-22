@@ -68,7 +68,6 @@ export class RequestUtility {
         } else {
             ErrorHelper.stringParameterCheck(request.url, `DynamicsWebApi.${request.functionName}`, "request.url");
             request.path = request.url.replace(config.dataApi.url, "");
-            request.path = RequestUtility.composeUrl(request, config, request.path);
         }
 
         if (request.hasOwnProperty("async") && request.async != null) {

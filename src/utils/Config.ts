@@ -15,10 +15,10 @@ export interface InternalConfig extends Config {
 
 const getApiUrl = (serverUrl: string | undefined | null, apiConfig: ApiConfig): string => {
     if (Utility.isRunningWithinPortals()) {
-        return `${global.window.location.origin}/_api/`;
+        return new URL("_api", global.window.location.origin).toString() + "/";
     } else {
         if (!serverUrl) serverUrl = Utility.getClientUrl();
-        return `${serverUrl}/api/${apiConfig.path}/v${apiConfig.version}/`;
+        return new URL(`api/${apiConfig.path}/v${apiConfig.version}`, serverUrl).toString() + "/";
     }
 };
 
@@ -122,12 +122,12 @@ export class ConfigurationUtility {
             dataApi: {
                 path: "data",
                 version: "9.2",
-                url: "",
+                url: ""
             },
             searchApi: {
                 path: "search",
                 version: "1.0",
-                url: "",
+                url: ""
             },
         };
     }

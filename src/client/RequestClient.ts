@@ -104,7 +104,7 @@ export class RequestClient {
 
         return await executeRequest({
             method: request.method!,
-            uri: url + request.path,
+            uri: url!.toString() + request.path,
             data: processedData,
             additionalHeaders: request.headers,
             responseParams: _responseParseParams,

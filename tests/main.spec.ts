@@ -2,7 +2,7 @@ import { expect } from "chai";
 import nock from "nock";
 import * as mocks from "./stubs";
 
-import { DynamicsWebApi } from "../src/dynamics-web-api";
+import { DynamicsWebApi, type RetrieveMultipleRequest } from "../src/dynamics-web-api";
 
 const dynamicsWebApiTest = new DynamicsWebApi({
     dataApi: {
@@ -66,6 +66,115 @@ describe("dynamicsWebApi.retrieveMultiple -", () => {
         it("1 requests have been made and 1 cancelled", function () {
             expect(scope.isDone()).to.be.false;
             expect(scope2.isDone()).to.be.true;
+        });
+    });
+    describe("when goes by next page link with count", () => {
+        let scope: nock.Scope;
+        before(function () {
+            const response = mocks.responses.multipleWithLinkAndCountResponse;
+            const url = new URL(mocks.responses.multipleWithLinkAndCount().oDataNextLink);
+            scope = nock(url.origin, {
+                reqheaders: {
+                    prefer: "odata.maxpagesize=10"
+                }
+            })
+                .get(url.pathname + url.search)
+                .reply((uri, body) => {
+                    const checkUrl = new URL(uri, url.origin);
+                    if ((checkUrl.pathname + checkUrl.search) !== (url.pathname + url.search))
+                        return 
+                        [
+                            mocks.responses.errorResponse.status, 
+                            mocks.responses.errorResponse.responseText, 
+                            mocks.responses.errorResponse.responseHeaders
+                        ];
+
+                    return [response.status, response.responseText, response.responseHeaders]
+                });
+        });
+
+        after(function () {
+            nock.cleanAll();
+        });
+
+        it("should not have duplicated url params", async () => {
+            const dwaRequest: RetrieveMultipleRequest = {
+                collection: "tests",
+                select: ["name"],
+                count: true,
+                maxPageSize: 10
+            };
+
+            try{
+                const object = await dynamicsWebApiTest.retrieveMultiple(dwaRequest, mocks.responses.multipleWithLinkAndCount().oDataNextLink)
+
+                expect(object).to.deep.equal(mocks.responses.multipleWithLinkAndCount());
+            }
+            catch(error){
+                console.error(error);
+                throw error;
+            }
+        });
+
+        it("all requests have been made", function () {
+            expect(scope.isDone()).to.be.true;
+        });
+    });
+
+    describe("when goes by next page link, with a dash in serverUrl", () => {
+        let scope: nock.Scope;
+        before(function () {
+            const response = mocks.responses.multipleWithLinkAndCountResponse;
+            const url = new URL(mocks.responses.multipleWithLinkAndCount().oDataNextLink);
+            scope = nock(url.origin, {
+                reqheaders: {
+                    prefer: "odata.maxpagesize=10"
+                }
+            })
+                .get(url.pathname + url.search)
+                .reply((uri, body) => {
+                    const checkUrl = new URL(uri, url.origin);
+                    if ((checkUrl.pathname + checkUrl.search) !== (url.pathname + url.search))
+                        return 
+                        [
+                            mocks.responses.errorResponse.status, 
+                            mocks.responses.errorResponse.responseText, 
+                            mocks.responses.errorResponse.responseHeaders
+                        ];
+
+                    return [response.status, response.responseText, response.responseHeaders]
+                });
+        });
+
+        after(function () {
+            nock.cleanAll();
+        });
+
+        it("should not duplicate serverUrl", async () => {
+            const dwaRequest: RetrieveMultipleRequest = {
+                collection: "tests",
+                select: ["name"],
+                count: true,
+                maxPageSize: 10
+            };
+
+            try{
+                const dynamicsWebApiSlash = dynamicsWebApiTest.initializeInstance();
+                dynamicsWebApiSlash.setConfig({
+                    serverUrl: mocks.serverUrl + "/"
+                });
+                const object = await dynamicsWebApiSlash.retrieveMultiple(dwaRequest, mocks.responses.multipleWithLinkAndCount().oDataNextLink)
+
+                expect(object).to.deep.equal(mocks.responses.multipleWithLinkAndCount());
+            }
+            catch(error){
+                console.error(error);
+                throw error;
+            }
+        });
+
+        it("all requests have been made", function () {
+            expect(scope.isDone()).to.be.true;
         });
     });
 });

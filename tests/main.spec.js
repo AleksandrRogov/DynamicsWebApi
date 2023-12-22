@@ -646,7 +646,7 @@ describe("dynamicsWebApi.retrieve -", function () {
         before(function () {
             var response = mocks.responses.response200;
             scope = nock(mocks.webApiUrl)
-                .get(mocks.responses.collectionUrl + "(alternateKey=%27keyValue%27)")
+                .get(mocks.responses.collectionUrl + "(alternateKey='keyValue')")
                 .reply(response.status, response.responseText, response.responseHeaders);
         });
 
@@ -3463,7 +3463,7 @@ describe("dynamicsWebApi.retrieveEntity -", function () {
         before(function () {
             var response = mocks.responses.response200;
             scope = nock(mocks.webApiUrl)
-                .get(mocks.responses.entityDefinitionsUrl + "(alternateKey=%27keyValue%27)")
+                .get(mocks.responses.entityDefinitionsUrl + "(alternateKey='keyValue')")
                 .reply(response.status, response.responseText, response.responseHeaders);
         });
 
@@ -3838,7 +3838,7 @@ describe("dynamicsWebApi.retrieveAttribute -", function () {
         before(function () {
             var response = mocks.responses.response200;
             scope = nock(mocks.webApiUrl)
-                .get(mocks.responses.entityDefinitionsUrl + "(SchemaName=%27Test%27)/Attributes(LogicalName=%27Test2%27)")
+                .get(mocks.responses.entityDefinitionsUrl + "(SchemaName='Test')/Attributes(LogicalName='Test2')")
                 .reply(response.status, response.responseText, response.responseHeaders);
         });
 

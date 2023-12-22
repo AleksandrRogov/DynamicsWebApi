@@ -177,6 +177,17 @@ const dataStubs = {
             { name: "name2", subject: "subject2" },
         ],
     },
+    multipleWithLinkAndCount: {
+        "@odata.context": "context",
+        "@odata.count": 10,
+        "@odata.nextLink":
+            webApiUrl +
+            "tests?$select=name&$count=true&$skiptoken=%3Ccookie%20pagenumber=%222%22%20pagingcookie=%22%253ccookie%2520page%253d%25221%2522%253e%253caccountid%2520last%253d%2522%257b8151925C-CDE2-E411-80DB-00155D2A68CB%257d%2522%2520first%253d%2522%257b7D51925C-CDE2-E411-80DB-00155D2A68CB%257d%2522%2520%252f%253e%253c%252fcookie%253e%22%20/%3E",
+        value: [
+            { name: "name1", subject: "subject1" },
+            { name: "name2", subject: "subject2" },
+        ],
+    },
     multipleWithDeltaLink: {
         "@odata.context": "context",
         "@odata.deltaLink": webApiUrl + "tests?$select=name&$deltatoken=919042%2108%2f22%2f2017%2008%3a10%3a44",
@@ -238,6 +249,12 @@ const dataStubs = {
     autocompleteResult: {
         querycontext: null,
         value: "{crmhit}test{/crmhit}",
+    },
+    error: {
+        error: {
+            code: "error_code",
+            message: "ERROR!"
+        }
     },
     batch:
         "--dwa_batch_XXX\n" +
@@ -898,6 +915,11 @@ var responseStubs = {
         responseText: JSON.stringify(dataStubs.multipleWithLink),
         responseHeaders: dataStubs.defaultResponseHeaders,
     },
+    multipleWithLinkAndCountResponse: {
+        status: 200,
+        responseText: JSON.stringify(dataStubs.multipleWithLinkAndCount),
+        responseHeaders: dataStubs.defaultResponseHeaders,
+    },
     multipleWithDeltaLinkResponse: {
         status: 200,
         responseText: JSON.stringify(dataStubs.multipleWithDeltaLink),
@@ -1332,6 +1354,13 @@ var responseStubs = {
         stub.oDataNextLink = stub["@odata.nextLink"];
         return stub;
     },
+    multipleWithLinkAndCount: function () {
+        var stub = dataStubs.multipleWithLinkAndCount;
+        stub.oDataContext = stub["@odata.context"];
+        stub.oDataNextLink = stub["@odata.nextLink"];
+        stub.oDataCount = stub["@odata.count"];
+        return stub;
+    },
     multipleWithDeltaLink: function () {
         var stub = dataStubs.multipleWithDeltaLink;
         stub.oDataContext = stub["@odata.context"];
@@ -1382,6 +1411,11 @@ var responseStubs = {
         responseText: JSON.stringify(dataStubs.autocompleteResult),
         responseHeaders: dataStubs.defaultResponseHeaders,
     },
+    errorResponse: {
+        status: 400,
+        responseText: JSON.stringify(dataStubs.error),
+        responseHeaders: dataStubs.defaultResponseHeaders
+    }
 };
 
 var utils = {

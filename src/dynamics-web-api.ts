@@ -1143,10 +1143,10 @@ export class DynamicsWebApi {
     };
 
     /**
-     * Creates a new instance of DynamicsWebApi. If the config is not provided, it is copied from the current instance.
+     * Creates a new instance of DynamicsWebApi. If config is not provided, it is copied from a current instance.
      *
-     * @param {Config} config - configuration object.
-     * @returns {DynamicsWebApi} The new instance of a DynamicsWebApi
+     * @param {Config} config configuration object.
+     * @returns {DynamicsWebApi} A new instance of DynamicsWebApi
      */
     initializeInstance = (config?: Config): DynamicsWebApi => new DynamicsWebApi(config || this._config);
 
@@ -1155,8 +1155,8 @@ export class DynamicsWebApi {
          * Searches for a collection name by provided entity name in a cached entity metadata.
          * The returned collection name can be null.
          *
-         * @param {string} entityName - entity name
-         * @returns {string | null} a collection name
+         * @param {string} entityName entity name
+         * @returns {string | null} collection name
          */
         getCollectionName: (entityName: string): string | null => RequestClient.getCollectionName(entityName),
     };
@@ -1760,7 +1760,9 @@ export interface MultipleResponse<T = any> {
     /**Multiple respone entities */
     value: T[];
     oDataCount?: number;
+    "@odata.count"?: number;
     oDataContext?: string;
+    "@odata.context"?: number;
 }
 
 export interface AllResponse<T> extends MultipleResponse<T> {
@@ -1775,6 +1777,8 @@ export interface RetrieveMultipleResponse<T> extends MultipleResponse<T> {
     oDataNextLink?: string;
     /**@odata.deltaLink value */
     oDataDeltaLink?: string;
+    "@odata.deltaLink"?: string;
+    "@odata.nextLink"?: string;
 }
 
 export interface FetchXmlResponse<T> extends MultipleResponse<T> {
