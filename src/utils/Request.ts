@@ -30,24 +30,24 @@ export class RequestUtility {
         request.path = request.path || "";
         request.functionName = request.functionName || "";
         if (!request.url) {
-            if (!request._isUnboundRequest && !request.collection) {
+            if (!request._isUnboundRequest && !request.contentId && !request.collection) {
                 ErrorHelper.parameterCheck(request.collection, `DynamicsWebApi.${request.functionName}`, "request.collection");
             }
             if (request.collection != null) {
                 ErrorHelper.stringParameterCheck(request.collection, `DynamicsWebApi.${request.functionName}`, "request.collection");
                 request.path = request.collection;
 
-                if (request.contentId) {
-                    ErrorHelper.stringParameterCheck(request.contentId, `DynamicsWebApi.${request.functionName}`, "request.contentId");
-                    if (request.contentId.startsWith("$")) {
-                        request.path = `${request.contentId}/${request.path}`;
-                    }
-                }
-
                 //add alternate key feature
                 if (request.key) {
                     request.key = ErrorHelper.keyParameterCheck(request.key, `DynamicsWebApi.${request.functionName}`, "request.key");
                     request.path += `(${request.key})`;
+                }
+            }
+
+            if (request.contentId) {
+                ErrorHelper.stringParameterCheck(request.contentId, `DynamicsWebApi.${request.functionName}`, "request.contentId");
+                if (request.contentId.startsWith("$")) {
+                    request.path = request.path ? `${request.contentId}/${request.path}` : request.contentId;
                 }
             }
 

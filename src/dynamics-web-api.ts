@@ -1207,7 +1207,7 @@ export interface BatchRequest extends BaseRequest {
 
 export interface Request extends BaseRequest {
     /**A name of the Entity Collection or Entity Logical name. */
-    collection: string;
+    collection?: string;
 }
 
 export interface CRUDRequest extends Request {
@@ -1221,6 +1221,8 @@ export interface CountRequest extends Request {
 }
 
 export interface CountAllRequest extends CountRequest {
+    /**A name of the Entity Collection or Entity Logical name. */
+    collection: string;
     /**An Array (of strings) representing the $select OData System Query Option to control which attributes will be returned. */
     select?: string[];
 }
@@ -1332,6 +1334,8 @@ export interface DeleteRequest extends CRUDRequest {
 }
 
 export interface RetrieveRequest extends CRUDRequest {
+    /**A name of the Entity Collection or Entity Logical name. */
+    collection: string;
     /**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
     expand?: Expand[];
     /**Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests.*/
@@ -1357,6 +1361,8 @@ export interface RetrieveRequest extends CRUDRequest {
 }
 
 export interface RetrieveMultipleRequest extends Request {
+    /**A name of the Entity Collection or Entity Logical name. */
+    collection: string;
     /**Use the $apply to aggregate and group your data dynamically */
     apply?: string;
     /**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */

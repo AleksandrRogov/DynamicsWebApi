@@ -346,6 +346,62 @@ describe("dynamicsWebApi.executeBatch -", () => {
             expect(scope.isDone()).to.be.true;
         });
     });
+
+    describe("create / create with Content-ID / No Collection", function () {
+        let scope;
+        const rBody = mocks.data.batchCreateContentIDNoCollection;
+        const rBodys = rBody.split("\n");
+        let checkBody = "";
+        for (var i = 0; i < rBodys.length; i++) {
+            checkBody += rBodys[i];
+        }
+        before(function () {
+            const response = mocks.responses.batchUpdateDelete;
+            scope = nock(mocks.webApiUrl)
+                .filteringRequestBody(function (body) {
+                    body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
+                    body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "changeset_XXX");
+                    var bodys = body.split("\n");
+
+                    var resultBody = "";
+                    for (var i = 0; i < bodys.length; i++) {
+                        resultBody += bodys[i];
+                    }
+                    return resultBody;
+                })
+                .post("/$batch", checkBody)
+                .reply(response.status, response.responseText, response.responseHeaders);
+        });
+
+        after(function () {
+            nock.cleanAll();
+        });
+
+        it("returns a correct response", async () => {
+            dynamicsWebApiTest.startBatch();
+
+            dynamicsWebApiTest.create({ collection: "records", data: { firstname: "Test", lastname: "Batch!" }, contentId: "1" });
+            dynamicsWebApiTest.create({ data: { firstname: "Test1", lastname: "Batch!" }, contentId: "$1" });
+
+            try{
+                const object = await dynamicsWebApiTest
+                    .executeBatch();
+
+                expect(object.length).to.be.eq(2);
+
+                expect(object[0]).to.be.eq(mocks.data.testEntityId);
+                expect(object[1]).to.be.undefined;
+            }
+            catch(error) {
+                console.error(error);
+                throw error;
+            }
+        });
+
+        it("all requests have been made", () => {
+            expect(scope.isDone()).to.be.true;
+        });
+    });
 });
 
 describe("dynamicsWebApi: custom headers - ", () => {
