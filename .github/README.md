@@ -305,6 +305,7 @@ queryParams | Array | `retrieveMultipleRequest`, `retrieveAllRequest` | `v.1.7.7
 returnRepresentation | Boolean | `createRequest`, `updateRequest`, `upsertRequest` | Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
 savedQuery | String | `retrieveRequest` | A String representing the GUID value of the saved query.
 select | Array | `retrieveRequest`, `retrieveMultipleRequest`, `retrieveAllRequest`, `updateRequest`, `upsertRequest` | An Array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
+skipNameCheck | Boolean | All | `v.1.7.12+` Skips the collection name check in DynamicsWebApi. Helpful when the collection name should stay the same in the URL as it was set in the request.
 timeout | Number | All | `v.1.6.10+` Sets a number of milliseconds before a request times out.
 token | String | All | Authorization Token. If set, onTokenRefresh will not be called.
 top | Number | `retrieveMultipleRequest`, `retrieveAllRequest` | Limit the number of results returned by using the $top system query option. Do not use $top with $count!

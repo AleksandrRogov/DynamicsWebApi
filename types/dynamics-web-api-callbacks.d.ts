@@ -1,4 +1,4 @@
-﻿// Type definitions for dynamics-web-api-callbacks v1.7.11
+﻿// Type definitions for dynamics-web-api-callbacks v1.7.12
 // Project: https://github.com/AleksandrRogov/DynamicsWebApi
 // Definitions by: Aleksandr Rogov https://github.com/AleksandrRogov/
 
@@ -876,6 +876,8 @@ declare namespace DynamicsWebApi {
     interface Request extends RequestBase {
         /**The name of the Entity Collection or Entity Logical name. */
         collection?: string;
+        /**Skips the collection name check in DynamicsWebApi */
+        skipNameCheck?: boolean;
     }
 
     interface CRUDRequest extends Request {

@@ -1627,6 +1627,40 @@ describe("promises -", function () {
             });
         });
 
+        describe("unbound - composable (skipNameCheck)", function () {
+            var scope;
+            before(function () {
+                var response = mocks.responses.response200;
+                scope = nock(mocks.webApiUrl)
+                    .get("/FUN(param1=@p1)?$select=something&@p1=0000")
+                    .reply(response.status, response.responseText, response.responseHeaders);
+            });
+
+            after(function () {
+                nock.cleanAll();
+            });
+
+            it("(with parameters) returns a correct response", function (done) {
+                dynamicsWebApiTest.retrieveRequest({
+                    collection: "FUN",
+                    key: "param1=@p1",
+                    select: ["something"],
+                    queryParams: ["@p1=0000"],
+                    skipNameCheck: true
+                }).then(function (object) {
+                    expect(object).to.deep.equal(mocks.data.testEntity);
+                    done();
+                })
+                .catch(function (object) {
+                    done(object);
+                });
+            });
+
+            it("all requests have been made", function () {
+                expect(scope.isDone()).to.be.true;
+            });
+        });
+
         describe("bound", function () {
             var scope;
             before(function () {
