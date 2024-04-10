@@ -1,4 +1,4 @@
-/*! dynamics-web-api-callbacks v1.7.11 (c) 2023 Aleksandr Rogov */
+/*! dynamics-web-api-callbacks v1.7.12 (c) 2024 Aleksandr Rogov */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -2833,9 +2833,8 @@ function _isEntityNameException(entityName) {
 	return exceptions.indexOf(entityName) > -1;
 }
 
-function _checkCollectionName(entityName, config, successCallback, errorCallback) {
-
-	if (_isEntityNameException(entityName) || Utility.isNull(entityName)) {
+function _checkCollectionName(entityName, config, skipNameCheck, successCallback, errorCallback) {
+	if (!!skipNameCheck || _isEntityNameException(entityName) || Utility.isNull(entityName)) {
 		successCallback(entityName);
 		return;
 	}
@@ -2873,7 +2872,7 @@ function makeRequest(method, request, functionName, config, responseParams, reso
 		RequestConverter.convertRequest(request, functionName, config);
 	}
 	else {
-		_checkCollectionName(request.collection, config, function (collectionName) {
+		_checkCollectionName(request.collection, config, request.skipNameCheck, function (collectionName) {
 			request.collection = collectionName;
 			var result = RequestConverter.convertRequest(request, functionName, config);
 			var requestId = request.requestId;
@@ -3318,6 +3317,7 @@ function convertRequestOptions(request, functionName, url, joinSymbol, config) {
 function convertRequest(request, functionName, config) {
 	var url = "";
 	var result;
+
 	if (!request.url) {
 		if (!request._unboundRequest && !request.collection) {
 			ErrorHelper.parameterCheck(request.collection, "DynamicsWebApi." + functionName, "request.collection");
@@ -3371,6 +3371,7 @@ function convertRequest(request, functionName, config) {
 	} else {
 		result.async = true;
 	}
+
 
 	return { url: result.url, headers: result.headers, async: result.async };
 }
