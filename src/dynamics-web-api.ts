@@ -610,8 +610,11 @@ export class DynamicsWebApi {
 
         ErrorHelper.stringParameterCheck(internalRequest.functionName, `DynamicsWebApi.callFunction`, parameterName);
 
+        const functionParameters = Utility.buildFunctionParameters(internalRequest.parameters);
+
         internalRequest.method = "GET";
-        internalRequest._additionalUrl = internalRequest.functionName + Utility.buildFunctionParameters(internalRequest.parameters);
+        internalRequest._additionalUrl = internalRequest.functionName + functionParameters.key;
+        internalRequest.queryParams = functionParameters.queryParams;
         internalRequest._isUnboundRequest = !internalRequest.collection;
         internalRequest.functionName = "callFunction";
 
@@ -1430,6 +1433,10 @@ export interface UnboundFunctionRequest extends BaseRequest {
     functionName: string;
     /**Function's input parameters. Example: { param1: "test", param2: 3 }. */
     parameters?: any;
+    /**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+    select?: string[];
+    /**Use the $filter system query option to set criteria for which entities will be returned. */
+    filter?: string;
 }
 
 export interface BoundFunctionRequest extends UnboundFunctionRequest, Request {

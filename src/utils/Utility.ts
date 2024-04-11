@@ -23,38 +23,36 @@ export class Utility {
      * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
      * @returns {string}
      */
-    static buildFunctionParameters(parameters?: any): string {
+    static buildFunctionParameters(parameters?: any): Core.FunctionParameters {
         if (parameters) {
             const parameterNames = Object.keys(parameters);
-            let functionParameters = "";
-            let urlQuery = "";
+            const functionParams: string[] = [];
+            const urlQuery: string[] = [];
 
-            for (var i = 1; i <= parameterNames.length; i++) {
+            for (let i = 1; i <= parameterNames.length; i++) {
                 const parameterName = parameterNames[i - 1];
                 let value = parameters[parameterName];
 
                 if (value == null) continue;
 
                 if (typeof value === "string" && !value.startsWith("Microsoft.Dynamics.CRM") && !isUuid(value)) {
-                    value = "'" + value + "'";
+                    value = `'${value}'`;
                 } else if (typeof value === "object") {
                     value = JSON.stringify(value);
                 }
 
-                if (i > 1) {
-                    functionParameters += ",";
-                    urlQuery += "&";
-                }
-
-                functionParameters += parameterName + "=@p" + i;
-                urlQuery += "@p" + i + "=" + (extractUuid(value) || value);
+                functionParams.push(`${parameterName}=@p${i}`);
+                urlQuery.push(`@p${i}=${extractUuid(value) || value}`);
             }
 
-            if (urlQuery) urlQuery = "?" + urlQuery;
-
-            return "(" + functionParameters + ")" + urlQuery;
+            return {
+                key: `(${functionParams.join(",")})`,
+                queryParams: urlQuery,
+            };
         } else {
-            return "()";
+            return {
+                key: "()",
+            };
         }
     }
 

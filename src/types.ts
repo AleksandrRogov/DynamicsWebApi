@@ -166,6 +166,11 @@ export declare namespace Core {
         headers: any;
         async?: boolean;
     }
+
+    type FunctionParameters = {
+        key: string,
+        queryParams?: string[]
+    }
 }
 
 declare global {

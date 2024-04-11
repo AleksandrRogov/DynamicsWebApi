@@ -75,21 +75,16 @@ describe("dynamicsWebApi.retrieveMultiple -", () => {
             const url = new URL(mocks.responses.multipleWithLinkAndCount().oDataNextLink);
             scope = nock(url.origin, {
                 reqheaders: {
-                    prefer: "odata.maxpagesize=10"
-                }
+                    prefer: "odata.maxpagesize=10",
+                },
             })
                 .get(url.pathname + url.search)
                 .reply((uri, body) => {
                     const checkUrl = new URL(uri, url.origin);
-                    if ((checkUrl.pathname + checkUrl.search) !== (url.pathname + url.search))
-                        return 
-                        [
-                            mocks.responses.errorResponse.status, 
-                            mocks.responses.errorResponse.responseText, 
-                            mocks.responses.errorResponse.responseHeaders
-                        ];
+                    if (checkUrl.pathname + checkUrl.search !== url.pathname + url.search) return;
+                    [mocks.responses.errorResponse.status, mocks.responses.errorResponse.responseText, mocks.responses.errorResponse.responseHeaders];
 
-                    return [response.status, response.responseText, response.responseHeaders]
+                    return [response.status, response.responseText, response.responseHeaders];
                 });
         });
 
@@ -102,15 +97,14 @@ describe("dynamicsWebApi.retrieveMultiple -", () => {
                 collection: "tests",
                 select: ["name"],
                 count: true,
-                maxPageSize: 10
+                maxPageSize: 10,
             };
 
-            try{
-                const object = await dynamicsWebApiTest.retrieveMultiple(dwaRequest, mocks.responses.multipleWithLinkAndCount().oDataNextLink)
+            try {
+                const object = await dynamicsWebApiTest.retrieveMultiple(dwaRequest, mocks.responses.multipleWithLinkAndCount().oDataNextLink);
 
                 expect(object).to.deep.equal(mocks.responses.multipleWithLinkAndCount());
-            }
-            catch(error){
+            } catch (error) {
                 console.error(error);
                 throw error;
             }
@@ -128,21 +122,16 @@ describe("dynamicsWebApi.retrieveMultiple -", () => {
             const url = new URL(mocks.responses.multipleWithLinkAndCount().oDataNextLink);
             scope = nock(url.origin, {
                 reqheaders: {
-                    prefer: "odata.maxpagesize=10"
-                }
+                    prefer: "odata.maxpagesize=10",
+                },
             })
                 .get(url.pathname + url.search)
                 .reply((uri, body) => {
                     const checkUrl = new URL(uri, url.origin);
-                    if ((checkUrl.pathname + checkUrl.search) !== (url.pathname + url.search))
-                        return 
-                        [
-                            mocks.responses.errorResponse.status, 
-                            mocks.responses.errorResponse.responseText, 
-                            mocks.responses.errorResponse.responseHeaders
-                        ];
+                    if (checkUrl.pathname + checkUrl.search !== url.pathname + url.search) return;
+                    [mocks.responses.errorResponse.status, mocks.responses.errorResponse.responseText, mocks.responses.errorResponse.responseHeaders];
 
-                    return [response.status, response.responseText, response.responseHeaders]
+                    return [response.status, response.responseText, response.responseHeaders];
                 });
         });
 
@@ -155,19 +144,18 @@ describe("dynamicsWebApi.retrieveMultiple -", () => {
                 collection: "tests",
                 select: ["name"],
                 count: true,
-                maxPageSize: 10
+                maxPageSize: 10,
             };
 
-            try{
+            try {
                 const dynamicsWebApiSlash = dynamicsWebApiTest.initializeInstance();
                 dynamicsWebApiSlash.setConfig({
-                    serverUrl: mocks.serverUrl + "/"
+                    serverUrl: mocks.serverUrl + "/",
                 });
-                const object = await dynamicsWebApiSlash.retrieveMultiple(dwaRequest, mocks.responses.multipleWithLinkAndCount().oDataNextLink)
+                const object = await dynamicsWebApiSlash.retrieveMultiple(dwaRequest, mocks.responses.multipleWithLinkAndCount().oDataNextLink);
 
                 expect(object).to.deep.equal(mocks.responses.multipleWithLinkAndCount());
-            }
-            catch(error){
+            } catch (error) {
                 console.error(error);
                 throw error;
             }
@@ -383,16 +371,14 @@ describe("dynamicsWebApi.executeBatch -", () => {
             dynamicsWebApiTest.create({ collection: "records", data: { firstname: "Test", lastname: "Batch!" }, contentId: "1" });
             dynamicsWebApiTest.create({ data: { firstname: "Test1", lastname: "Batch!" }, contentId: "$1" });
 
-            try{
-                const object = await dynamicsWebApiTest
-                    .executeBatch();
+            try {
+                const object = await dynamicsWebApiTest.executeBatch();
 
                 expect(object.length).to.be.eq(2);
 
                 expect(object[0]).to.be.eq(mocks.data.testEntityId);
                 expect(object[1]).to.be.undefined;
-            }
-            catch(error) {
+            } catch (error) {
                 console.error(error);
                 throw error;
             }
@@ -610,6 +596,41 @@ describe("dynamicsWebApi: custom headers - ", () => {
         });
 
         it("all requests have been made", () => {
+            expect(scope.isDone()).to.be.true;
+        });
+    });
+});
+
+describe("dynamicsWebApi.callFunction -", () => {
+    describe("unbound", function () {
+        let scope: nock.Scope;
+        before(function () {
+            const response = mocks.responses.response200;
+            scope = nock(mocks.webApiUrl)
+                .get("/FUN(param1=@p1,param2=@p2)?$select=field1,field2&$filter=field1 eq 1&@p1=%27value1%27&@p2=2")
+                .reply(response.status, response.responseText, response.responseHeaders);
+        });
+
+        after(function () {
+            nock.cleanAll();
+        });
+
+        it("(composite, with parameters) returns a correct response", async () => {
+            try {
+                const object = await dynamicsWebApiTest.callFunction({
+                    functionName: "FUN",
+                    parameters: { param1: "value1", param2: 2 },
+                    select: ["field1", "field2"],
+                    filter: "field1 eq 1"
+                });
+
+                expect(object).to.deep.equal(mocks.data.testEntity);
+            } catch (error) {
+                throw error;
+            }
+        });
+
+        it("all requests have been made", function () {
             expect(scope.isDone()).to.be.true;
         });
     });

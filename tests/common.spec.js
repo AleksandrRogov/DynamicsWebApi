@@ -17,31 +17,34 @@ describe("Utility.", function () {
     describe("buildFunctionParameters - ", function () {
         it("no parameters", function () {
             const result = Utility.buildFunctionParameters();
-            expect(result).to.equal("()");
+            expect(result).to.deep.equal({ key: "()" });
         });
         it("1 parameter == null", function () {
             const result = Utility.buildFunctionParameters({ param1: null });
-            expect(result).to.equal("()");
+            expect(result).to.deep.equal({ key: "()", queryParams: [] });
         });
         it("1 parameter", function () {
             const result = Utility.buildFunctionParameters({ param1: "value1" });
-            expect(result).to.equal("(param1=@p1)?@p1='value1'");
+            expect(result).to.deep.equal({ key: "(param1=@p1)", queryParams: ["@p1='value1'"] });
         });
         it("2 parameters", function () {
             const result = Utility.buildFunctionParameters({ param1: "value1", param2: 2 });
-            expect(result).to.equal("(param1=@p1,param2=@p2)?@p1='value1'&@p2=2");
+            expect(result).to.deep.equal({ key: "(param1=@p1,param2=@p2)", queryParams: ["@p1='value1'", "@p2=2"] });
         });
         it("3 parameters", function () {
             const result = Utility.buildFunctionParameters({ param1: "value1", param2: 2, param3: "value2" });
-            expect(result).to.equal("(param1=@p1,param2=@p2,param3=@p3)?@p1='value1'&@p2=2&@p3='value2'");
+            expect(result).to.deep.equal({ key: "(param1=@p1,param2=@p2,param3=@p3)", queryParams: ["@p1='value1'", "@p2=2", "@p3='value2'"] });
         });
         it("object parameter", function () {
             const result = Utility.buildFunctionParameters({ param1: { test1: "value", "@odata.type": "account" } });
-            expect(result).to.equal('(param1=@p1)?@p1={"test1":"value","@odata.type":"account"}');
+            expect(result).to.deep.equal({ key: "(param1=@p1)", queryParams: ['@p1={"test1":"value","@odata.type":"account"}'] });
         });
         it("Microsoft.Dynamics.CRM namespace parameter", function () {
             const result = Utility.buildFunctionParameters({ param1: "Microsoft.Dynamics.CRM.Enum'Type'", param2: 2, param3: "value2" });
-            expect(result).to.equal("(param1=@p1,param2=@p2,param3=@p3)?@p1=Microsoft.Dynamics.CRM.Enum'Type'&@p2=2&@p3='value2'");
+            expect(result).to.deep.equal({
+                key: "(param1=@p1,param2=@p2,param3=@p3)",
+                queryParams: ["@p1=Microsoft.Dynamics.CRM.Enum'Type'", "@p2=2", "@p3='value2'"],
+            });
         });
         it("Guid parameter", function () {
             const result = Utility.buildFunctionParameters({
@@ -50,9 +53,10 @@ describe("Utility.", function () {
                 param3: "value2",
                 param4: "fb15ee32-524d-41be-b6a0-7d0f28055d52",
             });
-            expect(result).to.equal(
-                "(param1=@p1,param2=@p2,param3=@p3,param4=@p4)?@p1=Microsoft.Dynamics.CRM.Enum'Type'&@p2=2&@p3='value2'&@p4=fb15ee32-524d-41be-b6a0-7d0f28055d52"
-            );
+            expect(result).to.deep.equal({
+                key: "(param1=@p1,param2=@p2,param3=@p3,param4=@p4)",
+                queryParams: ["@p1=Microsoft.Dynamics.CRM.Enum'Type'", "@p2=2", "@p3='value2'", "@p4=fb15ee32-524d-41be-b6a0-7d0f28055d52"],
+            });
         });
     });
 

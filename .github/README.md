@@ -353,7 +353,7 @@ expand | `Expand[]` | `retrieve`, `retrieveMultiple`, `create`, `update`, `upser
 fetchXml | `string` | `fetch`, `fetchAll` | Property that sets FetchXML - a proprietary query language that provides capabilities to perform aggregation.
 fieldName | `string` | `uploadFile`, `downloadFile`, `deleteRequest` | **D365 Web API v9.1+** Use this option to specify the name of the file attribute in Dynamics 365. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/file-attributes)
 fileName | `string` | `uploadFile` | **D365 Web API v9.1+** Specifies the name of the file
-filter | String | `retrieve`, `retrieveMultiple`, `retrieveAll` | Use the $filter system query option to set criteria for which entities will be returned.
+filter | String | `retrieve`, `retrieveMultiple`, `retrieveAll`, `callFunction` | Use the $filter system query option to set criteria for which entities will be returned.
 functionName | `string` | `callFunction` | Name of a D365 Web Api function.
 headers | `Object` | All | `v2.1+` Custom headers to supply with a request. These headers will override configuraiton headers if the identical ones were set. For example: `{ "my-header": "value", "another-header": "another-value" }`.
 ifmatch | `string` | `retrieve`, `update`, `upsert`, `deleteRecord` | Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests. [More Info](https://msdn.microsoft.com/en-us/library/mt607711.aspx)
@@ -377,7 +377,7 @@ partitionId | `string` | `create`, `update`, `upsert`, `delete`, `retrieve`, `re
 queryParams | `string[]` | All | Custom query parameters. Can also be used to set the [parameter aliases](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/query-data-web-api#use-parameter-aliases-with-system-query-options) for "$filter" and "$orderBy". **Important!** These parameters ARE NOT URI encoded!
 returnRepresentation | `boolean` | `create`, `update`, `upsert` | Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
 savedQuery | `string` | `retrieve` | A String representing the GUID value of the saved query.
-select | `string[]` | `retrieve`, `retrieveMultiple`, `retrieveAll`, `update`, `upsert` | An array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
+select | `string[]` | `retrieve`, `retrieveMultiple`, `retrieveAll`, `update`, `upsert`, `callFunction` | An array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
 signal | `AbortSignal` | All | Specifies an `AbortSignal` that can be used to abort a request if required via an `AbortController` object. [More Info](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal)
 timeout | `number` | All | Sets a number of milliseconds before a request times out.
 token | `string` | All | Authorization Token. If set, onTokenRefresh will not be called.
