@@ -1435,7 +1435,7 @@ export interface UnboundFunctionRequest extends BaseRequest {
     /**
      * Name of the function.
      */
-    name: string;
+    name?: string;
     /**
      * Name of the function. 
      * @deprecated Use "name" parameter.

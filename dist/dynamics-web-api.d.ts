@@ -1,4 +1,4 @@
-/*! dynamics-web-api v2.1.3 (c) 2024 Aleksandr Rogov */
+/*! dynamics-web-api v2.1.4 (c) 2024 Aleksandr Rogov */
 /// <reference types="node" />
 /**
  * Microsoft Dynamics CRM Web API helper library written in JavaScript.
@@ -614,7 +614,7 @@ export interface UnboundFunctionRequest extends BaseRequest {
     /**
      * Name of the function.
      */
-    name: string;
+    name?: string;
     /**
      * Name of the function.
      * @deprecated Use "name" parameter.
