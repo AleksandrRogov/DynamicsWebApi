@@ -604,16 +604,19 @@ export class DynamicsWebApi {
     callFunction: CallFunction = async <T = any>(request: string | BoundFunctionRequest | UnboundFunctionRequest): Promise<T> => {
         ErrorHelper.parameterCheck(request, `DynamicsWebApi.callFunction`, "request");
 
-        const isObject = Utility.isObject(request);
-        const parameterName = isObject ? "request.functionName" : "name";
-        const internalRequest: Core.InternalRequest = isObject ? Utility.copyObject(request) : { functionName: request as string };
+        const getFunctionName = (request: BoundFunctionRequest | UnboundFunctionRequest) => request.name || request.functionName;
 
-        ErrorHelper.stringParameterCheck(internalRequest.functionName, `DynamicsWebApi.callFunction`, parameterName);
+        const isObject = typeof request !== "string";
+        const functionName = isObject ? getFunctionName(request) : request;
+        const parameterName = isObject ? "request.name" : "name";
+        const internalRequest: Core.InternalRequest = isObject ? Utility.copyObject(request, ["name"]) : { functionName: functionName };
+
+        ErrorHelper.stringParameterCheck(functionName, `DynamicsWebApi.callFunction`, parameterName);
 
         const functionParameters = Utility.buildFunctionParameters(internalRequest.parameters);
 
         internalRequest.method = "GET";
-        internalRequest._additionalUrl = internalRequest.functionName + functionParameters.key;
+        internalRequest._additionalUrl = functionName + functionParameters.key;
         internalRequest.queryParams = functionParameters.queryParams;
         internalRequest._isUnboundRequest = !internalRequest.collection;
         internalRequest.functionName = "callFunction";
@@ -1429,8 +1432,15 @@ export interface DisassociateSingleValuedRequest extends Request {
 }
 
 export interface UnboundFunctionRequest extends BaseRequest {
-    /**Name of the function. */
-    functionName: string;
+    /**
+     * Name of the function.
+     */
+    name: string;
+    /**
+     * Name of the function. 
+     * @deprecated Use "name" parameter.
+    */
+    functionName?: string;
     /**Function's input parameters. Example: { param1: "test", param2: 3 }. */
     parameters?: any;
     /**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */

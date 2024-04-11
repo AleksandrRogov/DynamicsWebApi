@@ -1,4 +1,4 @@
-/*! dynamics-web-api v2.1.2 (c) 2023 Aleksandr Rogov */
+/*! dynamics-web-api v2.1.3 (c) 2024 Aleksandr Rogov */
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -87,30 +87,29 @@ var init_Utility = __esm({
       static buildFunctionParameters(parameters) {
         if (parameters) {
           const parameterNames = Object.keys(parameters);
-          let functionParameters = "";
-          let urlQuery = "";
-          for (var i = 1; i <= parameterNames.length; i++) {
+          const functionParams = [];
+          const urlQuery = [];
+          for (let i = 1; i <= parameterNames.length; i++) {
             const parameterName = parameterNames[i - 1];
             let value = parameters[parameterName];
             if (value == null)
               continue;
             if (typeof value === "string" && !value.startsWith("Microsoft.Dynamics.CRM") && !isUuid(value)) {
-              value = "'" + value + "'";
+              value = `'${value}'`;
             } else if (typeof value === "object") {
               value = JSON.stringify(value);
             }
-            if (i > 1) {
-              functionParameters += ",";
-              urlQuery += "&";
-            }
-            functionParameters += parameterName + "=@p" + i;
-            urlQuery += "@p" + i + "=" + (extractUuid(value) || value);
+            functionParams.push(`${parameterName}=@p${i}`);
+            urlQuery.push(`@p${i}=${extractUuid(value) || value}`);
           }
-          if (urlQuery)
-            urlQuery = "?" + urlQuery;
-          return "(" + functionParameters + ")" + urlQuery;
+          return {
+            key: `(${functionParams.join(",")})`,
+            queryParams: urlQuery
+          };
         } else {
-          return "()";
+          return {
+            key: "()"
+          };
         }
       }
       /**
@@ -942,21 +941,21 @@ var _RequestUtility = class _RequestUtility {
     request.path = request.path || "";
     request.functionName = request.functionName || "";
     if (!request.url) {
-      if (!request._isUnboundRequest && !request.collection) {
+      if (!request._isUnboundRequest && !request.contentId && !request.collection) {
         ErrorHelper.parameterCheck(request.collection, `DynamicsWebApi.${request.functionName}`, "request.collection");
       }
       if (request.collection != null) {
         ErrorHelper.stringParameterCheck(request.collection, `DynamicsWebApi.${request.functionName}`, "request.collection");
         request.path = request.collection;
-        if (request.contentId) {
-          ErrorHelper.stringParameterCheck(request.contentId, `DynamicsWebApi.${request.functionName}`, "request.contentId");
-          if (request.contentId.startsWith("$")) {
-            request.path = `${request.contentId}/${request.path}`;
-          }
-        }
         if (request.key) {
           request.key = ErrorHelper.keyParameterCheck(request.key, `DynamicsWebApi.${request.functionName}`, "request.key");
           request.path += `(${request.key})`;
+        }
+      }
+      if (request.contentId) {
+        ErrorHelper.stringParameterCheck(request.contentId, `DynamicsWebApi.${request.functionName}`, "request.contentId");
+        if (request.contentId.startsWith("$")) {
+          request.path = request.path ? `${request.contentId}/${request.path}` : request.contentId;
         }
       }
       if (request._additionalUrl) {
@@ -2052,12 +2051,16 @@ var DynamicsWebApi = class _DynamicsWebApi {
      */
     this.callFunction = async (request) => {
       ErrorHelper.parameterCheck(request, `DynamicsWebApi.callFunction`, "request");
-      const isObject = Utility.isObject(request);
-      const parameterName = isObject ? "request.functionName" : "name";
-      const internalRequest = isObject ? Utility.copyObject(request) : { functionName: request };
-      ErrorHelper.stringParameterCheck(internalRequest.functionName, `DynamicsWebApi.callFunction`, parameterName);
+      const getFunctionName = (request2) => request2.name || request2.functionName;
+      const isObject = typeof request !== "string";
+      const functionName = isObject ? getFunctionName(request) : request;
+      const parameterName = isObject ? "request.name" : "name";
+      const internalRequest = isObject ? Utility.copyObject(request, ["name"]) : { functionName };
+      ErrorHelper.stringParameterCheck(functionName, `DynamicsWebApi.callFunction`, parameterName);
+      const functionParameters = Utility.buildFunctionParameters(internalRequest.parameters);
       internalRequest.method = "GET";
-      internalRequest._additionalUrl = internalRequest.functionName + Utility.buildFunctionParameters(internalRequest.parameters);
+      internalRequest._additionalUrl = functionName + functionParameters.key;
+      internalRequest.queryParams = functionParameters.queryParams;
       internalRequest._isUnboundRequest = !internalRequest.collection;
       internalRequest.functionName = "callFunction";
       const response = await this._makeRequest(internalRequest);

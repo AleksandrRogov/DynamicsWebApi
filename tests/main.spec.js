@@ -1624,7 +1624,7 @@ describe("dynamicsWebApi.callFunction -", function () {
 
         it("(no parameters) returns a correct response", function (done) {
             dynamicsWebApiTest
-                .callFunction({ functionName: "FUN" })
+                .callFunction({ name: "FUN" })
                 .then(function (object) {
                     expect(object).to.deep.equal(mocks.data.testEntity);
                     done();
@@ -1636,7 +1636,7 @@ describe("dynamicsWebApi.callFunction -", function () {
 
         it("(with parameters) returns a correct response", function (done) {
             dynamicsWebApiTest
-                .callFunction({ functionName: "FUN", parameters: { param1: "value1", param2: 2 } })
+                .callFunction({ name: "FUN", parameters: { param1: "value1", param2: 2 } })
                 .then(function (object) {
                     expect(object).to.deep.equal(mocks.data.testEntity);
                     done();
@@ -1700,7 +1700,7 @@ describe("dynamicsWebApi.callFunction -", function () {
 
         it("(no parameters) returns a correct response", function (done) {
             dynamicsWebApiTest
-                .callFunction({ functionName: "FUN", impersonate: mocks.data.testEntityId })
+                .callFunction({ name: "FUN", impersonate: mocks.data.testEntityId })
                 .then(function (object) {
                     expect(object).to.deep.equal(mocks.data.testEntity);
                     done();
@@ -1712,7 +1712,7 @@ describe("dynamicsWebApi.callFunction -", function () {
 
         it("(with parameters) returns a correct response", function (done) {
             dynamicsWebApiTest
-                .callFunction({ functionName: "FUN", parameters: { param1: "value1", param2: 2 }, impersonate: mocks.data.testEntityId })
+                .callFunction({ name: "FUN", parameters: { param1: "value1", param2: 2 }, impersonate: mocks.data.testEntityId })
                 .then(function (object) {
                     expect(object).to.deep.equal(mocks.data.testEntity);
                     done();
@@ -1745,7 +1745,7 @@ describe("dynamicsWebApi.callFunction -", function () {
 
         it("(no parameters) returns a correct response", function (done) {
             dynamicsWebApiTest
-                .callFunction({ key: mocks.data.testEntityId, collection: "tests", functionName: "FUN" })
+                .callFunction({ key: mocks.data.testEntityId, collection: "tests", name: "FUN" })
                 .then(function (object) {
                     expect(object).to.deep.equal(mocks.data.testEntity);
                     done();
@@ -1760,7 +1760,7 @@ describe("dynamicsWebApi.callFunction -", function () {
                 .callFunction({
                     key: mocks.data.testEntityId,
                     collection: "tests",
-                    functionName: "FUN",
+                    name: "FUN",
                     parameters: { param1: "value1", param2: 2 },
                 })
                 .then(function (object) {
@@ -1797,7 +1797,7 @@ describe("dynamicsWebApi.callFunction -", function () {
 
         it("(no parameters) returns a correct response", function (done) {
             dynamicsWebApiTest
-                .callFunction({ key: mocks.data.testEntityId, collection: "tests", functionName: "FUN", impersonate: mocks.data.testEntityId })
+                .callFunction({ key: mocks.data.testEntityId, collection: "tests", name: "FUN", impersonate: mocks.data.testEntityId })
                 .then(function (object) {
                     expect(object).to.deep.equal(mocks.data.testEntity);
                     done();
@@ -1812,7 +1812,7 @@ describe("dynamicsWebApi.callFunction -", function () {
                 .callFunction({
                     key: mocks.data.testEntityId,
                     collection: "tests",
-                    functionName: "FUN",
+                    name: "FUN",
                     parameters: { param1: "value1", param2: 2 },
                     impersonate: mocks.data.testEntityId,
                 })

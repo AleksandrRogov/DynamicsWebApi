@@ -1,4 +1,4 @@
-/*! dynamics-web-api v2.1.2 (c) 2023 Aleksandr Rogov */
+/*! dynamics-web-api v2.1.3 (c) 2024 Aleksandr Rogov */
 /// <reference types="node" />
 /**
  * Microsoft Dynamics CRM Web API helper library written in JavaScript.
@@ -408,7 +408,7 @@ export interface BatchRequest extends BaseRequest {
 }
 export interface Request extends BaseRequest {
     /**A name of the Entity Collection or Entity Logical name. */
-    collection: string;
+    collection?: string;
 }
 export interface CRUDRequest extends Request {
     /**A String representing collection record's Primary Key (GUID) or Alternate Key(s). */
@@ -419,6 +419,8 @@ export interface CountRequest extends Request {
     filter?: string;
 }
 export interface CountAllRequest extends CountRequest {
+    /**A name of the Entity Collection or Entity Logical name. */
+    collection: string;
     /**An Array (of strings) representing the $select OData System Query Option to control which attributes will be returned. */
     select?: string[];
 }
@@ -523,6 +525,8 @@ export interface DeleteRequest extends CRUDRequest {
     fieldName?: string;
 }
 export interface RetrieveRequest extends CRUDRequest {
+    /**A name of the Entity Collection or Entity Logical name. */
+    collection: string;
     /**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
     expand?: Expand[];
     /**Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests.*/
@@ -547,6 +551,8 @@ export interface RetrieveRequest extends CRUDRequest {
     partitionId?: string;
 }
 export interface RetrieveMultipleRequest extends Request {
+    /**A name of the Entity Collection or Entity Logical name. */
+    collection: string;
     /**Use the $apply to aggregate and group your data dynamically */
     apply?: string;
     /**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
@@ -605,10 +611,21 @@ export interface DisassociateSingleValuedRequest extends Request {
     navigationProperty: string;
 }
 export interface UnboundFunctionRequest extends BaseRequest {
-    /**Name of the function. */
-    functionName: string;
+    /**
+     * Name of the function.
+     */
+    name: string;
+    /**
+     * Name of the function.
+     * @deprecated Use "name" parameter.
+    */
+    functionName?: string;
     /**Function's input parameters. Example: { param1: "test", param2: 3 }. */
     parameters?: any;
+    /**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
+    select?: string[];
+    /**Use the $filter system query option to set criteria for which entities will be returned. */
+    filter?: string;
 }
 export interface BoundFunctionRequest extends UnboundFunctionRequest, Request {
     /**A String representing the GUID value for the record. */

@@ -618,7 +618,76 @@ describe("dynamicsWebApi.callFunction -", () => {
         it("(composite, with parameters) returns a correct response", async () => {
             try {
                 const object = await dynamicsWebApiTest.callFunction({
+                    name: "FUN",
+                    parameters: { param1: "value1", param2: 2 },
+                    select: ["field1", "field2"],
+                    filter: "field1 eq 1"
+                });
+
+                expect(object).to.deep.equal(mocks.data.testEntity);
+            } catch (error) {
+                throw error;
+            }
+        });
+
+        it("all requests have been made", function () {
+            expect(scope.isDone()).to.be.true;
+        });
+    });
+
+    describe("unbound - functionName still works", function () {
+        let scope: nock.Scope;
+        before(function () {
+            const response = mocks.responses.response200;
+            scope = nock(mocks.webApiUrl)
+                .get("/FUN(param1=@p1,param2=@p2)?$select=field1,field2&$filter=field1 eq 1&@p1=%27value1%27&@p2=2")
+                .reply(response.status, response.responseText, response.responseHeaders);
+        });
+
+        after(function () {
+            nock.cleanAll();
+        });
+
+        it("(composite, with parameters) returns a correct response", async () => {
+            try {
+                const object = await dynamicsWebApiTest.callFunction({
+                    name: "",
                     functionName: "FUN",
+                    parameters: { param1: "value1", param2: 2 },
+                    select: ["field1", "field2"],
+                    filter: "field1 eq 1"
+                });
+
+                expect(object).to.deep.equal(mocks.data.testEntity);
+            } catch (error) {
+                throw error;
+            }
+        });
+
+        it("all requests have been made", function () {
+            expect(scope.isDone()).to.be.true;
+        });
+    });
+
+    describe("bound", function () {
+        let scope: nock.Scope;
+        before(function () {
+            const response = mocks.responses.response200;
+            scope = nock(mocks.webApiUrl)
+                .get(mocks.responses.testEntityUrl + "/FUN(param1=@p1,param2=@p2)?$select=field1,field2&$filter=field1%20eq%201&@p1=%27value1%27&@p2=2")
+                .reply(response.status, response.responseText, response.responseHeaders);
+        });
+
+        after(function () {
+            nock.cleanAll();
+        });
+
+        it("(composite, with parameters) returns a correct response", async () => {
+            try {
+                const object = await dynamicsWebApiTest.callFunction({
+                    name: "FUN",
+                    key: mocks.data.testEntityId,
+                    collection: "tests",
                     parameters: { param1: "value1", param2: 2 },
                     select: ["field1", "field2"],
                     filter: "field1 eq 1"
