@@ -16,6 +16,8 @@ If you want to upgrade from v1 - v2 breaking changes are [here](/.github/BREAKIN
 
 Please check [DynamicsWebApi Wiki](../../../wiki/) where you will find documentation to DynamicsWebApi API and more.
 
+Changelog can be found [here](/.github/CHANGELOG.md).
+
 Browser-compiled script and type definitions can be found in a v2 [dist](https://github.com/AleksandrRogov/DynamicsWebApi/tree/v2/dist) folder.
 
 ## Main Features
