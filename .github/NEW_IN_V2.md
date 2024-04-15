@@ -17,6 +17,9 @@ Control what requests should be included or excluded from the changesets by sett
 ### CSDL $metadata document
 Retrieve the org's CSDL $metadata document with a single call of `retrieveCsdlMetadata` function. The library returns the raw text and does not parse or process it in any way.
 
+### `v2.1+` Microsoft Power Pages Support
+DynamicsWebApi now can be used in Micorosoft Power Pages website.
+
 ### NPM Package contents
 NPM package now includes a pre-bundled code of DynamicsWebApi to simplify a compilation process of the projects that depend on it. There are 4 separate bundles: 
 - `dist/dynamics-web-api.js` - a Browser ready version (to use as a Dynamics 365 web resource) + it's minified version `.min.js` [IIFE].

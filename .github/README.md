@@ -356,7 +356,7 @@ fetchXml | `string` | `fetch`, `fetchAll` | Property that sets FetchXML - a prop
 fieldName | `string` | `uploadFile`, `downloadFile`, `deleteRequest` | **D365 Web API v9.1+** Use this option to specify the name of the file attribute in Dynamics 365. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/file-attributes)
 fileName | `string` | `uploadFile` | **D365 Web API v9.1+** Specifies the name of the file
 filter | String | `retrieve`, `retrieveMultiple`, `retrieveAll`, `callFunction` | Use the $filter system query option to set criteria for which entities will be returned.
-functionName | `string` | `callFunction` | Name of a D365 Web Api function.
+functionName | `string` | `callFunction` | **Deprecated from v2.1.3** Use `name` instead. Name of a D365 Web Api function.
 headers | `Object` | All | `v2.1+` Custom headers to supply with a request. These headers will override configuraiton headers if the identical ones were set. For example: `{ "my-header": "value", "another-header": "another-value" }`.
 ifmatch | `string` | `retrieve`, `update`, `upsert`, `deleteRecord` | Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests. [More Info](https://msdn.microsoft.com/en-us/library/mt607711.aspx)
 ifnonematch | `string` | `retrieve`, `upsert` | Sets If-None-Match header value that enables to use conditional retrieval in applicable requests. [More Info](https://msdn.microsoft.com/en-us/library/mt607711.aspx).
@@ -368,6 +368,7 @@ key | `string` | `retrieve`, `create`, `update`, `upsert`, `deleteRecord`, `uplo
 maxPageSize | `number` | `retrieveMultiple`, `retrieveAll` | Sets the odata.maxpagesize preference value to request the number of entities returned in the response.
 mergeLabels | `boolean` | `update` | **Metadata Update only!** Sets `MSCRM.MergeLabels` header that controls whether to overwrite the existing labels or merge your new label with any existing language labels. Default value is `false`. [More Info](https://msdn.microsoft.com/en-us/library/mt593078.aspx#bkmk_updateEntities)
 metadataAttributeType | `string` | `retrieve`, `update` | Casts the Attributes to a specific type. (Used in requests to Attribute Metadata) [More Info](https://msdn.microsoft.com/en-us/library/mt607522.aspx#Anchor_4)
+name | `string` | `callFunction` | `v2.1.3+` The name of a D365 Web API function (replaces `functionName`).
 navigationProperty | `string` | `retrieve`, `create`, `update` | A string representing the name of a single-valued navigation property. Useful when needed to retrieve information about a related record in a single request.
 navigationPropertyKey | `string` | `retrieve`, `create`, `update` | A string representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata)
 noCache | `boolean` | All | If set to `true`, DynamicsWebApi adds a request header `Cache-Control: no-cache`. Default value is `false`.
@@ -909,7 +910,7 @@ const teamId = "00000000-0000-0000-0000-000000000001";
 const request: DynamicsWebApi.BoundFunctionRequest = {
     id: teamId,
     collection: "teams",
-    functionName: "Microsoft.Dynamics.CRM.RetrieveTeamPrivileges"
+    name: "Microsoft.Dynamics.CRM.RetrieveTeamPrivileges"
 }
 
 const result = await dynamicsWebApi.callFunction<RetrieveTeamPrivilegesResponse>(request);
@@ -931,7 +932,7 @@ const parameters = {
 
 const request: DynamicsWebApi.UnboundFunctionRequest = {
     parameters: parameters,
-    functionName: "GetTimeZoneCodeByLocalizedName"
+    name: "GetTimeZoneCodeByLocalizedName"
 }
 
 const result = await dynamicsWebApi.callFunction<GetTimeZoneCodeByLocalizedNameResponse>(request);
@@ -2406,7 +2407,7 @@ If you are using Node.Js with TypeScript, declarations will be fetched with an N
 At the top of a necessary `.ts` file add the following:
 
 ```ts
-import { DynamicsWebApi, Config } from "dynamics-web-api";
+import { DynamicsWebApi, type Config } from "dynamics-web-api";
 //for CommonJS:
 //const DynamicsWebApi = require("dynamics-web-api");
 ```
