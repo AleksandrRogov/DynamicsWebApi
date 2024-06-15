@@ -2,7 +2,7 @@
 import { Utility } from "../../utils/Utility";
 import { ErrorHelper, DynamicsWebApiError } from "../../helpers/ErrorHelper";
 import { dateReviver } from "./dateReviver";
-import { Core } from "../../types";
+import type * as Core from "../../types";
 import { extractUuidFromUrl } from "../../helpers/Regex";
 
 function getFormattedKeyValue(keyName: string, value: any): any[] {

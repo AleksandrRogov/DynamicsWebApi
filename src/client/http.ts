@@ -2,7 +2,7 @@
 import * as https from "https";
 import HttpProxyAgent from "http-proxy-agent";
 import HttpsProxyAgent from "https-proxy-agent";
-import { Core } from "../types";
+import type * as Core from "../types";
 import { ErrorHelper } from "./../helpers/ErrorHelper";
 import { parseResponse } from "./helpers/parseResponse";
 
@@ -57,22 +57,22 @@ function _executeRequest(
     errorCallback: (error: Core.WebApiErrorResponse | Core.WebApiErrorResponse[]) => void
 ) {
     const data = options.data;
-    const additionalHeaders = options.additionalHeaders;
+    const headers = options.headers;
     const responseParams = options.responseParams;
     const signal = options.abortSignal;
 
-    const headers: http.OutgoingHttpHeaders = {};
+    const httpHeaders: http.OutgoingHttpHeaders = {};
 
     if (data) {
-        headers["Content-Type"] = additionalHeaders["Content-Type"];
-        headers["Content-Length"] = data.length;
+        httpHeaders["Content-Type"] = headers["Content-Type"];
+        httpHeaders["Content-Length"] = data.length;
 
-        delete additionalHeaders["Content-Type"];
+        delete headers["Content-Type"];
     }
 
     //set additional headers
-    for (let key in additionalHeaders) {
-        headers[key] = additionalHeaders[key];
+    for (let key in headers) {
+        httpHeaders[key] = headers[key];
     }
     const parsedUrl = new URL(options.uri);
     const protocol = parsedUrl.protocol?.slice(0, -1) || "https";
@@ -84,7 +84,7 @@ function _executeRequest(
         path: parsedUrl.pathname + parsedUrl.search,
         method: options.method,
         timeout: options.timeout || 0,
-        headers: headers,
+        headers: httpHeaders,
         signal: signal,
     };
 
@@ -99,7 +99,7 @@ function _executeRequest(
 
     if (options.proxy) {
         const hostHeader = new URL(options.proxy.url).host;
-        if (hostHeader) headers.host = hostHeader;
+        if (hostHeader) httpHeaders.host = hostHeader;
     }
 
     const request = protocolInterface.request(internalOptions, function (res) {

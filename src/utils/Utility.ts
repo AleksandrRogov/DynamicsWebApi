@@ -1,4 +1,4 @@
-﻿import { Core } from "../types";
+﻿import type * as Core from "../types";
 import { generateRandomBytes } from "../helpers/Crypto";
 import { isUuid, extractUuid } from "../helpers/Regex";
 

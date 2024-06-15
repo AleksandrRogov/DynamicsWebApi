@@ -2,7 +2,7 @@
 import { Utility } from "./utils/Utility";
 import { ErrorHelper } from "./helpers/ErrorHelper";
 import { RequestClient } from "./client/RequestClient";
-import type { Core } from "./types";
+import type * as Core from "./types";
 
 /**
  * Microsoft Dynamics CRM Web API helper library written in JavaScript.
@@ -616,7 +616,7 @@ export class DynamicsWebApi {
         const functionParameters = Utility.buildFunctionParameters(internalRequest.parameters);
 
         internalRequest.method = "GET";
-        internalRequest._additionalUrl = functionName + functionParameters.key;
+        internalRequest.addPath = functionName + functionParameters.key;
         internalRequest.queryParams = functionParameters.queryParams;
         internalRequest._isUnboundRequest = !internalRequest.collection;
         internalRequest.functionName = "callFunction";
@@ -641,7 +641,7 @@ export class DynamicsWebApi {
         internalRequest.method = "POST";
         internalRequest.functionName = "callAction";
 
-        internalRequest._additionalUrl = request.actionName;
+        internalRequest.addPath = request.actionName;
         internalRequest._isUnboundRequest = !internalRequest.collection;
         internalRequest.data = request.action;
 
@@ -1733,10 +1733,7 @@ export interface Config {
 }
 
 /**Header collection type */
-export type HeaderCollection = {
-    /**key-value */
-    [key: string]: string;
-};
+export type HeaderCollection = Record<string, string>;
 
 export interface ProxyConfig {
     /**Proxy server url */

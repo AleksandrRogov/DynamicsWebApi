@@ -157,10 +157,15 @@ Once the web file is uploaded, it can be included in a template, a page or a for
 
 With CDN, it is a bit easier: no need to create and upload a web file - just include the script in your template, page or a form:
 ```html
-<script type="text/javascript" src="https://unpkg.com/dynamics-web-api@2.1.0/dist/dynamics-web-api.min.js"></script>
+<script type="text/javascript" src="https://unpkg.com/dynamics-web-api@2.1.4/dist/dynamics-web-api.min.js"></script>
 ```
 
 And you are good to go! DynamicsWebApi will automatically detect if the library is running on Power Pages and will supply an anti-forgery token with each request.
+
+#### Limitations
+Currently, there are some ootb limitations in the Power Pages:
+1. Batch operations are not supported. Hopefully, Microsoft will add it in the future.
+2. Long requests (with URL more than 2000 chars) are not supported. This is because of the 1st limitation. DynamicsWebApi will try to convert it to a Batch operation which will ultimately fail because they aren't supported.
 
 ### Node.js
 To use DynamicsWebApi in Node.js install the `dynamics-web-api` package from NPM:
@@ -173,7 +178,7 @@ Then include it in your script:
 
 ```ts
 //CommonJS
-const DynamicsWebApi = require("dynamics-web-api");
+const DynamicsWebApi = require("dynamics-web-api").DynamicsWebApi;
 
 //ESM
 import { DynamicsWebApi } from "dynamics-web-api";
@@ -319,14 +324,14 @@ Both `dataApi` and `searchApi` can be omitted from a configuration. Their defaul
 **dataApi** properties:
 | Property Name | Type | Description |
 |--------|--------|--------|
-| path | `String` | Optional. A path to API, default: "data". |
-| version | `String` | Optional. API Version, default: "9.2". |
+| path | `string` | Optional. A path to API, default: "data". |
+| version | `string` | Optional. API Version, default: "9.2". |
 
 **searchApi** properties:
 | Property Name | Type | Description |
 |--------|--------|--------|
-| path | `String` | Optional. A path to API, default: "search". |
-| version | `String` | Optional. API Version, default: "1.0". |
+| path | `string` | Optional. A path to API, default: "search". |
+| version | `string` | Optional. API Version, default: "1.0". |
 
 ## Request Examples
 
@@ -2523,6 +2528,7 @@ the config option "formatted" will enable developers to retrieve all information
 - [X] Implement [Dataverse Search API](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/relevance-search). `Added in v.2.0.0`
 - [X] Allow custom headers to be passed to the request. [#151](https://github.com/AleksandrRogov/DynamicsWebApi/issues/151). `Added in v.2.1.0`
 - [X] Support Microsoft Power Pages. `Added in v.2.1.0`
+- [ ] Fully custom request.
 
 Many more features to come!
 

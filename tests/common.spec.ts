@@ -4,9 +4,9 @@ import stubs, * as mocks from "./stubs";
 
 import { RequestClient } from "../src/client/RequestClient";
 import { InternalConfig } from "../src/utils/Config";
-import { Core } from "../src/types";
+import * as Core from "../src/types";
 import * as Regex from "../src/helpers/Regex";
-import { RequestUtility } from "../src/utils/Request";
+import * as RequestUtility from "../src/utils/Request";
 
 describe("Regex.", () => {
     describe("isUuid -", () => {

@@ -1,17 +1,17 @@
+import type * as Core from "../types";
 import { Utility } from "../utils/Utility";
 import { InternalConfig } from "../utils/Config";
-import { RequestUtility } from "../utils/Request";
+import * as RequestUtility from "../utils/Request";
 import { DynamicsWebApiError, ErrorHelper } from "../helpers/ErrorHelper";
-import { Core } from "../types";
 import { executeRequest } from "./helpers/executeRequest";
 import { AccessToken } from "../dynamics-web-api";
 
-const _addResponseParams = (requestId, responseParams) => {
+const _addResponseParams = (requestId: string, responseParams: Record<string, any>) => {
     if (_responseParseParams[requestId]) _responseParseParams[requestId].push(responseParams);
     else _responseParseParams[requestId] = [responseParams];
 };
 
-const _addRequestToBatchCollection = (requestId, request) => {
+const _addRequestToBatchCollection = (requestId: string, request: Core.InternalRequest) => {
     if (_batchRequestCollection[requestId]) _batchRequestCollection[requestId].push(request);
     else _batchRequestCollection[requestId] = [request];
 };
@@ -106,13 +106,13 @@ export class RequestClient {
             method: request.method!,
             uri: url!.toString() + request.path,
             data: processedData,
-            additionalHeaders: request.headers,
-            responseParams: _responseParseParams,
-            isAsync: request.async,
-            timeout: request.timeout || config.timeout,
             proxy: config.proxy,
+            isAsync: request.async,
+            headers: request.headers!,
             requestId: request.requestId!,
             abortSignal: request.signal,
+            responseParams: _responseParseParams,
+            timeout: request.timeout || config.timeout,
         });
     }
 
@@ -133,9 +133,9 @@ export class RequestClient {
         );
 
         const result = await _runRequest(request, config);
-        RequestUtility.entityNames = {};
+        RequestUtility.setEntityNames({});
         for (let i = 0; i < result.data.value.length; i++) {
-            RequestUtility.entityNames[result.data.value[i].LogicalName] = result.data.value[i].EntitySetName;
+            RequestUtility.entityNames![result.data.value[i].LogicalName] = result.data.value[i].EntitySetName;
         }
 
         return RequestUtility.findCollectionName(entityName) || entityName;
@@ -204,12 +204,12 @@ export class RequestClient {
         //no need to make a request to web api if it's a part of batch
         RequestUtility.compose(request, config);
         //add response parameters to parse
-        _addResponseParams(request.requestId, request.responseParameters);
-        _addRequestToBatchCollection(request.requestId, request);
+        _addResponseParams(request.requestId!, request.responseParameters);
+        _addRequestToBatchCollection(request.requestId!, request);
     }
 
     static _clearTestData(): void {
-        RequestUtility.entityNames = null;
+        RequestUtility.setEntityNames(null);
         _responseParseParams = {};
         _batchRequestCollection = {};
     }
