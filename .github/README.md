@@ -165,7 +165,7 @@ And you are good to go! DynamicsWebApi will automatically detect if the library 
 #### Limitations
 Currently, there are some ootb limitations in the Power Pages:
 1. Batch operations are not supported. Hopefully, Microsoft will add it in the future.
-2. Long requests (with URL more than 2000 chars) are not supported. This is because of the 1st limitation. DynamicsWebApi will try to convert it to a Batch operation which will ultimately fail because they aren't supported.
+2. Long requests (with URL more than 2000 chars) are not supported. This is because of the 1st limitation. DynamicsWebApi will try to convert it to a Batch operation which will ultimately fail because it's not supported.
 
 ### Node.js
 To use DynamicsWebApi in Node.js install the `dynamics-web-api` package from NPM:
@@ -184,7 +184,7 @@ const DynamicsWebApi = require("dynamics-web-api").DynamicsWebApi;
 import { DynamicsWebApi } from "dynamics-web-api";
 ```
 
-DynamicsWebApi does not fetch authorization tokens, so you will need to acquire them in your code and pass them back to the library.
+DynamicsWebApi does not fetch authorization tokens, thus you will need to acquire them in your code and pass them back to the library.
 Authorization tokens can be acquired using [Microsoft Authentication Library for Node](https://www.npmjs.com/package/@azure/msal-node) or you can write your own logic to retrieve the tokens.
 
 Here is an example using `@azure/msal-node`:
@@ -293,7 +293,7 @@ timeout | `number` | Sets a number of milliseconds before a request times out.
 useEntityNames | `boolean` | Indicates whether to use entity logical names instead of collection logical names during requests.
 
 **Note!**
-`serverUrl` and `onTokenRefresh` are required when DynamicsWebApi used in a Node.js application.
+`serverUrl` and `onTokenRefresh` are required when DynamicsWebApi is used in a Node.js application.
 
 **Important!** 
 If you are using `DynamicsWebApi` **outside Microsoft Dynamics 365** and set `useEntityNames` to `true` **the first request** to Web Api will fetch `LogicalCollectionName` and `LogicalName` from `EntityMetadata` for all entities. It does not happen when `DynamicsWebApi` is used in Microsoft Dynamics 365 Web Resources (there is no additional request, no impact on perfomance).
@@ -337,9 +337,9 @@ Both `dataApi` and `searchApi` can be omitted from a configuration. Their defaul
 
 Please use [DynamicsWebApi Wiki](../../../wiki/) for an object reference. It is automatically generated and I could not find a better doc generator, pardon me for that. If you know a good ".d.ts -> .md" doc generator - let me know!
 
-The following table describes all __possible__ properties that can be set in `request` object. Some parameters may still be absent in a table, please refer to [DynamicsWebApi Wiki](../../../wiki/).
+The following table describes all __possible__ properties that can be set in a `request` object. Some parameters may still be absent in a table, please refer to [DynamicsWebApi Wiki](../../../wiki/).
 
-__Please note!__ Not all operaions accept all properties and if 
+__Please note!__ Not all operations accept all properties and if 
 by mistake an invalid property has been specified you will receive either an error saying that the request is invalid or the response will not have expected results.
 
 Property Name | Type | Operation(s) Supported | Description
@@ -356,7 +356,7 @@ continueOnError | `boolean` | `executeBatch` | **BATCH REQUESTS ONLY!** Sets Pre
 count | `boolean` | `retrieveMultiple`, `retrieveAll` | Boolean that sets the $count system query option with a value of true to include a count of entities that match the filter criteria up to 5000 (per page). Do not use $top with $count!
 data | `Object` or `ArrayBuffer` / `Buffer` (for node.js) | `create`, `update`, `upsert`, `uploadFile` | A JavaScript object that represents Dynamics 365 entity, action, metadata and etc. 
 duplicateDetection | `boolean` | `create`, `update`, `upsert` | **D365 Web API v9+** Boolean that enables duplicate detection. [More Info](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/webapi/update-delete-entities-using-web-api#check-for-duplicate-records)
-expand | `Expand[]` | `retrieve`, `retrieveMultiple`, `create`, `update`, `upsert` | An array of Expand Objects (described below the table) representing the $expand OData System Query Option value to control which related records are also returned.
+expand | `Expand[]` | `retrieve`, `retrieveMultiple`, `create`, `update`, `upsert` | An array of `Expand` Objects (described below the table) representing the $expand OData System Query Option value to control which related records are also returned.
 fetchXml | `string` | `fetch`, `fetchAll` | Property that sets FetchXML - a proprietary query language that provides capabilities to perform aggregation.
 fieldName | `string` | `uploadFile`, `downloadFile`, `deleteRequest` | **D365 Web API v9.1+** Use this option to specify the name of the file attribute in Dynamics 365. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/file-attributes)
 fileName | `string` | `uploadFile` | **D365 Web API v9.1+** Specifies the name of the file
@@ -393,11 +393,11 @@ top | `number` | `retrieveMultiple`, `retrieveAll` | Limit the number of results
 trackChanges | `boolean` | `retrieveMultiple`, `retrieveAll` | Sets Prefer header with value 'odata.track-changes' to request that a delta link be returned which can subsequently be used to retrieve entity changes. __Important!__ Change Tracking must be enabled for the entity. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/use-change-tracking-synchronize-data-external-systems#enable-change-tracking-for-an-entity)
 userQuery | `string` | `retrieve` | A String representing the GUID value of the user query.
 
-The following table describes Expand Object properties:
+The following table describes `Expand` Object properties:
 
 Property Name | Type | Description
 ------------ | ------------- | -------------
-expand | `Expand[]` | An array of Expand Objects representing the $expand OData System Query Option value to control which related records are also returned.
+expand | `Expand[]` | An array of `Expand` Objects representing the $expand OData System Query Option value to control which related records are also returned.
 filter | `string` | Use the $filter system query option to set criteria for which related entities will be returned.
 orderBy | `string[]` | An Array (of strings) representing the order in which related items are returned using the $orderby system query option. Use the asc or desc suffix to specify ascending or descending order respectively. The default is ascending if the suffix isn't applied.
 property | `string` | A name of a single-valued navigation property which needs to be expanded.
@@ -406,6 +406,8 @@ top | `number` | Limit the number of results returned by using the $top system q
 
 All requests to Web API that have long URLs (more than 2000 characters) are automatically converted to a Batch Request.
 This feature is very convenient when you make a call with big Fetch XMLs. No special parameters needed to do a convertation.
+
+**Heads up!** This feature may cause an issue in Microsoft Power Pages because Batch Requests are not supported there out of the box. Please keep your requests short :)
 
 ### Create a table row
 
@@ -1240,10 +1242,10 @@ The first two requests will be atomic (included in a Change Set) and the last on
 ```ts
 dynamicsWebApi.startBatch();
 //Change Set A starts
-dynamicsWebApi.create({ 
-    data: contact, 
-    collection: "contacts", 
-    contentId: "1", 
+dynamicsWebApi.create({
+    data: contact,
+    collection: "contacts",
+    contentId: "1",
 });
 //Change Set A ends
 dynamicsWebApi.create({
@@ -1252,9 +1254,9 @@ dynamicsWebApi.create({
     inChangeSet: false //<--- do not include in a change set
 });
 //Change Set B starts
-dynamicsWebApi.create({ 
-    data: order, 
-    collection: "salesorders", 
+dynamicsWebApi.create({
+    data: order,
+    collection: "salesorders",
     //"$1" parameter cannot be used here because it is defined in a Change Set A
     //otherwise, you will get an error
 });
@@ -1279,6 +1281,7 @@ You will get an error saying that the operation is incompatible with a 'batch mo
 There are also out of the box Web API limitations for batch operations:
 
 * Batch requests can contain up to 1000 individual requests and cannot contain other batch requests.
+* Not supported in Microsoft Power Pages. (checked June 2024)
 
 You can find an official documentation that covers Web API batch requests here: [Execute batch operations using the Web API](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/webapi/execute-batch-operations-using-web-api).
 
@@ -2446,7 +2449,7 @@ The declaration file is an ESM module, so if you are not using any bundler, you 
 import { DynamicsWebApi } from "./dynamics-web-api"
 //make the DynamicsWebApi class available globally
 export = DynamicsWebApi;
-//wrap all other exports with in namespace
+//wrap all other exports in a namespace
 export as namespace DynamicsWebApi;
 ```
 
@@ -2477,7 +2480,7 @@ const createRequest: Dwa.CreateRequest<Account> = {
 const id = await dynamicsWebApi.create(createRequest) as string;
 ```
 
-**DynamicsWebApi as an external library.** For those who use bundlers, but want to keep DynamicsWebApi as an external library (meaning that you don't want to bundle the library but reference it separately in a script tag somewhere): 1. you will have to make sure that your bundler supports `externals` configuraiton. 2. you will need to set the replacement for the import of `dynamics-web-api` with `_dynamicsWebApiExports`. For example, in webpack's case, you will have something like that:
+**DynamicsWebApi as an external library.** For those who use bundlers, but want to keep DynamicsWebApi as an external library (meaning that you don't want to bundle the library but reference it separately in a script tag somewhere): 1. you will have to make sure that your bundler supports `externals` configuraiton. 2. you will need to set the replacement for the import of `dynamics-web-api` with `_dynamicsWebApiExports`. For example, in webpack's case, you will have something like this:
 ```json
 {
     //...your bundle configuration
@@ -2487,7 +2490,7 @@ const id = await dynamicsWebApi.create(createRequest) as string;
 }
 ```
 
-This will work __only__ if in your scripts you import the library like this: `import { DynamicsWebApi } from "dynamics-web-api"`. In case if you don't install the package with npm but just keep the declaration files somewhere and import it with relative paths, you can set the [paths](https://www.typescriptlang.org/tsconfig#paths) option in your `tsconfig.json` which will create a consistent alias for all your relative import paths.
+This will work __only__ if you import the library like this: `import { DynamicsWebApi } from "dynamics-web-api"`. If you don't install the package with npm but just keep the declaration files somewhere and import it with relative paths, you can set the [paths](https://www.typescriptlang.org/tsconfig#paths) option in your `tsconfig.json` which will create a consistent alias for all your relative import paths.
 
 ```json
 {
@@ -2528,7 +2531,7 @@ the config option "formatted" will enable developers to retrieve all information
 - [X] Implement [Dataverse Search API](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/relevance-search). `Added in v.2.0.0`
 - [X] Allow custom headers to be passed to the request. [#151](https://github.com/AleksandrRogov/DynamicsWebApi/issues/151). `Added in v.2.1.0`
 - [X] Support Microsoft Power Pages. `Added in v.2.1.0`
-- [ ] Fully custom request.
+- [ ] Custom requests.
 
 Many more features to come!
 

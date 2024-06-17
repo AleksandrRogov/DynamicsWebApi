@@ -2,7 +2,7 @@
 import { Utility } from "./utils/Utility";
 import { ErrorHelper } from "./helpers/ErrorHelper";
 import { RequestClient } from "./client/RequestClient";
-import type * as Core from "./types";
+import type { InternalRequest, WebApiResponse } from "./types";
 
 /**
  * Microsoft Dynamics CRM Web API helper library written in JavaScript.
@@ -30,7 +30,7 @@ export class DynamicsWebApi {
 	 */
     setConfig = (config: Config) => ConfigurationUtility.merge(this._config, config);
 
-    private _makeRequest = async (request: Core.InternalRequest): Promise<Core.WebApiResponse | undefined> => {
+    private _makeRequest = async (request: InternalRequest): Promise<WebApiResponse | undefined> => {
         request.isBatch = this._isBatch;
         if (this._batchRequestId) request.requestId = this._batchRequestId;
         return RequestClient.makeRequest(request, this._config);
@@ -61,12 +61,12 @@ export class DynamicsWebApi {
     create = async <TData = any>(request: CreateRequest<TData>): Promise<TData> => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.create", "request");
 
-        let internalRequest: Core.InternalRequest;
+        let internalRequest: InternalRequest;
 
-        if (!(<Core.InternalRequest>request).functionName) {
+        if (!(<InternalRequest>request).functionName) {
             internalRequest = Utility.copyRequest(request);
             internalRequest.functionName = "create";
-        } else internalRequest = <Core.InternalRequest>request;
+        } else internalRequest = <InternalRequest>request;
 
         internalRequest.method = "POST";
 
@@ -94,9 +94,9 @@ export class DynamicsWebApi {
     retrieve = async <T = any>(request: RetrieveRequest): Promise<T> => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieve", "request");
 
-        let internalRequest: Core.InternalRequest;
+        let internalRequest: InternalRequest;
 
-        if (!(<Core.InternalRequest>request).functionName) {
+        if (!(<InternalRequest>request).functionName) {
             internalRequest = Utility.copyRequest(request);
             internalRequest.functionName = "retrieve";
         } else internalRequest = request;
@@ -119,9 +119,9 @@ export class DynamicsWebApi {
     update = async <TData = any>(request: UpdateRequest<TData>): Promise<TData> => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.update", "request");
 
-        let internalRequest: Core.InternalRequest;
+        let internalRequest: InternalRequest;
 
-        if (!(<Core.InternalRequest>request).functionName) {
+        if (!(<InternalRequest>request).functionName) {
             internalRequest = Utility.copyRequest(request);
             internalRequest.functionName = "update";
         } else internalRequest = request;
@@ -188,9 +188,9 @@ export class DynamicsWebApi {
     deleteRecord = async (request: DeleteRequest): Promise<any> => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.deleteRecord", "request");
 
-        let internalRequest: Core.InternalRequest;
+        let internalRequest: InternalRequest;
 
-        if (!(<Core.InternalRequest>request).functionName) {
+        if (!(<InternalRequest>request).functionName) {
             internalRequest = Utility.copyRequest(request);
             internalRequest.functionName = "deleteRecord";
         } else internalRequest = request;
@@ -246,7 +246,7 @@ export class DynamicsWebApi {
         }
     };
 
-    private _uploadFileChunk = async (request: Core.InternalRequest, fileBytes: Uint8Array | Buffer, chunkSize: number, offset: number = 0): Promise<void> => {
+    private _uploadFileChunk = async (request: InternalRequest, fileBytes: Uint8Array | Buffer, chunkSize: number, offset: number = 0): Promise<void> => {
         // offset = offset || 0;
         Utility.setFileChunk(request, fileBytes, chunkSize, offset);
 
@@ -282,7 +282,7 @@ export class DynamicsWebApi {
     };
 
     private _downloadFileChunk = async (
-        request: Core.InternalRequest,
+        request: InternalRequest,
         bytesDownloaded: number = 0,
         // fileSize: number = 0,
         data: string = ""
@@ -338,9 +338,9 @@ export class DynamicsWebApi {
     retrieveMultiple = async <T = any>(request: RetrieveMultipleRequest, nextPageLink?: string): Promise<RetrieveMultipleResponse<T>> => {
         ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieveMultiple", "request");
 
-        let internalRequest: Core.InternalRequest;
+        let internalRequest: InternalRequest;
 
-        if (!(<Core.InternalRequest>request).functionName) {
+        if (!(<InternalRequest>request).functionName) {
             internalRequest = Utility.copyRequest(request);
             internalRequest.functionName = "retrieveMultiple";
         } else internalRequest = request;
@@ -609,7 +609,7 @@ export class DynamicsWebApi {
         const isObject = typeof request !== "string";
         const functionName = isObject ? getFunctionName(request) : request;
         const parameterName = isObject ? "request.name" : "name";
-        const internalRequest: Core.InternalRequest = isObject ? Utility.copyObject(request, ["name"]) : { functionName: functionName };
+        const internalRequest: InternalRequest = isObject ? Utility.copyObject(request, ["name"]) : { functionName: functionName };
 
         ErrorHelper.stringParameterCheck(functionName, `DynamicsWebApi.callFunction`, parameterName);
 
@@ -709,7 +709,7 @@ export class DynamicsWebApi {
      * @returns {Promise} D365 Web Api Response
      */
     retrieveEntities = <T = any>(request?: RetrieveEntitiesRequest): Promise<RetrieveMultipleResponse<T>> => {
-        const internalRequest: Core.InternalRequest = !request ? {} : Utility.copyRequest(request);
+        const internalRequest: InternalRequest = !request ? {} : Utility.copyRequest(request);
 
         internalRequest.collection = "EntityDefinitions";
         internalRequest.functionName = "retrieveEntities";
@@ -881,7 +881,7 @@ export class DynamicsWebApi {
      * @returns {Promise} D365 Web Api Response
      */
     retrieveRelationships = <T = any>(request?: RetrieveRelationshipsRequest): Promise<RetrieveMultipleResponse<T>> => {
-        const internalRequest: Core.InternalRequest = !request ? {} : Utility.copyRequest(request);
+        const internalRequest: InternalRequest = !request ? {} : Utility.copyRequest(request);
 
         internalRequest.collection = "RelationshipDefinitions";
         internalRequest.functionName = "retrieveRelationships";
@@ -1003,7 +1003,7 @@ export class DynamicsWebApi {
      * @returns {Promise} D365 Web Api Response
      */
     retrieveGlobalOptionSets = <T = any>(request?: RetrieveGlobalOptionSetsRequest): Promise<RetrieveMultipleResponse<T>> => {
-        const internalRequest: Core.InternalRequest = !request ? {} : Utility.copyRequest(request);
+        const internalRequest: InternalRequest = !request ? {} : Utility.copyRequest(request);
 
         internalRequest.collection = "GlobalOptionSetDefinitions";
         internalRequest.functionName = "retrieveGlobalOptionSets";
@@ -1022,7 +1022,7 @@ export class DynamicsWebApi {
      * @returns {Promise<string>} A raw CSDL $metadata document.
      */
     retrieveCsdlMetadata = async (request?: CsdlMetadataRequest): Promise<string> => {
-        const internalRequest: Core.InternalRequest = !request ? {} : Utility.copyRequest(request);
+        const internalRequest: InternalRequest = !request ? {} : Utility.copyRequest(request);
 
         internalRequest.collection = "$metadata";
         internalRequest.functionName = "retrieveCsdlMetadata";
@@ -1046,7 +1046,7 @@ export class DynamicsWebApi {
 
         const isObject = Utility.isObject(request);
         const parameterName = isObject ? "request.query.search" : "term";
-        const internalRequest: Core.InternalRequest = isObject ? Utility.copyObject(request) : { query: { search: request as string } };
+        const internalRequest: InternalRequest = isObject ? Utility.copyObject(request) : { query: { search: request as string } };
 
         ErrorHelper.parameterCheck(internalRequest.query, "DynamicsWebApi.search", "request.query");
         ErrorHelper.stringParameterCheck(internalRequest.query.search, "DynamicsWebApi.search", parameterName);
@@ -1074,7 +1074,7 @@ export class DynamicsWebApi {
 
         const isObject = Utility.isObject(request);
         const parameterName = isObject ? "request.query.search" : "term";
-        const internalRequest: Core.InternalRequest = isObject ? Utility.copyObject(request) : { query: { search: request as string } };
+        const internalRequest: InternalRequest = isObject ? Utility.copyObject(request) : { query: { search: request as string } };
 
         ErrorHelper.parameterCheck(internalRequest.query, "DynamicsWebApi.suggest", "request.query");
         ErrorHelper.stringParameterCheck(internalRequest.query.search, "DynamicsWebApi.suggest", parameterName);
@@ -1101,7 +1101,7 @@ export class DynamicsWebApi {
 
         const isObject = Utility.isObject(request);
         const parameterName = isObject ? "request.query.search" : "term";
-        const internalRequest: Core.InternalRequest = isObject ? Utility.copyObject(request) : { query: { search: request as string } };
+        const internalRequest: InternalRequest = isObject ? Utility.copyObject(request) : { query: { search: request as string } };
 
         if (isObject) ErrorHelper.parameterCheck(internalRequest.query, "DynamicsWebApi.autocomplete", "request.query");
         ErrorHelper.stringParameterCheck(internalRequest.query.search, `DynamicsWebApi.autocomplete`, parameterName);
@@ -1134,7 +1134,7 @@ export class DynamicsWebApi {
     executeBatch = async (request?: BatchRequest): Promise<any[]> => {
         ErrorHelper.throwBatchNotStarted(this._isBatch);
 
-        const internalRequest: Core.InternalRequest = !request ? {} : Utility.copyRequest(request);
+        const internalRequest: InternalRequest = !request ? {} : Utility.copyRequest(request);
 
         internalRequest.collection = "$batch";
         internalRequest.method = "POST";
