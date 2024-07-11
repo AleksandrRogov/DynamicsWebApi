@@ -1,3 +1,12 @@
+<a name="v2.1.5"></a>
+# [v2.1.5](https://github.com/AleksandrRogov/DynamicsWebApi/releases/tag/v2.1.5) - 11 Jul 2024
+
+**Fixes**
+- Missing authorization token when request with a long URL is converted into a Batch request. [#175](https://github.com/AleksandrRogov/DynamicsWebApi/issues/175) 
+
+[Changes][v2.1.5]
+
+
 <a name="v2.1.4"></a>
 # [v2.1.4](https://github.com/AleksandrRogov/DynamicsWebApi/releases/tag/v2.1.4) - 11 Apr 2024
 
@@ -954,6 +963,7 @@ Added:
 [Changes][v1.2.0]
 
 
+[v2.1.5]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.1.4...v2.1.5
 [v2.1.4]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.1.3...v2.1.4
 [v2.1.3]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v1.7.12...v2.1.3
 [v1.7.12]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.1.2...v1.7.12
