@@ -38,6 +38,64 @@ const _runRequest = async (request: Core.InternalRequest, config: InternalConfig
 let _batchRequestCollection: Core.BatchRequestCollection = {};
 let _responseParseParams: { [key: string]: any[] } = {};
 
+const _nameExceptions = [
+    "$metadata",
+    "EntityDefinitions",
+    "RelationshipDefinitions",
+    "GlobalOptionSetDefinitions",
+    "ManagedPropertyDefinitions",
+    "query",
+    "suggest",
+    "autocomplete",
+];
+
+const _isEntityNameException = (entityName: string): boolean => {
+    return _nameExceptions.indexOf(entityName) > -1;
+};
+
+const _getCollectionNames = async (entityName: string, config: InternalConfig): Promise<string | null | undefined> => {
+    if (!Utility.isNull(RequestUtility.entityNames)) {
+        return RequestUtility.findCollectionName(entityName) || entityName;
+    }
+
+    const request = RequestUtility.compose(
+        {
+            method: "GET",
+            collection: "EntityDefinitions",
+            select: ["EntitySetName", "LogicalName"],
+            noCache: true,
+            functionName: "retrieveMultiple",
+        },
+        config
+    );
+
+    const result = await _runRequest(request, config);
+    RequestUtility.setEntityNames({});
+    for (let i = 0; i < result.data.value.length; i++) {
+        RequestUtility.entityNames![result.data.value[i].LogicalName] = result.data.value[i].EntitySetName;
+    }
+
+    return RequestUtility.findCollectionName(entityName) || entityName;
+};
+
+const _checkCollectionName = async (entityName: string | null | undefined, config: InternalConfig): Promise<string | null | undefined> => {
+    if (!entityName || _isEntityNameException(entityName)) {
+        return entityName;
+    }
+
+    entityName = entityName.toLowerCase();
+
+    if (!config.useEntityNames) {
+        return entityName;
+    }
+
+    try {
+        return await _getCollectionNames(entityName, config);
+    } catch (error: any) {
+        throw new Error("Unable to fetch Collection Names. Error: " + (error as DynamicsWebApiError).message);
+    }
+};
+
 export class RequestClient {
     /**
      * Sends a request to given URL with given parameters
@@ -116,64 +174,6 @@ export class RequestClient {
         });
     }
 
-    private static async _getCollectionNames(entityName: string, config: InternalConfig): Promise<string | null | undefined> {
-        if (!Utility.isNull(RequestUtility.entityNames)) {
-            return RequestUtility.findCollectionName(entityName) || entityName;
-        }
-
-        const request = RequestUtility.compose(
-            {
-                method: "GET",
-                collection: "EntityDefinitions",
-                select: ["EntitySetName", "LogicalName"],
-                noCache: true,
-                functionName: "retrieveMultiple",
-            },
-            config
-        );
-
-        const result = await _runRequest(request, config);
-        RequestUtility.setEntityNames({});
-        for (let i = 0; i < result.data.value.length; i++) {
-            RequestUtility.entityNames![result.data.value[i].LogicalName] = result.data.value[i].EntitySetName;
-        }
-
-        return RequestUtility.findCollectionName(entityName) || entityName;
-    }
-
-    private static _isEntityNameException(entityName: string): boolean {
-        const exceptions = [
-            "$metadata",
-            "EntityDefinitions",
-            "RelationshipDefinitions",
-            "GlobalOptionSetDefinitions",
-            "ManagedPropertyDefinitions",
-            "query",
-            "suggest",
-            "autocomplete",
-        ];
-
-        return exceptions.indexOf(entityName) > -1;
-    }
-
-    private static async _checkCollectionName(entityName: string | null | undefined, config: InternalConfig): Promise<string | null | undefined> {
-        if (!entityName || RequestClient._isEntityNameException(entityName)) {
-            return entityName;
-        }
-
-        entityName = entityName.toLowerCase();
-
-        if (!config.useEntityNames) {
-            return entityName;
-        }
-
-        try {
-            return await RequestClient._getCollectionNames(entityName, config);
-        } catch (error: any) {
-            throw new Error("Unable to fetch Collection Names. Error: " + (error as DynamicsWebApiError).message);
-        }
-    }
-
     static async makeRequest(request: Core.InternalRequest, config: InternalConfig): Promise<Core.WebApiResponse | undefined> {
         request.responseParameters = request.responseParameters || {};
         //we don't want to mix headers set by the library and by the user
@@ -181,7 +181,7 @@ export class RequestClient {
         delete request.headers;
 
         if (!request.isBatch) {
-            const collectionName = await RequestClient._checkCollectionName(request.collection, config);
+            const collectionName = await _checkCollectionName(request.collection, config);
 
             request.collection = collectionName;
             RequestUtility.compose(request, config);
