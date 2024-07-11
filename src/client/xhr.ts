@@ -1,4 +1,4 @@
-﻿import { Core } from "../types";
+﻿import type * as Core from "../types";
 import { ErrorHelper } from "./../helpers/ErrorHelper";
 import { parseResponse } from "./helpers/parseResponse";
 import { parseResponseHeaders } from "./helpers/parseResponseHeaders";
@@ -15,7 +15,7 @@ function _executeRequest(
     errorCallback: (error: Core.WebApiErrorResponse | Core.WebApiErrorResponse[]) => void
 ) {
     const data = options.data;
-    const additionalHeaders = options.additionalHeaders;
+    const headers = options.headers;
     const responseParams = options.responseParams;
     const signal = options.abortSignal;
 
@@ -35,8 +35,8 @@ function _executeRequest(
     request.open(options.method, options.uri, options.isAsync || false);
 
     //set additional headers
-    for (let key in additionalHeaders) {
-        request.setRequestHeader(key, additionalHeaders[key]);
+    for (let key in headers) {
+        request.setRequestHeader(key, headers[key]);
     }
 
     request.onreadystatechange = function () {

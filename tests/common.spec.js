@@ -6,7 +6,7 @@ var sinon = require("sinon");
 
 var { DWA } = require("../lib/dwa");
 var { Utility } = require("../lib/utils/Utility");
-var { RequestUtility } = require("../lib/utils/Request");
+var RequestUtility = require("../lib/utils/Request");
 var { ErrorHelper } = require("../lib/helpers/ErrorHelper");
 var mocks = require("./stubs");
 var { dateReviver } = require("../lib/client/helpers/dateReviver");

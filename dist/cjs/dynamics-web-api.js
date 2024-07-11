@@ -1,4 +1,4 @@
-/*! dynamics-web-api v2.1.4 (c) 2024 Aleksandr Rogov */
+/*! dynamics-web-api v2.1.5 (c) 2024 Aleksandr Rogov */
 "use strict";
 var __create = Object.create;
 var __defProp = Object.defineProperty;
@@ -688,17 +688,17 @@ function executeRequest(options) {
 function _executeRequest(options, successCallback, errorCallback) {
   var _a2;
   const data = options.data;
-  const additionalHeaders = options.additionalHeaders;
+  const headers = options.headers;
   const responseParams = options.responseParams;
   const signal = options.abortSignal;
-  const headers = {};
+  const httpHeaders = {};
   if (data) {
-    headers["Content-Type"] = additionalHeaders["Content-Type"];
-    headers["Content-Length"] = data.length;
-    delete additionalHeaders["Content-Type"];
+    httpHeaders["Content-Type"] = headers["Content-Type"];
+    httpHeaders["Content-Length"] = data.length;
+    delete headers["Content-Type"];
   }
-  for (let key in additionalHeaders) {
-    headers[key] = additionalHeaders[key];
+  for (let key in headers) {
+    httpHeaders[key] = headers[key];
   }
   const parsedUrl = new URL(options.uri);
   const protocol = ((_a2 = parsedUrl.protocol) == null ? void 0 : _a2.slice(0, -1)) || "https";
@@ -709,7 +709,7 @@ function _executeRequest(options, successCallback, errorCallback) {
     path: parsedUrl.pathname + parsedUrl.search,
     method: options.method,
     timeout: options.timeout || 0,
-    headers,
+    headers: httpHeaders,
     signal
   };
   if (!options.proxy && process.env[`${protocol}_proxy`]) {
@@ -721,7 +721,7 @@ function _executeRequest(options, successCallback, errorCallback) {
   if (options.proxy) {
     const hostHeader = new URL(options.proxy.url).host;
     if (hostHeader)
-      headers.host = hostHeader;
+      httpHeaders.host = hostHeader;
   }
   const request = protocolInterface.request(internalOptions, function(res) {
     let rawData = "";
@@ -948,484 +948,451 @@ init_Utility();
 // src/utils/Request.ts
 init_Utility();
 init_ErrorHelper();
-var _RequestUtility = class _RequestUtility {
-  /**
-   * Converts a request object to URL link
-   *
-   * @param {Object} request - Request object
-   * @param {Object} [config] - DynamicsWebApi config
-   * @returns {ConvertedRequest} Converted request
-   */
-  static compose(request, config) {
-    request.path = request.path || "";
-    request.functionName = request.functionName || "";
-    if (!request.url) {
-      if (!request._isUnboundRequest && !request.contentId && !request.collection) {
-        ErrorHelper.parameterCheck(request.collection, `DynamicsWebApi.${request.functionName}`, "request.collection");
-      }
-      if (request.collection != null) {
-        ErrorHelper.stringParameterCheck(request.collection, `DynamicsWebApi.${request.functionName}`, "request.collection");
-        request.path = request.collection;
-        if (request.key) {
-          request.key = ErrorHelper.keyParameterCheck(request.key, `DynamicsWebApi.${request.functionName}`, "request.key");
-          request.path += `(${request.key})`;
-        }
-      }
-      if (request.contentId) {
-        ErrorHelper.stringParameterCheck(request.contentId, `DynamicsWebApi.${request.functionName}`, "request.contentId");
-        if (request.contentId.startsWith("$")) {
-          request.path = request.path ? `${request.contentId}/${request.path}` : request.contentId;
-        }
-      }
-      if (request._additionalUrl) {
-        if (request.path) {
-          request.path += "/";
-        }
-        request.path += request._additionalUrl;
-      }
-      request.path = _RequestUtility.composeUrl(request, config, request.path);
-      if (request.fetchXml) {
-        ErrorHelper.stringParameterCheck(request.fetchXml, `DynamicsWebApi.${request.functionName}`, "request.fetchXml");
-        let join = request.path.indexOf("?") === -1 ? "?" : "&";
-        request.path += `${join}fetchXml=${encodeURIComponent(request.fetchXml)}`;
-      }
-    } else {
-      ErrorHelper.stringParameterCheck(request.url, `DynamicsWebApi.${request.functionName}`, "request.url");
-      request.path = request.url.replace(config.dataApi.url, "");
+var entityNames = null;
+var setEntityNames = (newEntityNames) => {
+  entityNames = newEntityNames;
+};
+var compose = (request, config) => {
+  request.path = request.path || "";
+  request.functionName = request.functionName || "";
+  if (!request.url) {
+    if (!request._isUnboundRequest && !request.contentId && !request.collection) {
+      ErrorHelper.parameterCheck(request.collection, `DynamicsWebApi.${request.functionName}`, "request.collection");
     }
-    if (request.hasOwnProperty("async") && request.async != null) {
-      ErrorHelper.boolParameterCheck(request.async, `DynamicsWebApi.${request.functionName}`, "request.async");
-    } else {
-      request.async = true;
-    }
-    request.headers = _RequestUtility.composeHeaders(request, config);
-    return request;
-  }
-  /**
-   * Converts optional parameters of the request to URL. If expand parameter exists this function is called recursively.
-   *
-   * @param {Object} request - Request object
-   * @param {string} request.functionName - Name of the function that converts a request (for Error Handling)
-   * @param {string} url - URL beginning (with required parameters)
-   * @param {string} [joinSymbol] - URL beginning (with required parameters)
-   * @param {Object} [config] - DynamicsWebApi config
-   * @returns {ConvertedRequestOptions} Additional options in request
-   */
-  static composeUrl(request, config, url = "", joinSymbol = "&") {
-    var _a2, _b2, _c;
-    const queryArray = [];
-    if (request) {
-      if (request.navigationProperty) {
-        ErrorHelper.stringParameterCheck(request.navigationProperty, `DynamicsWebApi.${request.functionName}`, "request.navigationProperty");
-        url += "/" + request.navigationProperty;
-        if (request.navigationPropertyKey) {
-          let navigationKey = ErrorHelper.keyParameterCheck(
-            request.navigationPropertyKey,
-            `DynamicsWebApi.${request.functionName}`,
-            "request.navigationPropertyKey"
-          );
-          url += "(" + navigationKey + ")";
-        }
-        if (request.navigationProperty === "Attributes") {
-          if (request.metadataAttributeType) {
-            ErrorHelper.stringParameterCheck(
-              request.metadataAttributeType,
-              `DynamicsWebApi.${request.functionName}`,
-              "request.metadataAttributeType"
-            );
-            url += "/" + request.metadataAttributeType;
-          }
-        }
+    if (request.collection != null) {
+      ErrorHelper.stringParameterCheck(request.collection, `DynamicsWebApi.${request.functionName}`, "request.collection");
+      request.path = request.collection;
+      if (request.key) {
+        request.key = ErrorHelper.keyParameterCheck(request.key, `DynamicsWebApi.${request.functionName}`, "request.key");
+        request.path += `(${request.key})`;
       }
-      if ((_a2 = request.select) == null ? void 0 : _a2.length) {
-        ErrorHelper.arrayParameterCheck(request.select, `DynamicsWebApi.${request.functionName}`, "request.select");
-        if (request.functionName == "retrieve" && request.select.length == 1 && request.select[0].endsWith("/$ref")) {
-          url += "/" + request.select[0];
-        } else {
-          if (request.select[0].startsWith("/") && request.functionName == "retrieve") {
-            if (request.navigationProperty == null) {
-              url += request.select.shift();
-            } else {
-              request.select.shift();
-            }
-          }
-          if (request.select.length) {
-            queryArray.push("$select=" + request.select.join(","));
-          }
-        }
-      }
-      if (request.filter) {
-        ErrorHelper.stringParameterCheck(request.filter, `DynamicsWebApi.${request.functionName}`, "request.filter");
-        const removeBracketsFromGuidReg = /[^"']{([\w\d]{8}[-]?(?:[\w\d]{4}[-]?){3}[\w\d]{12})}(?:[^"']|$)/g;
-        let filterResult = request.filter;
-        let m = null;
-        while ((m = removeBracketsFromGuidReg.exec(filterResult)) !== null) {
-          if (m.index === removeBracketsFromGuidReg.lastIndex) {
-            removeBracketsFromGuidReg.lastIndex++;
-          }
-          let replacement = m[0].endsWith(")") ? ")" : " ";
-          filterResult = filterResult.replace(m[0], " " + m[1] + replacement);
-        }
-        queryArray.push("$filter=" + encodeURIComponent(filterResult));
-      }
-      if (request.fieldName) {
-        ErrorHelper.stringParameterCheck(request.fieldName, `DynamicsWebApi.${request.functionName}`, "request.fieldName");
-        url += "/" + request.fieldName;
-      }
-      if (request.savedQuery) {
-        queryArray.push(
-          "savedQuery=" + ErrorHelper.guidParameterCheck(request.savedQuery, `DynamicsWebApi.${request.functionName}`, "request.savedQuery")
-        );
-      }
-      if (request.userQuery) {
-        queryArray.push(
-          "userQuery=" + ErrorHelper.guidParameterCheck(request.userQuery, `DynamicsWebApi.${request.functionName}`, "request.userQuery")
-        );
-      }
-      if (request.apply) {
-        ErrorHelper.stringParameterCheck(request.apply, `DynamicsWebApi.${request.functionName}`, "request.apply");
-        queryArray.push("$apply=" + request.apply);
-      }
-      if (request.count) {
-        ErrorHelper.boolParameterCheck(request.count, `DynamicsWebApi.${request.functionName}`, "request.count");
-        queryArray.push("$count=" + request.count);
-      }
-      if (request.top && request.top > 0) {
-        ErrorHelper.numberParameterCheck(request.top, `DynamicsWebApi.${request.functionName}`, "request.top");
-        queryArray.push("$top=" + request.top);
-      }
-      if (request.orderBy != null && request.orderBy.length) {
-        ErrorHelper.arrayParameterCheck(request.orderBy, `DynamicsWebApi.${request.functionName}`, "request.orderBy");
-        queryArray.push("$orderby=" + request.orderBy.join(","));
-      }
-      if (request.partitionId) {
-        ErrorHelper.stringParameterCheck(request.partitionId, `DynamicsWebApi.${request.functionName}`, "request.partitionId");
-        queryArray.push("partitionid='" + request.partitionId + "'");
-      }
-      if (request.downloadSize) {
-        ErrorHelper.stringParameterCheck(request.downloadSize, `DynamicsWebApi.${request.functionName}`, "request.downloadSize");
-        queryArray.push("size=" + request.downloadSize);
-      }
-      if ((_b2 = request.queryParams) == null ? void 0 : _b2.length) {
-        ErrorHelper.arrayParameterCheck(request.queryParams, `DynamicsWebApi.${request.functionName}`, "request.queryParams");
-        queryArray.push(request.queryParams.join("&"));
-      }
-      if (request.fileName) {
-        ErrorHelper.stringParameterCheck(request.fileName, `DynamicsWebApi.${request.functionName}`, "request.fileName");
-        queryArray.push("x-ms-file-name=" + request.fileName);
-      }
-      if (request.data) {
-        ErrorHelper.parameterCheck(request.data, `DynamicsWebApi.${request.functionName}`, "request.data");
-      }
-      if (request.isBatch) {
-        ErrorHelper.boolParameterCheck(request.isBatch, `DynamicsWebApi.${request.functionName}`, "request.isBatch");
-      }
-      if (!Utility.isNull(request.inChangeSet)) {
-        ErrorHelper.boolParameterCheck(request.inChangeSet, `DynamicsWebApi.${request.functionName}`, "request.inChangeSet");
-      }
-      if (request.isBatch && Utility.isNull(request.inChangeSet))
-        request.inChangeSet = true;
-      if (request.timeout) {
-        ErrorHelper.numberParameterCheck(request.timeout, `DynamicsWebApi.${request.functionName}`, "request.timeout");
-      }
-      if ((_c = request.expand) == null ? void 0 : _c.length) {
-        ErrorHelper.stringOrArrayParameterCheck(request.expand, `DynamicsWebApi.${request.functionName}`, "request.expand");
-        if (typeof request.expand === "string") {
-          queryArray.push("$expand=" + request.expand);
-        } else {
-          const expandQueryArray = [];
-          for (let i = 0; i < request.expand.length; i++) {
-            if (request.expand[i].property) {
-              const expand = request.expand[i];
-              expand.functionName = `${request.functionName} $expand`;
-              let expandConverted = _RequestUtility.composeUrl(expand, config, "", ";");
-              if (expandConverted) {
-                expandConverted = `(${expandConverted.substr(1)})`;
-              }
-              expandQueryArray.push(request.expand[i].property + expandConverted);
-            }
-          }
-          if (expandQueryArray.length) {
-            queryArray.push("$expand=" + expandQueryArray.join(","));
-          }
-        }
-      }
-    }
-    return !queryArray.length ? url : url + "?" + queryArray.join(joinSymbol);
-  }
-  static composeHeaders(request, config) {
-    const headers = { ...config.headers, ...request.userHeaders };
-    const prefer = _RequestUtility.composePreferHeader(request, config);
-    if (prefer.length) {
-      headers["Prefer"] = prefer;
-    }
-    if (request.collection === "$metadata") {
-      headers["Accept"] = "application/xml";
-    }
-    if (request.transferMode) {
-      headers["x-ms-transfer-mode"] = request.transferMode;
-    }
-    if (request.ifmatch != null && request.ifnonematch != null) {
-      throw new Error(
-        `DynamicsWebApi.${request.functionName}. Either one of request.ifmatch or request.ifnonematch parameters should be used in a call, not both.`
-      );
-    }
-    if (request.ifmatch) {
-      ErrorHelper.stringParameterCheck(request.ifmatch, `DynamicsWebApi.${request.functionName}`, "request.ifmatch");
-      headers["If-Match"] = request.ifmatch;
-    }
-    if (request.ifnonematch) {
-      ErrorHelper.stringParameterCheck(request.ifnonematch, `DynamicsWebApi.${request.functionName}`, "request.ifnonematch");
-      headers["If-None-Match"] = request.ifnonematch;
-    }
-    if (request.impersonate) {
-      ErrorHelper.stringParameterCheck(request.impersonate, `DynamicsWebApi.${request.functionName}`, "request.impersonate");
-      headers["MSCRMCallerID"] = ErrorHelper.guidParameterCheck(request.impersonate, `DynamicsWebApi.${request.functionName}`, "request.impersonate");
-    }
-    if (request.impersonateAAD) {
-      ErrorHelper.stringParameterCheck(request.impersonateAAD, `DynamicsWebApi.${request.functionName}`, "request.impersonateAAD");
-      headers["CallerObjectId"] = ErrorHelper.guidParameterCheck(
-        request.impersonateAAD,
-        `DynamicsWebApi.${request.functionName}`,
-        "request.impersonateAAD"
-      );
-    }
-    if (request.token) {
-      ErrorHelper.stringParameterCheck(request.token, `DynamicsWebApi.${request.functionName}`, "request.token");
-      headers["Authorization"] = "Bearer " + request.token;
-    }
-    if (request.duplicateDetection) {
-      ErrorHelper.boolParameterCheck(request.duplicateDetection, `DynamicsWebApi.${request.functionName}`, "request.duplicateDetection");
-      headers["MSCRM.SuppressDuplicateDetection"] = "false";
-    }
-    if (request.bypassCustomPluginExecution) {
-      ErrorHelper.boolParameterCheck(
-        request.bypassCustomPluginExecution,
-        `DynamicsWebApi.${request.functionName}`,
-        "request.bypassCustomPluginExecution"
-      );
-      headers["MSCRM.BypassCustomPluginExecution"] = "true";
-    }
-    if (request.noCache) {
-      ErrorHelper.boolParameterCheck(request.noCache, `DynamicsWebApi.${request.functionName}`, "request.noCache");
-      headers["Cache-Control"] = "no-cache";
-    }
-    if (request.mergeLabels) {
-      ErrorHelper.boolParameterCheck(request.mergeLabels, `DynamicsWebApi.${request.functionName}`, "request.mergeLabels");
-      headers["MSCRM.MergeLabels"] = "true";
     }
     if (request.contentId) {
       ErrorHelper.stringParameterCheck(request.contentId, `DynamicsWebApi.${request.functionName}`, "request.contentId");
-      if (!request.contentId.startsWith("$")) {
-        headers["Content-ID"] = request.contentId;
+      if (request.contentId.startsWith("$")) {
+        request.path = request.path ? `${request.contentId}/${request.path}` : request.contentId;
       }
     }
-    if (request.contentRange) {
-      ErrorHelper.stringParameterCheck(request.contentRange, `DynamicsWebApi.${request.functionName}`, "request.contentRange");
-      headers["Content-Range"] = request.contentRange;
+    if (request.addPath) {
+      if (request.path) {
+        request.path += "/";
+      }
+      request.path += request.addPath;
     }
-    if (request.range) {
-      ErrorHelper.stringParameterCheck(request.range, `DynamicsWebApi.${request.functionName}`, "request.range");
-      headers["Range"] = request.range;
+    request.path = composeUrl(request, config, request.path);
+    if (request.fetchXml) {
+      ErrorHelper.stringParameterCheck(request.fetchXml, `DynamicsWebApi.${request.functionName}`, "request.fetchXml");
+      let join = request.path.indexOf("?") === -1 ? "?" : "&";
+      request.path += `${join}fetchXml=${encodeURIComponent(request.fetchXml)}`;
     }
-    return headers;
+  } else {
+    ErrorHelper.stringParameterCheck(request.url, `DynamicsWebApi.${request.functionName}`, "request.url");
+    request.path = request.url.replace(config.dataApi.url, "");
   }
-  static composePreferHeader(request, config) {
-    let returnRepresentation = request.returnRepresentation;
-    let includeAnnotations = request.includeAnnotations;
-    let maxPageSize = request.maxPageSize;
-    let trackChanges = request.trackChanges;
-    let continueOnError = request.continueOnError;
-    let prefer = [];
-    if (request.prefer && request.prefer.length) {
-      ErrorHelper.stringOrArrayParameterCheck(request.prefer, `DynamicsWebApi.${request.functionName}`, "request.prefer");
-      if (typeof request.prefer === "string") {
-        prefer = request.prefer.split(",");
+  if (request.hasOwnProperty("async") && request.async != null) {
+    ErrorHelper.boolParameterCheck(request.async, `DynamicsWebApi.${request.functionName}`, "request.async");
+  } else {
+    request.async = true;
+  }
+  request.headers = composeHeaders(request, config);
+  return request;
+};
+var composeUrl = (request, config, url = "", joinSymbol = "&") => {
+  var _a2, _b2, _c;
+  const queryArray = [];
+  if (request) {
+    if (request.navigationProperty) {
+      ErrorHelper.stringParameterCheck(request.navigationProperty, `DynamicsWebApi.${request.functionName}`, "request.navigationProperty");
+      url += "/" + request.navigationProperty;
+      if (request.navigationPropertyKey) {
+        let navigationKey = ErrorHelper.keyParameterCheck(
+          request.navigationPropertyKey,
+          `DynamicsWebApi.${request.functionName}`,
+          "request.navigationPropertyKey"
+        );
+        url += "(" + navigationKey + ")";
       }
-      for (let i in prefer) {
-        let item = prefer[i].trim();
-        if (item === "return=representation") {
-          returnRepresentation = true;
-        } else if (item.includes("odata.include-annotations=")) {
-          includeAnnotations = item.replace("odata.include-annotations=", "").replace(/"/g, "");
-        } else if (item.startsWith("odata.maxpagesize=")) {
-          maxPageSize = Number(item.replace("odata.maxpagesize=", "").replace(/"/g, "")) || 0;
-        } else if (item.includes("odata.track-changes")) {
-          trackChanges = true;
-        } else if (item.includes("odata.continue-on-error")) {
-          continueOnError = true;
+      if (request.navigationProperty === "Attributes") {
+        if (request.metadataAttributeType) {
+          ErrorHelper.stringParameterCheck(request.metadataAttributeType, `DynamicsWebApi.${request.functionName}`, "request.metadataAttributeType");
+          url += "/" + request.metadataAttributeType;
         }
       }
     }
-    prefer = [];
-    if (config) {
-      if (returnRepresentation == null) {
-        returnRepresentation = config.returnRepresentation;
-      }
-      includeAnnotations = includeAnnotations ? includeAnnotations : config.includeAnnotations;
-      maxPageSize = maxPageSize ? maxPageSize : config.maxPageSize;
-    }
-    if (returnRepresentation) {
-      ErrorHelper.boolParameterCheck(returnRepresentation, `DynamicsWebApi.${request.functionName}`, "request.returnRepresentation");
-      prefer.push("return=representation");
-    }
-    if (includeAnnotations) {
-      ErrorHelper.stringParameterCheck(includeAnnotations, `DynamicsWebApi.${request.functionName}`, "request.includeAnnotations");
-      prefer.push(`odata.include-annotations="${includeAnnotations}"`);
-    }
-    if (maxPageSize && maxPageSize > 0) {
-      ErrorHelper.numberParameterCheck(maxPageSize, `DynamicsWebApi.${request.functionName}`, "request.maxPageSize");
-      prefer.push("odata.maxpagesize=" + maxPageSize);
-    }
-    if (trackChanges) {
-      ErrorHelper.boolParameterCheck(trackChanges, `DynamicsWebApi.${request.functionName}`, "request.trackChanges");
-      prefer.push("odata.track-changes");
-    }
-    if (continueOnError) {
-      ErrorHelper.boolParameterCheck(continueOnError, `DynamicsWebApi.${request.functionName}`, "request.continueOnError");
-      prefer.push("odata.continue-on-error");
-    }
-    return prefer.join(",");
-  }
-  static convertToBatch(requests, config, batchRequest) {
-    const batchBoundary = `dwa_batch_${Utility.generateUUID()}`;
-    const batchBody = [];
-    let currentChangeSet = null;
-    let contentId = 1e5;
-    requests.forEach((internalRequest) => {
-      var _a2;
-      internalRequest.functionName = "executeBatch";
-      if ((batchRequest == null ? void 0 : batchRequest.inChangeSet) === false)
-        internalRequest.inChangeSet = false;
-      const inChangeSet = internalRequest.method === "GET" ? false : !!internalRequest.inChangeSet;
-      if (!inChangeSet && currentChangeSet) {
-        batchBody.push(`
---${currentChangeSet}--`);
-        currentChangeSet = null;
-        contentId = 1e5;
-      }
-      if (!currentChangeSet) {
-        batchBody.push(`
---${batchBoundary}`);
-        if (inChangeSet) {
-          currentChangeSet = `changeset_${Utility.generateUUID()}`;
-          batchBody.push("Content-Type: multipart/mixed;boundary=" + currentChangeSet);
+    if ((_a2 = request.select) == null ? void 0 : _a2.length) {
+      ErrorHelper.arrayParameterCheck(request.select, `DynamicsWebApi.${request.functionName}`, "request.select");
+      if (request.functionName == "retrieve" && request.select.length == 1 && request.select[0].endsWith("/$ref")) {
+        url += "/" + request.select[0];
+      } else {
+        if (request.select[0].startsWith("/") && request.functionName == "retrieve") {
+          if (request.navigationProperty == null) {
+            url += request.select.shift();
+          } else {
+            request.select.shift();
+          }
+        }
+        if (request.select.length) {
+          queryArray.push("$select=" + request.select.join(","));
         }
       }
-      if (inChangeSet) {
-        batchBody.push(`
---${currentChangeSet}`);
+    }
+    if (request.filter) {
+      ErrorHelper.stringParameterCheck(request.filter, `DynamicsWebApi.${request.functionName}`, "request.filter");
+      const removeBracketsFromGuidReg = /[^"']{([\w\d]{8}[-]?(?:[\w\d]{4}[-]?){3}[\w\d]{12})}(?:[^"']|$)/g;
+      let filterResult = request.filter;
+      let m = null;
+      while ((m = removeBracketsFromGuidReg.exec(filterResult)) !== null) {
+        if (m.index === removeBracketsFromGuidReg.lastIndex) {
+          removeBracketsFromGuidReg.lastIndex++;
+        }
+        let replacement = m[0].endsWith(")") ? ")" : " ";
+        filterResult = filterResult.replace(m[0], " " + m[1] + replacement);
       }
-      batchBody.push("Content-Type: application/http");
-      batchBody.push("Content-Transfer-Encoding: binary");
-      if (inChangeSet) {
-        const contentIdValue = internalRequest.headers.hasOwnProperty("Content-ID") ? internalRequest.headers["Content-ID"] : ++contentId;
-        batchBody.push(`Content-ID: ${contentIdValue}`);
-      }
-      if (!((_a2 = internalRequest.path) == null ? void 0 : _a2.startsWith("$"))) {
-        batchBody.push(`
-${internalRequest.method} ${config.dataApi.url}${internalRequest.path} HTTP/1.1`);
+      queryArray.push("$filter=" + encodeURIComponent(filterResult));
+    }
+    if (request.fieldName) {
+      ErrorHelper.stringParameterCheck(request.fieldName, `DynamicsWebApi.${request.functionName}`, "request.fieldName");
+      url += "/" + request.fieldName;
+    }
+    if (request.savedQuery) {
+      queryArray.push("savedQuery=" + ErrorHelper.guidParameterCheck(request.savedQuery, `DynamicsWebApi.${request.functionName}`, "request.savedQuery"));
+    }
+    if (request.userQuery) {
+      queryArray.push("userQuery=" + ErrorHelper.guidParameterCheck(request.userQuery, `DynamicsWebApi.${request.functionName}`, "request.userQuery"));
+    }
+    if (request.apply) {
+      ErrorHelper.stringParameterCheck(request.apply, `DynamicsWebApi.${request.functionName}`, "request.apply");
+      queryArray.push("$apply=" + request.apply);
+    }
+    if (request.count) {
+      ErrorHelper.boolParameterCheck(request.count, `DynamicsWebApi.${request.functionName}`, "request.count");
+      queryArray.push("$count=" + request.count);
+    }
+    if (request.top && request.top > 0) {
+      ErrorHelper.numberParameterCheck(request.top, `DynamicsWebApi.${request.functionName}`, "request.top");
+      queryArray.push("$top=" + request.top);
+    }
+    if (request.orderBy != null && request.orderBy.length) {
+      ErrorHelper.arrayParameterCheck(request.orderBy, `DynamicsWebApi.${request.functionName}`, "request.orderBy");
+      queryArray.push("$orderby=" + request.orderBy.join(","));
+    }
+    if (request.partitionId) {
+      ErrorHelper.stringParameterCheck(request.partitionId, `DynamicsWebApi.${request.functionName}`, "request.partitionId");
+      queryArray.push("partitionid='" + request.partitionId + "'");
+    }
+    if (request.downloadSize) {
+      ErrorHelper.stringParameterCheck(request.downloadSize, `DynamicsWebApi.${request.functionName}`, "request.downloadSize");
+      queryArray.push("size=" + request.downloadSize);
+    }
+    if ((_b2 = request.queryParams) == null ? void 0 : _b2.length) {
+      ErrorHelper.arrayParameterCheck(request.queryParams, `DynamicsWebApi.${request.functionName}`, "request.queryParams");
+      queryArray.push(request.queryParams.join("&"));
+    }
+    if (request.fileName) {
+      ErrorHelper.stringParameterCheck(request.fileName, `DynamicsWebApi.${request.functionName}`, "request.fileName");
+      queryArray.push("x-ms-file-name=" + request.fileName);
+    }
+    if (request.data) {
+      ErrorHelper.parameterCheck(request.data, `DynamicsWebApi.${request.functionName}`, "request.data");
+    }
+    if (request.isBatch) {
+      ErrorHelper.boolParameterCheck(request.isBatch, `DynamicsWebApi.${request.functionName}`, "request.isBatch");
+    }
+    if (!Utility.isNull(request.inChangeSet)) {
+      ErrorHelper.boolParameterCheck(request.inChangeSet, `DynamicsWebApi.${request.functionName}`, "request.inChangeSet");
+    }
+    if (request.isBatch && Utility.isNull(request.inChangeSet))
+      request.inChangeSet = true;
+    if (request.timeout) {
+      ErrorHelper.numberParameterCheck(request.timeout, `DynamicsWebApi.${request.functionName}`, "request.timeout");
+    }
+    if ((_c = request.expand) == null ? void 0 : _c.length) {
+      ErrorHelper.stringOrArrayParameterCheck(request.expand, `DynamicsWebApi.${request.functionName}`, "request.expand");
+      if (typeof request.expand === "string") {
+        queryArray.push("$expand=" + request.expand);
       } else {
-        batchBody.push(`
-${internalRequest.method} ${internalRequest.path} HTTP/1.1`);
+        const expandQueryArray = [];
+        for (let i = 0; i < request.expand.length; i++) {
+          if (request.expand[i].property) {
+            const expand = request.expand[i];
+            expand.functionName = `${request.functionName} $expand`;
+            let expandConverted = composeUrl(expand, config, "", ";");
+            if (expandConverted) {
+              expandConverted = `(${expandConverted.substr(1)})`;
+            }
+            expandQueryArray.push(request.expand[i].property + expandConverted);
+          }
+        }
+        if (expandQueryArray.length) {
+          queryArray.push("$expand=" + expandQueryArray.join(","));
+        }
       }
-      if (internalRequest.method === "GET") {
-        batchBody.push("Accept: application/json");
-      } else {
-        batchBody.push("Content-Type: application/json");
+    }
+  }
+  return !queryArray.length ? url : url + "?" + queryArray.join(joinSymbol);
+};
+var composeHeaders = (request, config) => {
+  const headers = { ...config.headers, ...request.userHeaders };
+  const prefer = composePreferHeader(request, config);
+  if (prefer.length) {
+    headers["Prefer"] = prefer;
+  }
+  if (request.collection === "$metadata") {
+    headers["Accept"] = "application/xml";
+  }
+  if (request.transferMode) {
+    headers["x-ms-transfer-mode"] = request.transferMode;
+  }
+  if (request.ifmatch != null && request.ifnonematch != null) {
+    throw new Error(
+      `DynamicsWebApi.${request.functionName}. Either one of request.ifmatch or request.ifnonematch parameters should be used in a call, not both.`
+    );
+  }
+  if (request.ifmatch) {
+    ErrorHelper.stringParameterCheck(request.ifmatch, `DynamicsWebApi.${request.functionName}`, "request.ifmatch");
+    headers["If-Match"] = request.ifmatch;
+  }
+  if (request.ifnonematch) {
+    ErrorHelper.stringParameterCheck(request.ifnonematch, `DynamicsWebApi.${request.functionName}`, "request.ifnonematch");
+    headers["If-None-Match"] = request.ifnonematch;
+  }
+  if (request.impersonate) {
+    ErrorHelper.stringParameterCheck(request.impersonate, `DynamicsWebApi.${request.functionName}`, "request.impersonate");
+    headers["MSCRMCallerID"] = ErrorHelper.guidParameterCheck(request.impersonate, `DynamicsWebApi.${request.functionName}`, "request.impersonate");
+  }
+  if (request.impersonateAAD) {
+    ErrorHelper.stringParameterCheck(request.impersonateAAD, `DynamicsWebApi.${request.functionName}`, "request.impersonateAAD");
+    headers["CallerObjectId"] = ErrorHelper.guidParameterCheck(request.impersonateAAD, `DynamicsWebApi.${request.functionName}`, "request.impersonateAAD");
+  }
+  if (request.token) {
+    ErrorHelper.stringParameterCheck(request.token, `DynamicsWebApi.${request.functionName}`, "request.token");
+    headers["Authorization"] = "Bearer " + request.token;
+  }
+  if (request.duplicateDetection) {
+    ErrorHelper.boolParameterCheck(request.duplicateDetection, `DynamicsWebApi.${request.functionName}`, "request.duplicateDetection");
+    headers["MSCRM.SuppressDuplicateDetection"] = "false";
+  }
+  if (request.bypassCustomPluginExecution) {
+    ErrorHelper.boolParameterCheck(request.bypassCustomPluginExecution, `DynamicsWebApi.${request.functionName}`, "request.bypassCustomPluginExecution");
+    headers["MSCRM.BypassCustomPluginExecution"] = "true";
+  }
+  if (request.noCache) {
+    ErrorHelper.boolParameterCheck(request.noCache, `DynamicsWebApi.${request.functionName}`, "request.noCache");
+    headers["Cache-Control"] = "no-cache";
+  }
+  if (request.mergeLabels) {
+    ErrorHelper.boolParameterCheck(request.mergeLabels, `DynamicsWebApi.${request.functionName}`, "request.mergeLabels");
+    headers["MSCRM.MergeLabels"] = "true";
+  }
+  if (request.contentId) {
+    ErrorHelper.stringParameterCheck(request.contentId, `DynamicsWebApi.${request.functionName}`, "request.contentId");
+    if (!request.contentId.startsWith("$")) {
+      headers["Content-ID"] = request.contentId;
+    }
+  }
+  if (request.contentRange) {
+    ErrorHelper.stringParameterCheck(request.contentRange, `DynamicsWebApi.${request.functionName}`, "request.contentRange");
+    headers["Content-Range"] = request.contentRange;
+  }
+  if (request.range) {
+    ErrorHelper.stringParameterCheck(request.range, `DynamicsWebApi.${request.functionName}`, "request.range");
+    headers["Range"] = request.range;
+  }
+  return headers;
+};
+var composePreferHeader = (request, config) => {
+  let returnRepresentation = request.returnRepresentation;
+  let includeAnnotations = request.includeAnnotations;
+  let maxPageSize = request.maxPageSize;
+  let trackChanges = request.trackChanges;
+  let continueOnError = request.continueOnError;
+  let prefer = [];
+  if (request.prefer && request.prefer.length) {
+    ErrorHelper.stringOrArrayParameterCheck(request.prefer, `DynamicsWebApi.${request.functionName}`, "request.prefer");
+    if (typeof request.prefer === "string") {
+      prefer = request.prefer.split(",");
+    }
+    for (let i in prefer) {
+      let item = prefer[i].trim();
+      if (item === "return=representation") {
+        returnRepresentation = true;
+      } else if (item.includes("odata.include-annotations=")) {
+        includeAnnotations = item.replace("odata.include-annotations=", "").replace(/"/g, "");
+      } else if (item.startsWith("odata.maxpagesize=")) {
+        maxPageSize = Number(item.replace("odata.maxpagesize=", "").replace(/"/g, "")) || 0;
+      } else if (item.includes("odata.track-changes")) {
+        trackChanges = true;
+      } else if (item.includes("odata.continue-on-error")) {
+        continueOnError = true;
       }
-      for (let key in internalRequest.headers) {
-        if (key === "Authorization" || key === "Content-ID")
-          continue;
-        batchBody.push(`${key}: ${internalRequest.headers[key]}`);
-      }
-      if (internalRequest.data) {
-        batchBody.push(`
-${_RequestUtility.processData(internalRequest.data, config)}`);
-      }
-    });
-    if (currentChangeSet) {
+    }
+  }
+  prefer = [];
+  if (config) {
+    if (returnRepresentation == null) {
+      returnRepresentation = config.returnRepresentation;
+    }
+    includeAnnotations = includeAnnotations ? includeAnnotations : config.includeAnnotations;
+    maxPageSize = maxPageSize ? maxPageSize : config.maxPageSize;
+  }
+  if (returnRepresentation) {
+    ErrorHelper.boolParameterCheck(returnRepresentation, `DynamicsWebApi.${request.functionName}`, "request.returnRepresentation");
+    prefer.push("return=representation");
+  }
+  if (includeAnnotations) {
+    ErrorHelper.stringParameterCheck(includeAnnotations, `DynamicsWebApi.${request.functionName}`, "request.includeAnnotations");
+    prefer.push(`odata.include-annotations="${includeAnnotations}"`);
+  }
+  if (maxPageSize && maxPageSize > 0) {
+    ErrorHelper.numberParameterCheck(maxPageSize, `DynamicsWebApi.${request.functionName}`, "request.maxPageSize");
+    prefer.push("odata.maxpagesize=" + maxPageSize);
+  }
+  if (trackChanges) {
+    ErrorHelper.boolParameterCheck(trackChanges, `DynamicsWebApi.${request.functionName}`, "request.trackChanges");
+    prefer.push("odata.track-changes");
+  }
+  if (continueOnError) {
+    ErrorHelper.boolParameterCheck(continueOnError, `DynamicsWebApi.${request.functionName}`, "request.continueOnError");
+    prefer.push("odata.continue-on-error");
+  }
+  return prefer.join(",");
+};
+var convertToBatch = (requests, config, batchRequest) => {
+  const batchBoundary = `dwa_batch_${Utility.generateUUID()}`;
+  const batchBody = [];
+  let currentChangeSet = null;
+  let contentId = 1e5;
+  requests.forEach((internalRequest) => {
+    var _a2;
+    internalRequest.functionName = "executeBatch";
+    if ((batchRequest == null ? void 0 : batchRequest.inChangeSet) === false)
+      internalRequest.inChangeSet = false;
+    const inChangeSet = internalRequest.method === "GET" ? false : !!internalRequest.inChangeSet;
+    if (!inChangeSet && currentChangeSet) {
       batchBody.push(`
 --${currentChangeSet}--`);
+      currentChangeSet = null;
+      contentId = 1e5;
     }
+    if (!currentChangeSet) {
+      batchBody.push(`
+--${batchBoundary}`);
+      if (inChangeSet) {
+        currentChangeSet = `changeset_${Utility.generateUUID()}`;
+        batchBody.push("Content-Type: multipart/mixed;boundary=" + currentChangeSet);
+      }
+    }
+    if (inChangeSet) {
+      batchBody.push(`
+--${currentChangeSet}`);
+    }
+    batchBody.push("Content-Type: application/http");
+    batchBody.push("Content-Transfer-Encoding: binary");
+    if (inChangeSet) {
+      const contentIdValue = internalRequest.headers.hasOwnProperty("Content-ID") ? internalRequest.headers["Content-ID"] : ++contentId;
+      batchBody.push(`Content-ID: ${contentIdValue}`);
+    }
+    if (!((_a2 = internalRequest.path) == null ? void 0 : _a2.startsWith("$"))) {
+      batchBody.push(`
+${internalRequest.method} ${config.dataApi.url}${internalRequest.path} HTTP/1.1`);
+    } else {
+      batchBody.push(`
+${internalRequest.method} ${internalRequest.path} HTTP/1.1`);
+    }
+    if (internalRequest.method === "GET") {
+      batchBody.push("Accept: application/json");
+    } else {
+      batchBody.push("Content-Type: application/json");
+    }
+    for (let key in internalRequest.headers) {
+      if (key === "Authorization" || key === "Content-ID")
+        continue;
+      batchBody.push(`${key}: ${internalRequest.headers[key]}`);
+    }
+    if (internalRequest.data) {
+      batchBody.push(`
+${processData(internalRequest.data, config)}`);
+    }
+  });
+  if (currentChangeSet) {
     batchBody.push(`
---${batchBoundary}--`);
-    const headers = _RequestUtility.setStandardHeaders(batchRequest == null ? void 0 : batchRequest.userHeaders);
-    headers["Content-Type"] = `multipart/mixed;boundary=${batchBoundary}`;
-    return { headers, body: batchBody.join("\n") };
+--${currentChangeSet}--`);
   }
-  static findCollectionName(entityName) {
-    let collectionName = null;
-    if (!Utility.isNull(_RequestUtility.entityNames)) {
-      collectionName = _RequestUtility.entityNames[entityName];
-      if (Utility.isNull(collectionName)) {
-        for (let key in _RequestUtility.entityNames) {
-          if (_RequestUtility.entityNames[key] === entityName) {
-            return entityName;
-          }
+  batchBody.push(`
+--${batchBoundary}--`);
+  const headers = setStandardHeaders(batchRequest == null ? void 0 : batchRequest.userHeaders);
+  headers["Content-Type"] = `multipart/mixed;boundary=${batchBoundary}`;
+  return { headers, body: batchBody.join("\n") };
+};
+var findCollectionName = (entityName) => {
+  let collectionName = null;
+  if (!Utility.isNull(entityNames)) {
+    collectionName = entityNames[entityName];
+    if (!collectionName) {
+      for (let key in entityNames) {
+        if (entityNames[key] === entityName) {
+          return entityName;
         }
       }
     }
-    return collectionName;
   }
-  static processData(data, config) {
-    let stringifiedData = null;
-    if (data) {
-      if (data instanceof Uint8Array || data instanceof Uint16Array || data instanceof Uint32Array)
-        return data;
-      stringifiedData = JSON.stringify(data, (key, value) => {
-        if (key.endsWith("@odata.bind") || key.endsWith("@odata.id")) {
-          if (typeof value === "string" && !value.startsWith("$")) {
-            if (/\(\{[\w\d-]+\}\)/g.test(value)) {
-              value = value.replace(/(.+)\(\{([\w\d-]+)\}\)/g, "$1($2)");
-            }
-            if (config.useEntityNames) {
-              const regularExpression = /([\w_]+)(\([\d\w-]+\))$/;
-              const valueParts = regularExpression.exec(value);
-              if (valueParts && valueParts.length > 2) {
-                const collectionName = _RequestUtility.findCollectionName(valueParts[1]);
-                if (!Utility.isNull(collectionName)) {
-                  value = value.replace(regularExpression, collectionName + "$2");
-                }
-              }
-            }
-            if (!value.startsWith(config.dataApi.url)) {
-              if (key.endsWith("@odata.bind")) {
-                if (!value.startsWith("/")) {
-                  value = "/" + value;
-                }
-              } else {
-                value = config.dataApi.url + value.replace(/^\//, "");
+  return collectionName;
+};
+var processData = (data, config) => {
+  let stringifiedData = null;
+  if (data) {
+    if (data instanceof Uint8Array || data instanceof Uint16Array || data instanceof Uint32Array)
+      return data;
+    stringifiedData = JSON.stringify(data, (key, value) => {
+      if (key.endsWith("@odata.bind") || key.endsWith("@odata.id")) {
+        if (typeof value === "string" && !value.startsWith("$")) {
+          if (/\(\{[\w\d-]+\}\)/g.test(value)) {
+            value = value.replace(/(.+)\(\{([\w\d-]+)\}\)/g, "$1($2)");
+          }
+          if (config.useEntityNames) {
+            const regularExpression = /([\w_]+)(\([\d\w-]+\))$/;
+            const valueParts = regularExpression.exec(value);
+            if (valueParts && valueParts.length > 2) {
+              const collectionName = findCollectionName(valueParts[1]);
+              if (!Utility.isNull(collectionName)) {
+                value = value.replace(regularExpression, collectionName + "$2");
               }
             }
           }
-        } else if (key.startsWith("oData") || key.endsWith("_Formatted") || key.endsWith("_NavigationProperty") || key.endsWith("_LogicalName")) {
-          value = void 0;
+          if (!value.startsWith(config.dataApi.url)) {
+            if (key.endsWith("@odata.bind")) {
+              if (!value.startsWith("/")) {
+                value = "/" + value;
+              }
+            } else {
+              value = config.dataApi.url + value.replace(/^\//, "");
+            }
+          }
         }
-        return value;
-      });
-      stringifiedData = stringifiedData.replace(/[\u007F-\uFFFF]/g, function(chr) {
-        return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).slice(-4);
-      });
-    }
-    return stringifiedData;
+      } else if (key.startsWith("oData") || key.endsWith("_Formatted") || key.endsWith("_NavigationProperty") || key.endsWith("_LogicalName")) {
+        value = void 0;
+      }
+      return value;
+    });
+    stringifiedData = stringifiedData.replace(/[\u007F-\uFFFF]/g, function(chr) {
+      return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).slice(-4);
+    });
   }
-  static setStandardHeaders(headers = {}) {
-    if (!headers["Accept"])
-      headers["Accept"] = "application/json";
-    if (!headers["OData-MaxVersion"])
-      headers["OData-MaxVersion"] = "4.0";
-    if (!headers["OData-Version"])
-      headers["OData-Version"] = "4.0";
-    if (headers["Content-Range"])
-      headers["Content-Type"] = "application/octet-stream";
-    else if (!headers["Content-Type"])
-      headers["Content-Type"] = "application/json; charset=utf-8";
-    return headers;
-  }
+  return stringifiedData;
 };
-_RequestUtility.entityNames = null;
-var RequestUtility = _RequestUtility;
+var setStandardHeaders = (headers = {}) => {
+  if (!headers["Accept"])
+    headers["Accept"] = "application/json";
+  if (!headers["OData-MaxVersion"])
+    headers["OData-MaxVersion"] = "4.0";
+  if (!headers["OData-Version"])
+    headers["OData-Version"] = "4.0";
+  if (headers["Content-Range"])
+    headers["Content-Type"] = "application/octet-stream";
+  else if (!headers["Content-Type"])
+    headers["Content-Type"] = "application/json; charset=utf-8";
+  return headers;
+};
 
 // src/client/RequestClient.ts
 init_ErrorHelper();
@@ -1467,7 +1434,55 @@ var _runRequest = async (request, config) => {
 };
 var _batchRequestCollection = {};
 var _responseParseParams = {};
-var RequestClient = class _RequestClient {
+var _nameExceptions = [
+  "$metadata",
+  "EntityDefinitions",
+  "RelationshipDefinitions",
+  "GlobalOptionSetDefinitions",
+  "ManagedPropertyDefinitions",
+  "query",
+  "suggest",
+  "autocomplete"
+];
+var _isEntityNameException = (entityName) => {
+  return _nameExceptions.indexOf(entityName) > -1;
+};
+var _getCollectionNames = async (entityName, config) => {
+  if (!Utility.isNull(entityNames)) {
+    return findCollectionName(entityName) || entityName;
+  }
+  const request = compose(
+    {
+      method: "GET",
+      collection: "EntityDefinitions",
+      select: ["EntitySetName", "LogicalName"],
+      noCache: true,
+      functionName: "retrieveMultiple"
+    },
+    config
+  );
+  const result = await _runRequest(request, config);
+  setEntityNames({});
+  for (let i = 0; i < result.data.value.length; i++) {
+    entityNames[result.data.value[i].LogicalName] = result.data.value[i].EntitySetName;
+  }
+  return findCollectionName(entityName) || entityName;
+};
+var _checkCollectionName = async (entityName, config) => {
+  if (!entityName || _isEntityNameException(entityName)) {
+    return entityName;
+  }
+  entityName = entityName.toLowerCase();
+  if (!config.useEntityNames) {
+    return entityName;
+  }
+  try {
+    return await _getCollectionNames(entityName, config);
+  } catch (error) {
+    throw new Error("Unable to fetch Collection Names. Error: " + error.message);
+  }
+};
+var RequestClient = class {
   /**
    * Sends a request to given URL with given parameters
    *
@@ -1486,14 +1501,14 @@ var RequestClient = class _RequestClient {
       const batchRequest = _batchRequestCollection[request.requestId];
       if (!batchRequest)
         throw ErrorHelper.batchIsEmpty();
-      const batchResult = RequestUtility.convertToBatch(batchRequest, config, request);
+      const batchResult = convertToBatch(batchRequest, config, request);
       processedData = batchResult.body;
       request.headers = { ...batchResult.headers, ...request.headers };
       delete _batchRequestCollection[request.requestId];
     } else {
-      processedData = !isBatchConverted ? RequestUtility.processData(request.data, config) : request.data;
+      processedData = !isBatchConverted ? processData(request.data, config) : request.data;
       if (!isBatchConverted)
-        request.headers = RequestUtility.setStandardHeaders(request.headers);
+        request.headers = setStandardHeaders(request.headers);
     }
     if (config.impersonate && !request.headers["MSCRMCallerID"]) {
       request.headers["MSCRMCallerID"] = config.impersonate;
@@ -1518,74 +1533,29 @@ var RequestClient = class _RequestClient {
       method: request.method,
       uri: url.toString() + request.path,
       data: processedData,
-      additionalHeaders: request.headers,
-      responseParams: _responseParseParams,
-      isAsync: request.async,
-      timeout: request.timeout || config.timeout,
       proxy: config.proxy,
+      isAsync: request.async,
+      headers: request.headers,
       requestId: request.requestId,
-      abortSignal: request.signal
+      abortSignal: request.signal,
+      responseParams: _responseParseParams,
+      timeout: request.timeout || config.timeout
     });
-  }
-  static async _getCollectionNames(entityName, config) {
-    if (!Utility.isNull(RequestUtility.entityNames)) {
-      return RequestUtility.findCollectionName(entityName) || entityName;
-    }
-    const request = RequestUtility.compose(
-      {
-        method: "GET",
-        collection: "EntityDefinitions",
-        select: ["EntitySetName", "LogicalName"],
-        noCache: true,
-        functionName: "retrieveMultiple"
-      },
-      config
-    );
-    const result = await _runRequest(request, config);
-    RequestUtility.entityNames = {};
-    for (let i = 0; i < result.data.value.length; i++) {
-      RequestUtility.entityNames[result.data.value[i].LogicalName] = result.data.value[i].EntitySetName;
-    }
-    return RequestUtility.findCollectionName(entityName) || entityName;
-  }
-  static _isEntityNameException(entityName) {
-    const exceptions = [
-      "$metadata",
-      "EntityDefinitions",
-      "RelationshipDefinitions",
-      "GlobalOptionSetDefinitions",
-      "ManagedPropertyDefinitions",
-      "query",
-      "suggest",
-      "autocomplete"
-    ];
-    return exceptions.indexOf(entityName) > -1;
-  }
-  static async _checkCollectionName(entityName, config) {
-    if (!entityName || _RequestClient._isEntityNameException(entityName)) {
-      return entityName;
-    }
-    entityName = entityName.toLowerCase();
-    if (!config.useEntityNames) {
-      return entityName;
-    }
-    try {
-      return await _RequestClient._getCollectionNames(entityName, config);
-    } catch (error) {
-      throw new Error("Unable to fetch Collection Names. Error: " + error.message);
-    }
   }
   static async makeRequest(request, config) {
     request.responseParameters = request.responseParameters || {};
     request.userHeaders = request.headers;
     delete request.headers;
     if (!request.isBatch) {
-      const collectionName = await _RequestClient._checkCollectionName(request.collection, config);
+      const collectionName = await _checkCollectionName(request.collection, config);
       request.collection = collectionName;
-      RequestUtility.compose(request, config);
+      compose(request, config);
       request.responseParameters.convertedToBatch = false;
       if (request.path.length > 2e3) {
-        const batchRequest = RequestUtility.convertToBatch([request], config);
+        const batchRequest = convertToBatch([request], config);
+        if (request.headers["Authorization"]) {
+          batchRequest.headers["Authorization"] = request.headers["Authorization"];
+        }
         request.method = "POST";
         request.path = "$batch";
         request.data = batchRequest.body;
@@ -1594,17 +1564,17 @@ var RequestClient = class _RequestClient {
       }
       return _runRequest(request, config);
     }
-    RequestUtility.compose(request, config);
+    compose(request, config);
     _addResponseParams(request.requestId, request.responseParameters);
     _addRequestToBatchCollection(request.requestId, request);
   }
   static _clearTestData() {
-    RequestUtility.entityNames = null;
+    setEntityNames(null);
     _responseParseParams = {};
     _batchRequestCollection = {};
   }
   static getCollectionName(entityName) {
-    return RequestUtility.findCollectionName(entityName);
+    return findCollectionName(entityName);
   }
 };
 
@@ -2078,7 +2048,7 @@ var DynamicsWebApi = class _DynamicsWebApi {
       ErrorHelper.stringParameterCheck(functionName, `DynamicsWebApi.callFunction`, parameterName);
       const functionParameters = Utility.buildFunctionParameters(internalRequest.parameters);
       internalRequest.method = "GET";
-      internalRequest._additionalUrl = functionName + functionParameters.key;
+      internalRequest.addPath = functionName + functionParameters.key;
       internalRequest.queryParams = functionParameters.queryParams;
       internalRequest._isUnboundRequest = !internalRequest.collection;
       internalRequest.functionName = "callFunction";
@@ -2097,7 +2067,7 @@ var DynamicsWebApi = class _DynamicsWebApi {
       const internalRequest = Utility.copyRequest(request, ["action"]);
       internalRequest.method = "POST";
       internalRequest.functionName = "callAction";
-      internalRequest._additionalUrl = request.actionName;
+      internalRequest.addPath = request.actionName;
       internalRequest._isUnboundRequest = !internalRequest.collection;
       internalRequest.data = request.action;
       const response = await this._makeRequest(internalRequest);

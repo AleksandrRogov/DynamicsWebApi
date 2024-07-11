@@ -61,7 +61,7 @@ Once the web file is uploaded, it can be included in a template, a page or a for
 
 With CDN, it is a bit easier: no need to create and upload a web file - just include the script in your template, page or a form:
 ```html
-<script type="text/javascript" src="https://unpkg.com/dynamics-web-api@2.1.0/dist/dynamics-web-api.min.js"></script>
+<script type="text/javascript" src="https://unpkg.com/dynamics-web-api@2.1.4/dist/dynamics-web-api.min.js"></script>
 ```
 
 And you are good to go! DynamicsWebApi will automatically detect if the library is running on Power Pages and will supply an anti-forgery token with each request.
@@ -77,7 +77,7 @@ Then include it in your script:
 
 ```ts
 //CommonJS
-const DynamicsWebApi = require("dynamics-web-api");
+const DynamicsWebApi = require("dynamics-web-api").DynamicsWebApi;
 
 //ESM
 import { DynamicsWebApi } from "dynamics-web-api";

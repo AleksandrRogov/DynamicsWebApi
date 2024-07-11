@@ -4,9 +4,9 @@ import stubs, * as mocks from "./stubs";
 
 import { RequestClient } from "../src/client/RequestClient";
 import { InternalConfig } from "../src/utils/Config";
-import { Core } from "../src/types";
+import * as Core from "../src/types";
 import * as Regex from "../src/helpers/Regex";
-import { RequestUtility } from "../src/utils/Request";
+import * as RequestUtility from "../src/utils/Request";
 
 describe("Regex.", () => {
     describe("isUuid -", () => {
@@ -110,6 +110,80 @@ describe("RequestClient.makeRequest", () => {
 
         it("request was not completed", function () {
             expect(scope.isDone()).to.be.false;
+        });
+    });
+    describe("when url is long, request is converted to batch - includes token", function () {
+        let scope: nock.Scope;
+        let url = "test";
+        const testToken = "testToken";
+
+        while (url.length < 2001) {
+            url += "test";
+        }
+        const rBody = mocks.data.batch.replace("{0}", mocks.webApiUrl + url);
+        const rBodys = rBody.split("\n");
+        let checkBody = "";
+        for (let i = 0; i < rBodys.length; i++) {
+            checkBody += rBodys[i];
+        }
+
+        before(function () {
+            const response = mocks.responses.batch;
+            scope = nock(mocks.webApiUrl, {
+                reqheaders: {
+                    Authorization: `Bearer ${testToken}`,
+                }
+            })
+                .filteringRequestBody(function (body) {
+                    body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
+                    const bodys = body.split("\n");
+
+                    let resultBody = "";
+                    for (let i = 0; i < bodys.length; i++) {
+                        resultBody += bodys[i];
+                    }
+                    return resultBody;
+                })
+                .post("/$batch", checkBody)
+                .reply(response.status, response.responseText, response.responseHeaders);
+        });
+
+        after(function () {
+            nock.cleanAll();
+            RequestClient._clearTestData();
+        });
+
+        it("returns a correct response", async () => {
+            const request: Core.InternalRequest = {
+                method: "GET",
+                functionName: "test",
+                collection: url,
+                token: testToken
+            };
+            const config: InternalConfig = {
+                searchApi: { url: "" },
+                dataApi: { url: mocks.webApiUrl },
+            };
+
+            try {
+                const object = await RequestClient.makeRequest(request, config);
+
+                const multiple = mocks.responses.multiple();
+                //delete multiple.oDataContext;
+                const expectedO = {
+                    status: 200,
+                    headers: mocks.data.defaultTextPlainResponseHeaders,
+                    data: multiple,
+                };
+                expect(object).to.deep.equal(expectedO);
+            } catch (error) {
+                console.error(error);
+                throw error;
+            }
+        });
+
+        it("all requests have been made", function () {
+            expect(scope.isDone()).to.be.true;
         });
     });
 });

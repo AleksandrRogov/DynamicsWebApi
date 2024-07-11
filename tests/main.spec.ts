@@ -3,6 +3,7 @@ import nock from "nock";
 import * as mocks from "./stubs";
 
 import { DynamicsWebApi, type RetrieveMultipleRequest } from "../src/dynamics-web-api";
+import { DWA } from "../lib/dwa";
 
 const dynamicsWebApiTest = new DynamicsWebApi({
     dataApi: {
@@ -155,6 +156,93 @@ describe("dynamicsWebApi.retrieveMultiple -", () => {
                 const object = await dynamicsWebApiSlash.retrieveMultiple(dwaRequest, mocks.responses.multipleWithLinkAndCount().oDataNextLink);
 
                 expect(object).to.deep.equal(mocks.responses.multipleWithLinkAndCount());
+            } catch (error) {
+                console.error(error);
+                throw error;
+            }
+        });
+
+        it("all requests have been made", function () {
+            expect(scope.isDone()).to.be.true;
+        });
+    });
+});
+
+describe("dynamicsWebApi.fetch -", () => {
+    describe("with token", function () {
+        let scope: nock.Scope;
+        const testToken = "test token";
+        before(function () {
+            const response = mocks.responses.fetchXmlResponsePage2Cookie;
+            scope = nock(mocks.webApiUrl, {
+                reqheaders: {
+                    Authorization: `Bearer ${testToken}`,
+                    Prefer: DWA.Prefer.get(DWA.Prefer.Annotations.FormattedValue),
+                },
+            })
+                .get(mocks.responses.collectionUrl + "?fetchXml=" + encodeURIComponent(mocks.data.fetchXmls.fetchXml2cookie))
+                .reply(response.status, response.responseText, response.responseHeaders);
+        });
+
+        after(function () {
+            nock.cleanAll();
+        });
+
+        it("returns a correct response", async () => {
+            const pagingInfo = mocks.data.fetchXmls.fetchXmlResultPage1Cookie.PagingInfo;
+
+            try {
+                const object = await dynamicsWebApiTest.fetch({
+                    collection: "tests",
+                    fetchXml: mocks.data.fetchXmls.fetchXml,
+                    includeAnnotations: DWA.Prefer.Annotations.FormattedValue,
+                    pageNumber: pagingInfo.nextPage,
+                    pagingCookie: pagingInfo.cookie,
+                    token: testToken,
+                });
+
+                expect(object).to.deep.equal(mocks.data.fetchXmls.fetchXmlResultPage2Cookie);
+            } catch (error) {
+                console.error(error);
+                throw error;
+            }
+        });
+
+        it("all requests have been made", function () {
+            expect(scope.isDone()).to.be.true;
+        });
+    });
+});
+
+describe("dynamicsWebApi.fetchAll -", () => {
+    describe("with token", function () {
+        let scope: nock.Scope;
+        const testToken = "test token";
+        before(function () {
+            var response = mocks.responses.fetchXmlResponsePage1Cookie;
+            var response2 = mocks.responses.fetchXmlResponsePage2NoCookie;
+            scope = nock(mocks.webApiUrl, {
+                reqheaders: {
+                    Authorization: `Bearer ${testToken}`,
+                },
+            })
+                .get(mocks.responses.collectionUrl + "?fetchXml=" + encodeURIComponent(mocks.data.fetchXmls.fetchXml1))
+                .reply(response.status, response.responseText, response.responseHeaders)
+                .get(mocks.responses.collectionUrl + "?fetchXml=" + encodeURIComponent(mocks.data.fetchXmls.fetchXml2cookie))
+                .reply(response2.status, response2.responseText, response2.responseHeaders);
+        });
+
+        after(function () {
+            nock.cleanAll();
+        });
+
+        it("returns a correct response", async () => {
+            try {
+                const object = await dynamicsWebApiTest.fetchAll({ collection: "tests", fetchXml: mocks.data.fetchXmls.fetchXml, token: testToken });
+
+                let checkResponse = mocks.data.fetchXmls.fetchXmlResultPage1Cookie.value;
+                checkResponse = checkResponse.concat(mocks.data.fetchXmls.fetchXmlResultPage2Cookie.value);
+                expect(object).to.deep.equal({ value: checkResponse });
             } catch (error) {
                 console.error(error);
                 throw error;
@@ -621,7 +709,7 @@ describe("dynamicsWebApi.callFunction -", () => {
                     name: "FUN",
                     parameters: { param1: "value1", param2: 2 },
                     select: ["field1", "field2"],
-                    filter: "field1 eq 1"
+                    filter: "field1 eq 1",
                 });
 
                 expect(object).to.deep.equal(mocks.data.testEntity);
@@ -655,7 +743,7 @@ describe("dynamicsWebApi.callFunction -", () => {
                     functionName: "FUN",
                     parameters: { param1: "value1", param2: 2 },
                     select: ["field1", "field2"],
-                    filter: "field1 eq 1"
+                    filter: "field1 eq 1",
                 });
 
                 expect(object).to.deep.equal(mocks.data.testEntity);
@@ -690,7 +778,7 @@ describe("dynamicsWebApi.callFunction -", () => {
                     collection: "tests",
                     parameters: { param1: "value1", param2: 2 },
                     select: ["field1", "field2"],
-                    filter: "field1 eq 1"
+                    filter: "field1 eq 1",
                 });
 
                 expect(object).to.deep.equal(mocks.data.testEntity);

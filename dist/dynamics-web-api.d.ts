@@ -1,4 +1,4 @@
-/*! dynamics-web-api v2.1.4 (c) 2024 Aleksandr Rogov */
+/*! dynamics-web-api v2.1.5 (c) 2024 Aleksandr Rogov */
 /// <reference types="node" />
 /**
  * Microsoft Dynamics CRM Web API helper library written in JavaScript.
@@ -876,10 +876,7 @@ export interface Config {
     headers?: HeaderCollection;
 }
 /**Header collection type */
-export type HeaderCollection = {
-    /**key-value */
-    [key: string]: string;
-};
+export type HeaderCollection = Record<string, string>;
 export interface ProxyConfig {
     /**Proxy server url */
     url: string;
