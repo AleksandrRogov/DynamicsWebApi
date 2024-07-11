@@ -2189,9 +2189,12 @@ const isDeleted = await dynamicsWebApi.deleteRecord({
 
 ## Work with Dataverse Search API
 
-DynamicsWebApi can be used to call Dataverse Search API and utilize its powerful Search, Suggest and Autocomplete capabilities. Before using, I highly recommend to get familiar with it by reading an [official documentation](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/relevance-search).
+**Important!** Currently only Search API 1.0 is supported. Search API 2.0 is coming with `v.2.2.0`. 
+If you must use 2.0, you could [use corresponding Actions](#execute-web-api-actions) for now. [more info](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/search/overview?tabs=sdk)
 
-To set Search API version use: `new DynamicsWebApi({ searchApi: { version: "2.0" }})`.
+DynamicsWebApi can be used to call Dataverse Search API and utilize its powerful Search, Suggest and Autocomplete capabilities. Before using, I highly recommend to get familiar with it by reading an [official documentation](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/search/legacy).
+
+To set Search API version use: `new DynamicsWebApi({ searchApi: { version: "1.0" }})`.
 
 Search, Suggest and Autocomplete requests have a common property `query`. This is the main property that configures a relevance search request. 
 
@@ -2526,11 +2529,11 @@ the config option "formatted" will enable developers to retrieve all information
 - [X] Impersonate a user based on their Azure Active Directory (AAD) object id. `Added in v.1.6.12`
 - [X] File upload/download/delete for a File Field. `Added in v.1.7.0`
 - [X] Full proxy support. `Added in v.1.7.2`
-- [X] Full proxy support. `Added in v.1.7.2`
 - [X] Refactoring and conversion to TypeScript. `Added in v.2.0.0`
-- [X] Implement [Dataverse Search API](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/relevance-search). `Added in v.2.0.0`
-- [X] Allow custom headers to be passed to the request. [#151](https://github.com/AleksandrRogov/DynamicsWebApi/issues/151). `Added in v.2.1.0`
+- [X] Implement [Dataverse Search API 1.0](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/search/legacy). `Added in v.2.0.0`
+- [X] Allow custom headers to be passed to the request [#151](https://github.com/AleksandrRogov/DynamicsWebApi/issues/151). `Added in v.2.1.0`
 - [X] Support Microsoft Power Pages. `Added in v.2.1.0`
+- [ ] Support Search API 2.0 [#174](https://github.com/AleksandrRogov/DynamicsWebApi/issues/174). `Coming with v.2.2.0`
 - [ ] Custom requests.
 
 Many more features to come!

@@ -191,6 +191,12 @@ export class RequestClient {
             if (request.path!.length > 2000) {
                 const batchRequest = RequestUtility.convertToBatch([request], config);
 
+                //#175 authorization header must be copied as well. 
+                //todo: is it the only one that needs to be copied?
+                if (request.headers!["Authorization"]) {
+                    batchRequest.headers["Authorization"] = request.headers!["Authorization"];
+                }
+
                 request.method = "POST";
                 request.path = "$batch";
                 request.data = batchRequest.body;
