@@ -110,7 +110,7 @@ export class Utility {
      * @param {Object} value
      * @returns {boolean}
      */
-    static isNull(value: any): boolean {
+    static isNull(value: any): value is undefined | null {
         return typeof value === "undefined" || value == null;
     }
 

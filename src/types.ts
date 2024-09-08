@@ -71,9 +71,9 @@ export interface InternalRequest {
     /**Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests.*/
     ifmatch?: string;
     /**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types. */
-    includeAnnotations?: string;
+    includeAnnotations?: string | null;
     /**Sets Prefer header request with value "return=representation".Use this property to return just created or updated entity in a single request. */
-    returnRepresentation?: boolean;
+    returnRepresentation?: boolean | null;
     /**Prefer header values */
     prefer?: string | string[];
     /**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
@@ -95,14 +95,16 @@ export interface InternalRequest {
     /**Boolean that sets the $count system query option with a value of true to include a count of entities that match the filter criteria up to 5000(per page).Do not use $top with $count! */
     count?: boolean;
     /**Sets the odata.maxpagesize preference value to request the number of entities returned in the response. */
-    maxPageSize?: number;
+    maxPageSize?: number | null;
     /**An Array(of string) representing the order in which items are returned using the $orderby system query option.Use the asc or desc suffix to specify ascending or descending order respectively.The default is ascending if the suffix isn't applied. */
     orderBy?: string[];
     /**Limit the number of results returned by using the $top system query option.Do not use $top with $count! */
     top?: number;
     /**Sets Prefer header with value 'odata.track-changes' to request that a delta link be returned which can subsequently be used to retrieve entity changes. */
     trackChanges?: boolean;
-    /**v.1.7.0+ Web API v9.1+ only! Use this option to specify the name of the file attribute in Dynamics 365. */
+    /**v.1.7.0+ Web API v9.1+ only! Use this option to specify the name of the file attribute in Dynamics 365. 
+     * @deprecated use property
+    */
     fieldName?: string;
     /**v.1.7.0+ Web API v9.1+ only! Specifies the name of the file */
     fileName?: string;
@@ -110,6 +112,7 @@ export interface InternalRequest {
     partitionId?: string;
     /**v.1.7.7+ Additional query parameters that either have not been implemented yet or they are parameter aliases for "$filter" and "$orderBy". Important! These parameters ARE NOT URI encoded! */
     queryParams?: string[];
+    property?: string;
     contentRange?: string;
     url?: string;
     parameters?: Record<string, any>;

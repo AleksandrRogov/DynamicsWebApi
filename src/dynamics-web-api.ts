@@ -1258,7 +1258,7 @@ export interface CreateRequest<T = any> extends CRUDRequest {
     expand?: Expand[];
     /**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types. */
     includeAnnotations?: string;
-    /**A String representing the name of a single - valued navigation property.Useful when needed to retrieve information about a related record in a single request. */
+    /**A String representing the name of a single - valued navigation property. Useful when needed to retrieve information about a related record in a single request. */
     navigationProperty?: string;
     /**A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata). */
     navigationPropertyKey?: string;
@@ -1293,7 +1293,7 @@ export interface UpdateRequestBase<T = any> extends CRUDRequest {
     contentId?: string;
     /**Casts the AttributeMetadata to a specific type. (Used in requests to Attribute Metadata). */
     metadataAttributeType?: string;
-    /**A String representing the name of a single - valued navigation property.Useful when needed to retrieve information about a related record in a single request. */
+    /**A String representing the name of a single - valued navigation property. Useful when needed to retrieve information about a related record in a single request. */
     navigationProperty?: string;
     /**A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata). */
     navigationPropertyKey?: string;
@@ -1335,8 +1335,13 @@ export interface DeleteRequest extends CRUDRequest {
     ifmatch?: string;
     /**BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */
     contentId?: string;
-    /**Field name that needs to be cleared (for example File Field) */
+    /**
+     * Field name that needs to be cleared (for example File Field) 
+     * @deprecated Use "property".
+    */
     fieldName?: string;
+    /**Single property that needs to be cleared (including the File property) */
+    property?: string;
 }
 
 export interface RetrieveRequest extends CRUDRequest {
@@ -1352,7 +1357,7 @@ export interface RetrieveRequest extends CRUDRequest {
     includeAnnotations?: string;
     /**Casts the AttributeMetadata to a specific type. (Used in requests to Attribute Metadata). */
     metadataAttributeType?: string;
-    /**A String representing the name of a single - valued navigation property.Useful when needed to retrieve information about a related record in a single request. */
+    /**A String representing the name of a single - valued navigation property. Useful when needed to retrieve information about a related record in a single request. */
     navigationProperty?: string;
     /**A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata). */
     navigationPropertyKey?: string;
@@ -1619,12 +1624,22 @@ export interface UploadRequest extends CRUDRequest {
     data: Uint8Array | Buffer;
     /**Name of the file */
     fileName: string;
-    /**File Field Name */
+    /**The name of File Column (field) */
+    property?: string;
+    /**
+     * File Field Name 
+     * @deprecated Use "property".
+     */
     fieldName: string;
 }
 
 export interface DownloadRequest extends CRUDRequest {
-    /**File Field Name */
+    /**The name of File Column (field) */
+    property?: string;
+    /**
+     * File Field Name 
+     * @deprecated Use "property".
+     */
     fieldName: string;
 }
 

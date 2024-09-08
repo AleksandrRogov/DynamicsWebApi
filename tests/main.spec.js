@@ -3224,7 +3224,7 @@ describe("dynamicsWebApi.deleteRecord -", function () {
 
         it("returns a correct response", function (done) {
             dynamicsWebApiTest
-                .deleteRecord({ key: mocks.data.testEntityId, collection: "tests", navigationProperty: "fullname" })
+                .deleteRecord({ key: mocks.data.testEntityId, collection: "tests", property: "fullname" })
                 .then(function (object) {
                     expect(object).to.be.true;
                     done();
@@ -4955,7 +4955,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
             dynamicsWebApiTest.startBatch();
 
             dynamicsWebApiTest.update({ key: mocks.data.testEntityId2, collection: "records", data: { firstname: "Test", lastname: "Batch!" } });
-            dynamicsWebApiTest.deleteRecord({ key: mocks.data.testEntityId2, collection: "records", navigationProperty: "firstname" });
+            dynamicsWebApiTest.deleteRecord({ key: mocks.data.testEntityId2, collection: "records", property: "firstname" });
 
             dynamicsWebApiTest
                 .executeBatch()
@@ -5017,7 +5017,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
             dynamicsWebApiTest.startBatch();
 
             dynamicsWebApiTest.update({ key: mocks.data.testEntityId2, collection: "records", data: { firstname: "Test", lastname: "Batch!" } });
-            dynamicsWebApiTest.deleteRecord({ key: mocks.data.testEntityId2, collection: "records", navigationProperty: "firstname" });
+            dynamicsWebApiTest.deleteRecord({ key: mocks.data.testEntityId2, collection: "records", property: "firstname" });
 
             dynamicsWebApiTest
                 .executeBatch({ token: "123" })
@@ -5073,7 +5073,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
             dynamicsWebApiTest.startBatch();
 
             dynamicsWebApiTest.update({ key: mocks.data.testEntityId2, collection: "records", data: { firstname: "Test", lastname: "Batch!" } });
-            dynamicsWebApiTest.deleteRecord({ key: mocks.data.testEntityId2, collection: "records", navigationProperty: "firstname" });
+            dynamicsWebApiTest.deleteRecord({ key: mocks.data.testEntityId2, collection: "records", property: "firstname" });
 
             dynamicsWebApiTest
                 .executeBatch()
@@ -5421,7 +5421,7 @@ describe("dynamicsWebApi.uploadFile -", function () {
             key: mocks.data.testEntityId,
             collection: "tests",
             fileName: "test.json",
-            fieldName: "dwa_file",
+            property: "dwa_file",
             data: Buffer.from("Welcome to DynamicsWebApi!", "utf-8"),
         };
 
@@ -5436,7 +5436,7 @@ describe("dynamicsWebApi.uploadFile -", function () {
 
             scope = nock(mocks.webApiUrl)
                 .matchHeader("x-ms-transfer-mode", "chunked")
-                .patch(mocks.responses.testEntityUrl + `/${dwaRequest.fieldName}?x-ms-file-name=${dwaRequest.fileName}`)
+                .patch(mocks.responses.testEntityUrl + `/${dwaRequest.property}?x-ms-file-name=${dwaRequest.fileName}`)
                 .reply(beginResponse.status, "", beginResponse.responseHeaders);
 
             scope1 = nock(mocks.webApiUrl)
@@ -5483,7 +5483,7 @@ describe("dynamicsWebApi.downloadFile -", function () {
         var dwaRequest = {
             key: mocks.data.testEntityId,
             collection: "tests",
-            fieldName: "dwa_file",
+            property: "dwa_file",
         };
 
         var scope;
@@ -5494,12 +5494,12 @@ describe("dynamicsWebApi.downloadFile -", function () {
         before(function () {
             scope = nock(mocks.webApiUrl)
                 .matchHeader("Range", `bytes=0-${Utility.downloadChunkSize - 1}`)
-                .get(mocks.responses.testEntityUrl + `/${dwaRequest.fieldName}?size=full`)
+                .get(mocks.responses.testEntityUrl + `/${dwaRequest.property}?size=full`)
                 .reply(chunk1.status, chunk1.responseText, chunk1.responseHeaders);
 
             scope1 = nock(mocks.webApiUrl)
                 .matchHeader("Range", `bytes=${Utility.downloadChunkSize}-${Utility.downloadChunkSize * 2 - 1}`)
-                .get(mocks.responses.testEntityUrl + `/${dwaRequest.fieldName}?size=full`)
+                .get(mocks.responses.testEntityUrl + `/${dwaRequest.property}?size=full`)
                 .reply(chunk2.status, chunk2.responseText, chunk2.responseHeaders);
         });
 

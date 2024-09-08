@@ -358,7 +358,7 @@ data | `Object` or `ArrayBuffer` / `Buffer` (for node.js) | `create`, `update`, 
 duplicateDetection | `boolean` | `create`, `update`, `upsert` | **D365 Web API v9+** Boolean that enables duplicate detection. [More Info](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/webapi/update-delete-entities-using-web-api#check-for-duplicate-records)
 expand | `Expand[]` | `retrieve`, `retrieveMultiple`, `create`, `update`, `upsert` | An array of `Expand` Objects (described below the table) representing the $expand OData System Query Option value to control which related records are also returned.
 fetchXml | `string` | `fetch`, `fetchAll` | Property that sets FetchXML - a proprietary query language that provides capabilities to perform aggregation.
-fieldName | `string` | `uploadFile`, `downloadFile`, `deleteRequest` | **D365 Web API v9.1+** Use this option to specify the name of the file attribute in Dynamics 365. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/file-attributes)
+fieldName | `string` | `uploadFile`, `downloadFile`, `deleteRecord` | **D365 Web API v9.1+. Deprecated, use `property` instead** Use this option to specify the name of the file attribute in Dynamics 365. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/file-attributes)
 fileName | `string` | `uploadFile` | **D365 Web API v9.1+** Specifies the name of the file
 filter | String | `retrieve`, `retrieveMultiple`, `retrieveAll`, `callFunction` | Use the $filter system query option to set criteria for which entities will be returned.
 functionName | `string` | `callFunction` | **Deprecated from v2.1.3** Use `name` instead. Name of a D365 Web Api function.
@@ -382,6 +382,7 @@ pageNumber | `number` | `fetch` | Sets a page number for Fetch XML request ONLY!
 pagingCookie | `string` | `fetch` | Sets a paging cookie for Fetch XML request ONLY!
 parameters | `Object` | `callFunction` | Function's input parameters. Example: `{ param1: "test", param2: 3 }`. 
 partitionId | `string` | `create`, `update`, `upsert`, `delete`, `retrieve`, `retrieveMultiple` | Sets a unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. [More Info](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/azure-storage-partitioning)
+property | `string` | `uploadFile`, `downloadFile`, `deleteRecord` | `v2.1.6+` **D365 Web API v9.1+.** Use this option to specify the name of the column or of the file attribute in Dynamics 365. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/file-attributes)
 queryParams | `string[]` | All | Custom query parameters. Can also be used to set the [parameter aliases](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/query-data-web-api#use-parameter-aliases-with-system-query-options) for "$filter" and "$orderBy". **Important!** These parameters ARE NOT URI encoded!
 returnRepresentation | `boolean` | `create`, `update`, `upsert` | Sets Prefer header request with value "return=representation". Use this property to return just created or updated entity in a single request.
 savedQuery | `string` | `retrieve` | A String representing the GUID value of the saved query.
@@ -542,7 +543,7 @@ else{
 const request: DynamicsWebApi.DeleteRequest = {
     key: leadId,
     collection: "leads",
-    fieldName: "subject"
+    property: "subject"
 }
 
 await dynamicsWebApi.deleteRecord(request);
@@ -2130,7 +2131,7 @@ fr.onload = function(){
 	dynamicsWebApi.uploadFile({
         collection: "dwa_filestorages",
         key: "00000000-0000-0000-0000-000000000001",
-        fieldName: "dwa_file",
+        property: "dwa_file",
         fileName: fileName,
         data: fileData
 	}).then(function(){
@@ -2151,7 +2152,7 @@ fs.readFile(filename, (err, data) => {
     dynamicsWebApi.uploadFile({
         collection: "dwa_filestorages",
         key: "00000000-0000-0000-0000-000000000001",
-        fieldName: "dwa_file",
+        property: "dwa_file",
         fileName: filename
         data: data,
     }).then(function() {
@@ -2168,7 +2169,7 @@ fs.readFile(filename, (err, data) => {
 const donwloadResponse = await dynamicsWebApi.downloadFile({
     collection: "dwa_filestorages",
     key: "00000000-0000-0000-0000-000000000001",
-    fieldName: "dwa_file"
+    property: "dwa_file"
 });
 
 //Uint8Array for browser and Buffer for Node.js
@@ -2183,7 +2184,7 @@ const fileSize = donwloadResponse.fileSize;
 const isDeleted = await dynamicsWebApi.deleteRecord({
     collection: "dwa_filestorages",
     key: "00000000-0000-0000-0000-000000000001",
-    fieldName: "dwa_file"
+    property: "dwa_file"
 });
 ```
 

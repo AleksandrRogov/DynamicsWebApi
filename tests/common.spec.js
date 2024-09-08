@@ -635,6 +635,20 @@ describe("RequestUtility.composeUrl -", function () {
         );
     });
 
+    it("filter - remove brackets from guid; except for a guid inside the quotation marks", function () {
+        var dwaRequest = {
+            filter: "name eq 'name' and testid1 eq {0000a000-0000-0000-0000-000000000001} and testid2 eq 0000a000-0000-0000-0000-000000000002 and teststring eq 'here is some text {0000a000-0000-0000-0000-000000000003}'",
+            functionName: "",
+        };
+
+        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        expect(result).to.equal(
+            `${stubUrl}?$filter=${encodeURIComponent(
+                "name eq 'name' and testid1 eq 0000a000-0000-0000-0000-000000000001 and testid2 eq 0000a000-0000-0000-0000-000000000002 and teststring eq 'here is some text {0000a000-0000-0000-0000-000000000003}'"
+            )}`
+        );
+    });
+
     //test bug 2018-06-11
     it("filter - grouping & remove brackets from guid ", function () {
         var dwaRequest = {
@@ -705,6 +719,38 @@ describe("RequestUtility.composeUrl -", function () {
 
         var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(stubUrl + "/nav");
+    });
+
+    //todo: delete in the future
+    it("fieldName", function () {
+        const dwaRequest = {
+            fieldName: "property",
+            functionName: "",
+        };
+
+        const result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        expect(result).to.equal(stubUrl + "/property");
+    });
+
+    it("property", function () {
+        const dwaRequest = {
+            property: "property",
+            functionName: "",
+        };
+
+        const result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        expect(result).to.equal(stubUrl + "/property");
+    });
+
+    it("fieldName must be replaced by property", function () {
+        const dwaRequest = {
+            property: "property",
+            fieldName: "fieldName",
+            functionName: "",
+        };
+
+        const result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        expect(result).to.equal(stubUrl + "/property");
     });
 
     it("orderBy empty", function () {

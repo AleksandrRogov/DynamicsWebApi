@@ -845,7 +845,7 @@ const dataStubs = {
     defaultTextPlainResponseHeaders: { "content-type": "text/plain" },
 };
 
-var responseStubs = {
+const responseStubs = {
     webApiUrl: webApiUrl,
     collectionUrl: "/tests",
     collection: "tests",
@@ -1348,72 +1348,84 @@ var responseStubs = {
         responseHeaders: dataStubs.defaultResponseHeaders,
     },
     responseFormattedEntity: function () {
-        var stub = dataStubs.testEntityFormatted;
-        stub.oDataContext = stub["@odata.context"];
-        stub.option_Formatted = stub["option@OData.Community.Display.V1.FormattedValue"];
-        stub.option_NavigationProperty = stub["option@Microsoft.Dynamics.CRM.associatednavigationproperty"];
-        stub.option_LogicalName = stub["option@Microsoft.Dynamics.CRM.lookuplogicalname"];
+        const stub = {
+            ...dataStubs.testEntityFormatted,
+            oDataContext: dataStubs.testEntityFormatted["@odata.context"],
+            option_Formatted: dataStubs.testEntityFormatted["option@OData.Community.Display.V1.FormattedValue"],
+            option_NavigationProperty: dataStubs.testEntityFormatted["option@Microsoft.Dynamics.CRM.associatednavigationproperty"],
+            option_LogicalName: dataStubs.testEntityFormatted["option@Microsoft.Dynamics.CRM.lookuplogicalname"],
+        };
         return stub;
     },
     responseFormattedEntityWithExpand: function () {
-        var stub = dataStubs.testEntityFormattedWithExpand;
-        stub.oDataContext = stub["@odata.context"];
-        stub.dwa_NavigationProperty.optionProp_Formatted = stub.dwa_NavigationProperty["optionProp@OData.Community.Display.V1.FormattedValue"];
-        stub.option_Formatted = stub["option@OData.Community.Display.V1.FormattedValue"];
-        stub.option_NavigationProperty = stub["option@Microsoft.Dynamics.CRM.associatednavigationproperty"];
-        stub.option_LogicalName = stub["option@Microsoft.Dynamics.CRM.lookuplogicalname"];
+        const stub = {
+            ...dataStubs.testEntityFormattedWithExpand,
+            oDataContext: dataStubs.testEntityFormattedWithExpand["@odata.context"],
+            dwa_NavigationProperty: {
+                ...dataStubs.testEntityFormattedWithExpand.dwa_NavigationProperty,
+                optionProp_Formatted: dataStubs.testEntityFormattedWithExpand.dwa_NavigationProperty["optionProp@OData.Community.Display.V1.FormattedValue"],
+            },
+            option_Formatted: dataStubs.testEntityFormattedWithExpand["option@OData.Community.Display.V1.FormattedValue"],
+            option_NavigationProperty: dataStubs.testEntityFormattedWithExpand["option@Microsoft.Dynamics.CRM.associatednavigationproperty"],
+            option_LogicalName: dataStubs.testEntityFormattedWithExpand["option@Microsoft.Dynamics.CRM.lookuplogicalname"],
+        };
+
         return stub;
     },
     responseFormattedAliasedEntity: function () {
-        var stub = dataStubs.testEntityFormattedAliased;
-        stub.oDataContext = stub["@odata.context"];
-        stub.option_Formatted = stub["option@OData.Community.Display.V1.FormattedValue"];
-        stub.alias_x002e_value1_Formatted = stub["alias_x002e_value1@OData.Community.Display.V1.FormattedValue"];
-        stub.alias = {
-            _dwaType: "alias",
-            value1: stub["alias_x002e_value1"],
-            value1_Formatted: stub["alias_x002e_value1@OData.Community.Display.V1.FormattedValue"],
-            "value1@OData.Community.Display.V1.FormattedValue": stub["alias_x002e_value1@OData.Community.Display.V1.FormattedValue"],
+        const stub = {
+            ...dataStubs.testEntityFormattedAliased,
+            oDataContext: dataStubs.testEntityFormattedAliased["@odata.context"],
+            option_Formatted: dataStubs.testEntityFormattedAliased["option@OData.Community.Display.V1.FormattedValue"],
+            alias_x002e_value1_Formatted: dataStubs.testEntityFormattedAliased["alias_x002e_value1@OData.Community.Display.V1.FormattedValue"],
+            alias: {
+                _dwaType: "alias",
+                value1: dataStubs.testEntityFormattedAliased["alias_x002e_value1"],
+                value1_Formatted: dataStubs.testEntityFormattedAliased["alias_x002e_value1@OData.Community.Display.V1.FormattedValue"],
+                "value1@OData.Community.Display.V1.FormattedValue": dataStubs.testEntityFormattedAliased["alias_x002e_value1@OData.Community.Display.V1.FormattedValue"],
+            },
         };
         return stub;
     },
     multipleWithLink: function () {
-        var stub = dataStubs.multipleWithLink;
-        stub.oDataContext = stub["@odata.context"];
-        stub.oDataNextLink = stub["@odata.nextLink"];
+        const stub = {
+            ...dataStubs.multipleWithLink,
+            oDataContext: dataStubs.multipleWithLink["@odata.context"],
+            oDataNextLink: dataStubs.multipleWithLink["@odata.nextLink"],
+        };
         return stub;
     },
     multipleWithLinkAndCount: function () {
-        var stub = dataStubs.multipleWithLinkAndCount;
+        const stub = dataStubs.multipleWithLinkAndCount;
         stub.oDataContext = stub["@odata.context"];
         stub.oDataNextLink = stub["@odata.nextLink"];
         stub.oDataCount = stub["@odata.count"];
         return stub;
     },
     multipleWithDeltaLink: function () {
-        var stub = dataStubs.multipleWithDeltaLink;
+        const stub = dataStubs.multipleWithDeltaLink;
         stub.oDataContext = stub["@odata.context"];
         stub.oDataDeltaLink = stub["@odata.deltaLink"];
         return stub;
     },
     multiple: function () {
-        var stub = dataStubs.multiple;
+        const stub = dataStubs.multiple;
         stub.oDataContext = stub["@odata.context"];
         return stub;
     },
     multiple2: function () {
-        var stub = dataStubs.multiple2;
+        const stub = dataStubs.multiple2;
         stub.oDataContext = stub["@odata.context"];
         return stub;
     },
     multipleFormatted: function () {
-        var stub = dataStubs.multipleFormatted;
+        const stub = dataStubs.multipleFormatted;
         stub.oDataContext = stub["@odata.context"];
         stub.value[0].option_Formatted = stub.value[0]["option@OData.Community.Display.V1.FormattedValue"];
         return stub;
     },
     multipleWithCount: function () {
-        var stub = dataStubs.multipleWithCount;
+        const stub = dataStubs.multipleWithCount;
         stub.oDataContext = stub["@odata.context"];
         stub.oDataCount = stub["@odata.count"];
         return stub;
@@ -1447,25 +1459,23 @@ var responseStubs = {
     }
 };
 
-var utils = {
-    toTypedArray: function (b) {
-        return new Uint8Array(b.buffer, b.byteOffset, b.byteLength / Uint8Array.BYTES_PER_ELEMENT);
-    },
+const utils = {
+    toTypedArray: (b) => new Uint8Array(b.buffer, b.byteOffset, b.byteLength / Uint8Array.BYTES_PER_ELEMENT),
 };
 
 module.exports = {
-    Xrm: Xrm,
+    Xrm,
     data: dataStubs,
     responses: responseStubs,
-    webApiUrl: webApiUrl,
-    webApiUrl81: webApiUrl81,
-    webApiUrl80: webApiUrl80,
-    webApiUrl90: webApiUrl90,
-    webApiUrl91: webApiUrl91,
-    webApiUrl92: webApiUrl92,
-    utils: utils,
-    searchApiUrl: searchApiUrl,
-    serverUrl: serverUrl,
-    powerPagesApiUrl: powerPagesApiUrl,
-    portalUrl: portalUrl,
+    webApiUrl,
+    webApiUrl81,
+    webApiUrl80,
+    webApiUrl90,
+    webApiUrl91,
+    webApiUrl92,
+    utils,
+    searchApiUrl,
+    serverUrl,
+    powerPagesApiUrl,
+    portalUrl,
 };
