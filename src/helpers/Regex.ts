@@ -1,28 +1,32 @@
-const uuid = "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}";
+import type { ReferenceObject } from "../types";
 
-const uuidRegExp = new RegExp(uuid, "i");
-const extractUuidRegExp = new RegExp("^{?(" + uuid + ")}?$", "i");
-const extractUuidFromUrlRegExp = new RegExp("(" + uuid + ")\\)$", "i");
+const UUID = "[0-9a-fA-F]{8}[-]?([0-9a-fA-F]{4}[-]?){3}[0-9a-fA-F]{12}";
+
+export const UUID_REGEX = new RegExp(UUID, "i");
+export const EXTRACT_UUID_REGEX = new RegExp("^{?(" + UUID + ")}?$", "i");
+export const EXTRACT_UUID_FROM_URL_REGEX = new RegExp("(" + UUID + ")\\)$", "i");
 //global here is fine because the state is reset inside string.replace function
-const removeBracketsFromGuidReg = new RegExp(`{(${uuid})}`, "g");
+export const REMOVE_BRACKETS_FROM_GUID_REGEX = new RegExp(`{(${UUID})}`, "g");
+export const ENTITY_UUID_REGEX = new RegExp(`\\/(\\w+)\\((${UUID})`, "i");
 
 export function isUuid(value: string): boolean {
-    const match = uuidRegExp.exec(value);
+    const match = UUID_REGEX.exec(value);
     return !!match;
 }
 
 export function extractUuid(value: string): string | null {
-    const match = extractUuidRegExp.exec(value);
+    const match = EXTRACT_UUID_REGEX.exec(value);
     return match ? match[1] : null;
 }
 
-export function extractUuidFromUrl(url: string): string | null {
-    const match = extractUuidFromUrlRegExp.exec(url);
+export function extractUuidFromUrl(url?: string): string | null {
+    if (!url) return null;
+    const match = EXTRACT_UUID_FROM_URL_REGEX.exec(url);
     return match ? match[1] : null;
 }
 
 export function removeCurlyBracketsFromUuid(value: string): string {
-    return value.replace(removeBracketsFromGuidReg, (_match, p1) => p1);
+    return value.replace(REMOVE_BRACKETS_FROM_GUID_REGEX, (_match, p1) => p1);
 }
 
 export function safelyRemoveCurlyBracketsFromUrl(url: string): string {
@@ -40,3 +44,55 @@ export function safelyRemoveCurlyBracketsFromUrl(url: string): string {
         })
         .join("");
 }
+
+/**
+ * Converts a response to a reference object
+ * @param {Object} responseData - Response object
+ * @returns {ReferenceObject}
+ */
+export function convertToReferenceObject(responseData: Record<string, any>): ReferenceObject {
+    const result = ENTITY_UUID_REGEX.exec(responseData["@odata.id"]);
+    return { id: result![2], collection: result![1], oDataContext: responseData["@odata.context"] };
+}
+
+export const PAGING_COOKIE_REGEX = /pagingcookie="(<cookie page="(\d+)".+<\/cookie>)/;
+export const SPECIAL_CHARACTER_REGEX = /[<>"']/g;
+
+/**
+ * Parses a paging cookie
+ * @param pagingCookie Paging cookie to parse
+ * @returns
+ */
+export function parsePagingCookie(pagingCookie: string) {
+    const info = PAGING_COOKIE_REGEX.exec(pagingCookie);
+
+    if (!info) return null;
+
+    const page = parseInt(info[2], 10);
+    const sanitizedCookie = sanitizeCookie(info[1]);
+
+    return { page, sanitizedCookie };
+}
+
+/**
+ * Sanitizes a cookie
+ * @param cookie Cookie to sanitize
+ * @returns
+ */
+function sanitizeCookie(cookie: string): string {
+    const characterMap: { [key: string]: string } = {
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;", // Use numeric reference for single quote to avoid confusion
+    };
+
+    return cookie.replace(SPECIAL_CHARACTER_REGEX, (char) => characterMap[char]);
+}
+
+export const BATCH_RESPONSE_HEADERS_REGEX = /^([^()<>@,;:\\"\/[\]?={} \t]+)\s?:\s?(.*)/;
+export const HTTP_STATUS_REGEX = /HTTP\/?\s*[\d.]*\s+(\d{3})\s+([\w\s]*)$/m;
+export const CONTENT_TYPE_PLAIN_REGEX = /Content-Type: text\/plain/i;
+export const ODATA_ENTITYID_REGEX = /OData-EntityId.+/i;
+export const TEXT_REGEX = /\w+$/g;
+export const LINE_ENDING_REGEX = /\r?\n/;

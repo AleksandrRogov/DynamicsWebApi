@@ -1,9 +1,9 @@
 ﻿import { DWA } from "../../dwa";
-import { Utility } from "../../utils/Utility";
-import { ErrorHelper, DynamicsWebApiError } from "../../helpers/ErrorHelper";
+import { getHeader, hasHeader, Utility } from "../../utils/Utility";
 import { dateReviver } from "./dateReviver";
 import type * as Core from "../../types";
-import { extractUuidFromUrl } from "../../helpers/Regex";
+import { convertToReferenceObject, extractUuidFromUrl } from "../../helpers/Regex";
+import { parseBatchResponse } from "./parseBatchResponse";
 
 function getFormattedKeyValue(keyName: string, value: any): any[] {
     let newKey: string | null = null;
@@ -40,14 +40,14 @@ function getFormattedKeyValue(keyName: string, value: any): any[] {
 
 /**
  *
- * @param {any} object - parsed JSON object
- * @param {any} parseParams - parameters for parsing the response
- * @returns {any} parsed batch response
+ * @param object - parsed JSON object
+ * @param parseParams - parameters for parsing the response
+ * @returns parsed batch response
  */
-function parseData(object: any, parseParams?: any): any {
+export function parseData(object: Record<string, any>, parseParams?: any): any {
     if (parseParams) {
         if (parseParams.isRef && object["@odata.id"] != null) {
-            return Utility.convertToReferenceObject(object);
+            return convertToReferenceObject(object);
         }
 
         if (parseParams.toCount) {
@@ -55,13 +55,9 @@ function parseData(object: any, parseParams?: any): any {
         }
     }
 
-    const keys = Object.keys(object);
-
-    for (let i = 0; i < keys.length; i++) {
-        const currentKey = keys[i];
-
+    for (const currentKey in object) {
         if (object[currentKey] != null) {
-            if (object[currentKey].constructor === Array) {
+            if (Array.isArray(object[currentKey])) {
                 for (var j = 0; j < object[currentKey].length; j++) {
                     object[currentKey][j] = parseData(object[currentKey][j]);
                 }
@@ -110,218 +106,100 @@ function parseData(object: any, parseParams?: any): any {
     return object;
 }
 
-const responseHeaderRegex = /^([^()<>@,;:\\"\/[\]?={} \t]+)\s?:\s?(.*)/;
-
-//partially taken from http://olingo.apache.org/doc/javascript/apidoc/batch.js.html
-function parseBatchHeaders(text: string): any {
-    const ctx = { position: 0 };
-    const headers = {};
-    let parts;
-    let line;
-    let pos;
-
-    do {
-        pos = ctx.position;
-        line = readLine(text, ctx);
-        parts = responseHeaderRegex.exec(line);
-        if (parts !== null) {
-            headers[parts[1].toLowerCase()] = parts[2];
-        } else {
-            // Whatever was found is not a header, so reset the context position.
-            ctx.position = pos;
-        }
-    } while (line && parts);
-
-    return headers;
-}
-
-//partially taken from http://olingo.apache.org/doc/javascript/apidoc/batch.js.html
-function readLine(text: string, ctx: { position: number }): string | null {
-    return readTo(text, ctx, "\r\n");
-}
-
-//partially taken from http://olingo.apache.org/doc/javascript/apidoc/batch.js.html
-function readTo(text: string, ctx: { position: number }, str: string): string | null {
-    const start = ctx.position || 0;
-    let end = text.length;
-    if (str) {
-        end = text.indexOf(str, start);
-        if (end === -1) {
-            return null;
-        }
-        ctx.position = end + str.length;
-    } else {
-        ctx.position = end;
-    }
-
-    return text.substring(start, end);
-}
-
-//partially taken from https://github.com/emiltholin/google-api-batch-utils
-/**
- *
- * @param {string} response - response that needs to be parsed
- * @param {Array} parseParams - parameters for parsing the response
- * @param {Number} [requestNumber] - number of the request
- * @returns {any} parsed batch response
- */
-function parseBatchResponse(response: string, parseParams: any, requestNumber: number = 0): (string | undefined | DynamicsWebApiError | Number)[] {
-    // Not the same delimiter in the response as we specify ourselves in the request,
-    // so we have to extract it.
-    const delimiter = response.substr(0, response.indexOf("\r\n"));
-    const batchResponseParts = response.split(delimiter);
-    // The first part will always be an empty string. Just remove it.
-    batchResponseParts.shift();
-    // The last part will be the "--". Just remove it.
-    batchResponseParts.pop();
-
-    let result: (string | undefined | DynamicsWebApiError | Number)[] = [];
-    for (let i = 0; i < batchResponseParts.length; i++) {
-        let batchResponse = batchResponseParts[i];
-        if (batchResponse.indexOf("--changesetresponse_") > -1) {
-            batchResponse = batchResponse.trim();
-            const batchToProcess = batchResponse.substring(batchResponse.indexOf("\r\n") + 1).trim();
-
-            result = result.concat(parseBatchResponse(batchToProcess, parseParams, requestNumber));
-        } else {
-            //check http status
-            const httpStatusReg = /HTTP\/?\s*[\d.]*\s+(\d{3})\s+([\w\s]*)$/gm.exec(batchResponse);
-            //todo: add error handler for httpStatus and httpStatusMessage; remove "!" operator
-            const httpStatus = parseInt(httpStatusReg![1]);
-            const httpStatusMessage = httpStatusReg![2].trim();
-
-            const responseData = batchResponse.substring(batchResponse.indexOf("{"), batchResponse.lastIndexOf("}") + 1);
-
-            if (!responseData) {
-                if (/Content-Type: text\/plain/i.test(batchResponse)) {
-                    const plainContentReg = /\w+$/gi.exec(batchResponse.trim());
-                    const plainContent = plainContentReg && plainContentReg.length ? plainContentReg[0] : undefined;
-
-                    //check if a plain content is a number or not
-                    result.push(isNaN(Number(plainContent)) ? plainContent : Number(plainContent));
-                } else {
-                    if (parseParams.length && parseParams[requestNumber] && parseParams[requestNumber].hasOwnProperty("valueIfEmpty")) {
-                        result.push(parseParams[requestNumber].valueIfEmpty);
-                    } else {
-                        const entityUrl = /OData-EntityId.+/i.exec(batchResponse);
-
-                        if (entityUrl && entityUrl.length) {
-                            const guidResult = extractUuidFromUrl(entityUrl[0]);
-                            result.push(guidResult ? guidResult : undefined);
-                        } else {
-                            result.push(undefined);
-                        }
-                    }
-                }
-            } else {
-                const parsedResponse = parseData(JSON.parse(responseData, dateReviver), parseParams[requestNumber]);
-
-                if (httpStatus >= 400) {
-                    const responseHeaders = parseBatchHeaders(
-                        //todo: add error handler for httpStatusReg; remove "!" operator
-                        batchResponse.substring(batchResponse.indexOf(httpStatusReg![0]) + httpStatusReg![0].length + 1, batchResponse.indexOf("{"))
-                    );
-
-                    result.push(
-                        ErrorHelper.handleHttpError(parsedResponse, {
-                            status: httpStatus,
-                            statusText: httpStatusMessage,
-                            statusMessage: httpStatusMessage,
-                            headers: responseHeaders,
-                        })
-                    );
-                } else {
-                    result.push(parsedResponse);
-                }
-            }
-        }
-
-        requestNumber++;
-    }
-
-    return result;
-}
-
 function base64ToString(base64: string): string {
     return global.DWA_BROWSER ? global.window.atob(base64) : Buffer.from(base64, "base64").toString("binary");
 }
 
-function parseFileResponse(response: any, responseHeaders: any, parseParams: any): Core.FileParseResult {
+function parseFileResponse(response: string, responseHeaders: any, parseParams: any): Core.FileParseResult {
     let data = response;
 
-    if (parseParams.hasOwnProperty("parse")) {
+    if (parseParams?.hasOwnProperty("parse")) {
         data = JSON.parse(data).value;
         data = base64ToString(data);
     }
 
-    var parseResult: Core.FileParseResult = {
+    const parseResult: Core.FileParseResult = {
         value: data,
     };
 
     if (responseHeaders["x-ms-file-name"]) parseResult.fileName = responseHeaders["x-ms-file-name"];
-
     if (responseHeaders["x-ms-file-size"]) parseResult.fileSize = parseInt(responseHeaders["x-ms-file-size"]);
-
-    if (hasHeader(responseHeaders, "Location")) parseResult.location = getHeader(responseHeaders, "Location");
+    const location = getHeader(responseHeaders, "Location");
+    if (location) parseResult.location = location;
 
     return parseResult;
 }
 
-function hasHeader(headers: any, name: string): boolean {
-    return headers.hasOwnProperty(name) || headers.hasOwnProperty(name.toLowerCase());
+function isBatchResponse(response: string): boolean {
+    return response.indexOf("--batchresponse_") > -1;
 }
 
-function getHeader(headers: any, name: string): string {
-    if (headers[name]) return headers[name];
+function isFileResponse(responseHeaders: Record<string, string>): boolean {
+    return hasHeader(responseHeaders, "Content-Disposition");
+}
+function isJsonResponse(responseHeaders: Record<string, string>): boolean {
+    const contentType = getHeader(responseHeaders, "Content-Type");
+    return contentType?.startsWith("application/json") == true;
+}
 
-    return headers[name.toLowerCase()];
+function handleBatchResponse(response: string, parseParams: any) {
+    const batch = parseBatchResponse(response, parseParams);
+    return parseParams?.[0].convertedToBatch ? batch[0] : batch;
+}
+
+function handleFileResponse(response: string, responseHeaders: any, parseParams: any): any {
+    return parseFileResponse(response, responseHeaders, parseParams[0]);
+}
+
+export function handleJsonResponse(response: string, parseParams: any, requestNumber: number = 0): any {
+    return parseData(JSON.parse(response, dateReviver), parseParams[requestNumber]);
+}
+
+export function handlePlainResponse(response?: string): number | string | undefined {
+    const numberResponse = Number(response);
+    return isFinite(numberResponse) ? numberResponse : response;
+}
+
+function handleEmptyResponse(responseHeaders: Record<string, string>, parseParams: any): any {
+    //checking if there is a valueIfEmpty parameter and return it if it is set
+    if (parseParams?.[0]?.valueIfEmpty !== undefined) {
+        return parseParams[0].valueIfEmpty;
+    }
+    //checking if the response contains an entity id, if it does - return it
+    const entityUrl = getHeader(responseHeaders, "OData-EntityId");
+    if (entityUrl) {
+        return extractUuidFromUrl(entityUrl) ?? undefined;
+    }
+    //checking if the response is a chunk response
+    const location = getHeader(responseHeaders, "Location");
+    if (location) {
+        const result: { location: string; chunkSize?: number } = { location: location };
+        if (responseHeaders["x-ms-chunk-size"]) {
+            result.chunkSize = parseInt(responseHeaders["x-ms-chunk-size"]);
+        }
+        return result;
+    }
 }
 
 /**
  *
- * @param {string} response - response that needs to be parsed
- * @param {Array} responseHeaders - response headers
- * @param {Array} parseParams - parameters for parsing the response
- * @returns {any} parsed response
+ * @param response - response that needs to be parsed
+ * @param responseHeaders - response headers
+ * @param parseParams - parameters for parsing the response
+ * @returns parsed response
  */
-export function parseResponse(response: string, responseHeaders: any, parseParams: any[]): any {
-    let parseResult: any = undefined;
-    if (response.length) {
-        if (response.indexOf("--batchresponse_") > -1) {
-            const batch = parseBatchResponse(response, parseParams);
-
-            parseResult = parseParams.length === 1 && parseParams[0].convertedToBatch ? batch[0] : batch;
-        } else {
-            if (hasHeader(responseHeaders, "Content-Disposition")) {
-                parseResult = parseFileResponse(response, responseHeaders, parseParams[0]);
-            } else {
-                const contentType = getHeader(responseHeaders, "Content-Type");
-                if (contentType.startsWith("application/json")) {
-                    parseResult = parseData(JSON.parse(response, dateReviver), parseParams[0]);
-                } else {
-                    parseResult = isNaN(Number(response)) ? response : Number(response);
-                }
-            }
-        }
-    } else {
-        if (parseParams.length && parseParams[0].hasOwnProperty("valueIfEmpty")) {
-            parseResult = parseParams[0].valueIfEmpty;
-        } else if (hasHeader(responseHeaders, "OData-EntityId")) {
-            const entityUrl = getHeader(responseHeaders, "OData-EntityId");
-
-            const guidResult = extractUuidFromUrl(entityUrl);
-
-            if (guidResult) {
-                parseResult = guidResult;
-            }
-        } else if (hasHeader(responseHeaders, "Location")) {
-            parseResult = {
-                location: getHeader(responseHeaders, "Location"),
-            };
-
-            if (responseHeaders["x-ms-chunk-size"]) parseResult.chunkSize = parseInt(responseHeaders["x-ms-chunk-size"]);
-        }
+export function parseResponse(response: string, responseHeaders: Record<string, string>, parseParams: any[]): any {
+    if (!response.length) {
+        return handleEmptyResponse(responseHeaders, parseParams);
     }
-
-    return parseResult;
+    if (isBatchResponse(response)) {
+        return handleBatchResponse(response, parseParams);
+    }
+    if (isFileResponse(responseHeaders)) {
+        return handleFileResponse(response, responseHeaders, parseParams);
+    }
+    if (isJsonResponse(responseHeaders)) {
+        return handleJsonResponse(response, parseParams);
+    }
+    return handlePlainResponse(response);
 }
