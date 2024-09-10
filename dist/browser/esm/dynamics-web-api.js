@@ -1,4 +1,4 @@
-/*! dynamics-web-api v2.1.5 (c) 2024 Aleksandr Rogov */
+/*! dynamics-web-api v2.1.6 (c) 2024 Aleksandr Rogov. License: MIT */
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -35,26 +35,120 @@ var init_Crypto = __esm({
 
 // src/helpers/Regex.ts
 function isUuid(value) {
-  const match = new RegExp(uuid, "i").exec(value);
+  const match = UUID_REGEX.exec(value);
   return !!match;
 }
 function extractUuid(value) {
-  const match = new RegExp("^{?(" + uuid + ")}?$", "i").exec(value);
+  const match = EXTRACT_UUID_REGEX.exec(value);
   return match ? match[1] : null;
 }
 function extractUuidFromUrl(url) {
-  const match = new RegExp("(" + uuid + ")\\)$", "i").exec(url);
+  if (!url) return null;
+  const match = EXTRACT_UUID_FROM_URL_REGEX.exec(url);
   return match ? match[1] : null;
 }
-var uuid;
+function removeCurlyBracketsFromUuid(value) {
+  return value.replace(REMOVE_BRACKETS_FROM_UUID_REGEX, (_match, p1) => p1);
+}
+function safelyRemoveCurlyBracketsFromUrl(url) {
+  const parts = url.split(QUOTATION_MARK_REGEX);
+  return parts.map((part, index) => {
+    if (index % 2 === 0) {
+      return removeCurlyBracketsFromUuid(part);
+    }
+    return part;
+  }).join("");
+}
+function convertToReferenceObject(responseData) {
+  const result = ENTITY_UUID_REGEX.exec(responseData["@odata.id"]);
+  return { id: result[2], collection: result[1], oDataContext: responseData["@odata.context"] };
+}
+function parsePagingCookie(pagingCookie) {
+  const info = PAGING_COOKIE_REGEX.exec(pagingCookie);
+  if (!info) return null;
+  const page = parseInt(info[2], 10);
+  const sanitizedCookie = sanitizeCookie(info[1]);
+  return { page, sanitizedCookie };
+}
+function sanitizeCookie(cookie) {
+  const characterMap = {
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+    // Use numeric reference for single quote to avoid confusion
+  };
+  return cookie.replace(SPECIAL_CHARACTER_REGEX, (char) => characterMap[char]);
+}
+function removeLeadingSlash(value) {
+  return value.replace(LEADING_SLASH_REGEX, "");
+}
+function escapeUnicodeSymbols(value) {
+  return value.replace(UNICODE_SYMBOLS_REGEX, (chr) => `\\u${("0000" + chr.charCodeAt(0).toString(16)).slice(-4)}`);
+}
+function removeDoubleQuotes(value) {
+  return value.replace(DOUBLE_QUOTE_REGEX, "");
+}
+var UUID, UUID_REGEX, EXTRACT_UUID_REGEX, EXTRACT_UUID_FROM_URL_REGEX, REMOVE_BRACKETS_FROM_UUID_REGEX, ENTITY_UUID_REGEX, QUOTATION_MARK_REGEX, PAGING_COOKIE_REGEX, SPECIAL_CHARACTER_REGEX, LEADING_SLASH_REGEX, UNICODE_SYMBOLS_REGEX, DOUBLE_QUOTE_REGEX, BATCH_RESPONSE_HEADERS_REGEX, HTTP_STATUS_REGEX, CONTENT_TYPE_PLAIN_REGEX, ODATA_ENTITYID_REGEX, TEXT_REGEX, LINE_ENDING_REGEX, SEARCH_FOR_ENTITY_NAME_REGEX;
 var init_Regex = __esm({
   "src/helpers/Regex.ts"() {
     "use strict";
-    uuid = "[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}";
+    UUID = "[0-9a-fA-F]{8}[-]?([0-9a-fA-F]{4}[-]?){3}[0-9a-fA-F]{12}";
+    UUID_REGEX = new RegExp(UUID, "i");
+    EXTRACT_UUID_REGEX = new RegExp("^{?(" + UUID + ")}?$", "i");
+    EXTRACT_UUID_FROM_URL_REGEX = new RegExp("(" + UUID + ")\\)$", "i");
+    REMOVE_BRACKETS_FROM_UUID_REGEX = new RegExp(`{(${UUID})}`, "g");
+    ENTITY_UUID_REGEX = new RegExp(`\\/(\\w+)\\((${UUID})`, "i");
+    QUOTATION_MARK_REGEX = /(["'].*?["'])/;
+    PAGING_COOKIE_REGEX = /pagingcookie="(<cookie page="(\d+)".+<\/cookie>)/;
+    SPECIAL_CHARACTER_REGEX = /[<>"']/g;
+    LEADING_SLASH_REGEX = /^\//;
+    UNICODE_SYMBOLS_REGEX = /[\u007F-\uFFFF]/g;
+    DOUBLE_QUOTE_REGEX = /"/g;
+    BATCH_RESPONSE_HEADERS_REGEX = /^([^()<>@,;:\\"\/[\]?={} \t]+)\s?:\s?(.*)/;
+    HTTP_STATUS_REGEX = /HTTP\/?\s*[\d.]*\s+(\d{3})\s+([\w\s]*)$/m;
+    CONTENT_TYPE_PLAIN_REGEX = /Content-Type: text\/plain/i;
+    ODATA_ENTITYID_REGEX = /OData-EntityId.+/i;
+    TEXT_REGEX = /\w+$/g;
+    LINE_ENDING_REGEX = /\r?\n/;
+    SEARCH_FOR_ENTITY_NAME_REGEX = /(\w+)(\([\d\w-]+\))$/;
   }
 });
 
 // src/utils/Utility.ts
+function formatParameterValue(value) {
+  if (value == null) return "";
+  if (typeof value === "string" && !value.startsWith("Microsoft.Dynamics.CRM") && !isUuid(value)) {
+    return `'${value}'`;
+  } else if (typeof value === "object") {
+    return JSON.stringify(value);
+  }
+  return value.toString();
+}
+function processParameters(parameters) {
+  const parameterNames = Object.keys(parameters);
+  const functionParams = [];
+  const urlQuery = [];
+  parameterNames.forEach((parameterName, index) => {
+    let value = parameters[parameterName];
+    if (value == null) return;
+    value = formatParameterValue(value);
+    const paramIndex = index + 1;
+    functionParams.push(`${parameterName}=@p${paramIndex}`);
+    urlQuery.push(`@p${paramIndex}=${extractUuid(value) || value}`);
+  });
+  return {
+    key: `(${functionParams.join(",")})`,
+    queryParams: urlQuery
+  };
+}
+function hasHeader(headers, name) {
+  return headers.hasOwnProperty(name) || headers.hasOwnProperty(name.toLowerCase());
+}
+function getHeader(headers, name) {
+  if (headers[name]) return headers[name];
+  return headers[name.toLowerCase()];
+}
 var downloadChunkSize, _Utility, Utility;
 var init_Utility = __esm({
   "src/utils/Utility.ts"() {
@@ -70,32 +164,7 @@ var init_Utility = __esm({
        * @returns {string}
        */
       static buildFunctionParameters(parameters) {
-        if (parameters) {
-          const parameterNames = Object.keys(parameters);
-          const functionParams = [];
-          const urlQuery = [];
-          for (let i = 1; i <= parameterNames.length; i++) {
-            const parameterName = parameterNames[i - 1];
-            let value = parameters[parameterName];
-            if (value == null)
-              continue;
-            if (typeof value === "string" && !value.startsWith("Microsoft.Dynamics.CRM") && !isUuid(value)) {
-              value = `'${value}'`;
-            } else if (typeof value === "object") {
-              value = JSON.stringify(value);
-            }
-            functionParams.push(`${parameterName}=@p${i}`);
-            urlQuery.push(`@p${i}=${extractUuid(value) || value}`);
-          }
-          return {
-            key: `(${functionParams.join(",")})`,
-            queryParams: urlQuery
-          };
-        } else {
-          return {
-            key: "()"
-          };
-        }
+        return parameters ? processParameters(parameters) : { key: "()" };
       }
       /**
        * Parses a paging cookie returned in response
@@ -106,31 +175,12 @@ var init_Utility = __esm({
        */
       static getFetchXmlPagingCookie(pageCookies = "", currentPageNumber = 1) {
         pageCookies = decodeURIComponent(decodeURIComponent(pageCookies));
-        const info = /pagingcookie="(<cookie page="(\d+)".+<\/cookie>)/.exec(pageCookies);
-        if (info != null) {
-          let page = parseInt(info[2]);
-          return {
-            cookie: info[1].replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "'").replace(/\'/g, "&quot;"),
-            page,
-            nextPage: page + 1
-          };
-        } else {
-          return {
-            cookie: "",
-            page: currentPageNumber,
-            nextPage: currentPageNumber + 1
-          };
-        }
-      }
-      /**
-       * Converts a response to a reference object
-       *
-       * @param {Object} responseData - Response object
-       * @returns {ReferenceObject}
-       */
-      static convertToReferenceObject(responseData) {
-        const result = /\/(\w+)\(([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})/i.exec(responseData["@odata.id"]);
-        return { id: result[2], collection: result[1], oDataContext: responseData["@odata.context"] };
+        const result = parsePagingCookie(pageCookies);
+        return {
+          cookie: result?.sanitizedCookie || "",
+          page: result?.page || currentPageNumber,
+          nextPage: result?.page ? result.page + 1 : currentPageNumber + 1
+        };
       }
       /**
        * Checks whether the value is JS Null.
@@ -142,7 +192,7 @@ var init_Utility = __esm({
       }
       /** Generates UUID */
       static generateUUID() {
-        return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) => (c ^ generateRandomBytes()[0] & 15 >> c / 4).toString(16));
+        return ("10000000-1000-4000-8000" + -1e11).replace(/[018]/g, (c) => (c ^ generateRandomBytes()[0] & 15 >> c / 4).toString(16));
       }
       static getXrmContext() {
         if (typeof GetGlobalContext !== "undefined") {
@@ -199,8 +249,7 @@ var init_Utility = __esm({
         return target;
       }
       static copyRequest(src, excludeProps = []) {
-        if (!excludeProps.includes("signal"))
-          excludeProps.push("signal");
+        if (!excludeProps.includes("signal")) excludeProps.push("signal");
         const result = _Utility.copyObject(src, excludeProps);
         result.signal = src.signal;
         return result;
@@ -221,8 +270,7 @@ var init_Utility = __esm({
         request.contentRange = "bytes " + offset + "-" + (offset + count - 1) + "/" + fileBuffer.length;
       }
       static convertToFileBuffer(binaryString) {
-        if (false)
-          return Buffer.from(binaryString, "binary");
+        if (false) return Buffer.from(binaryString, "binary");
         const bytes = new Uint8Array(binaryString.length);
         for (var i = 0; i < binaryString.length; i++) {
           bytes[i] = binaryString.charCodeAt(i);
@@ -262,8 +310,7 @@ var init_ErrorHelper = __esm({
         }
       }
       static maxLengthStringParameterCheck(parameter, functionName, parameterName, maxLength) {
-        if (!parameter)
-          return;
+        if (!parameter) return;
         if (parameter.length > maxLength) {
           throw new Error(`${parameterName} has a ${maxLength} character limit.`);
         }
@@ -321,16 +368,14 @@ var init_ErrorHelper = __esm({
        */
       static guidParameterCheck(parameter, functionName, parameterName) {
         const match = extractUuid(parameter);
-        if (!match)
-          throwParameterError(functionName, parameterName, "GUID String");
+        if (!match) throwParameterError(functionName, parameterName, "GUID String");
         return match;
       }
       static keyParameterCheck(parameter, functionName, parameterName) {
         try {
           _ErrorHelper.stringParameterCheck(parameter, functionName, parameterName);
           const match = extractUuid(parameter);
-          if (match)
-            return match;
+          if (match) return match;
           const alternateKeys = parameter.split(",");
           if (alternateKeys.length) {
             for (let i = 0; i < alternateKeys.length; i++) {
@@ -398,6 +443,110 @@ var init_dateReviver = __esm({
   }
 });
 
+// src/client/helpers/parseBatchResponse.ts
+function parseBatchHeaders(text) {
+  const ctx = { position: 0 };
+  const headers = {};
+  let parts;
+  let line;
+  let pos;
+  do {
+    pos = ctx.position;
+    line = readLine(text, ctx);
+    if (!line) break;
+    parts = BATCH_RESPONSE_HEADERS_REGEX.exec(line);
+    if (parts !== null) {
+      headers[parts[1].toLowerCase()] = parts[2];
+    } else {
+      ctx.position = pos;
+    }
+  } while (line && parts);
+  return headers;
+}
+function readLine(text, ctx) {
+  return readTo(text, ctx, LINE_ENDING_REGEX);
+}
+function readTo(text, ctx, searchRegTerm) {
+  const start = ctx.position || 0;
+  const slicedText = text.slice(start);
+  const match = searchRegTerm.exec(slicedText);
+  if (!match) {
+    return null;
+  }
+  const end = start + match.index;
+  ctx.position = end + match[0].length;
+  return text.substring(start, end);
+}
+function getHttpStatus(response) {
+  const parts = HTTP_STATUS_REGEX.exec(response);
+  return { httpStatusString: parts[0], httpStatus: parseInt(parts[1]), httpStatusMessage: parts[2].trim() };
+}
+function getPlainContent(response) {
+  HTTP_STATUS_REGEX.lastIndex = 0;
+  const textReg = TEXT_REGEX.exec(response.trim());
+  return textReg?.length ? textReg[0] : void 0;
+}
+function handlePlainContent(batchResponse, parseParams, requestNumber) {
+  const plainContent = getPlainContent(batchResponse);
+  return handlePlainResponse(plainContent);
+}
+function handleEmptyContent(batchResponse, parseParams, requestNumber) {
+  if (parseParams?.[requestNumber]?.valueIfEmpty !== void 0) {
+    return parseParams[requestNumber].valueIfEmpty;
+  } else {
+    const entityUrl = ODATA_ENTITYID_REGEX.exec(batchResponse);
+    return extractUuidFromUrl(entityUrl?.[0]) ?? void 0;
+  }
+}
+function processBatchPart(batchResponse, parseParams, requestNumber) {
+  const { httpStatusString, httpStatus, httpStatusMessage } = getHttpStatus(batchResponse);
+  const responseData = batchResponse.substring(batchResponse.indexOf("{"), batchResponse.lastIndexOf("}") + 1);
+  if (!responseData) {
+    if (CONTENT_TYPE_PLAIN_REGEX.test(batchResponse)) {
+      return handlePlainContent(batchResponse, parseParams, requestNumber);
+    }
+    return handleEmptyContent(batchResponse, parseParams, requestNumber);
+  }
+  const parsedResponse = handleJsonResponse(responseData, parseParams, requestNumber);
+  if (httpStatus < 400) {
+    return parsedResponse;
+  }
+  const responseHeaders = parseBatchHeaders(
+    batchResponse.substring(batchResponse.indexOf(httpStatusString) + httpStatusString.length + 1, batchResponse.indexOf("{"))
+  );
+  return ErrorHelper.handleHttpError(parsedResponse, {
+    status: httpStatus,
+    statusText: httpStatusMessage,
+    statusMessage: httpStatusMessage,
+    headers: responseHeaders
+  });
+}
+function parseBatchResponse(response, parseParams, requestNumber = 0) {
+  const delimiter = response.substring(0, response.search(LINE_ENDING_REGEX));
+  const batchResponseParts = response.split(delimiter);
+  batchResponseParts.shift();
+  batchResponseParts.pop();
+  let result = [];
+  for (let part of batchResponseParts) {
+    if (part.indexOf("--changesetresponse_") === -1) {
+      result.push(processBatchPart(part, parseParams, requestNumber++));
+      continue;
+    }
+    part = part.trim();
+    const batchToProcess = part.substring(part.search(LINE_ENDING_REGEX) + 1).trim();
+    result = result.concat(parseBatchResponse(batchToProcess, parseParams, requestNumber++));
+  }
+  return result;
+}
+var init_parseBatchResponse = __esm({
+  "src/client/helpers/parseBatchResponse.ts"() {
+    "use strict";
+    init_ErrorHelper();
+    init_Regex();
+    init_parseResponse();
+  }
+});
+
 // src/client/helpers/parseResponse.ts
 function getFormattedKeyValue(keyName, value) {
   let newKey = null;
@@ -433,17 +582,15 @@ function getFormattedKeyValue(keyName, value) {
 function parseData(object, parseParams) {
   if (parseParams) {
     if (parseParams.isRef && object["@odata.id"] != null) {
-      return Utility.convertToReferenceObject(object);
+      return convertToReferenceObject(object);
     }
     if (parseParams.toCount) {
       return getFormattedKeyValue("@odata.count", object["@odata.count"])[1] || 0;
     }
   }
-  const keys = Object.keys(object);
-  for (let i = 0; i < keys.length; i++) {
-    const currentKey = keys[i];
+  for (const currentKey in object) {
     if (object[currentKey] != null) {
-      if (object[currentKey].constructor === Array) {
+      if (Array.isArray(object[currentKey])) {
         for (var j = 0; j < object[currentKey].length; j++) {
           object[currentKey][j] = parseData(object[currentKey][j]);
         }
@@ -476,175 +623,88 @@ function parseData(object, parseParams) {
   }
   return object;
 }
-function parseBatchHeaders(text) {
-  const ctx = { position: 0 };
-  const headers = {};
-  let parts;
-  let line;
-  let pos;
-  do {
-    pos = ctx.position;
-    line = readLine(text, ctx);
-    parts = responseHeaderRegex.exec(line);
-    if (parts !== null) {
-      headers[parts[1].toLowerCase()] = parts[2];
-    } else {
-      ctx.position = pos;
-    }
-  } while (line && parts);
-  return headers;
-}
-function readLine(text, ctx) {
-  return readTo(text, ctx, "\r\n");
-}
-function readTo(text, ctx, str) {
-  const start = ctx.position || 0;
-  let end = text.length;
-  if (str) {
-    end = text.indexOf(str, start);
-    if (end === -1) {
-      return null;
-    }
-    ctx.position = end + str.length;
-  } else {
-    ctx.position = end;
-  }
-  return text.substring(start, end);
-}
-function parseBatchResponse(response, parseParams, requestNumber = 0) {
-  const delimiter = response.substr(0, response.indexOf("\r\n"));
-  const batchResponseParts = response.split(delimiter);
-  batchResponseParts.shift();
-  batchResponseParts.pop();
-  let result = [];
-  for (let i = 0; i < batchResponseParts.length; i++) {
-    let batchResponse = batchResponseParts[i];
-    if (batchResponse.indexOf("--changesetresponse_") > -1) {
-      batchResponse = batchResponse.trim();
-      const batchToProcess = batchResponse.substring(batchResponse.indexOf("\r\n") + 1).trim();
-      result = result.concat(parseBatchResponse(batchToProcess, parseParams, requestNumber));
-    } else {
-      const httpStatusReg = /HTTP\/?\s*[\d.]*\s+(\d{3})\s+([\w\s]*)$/gm.exec(batchResponse);
-      const httpStatus = parseInt(httpStatusReg[1]);
-      const httpStatusMessage = httpStatusReg[2].trim();
-      const responseData = batchResponse.substring(batchResponse.indexOf("{"), batchResponse.lastIndexOf("}") + 1);
-      if (!responseData) {
-        if (/Content-Type: text\/plain/i.test(batchResponse)) {
-          const plainContentReg = /\w+$/gi.exec(batchResponse.trim());
-          const plainContent = plainContentReg && plainContentReg.length ? plainContentReg[0] : void 0;
-          result.push(isNaN(Number(plainContent)) ? plainContent : Number(plainContent));
-        } else {
-          if (parseParams.length && parseParams[requestNumber] && parseParams[requestNumber].hasOwnProperty("valueIfEmpty")) {
-            result.push(parseParams[requestNumber].valueIfEmpty);
-          } else {
-            const entityUrl = /OData-EntityId.+/i.exec(batchResponse);
-            if (entityUrl && entityUrl.length) {
-              const guidResult = extractUuidFromUrl(entityUrl[0]);
-              result.push(guidResult ? guidResult : void 0);
-            } else {
-              result.push(void 0);
-            }
-          }
-        }
-      } else {
-        const parsedResponse = parseData(JSON.parse(responseData, dateReviver), parseParams[requestNumber]);
-        if (httpStatus >= 400) {
-          const responseHeaders = parseBatchHeaders(
-            //todo: add error handler for httpStatusReg; remove "!" operator
-            batchResponse.substring(batchResponse.indexOf(httpStatusReg[0]) + httpStatusReg[0].length + 1, batchResponse.indexOf("{"))
-          );
-          result.push(
-            ErrorHelper.handleHttpError(parsedResponse, {
-              status: httpStatus,
-              statusText: httpStatusMessage,
-              statusMessage: httpStatusMessage,
-              headers: responseHeaders
-            })
-          );
-        } else {
-          result.push(parsedResponse);
-        }
-      }
-    }
-    requestNumber++;
-  }
-  return result;
-}
 function base64ToString(base64) {
   return true ? window.atob(base64) : Buffer.from(base64, "base64").toString("binary");
 }
 function parseFileResponse(response, responseHeaders, parseParams) {
   let data = response;
-  if (parseParams.hasOwnProperty("parse")) {
+  if (parseParams?.hasOwnProperty("parse")) {
     data = JSON.parse(data).value;
     data = base64ToString(data);
   }
-  var parseResult = {
+  const parseResult = {
     value: data
   };
-  if (responseHeaders["x-ms-file-name"])
-    parseResult.fileName = responseHeaders["x-ms-file-name"];
-  if (responseHeaders["x-ms-file-size"])
-    parseResult.fileSize = parseInt(responseHeaders["x-ms-file-size"]);
-  if (hasHeader(responseHeaders, "Location"))
-    parseResult.location = getHeader(responseHeaders, "Location");
+  if (responseHeaders["x-ms-file-name"]) parseResult.fileName = responseHeaders["x-ms-file-name"];
+  if (responseHeaders["x-ms-file-size"]) parseResult.fileSize = parseInt(responseHeaders["x-ms-file-size"]);
+  const location = getHeader(responseHeaders, "Location");
+  if (location) parseResult.location = location;
   return parseResult;
 }
-function hasHeader(headers, name) {
-  return headers.hasOwnProperty(name) || headers.hasOwnProperty(name.toLowerCase());
+function isBatchResponse(response) {
+  return response.indexOf("--batchresponse_") > -1;
 }
-function getHeader(headers, name) {
-  if (headers[name])
-    return headers[name];
-  return headers[name.toLowerCase()];
+function isFileResponse(responseHeaders) {
+  return hasHeader(responseHeaders, "Content-Disposition");
+}
+function isJsonResponse(responseHeaders) {
+  const contentType = getHeader(responseHeaders, "Content-Type");
+  return contentType?.startsWith("application/json") == true;
+}
+function handleBatchResponse(response, parseParams) {
+  const batch = parseBatchResponse(response, parseParams);
+  return parseParams?.[0].convertedToBatch ? batch[0] : batch;
+}
+function handleFileResponse(response, responseHeaders, parseParams) {
+  return parseFileResponse(response, responseHeaders, parseParams[0]);
+}
+function handleJsonResponse(response, parseParams, requestNumber = 0) {
+  return parseData(JSON.parse(response, dateReviver), parseParams[requestNumber]);
+}
+function handlePlainResponse(response) {
+  const numberResponse = Number(response);
+  return isFinite(numberResponse) ? numberResponse : response;
+}
+function handleEmptyResponse(responseHeaders, parseParams) {
+  if (parseParams?.[0]?.valueIfEmpty !== void 0) {
+    return parseParams[0].valueIfEmpty;
+  }
+  const entityUrl = getHeader(responseHeaders, "OData-EntityId");
+  if (entityUrl) {
+    return extractUuidFromUrl(entityUrl) ?? void 0;
+  }
+  const location = getHeader(responseHeaders, "Location");
+  if (location) {
+    const result = { location };
+    if (responseHeaders["x-ms-chunk-size"]) {
+      result.chunkSize = parseInt(responseHeaders["x-ms-chunk-size"]);
+    }
+    return result;
+  }
 }
 function parseResponse(response, responseHeaders, parseParams) {
-  let parseResult = void 0;
-  if (response.length) {
-    if (response.indexOf("--batchresponse_") > -1) {
-      const batch = parseBatchResponse(response, parseParams);
-      parseResult = parseParams.length === 1 && parseParams[0].convertedToBatch ? batch[0] : batch;
-    } else {
-      if (hasHeader(responseHeaders, "Content-Disposition")) {
-        parseResult = parseFileResponse(response, responseHeaders, parseParams[0]);
-      } else {
-        const contentType = getHeader(responseHeaders, "Content-Type");
-        if (contentType.startsWith("application/json")) {
-          parseResult = parseData(JSON.parse(response, dateReviver), parseParams[0]);
-        } else {
-          parseResult = isNaN(Number(response)) ? response : Number(response);
-        }
-      }
-    }
-  } else {
-    if (parseParams.length && parseParams[0].hasOwnProperty("valueIfEmpty")) {
-      parseResult = parseParams[0].valueIfEmpty;
-    } else if (hasHeader(responseHeaders, "OData-EntityId")) {
-      const entityUrl = getHeader(responseHeaders, "OData-EntityId");
-      const guidResult = extractUuidFromUrl(entityUrl);
-      if (guidResult) {
-        parseResult = guidResult;
-      }
-    } else if (hasHeader(responseHeaders, "Location")) {
-      parseResult = {
-        location: getHeader(responseHeaders, "Location")
-      };
-      if (responseHeaders["x-ms-chunk-size"])
-        parseResult.chunkSize = parseInt(responseHeaders["x-ms-chunk-size"]);
-    }
+  if (!response.length) {
+    return handleEmptyResponse(responseHeaders, parseParams);
   }
-  return parseResult;
+  if (isBatchResponse(response)) {
+    return handleBatchResponse(response, parseParams);
+  }
+  if (isFileResponse(responseHeaders)) {
+    return handleFileResponse(response, responseHeaders, parseParams);
+  }
+  if (isJsonResponse(responseHeaders)) {
+    return handleJsonResponse(response, parseParams);
+  }
+  return handlePlainResponse(response);
 }
-var responseHeaderRegex;
 var init_parseResponse = __esm({
   "src/client/helpers/parseResponse.ts"() {
     "use strict";
     init_dwa();
     init_Utility();
-    init_ErrorHelper();
     init_dateReviver();
     init_Regex();
-    responseHeaderRegex = /^([^()<>@,;:\\"\/[\]?={} \t]+)\s?:\s?(.*)/;
+    init_parseBatchResponse();
   }
 });
 
@@ -703,8 +763,7 @@ function _executeRequest(options, successCallback, errorCallback) {
   }
   request.onreadystatechange = function() {
     if (request.readyState === 4) {
-      if (signal)
-        signal.removeEventListener("abort", abort);
+      if (signal) signal.removeEventListener("abort", abort);
       switch (request.status) {
         case 200:
         case 201:
@@ -725,8 +784,7 @@ function _executeRequest(options, successCallback, errorCallback) {
         case 0:
           break;
         default:
-          if (!request)
-            break;
+          if (!request) break;
           let error;
           let headers2;
           try {
@@ -784,8 +842,7 @@ function _executeRequest(options, successCallback, errorCallback) {
     request = null;
   };
   request.onabort = function() {
-    if (!request)
-      return;
+    if (!request) return;
     const headers2 = parseResponseHeaders(request.getAllResponseHeaders());
     errorCallback(
       ErrorHelper.handleHttpError({
@@ -798,8 +855,7 @@ function _executeRequest(options, successCallback, errorCallback) {
     request = null;
   };
   const abort = () => {
-    if (!request)
-      return;
+    if (!request) return;
     const headers2 = parseResponseHeaders(request.getAllResponseHeaders());
     errorCallback(
       ErrorHelper.handleHttpError({
@@ -818,8 +874,7 @@ function _executeRequest(options, successCallback, errorCallback) {
     signal.addEventListener("abort", abort);
   }
   data ? request.send(data) : request.send();
-  if (XhrWrapper.afterSendEvent)
-    XhrWrapper.afterSendEvent();
+  if (XhrWrapper.afterSendEvent) XhrWrapper.afterSendEvent();
 }
 var XhrWrapper;
 var init_xhr = __esm({
@@ -840,8 +895,7 @@ var getApiUrl = (serverUrl, apiConfig) => {
   if (Utility.isRunningWithinPortals()) {
     return new URL("_api", window.location.origin).toString() + "/";
   } else {
-    if (!serverUrl)
-      serverUrl = Utility.getClientUrl();
+    if (!serverUrl) serverUrl = Utility.getClientUrl();
     return new URL(`api/${apiConfig.path}/v${apiConfig.version}`, serverUrl).toString() + "/";
   }
 };
@@ -946,6 +1000,7 @@ init_Utility();
 // src/utils/Request.ts
 init_Utility();
 init_ErrorHelper();
+init_Regex();
 var entityNames = null;
 var setEntityNames = (newEntityNames) => {
   entityNames = newEntityNames;
@@ -1035,21 +1090,17 @@ var composeUrl = (request, config, url = "", joinSymbol = "&") => {
     }
     if (request.filter) {
       ErrorHelper.stringParameterCheck(request.filter, `DynamicsWebApi.${request.functionName}`, "request.filter");
-      const removeBracketsFromGuidReg = /[^"']{([\w\d]{8}[-]?(?:[\w\d]{4}[-]?){3}[\w\d]{12})}(?:[^"']|$)/g;
-      let filterResult = request.filter;
-      let m = null;
-      while ((m = removeBracketsFromGuidReg.exec(filterResult)) !== null) {
-        if (m.index === removeBracketsFromGuidReg.lastIndex) {
-          removeBracketsFromGuidReg.lastIndex++;
-        }
-        let replacement = m[0].endsWith(")") ? ")" : " ";
-        filterResult = filterResult.replace(m[0], " " + m[1] + replacement);
-      }
+      const filterResult = safelyRemoveCurlyBracketsFromUrl(request.filter);
       queryArray.push("$filter=" + encodeURIComponent(filterResult));
     }
     if (request.fieldName) {
       ErrorHelper.stringParameterCheck(request.fieldName, `DynamicsWebApi.${request.functionName}`, "request.fieldName");
-      url += "/" + request.fieldName;
+      if (!request.property) request.property = request.fieldName;
+      delete request.fieldName;
+    }
+    if (request.property) {
+      ErrorHelper.stringParameterCheck(request.property, `DynamicsWebApi.${request.functionName}`, "request.property");
+      url += "/" + request.property;
     }
     if (request.savedQuery) {
       queryArray.push("savedQuery=" + ErrorHelper.guidParameterCheck(request.savedQuery, `DynamicsWebApi.${request.functionName}`, "request.savedQuery"));
@@ -1098,8 +1149,7 @@ var composeUrl = (request, config, url = "", joinSymbol = "&") => {
     if (!Utility.isNull(request.inChangeSet)) {
       ErrorHelper.boolParameterCheck(request.inChangeSet, `DynamicsWebApi.${request.functionName}`, "request.inChangeSet");
     }
-    if (request.isBatch && Utility.isNull(request.inChangeSet))
-      request.inChangeSet = true;
+    if (request.isBatch && Utility.isNull(request.inChangeSet)) request.inChangeSet = true;
     if (request.timeout) {
       ErrorHelper.numberParameterCheck(request.timeout, `DynamicsWebApi.${request.functionName}`, "request.timeout");
     }
@@ -1109,16 +1159,17 @@ var composeUrl = (request, config, url = "", joinSymbol = "&") => {
         queryArray.push("$expand=" + request.expand);
       } else {
         const expandQueryArray = [];
-        for (let i = 0; i < request.expand.length; i++) {
-          if (request.expand[i].property) {
-            const expand = request.expand[i];
-            expand.functionName = `${request.functionName} $expand`;
-            let expandConverted = composeUrl(expand, config, "", ";");
-            if (expandConverted) {
-              expandConverted = `(${expandConverted.substr(1)})`;
-            }
-            expandQueryArray.push(request.expand[i].property + expandConverted);
+        for (const { property, ...expand } of request.expand) {
+          if (!property) continue;
+          const expandRequest = {
+            functionName: `${request.functionName} $expand`,
+            ...expand
+          };
+          let expandConverted = composeUrl(expandRequest, config, "", ";");
+          if (expandConverted) {
+            expandConverted = `(${expandConverted.slice(1)})`;
           }
+          expandQueryArray.push(property + expandConverted);
         }
         if (expandQueryArray.length) {
           queryArray.push("$expand=" + expandQueryArray.join(","));
@@ -1198,39 +1249,32 @@ var composeHeaders = (request, config) => {
   return headers;
 };
 var composePreferHeader = (request, config) => {
-  let returnRepresentation = request.returnRepresentation;
-  let includeAnnotations = request.includeAnnotations;
-  let maxPageSize = request.maxPageSize;
-  let trackChanges = request.trackChanges;
-  let continueOnError = request.continueOnError;
-  let prefer = [];
+  let { returnRepresentation, includeAnnotations, maxPageSize, trackChanges, continueOnError } = request;
   if (request.prefer && request.prefer.length) {
     ErrorHelper.stringOrArrayParameterCheck(request.prefer, `DynamicsWebApi.${request.functionName}`, "request.prefer");
-    if (typeof request.prefer === "string") {
-      prefer = request.prefer.split(",");
-    }
-    for (let i in prefer) {
-      let item = prefer[i].trim();
-      if (item === "return=representation") {
+    const preferArray = typeof request.prefer === "string" ? request.prefer.split(",") : request.prefer;
+    preferArray.forEach((item) => {
+      const trimmedItem = item.trim();
+      if (trimmedItem === "return=representation") {
         returnRepresentation = true;
-      } else if (item.includes("odata.include-annotations=")) {
-        includeAnnotations = item.replace("odata.include-annotations=", "").replace(/"/g, "");
-      } else if (item.startsWith("odata.maxpagesize=")) {
-        maxPageSize = Number(item.replace("odata.maxpagesize=", "").replace(/"/g, "")) || 0;
-      } else if (item.includes("odata.track-changes")) {
+      } else if (trimmedItem.includes("odata.include-annotations=")) {
+        includeAnnotations = removeDoubleQuotes(trimmedItem.replace("odata.include-annotations=", ""));
+      } else if (trimmedItem.startsWith("odata.maxpagesize=")) {
+        maxPageSize = Number(removeDoubleQuotes(trimmedItem.replace("odata.maxpagesize=", ""))) || 0;
+      } else if (trimmedItem.includes("odata.track-changes")) {
         trackChanges = true;
-      } else if (item.includes("odata.continue-on-error")) {
+      } else if (trimmedItem.includes("odata.continue-on-error")) {
         continueOnError = true;
       }
-    }
+    });
   }
-  prefer = [];
+  const prefer = [];
   if (config) {
     if (returnRepresentation == null) {
       returnRepresentation = config.returnRepresentation;
     }
-    includeAnnotations = includeAnnotations ? includeAnnotations : config.includeAnnotations;
-    maxPageSize = maxPageSize ? maxPageSize : config.maxPageSize;
+    includeAnnotations = includeAnnotations ?? config.includeAnnotations;
+    maxPageSize = maxPageSize ?? config.maxPageSize;
   }
   if (returnRepresentation) {
     ErrorHelper.boolParameterCheck(returnRepresentation, `DynamicsWebApi.${request.functionName}`, "request.returnRepresentation");
@@ -1259,10 +1303,15 @@ var convertToBatch = (requests, config, batchRequest) => {
   const batchBody = [];
   let currentChangeSet = null;
   let contentId = 1e5;
+  const addHeaders = (headers2, batchBody2) => {
+    for (const key in headers2) {
+      if (key === "Authorization" || key === "Content-ID") continue;
+      batchBody2.push(`${key}: ${headers2[key]}`);
+    }
+  };
   requests.forEach((internalRequest) => {
     internalRequest.functionName = "executeBatch";
-    if (batchRequest?.inChangeSet === false)
-      internalRequest.inChangeSet = false;
+    if (batchRequest?.inChangeSet === false) internalRequest.inChangeSet = false;
     const inChangeSet = internalRequest.method === "GET" ? false : !!internalRequest.inChangeSet;
     if (!inChangeSet && currentChangeSet) {
       batchBody.push(`
@@ -1300,10 +1349,8 @@ ${internalRequest.method} ${internalRequest.path} HTTP/1.1`);
     } else {
       batchBody.push("Content-Type: application/json");
     }
-    for (let key in internalRequest.headers) {
-      if (key === "Authorization" || key === "Content-ID")
-        continue;
-      batchBody.push(`${key}: ${internalRequest.headers[key]}`);
+    if (internalRequest.headers) {
+      addHeaders(internalRequest.headers, batchBody);
     }
     if (internalRequest.data) {
       batchBody.push(`
@@ -1321,72 +1368,64 @@ ${processData(internalRequest.data, config)}`);
   return { headers, body: batchBody.join("\n") };
 };
 var findCollectionName = (entityName) => {
-  let collectionName = null;
-  if (!Utility.isNull(entityNames)) {
-    collectionName = entityNames[entityName];
-    if (!collectionName) {
-      for (let key in entityNames) {
-        if (entityNames[key] === entityName) {
-          return entityName;
-        }
+  if (Utility.isNull(entityNames)) return null;
+  const collectionName = entityNames[entityName];
+  if (!collectionName) {
+    for (const key in entityNames) {
+      if (entityNames[key] === entityName) {
+        return entityName;
       }
     }
   }
   return collectionName;
 };
 var processData = (data, config) => {
-  let stringifiedData = null;
-  if (data) {
-    if (data instanceof Uint8Array || data instanceof Uint16Array || data instanceof Uint32Array)
-      return data;
-    stringifiedData = JSON.stringify(data, (key, value) => {
-      if (key.endsWith("@odata.bind") || key.endsWith("@odata.id")) {
-        if (typeof value === "string" && !value.startsWith("$")) {
-          if (/\(\{[\w\d-]+\}\)/g.test(value)) {
-            value = value.replace(/(.+)\(\{([\w\d-]+)\}\)/g, "$1($2)");
-          }
-          if (config.useEntityNames) {
-            const regularExpression = /([\w_]+)(\([\d\w-]+\))$/;
-            const valueParts = regularExpression.exec(value);
-            if (valueParts && valueParts.length > 2) {
-              const collectionName = findCollectionName(valueParts[1]);
-              if (!Utility.isNull(collectionName)) {
-                value = value.replace(regularExpression, collectionName + "$2");
-              }
-            }
-          }
-          if (!value.startsWith(config.dataApi.url)) {
-            if (key.endsWith("@odata.bind")) {
-              if (!value.startsWith("/")) {
-                value = "/" + value;
-              }
-            } else {
-              value = config.dataApi.url + value.replace(/^\//, "");
-            }
-          }
-        }
-      } else if (key.startsWith("oData") || key.endsWith("_Formatted") || key.endsWith("_NavigationProperty") || key.endsWith("_LogicalName")) {
-        value = void 0;
+  if (!data) return null;
+  if (data instanceof Uint8Array || data instanceof Uint16Array || data instanceof Uint32Array) return data;
+  const replaceEntityNameWithCollectionName = (value) => {
+    const valueParts = SEARCH_FOR_ENTITY_NAME_REGEX.exec(value);
+    if (valueParts && valueParts.length > 2) {
+      const collectionName = findCollectionName(valueParts[1]);
+      if (!Utility.isNull(collectionName)) {
+        return value.replace(SEARCH_FOR_ENTITY_NAME_REGEX, `${collectionName}$2`);
       }
-      return value;
-    });
-    stringifiedData = stringifiedData.replace(/[\u007F-\uFFFF]/g, function(chr) {
-      return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).slice(-4);
-    });
-  }
-  return stringifiedData;
+    }
+    return value;
+  };
+  const addFullWebApiUrl = (key, value) => {
+    if (!value.startsWith(config.dataApi.url)) {
+      if (key.endsWith("@odata.bind")) {
+        if (!value.startsWith("/")) {
+          value = `/${value}`;
+        }
+      } else {
+        value = `${config.dataApi.url}${removeLeadingSlash(value)}`;
+      }
+    }
+    return value;
+  };
+  const stringifiedData = JSON.stringify(data, (key, value) => {
+    if (key.endsWith("@odata.bind") || key.endsWith("@odata.id")) {
+      if (typeof value === "string" && !value.startsWith("$")) {
+        value = removeCurlyBracketsFromUuid(value);
+        if (config.useEntityNames) {
+          value = replaceEntityNameWithCollectionName(value);
+        }
+        value = addFullWebApiUrl(key, value);
+      }
+    } else if (key.startsWith("oData") || key.endsWith("_Formatted") || key.endsWith("_NavigationProperty") || key.endsWith("_LogicalName")) {
+      return void 0;
+    }
+    return value;
+  });
+  return escapeUnicodeSymbols(stringifiedData);
 };
 var setStandardHeaders = (headers = {}) => {
-  if (!headers["Accept"])
-    headers["Accept"] = "application/json";
-  if (!headers["OData-MaxVersion"])
-    headers["OData-MaxVersion"] = "4.0";
-  if (!headers["OData-Version"])
-    headers["OData-Version"] = "4.0";
-  if (headers["Content-Range"])
-    headers["Content-Type"] = "application/octet-stream";
-  else if (!headers["Content-Type"])
-    headers["Content-Type"] = "application/json; charset=utf-8";
+  if (!headers["Accept"]) headers["Accept"] = "application/json";
+  if (!headers["OData-MaxVersion"]) headers["OData-MaxVersion"] = "4.0";
+  if (!headers["OData-Version"]) headers["OData-Version"] = "4.0";
+  if (headers["Content-Range"]) headers["Content-Type"] = "application/octet-stream";
+  else if (!headers["Content-Type"]) headers["Content-Type"] = "application/json; charset=utf-8";
   return headers;
 };
 
@@ -1400,21 +1439,16 @@ async function executeRequest2(options) {
 
 // src/client/RequestClient.ts
 var _addResponseParams = (requestId, responseParams) => {
-  if (_responseParseParams[requestId])
-    _responseParseParams[requestId].push(responseParams);
-  else
-    _responseParseParams[requestId] = [responseParams];
+  if (_responseParseParams[requestId]) _responseParseParams[requestId].push(responseParams);
+  else _responseParseParams[requestId] = [responseParams];
 };
 var _addRequestToBatchCollection = (requestId, request) => {
-  if (_batchRequestCollection[requestId])
-    _batchRequestCollection[requestId].push(request);
-  else
-    _batchRequestCollection[requestId] = [request];
+  if (_batchRequestCollection[requestId]) _batchRequestCollection[requestId].push(request);
+  else _batchRequestCollection[requestId] = [request];
 };
 var _clearRequestData = (requestId) => {
   delete _responseParseParams[requestId];
-  if (_batchRequestCollection.hasOwnProperty(requestId))
-    delete _batchRequestCollection[requestId];
+  if (_batchRequestCollection.hasOwnProperty(requestId)) delete _batchRequestCollection[requestId];
 };
 var _runRequest = async (request, config) => {
   try {
@@ -1494,16 +1528,14 @@ var RequestClient = class {
     const isBatchConverted = request.responseParameters?.convertedToBatch;
     if (request.path === "$batch" && !isBatchConverted) {
       const batchRequest = _batchRequestCollection[request.requestId];
-      if (!batchRequest)
-        throw ErrorHelper.batchIsEmpty();
+      if (!batchRequest) throw ErrorHelper.batchIsEmpty();
       const batchResult = convertToBatch(batchRequest, config, request);
       processedData = batchResult.body;
       request.headers = { ...batchResult.headers, ...request.headers };
       delete _batchRequestCollection[request.requestId];
     } else {
       processedData = !isBatchConverted ? processData(request.data, config) : request.data;
-      if (!isBatchConverted)
-        request.headers = setStandardHeaders(request.headers);
+      if (!isBatchConverted) request.headers = setStandardHeaders(request.headers);
     }
     if (config.impersonate && !request.headers["MSCRMCallerID"]) {
       request.headers["MSCRMCallerID"] = config.impersonate;
@@ -1514,8 +1546,7 @@ var RequestClient = class {
     let token = null;
     if (config.onTokenRefresh && (!request.headers || request.headers && !request.headers["Authorization"])) {
       token = await config.onTokenRefresh();
-      if (!token)
-        throw new Error("Token is empty. Request is aborted.");
+      if (!token) throw new Error("Token is empty. Request is aborted.");
     }
     if (token) {
       request.headers["Authorization"] = "Bearer " + (token.hasOwnProperty("accessToken") ? token.accessToken : token);
@@ -1593,8 +1624,7 @@ var DynamicsWebApi = class _DynamicsWebApi {
     this.setConfig = (config) => ConfigurationUtility.merge(this._config, config);
     this._makeRequest = async (request) => {
       request.isBatch = this._isBatch;
-      if (this._batchRequestId)
-        request.requestId = this._batchRequestId;
+      if (this._batchRequestId) request.requestId = this._batchRequestId;
       return RequestClient.makeRequest(request, this._config);
     };
     /**
@@ -1625,8 +1655,7 @@ var DynamicsWebApi = class _DynamicsWebApi {
       if (!request.functionName) {
         internalRequest = Utility.copyRequest(request);
         internalRequest.functionName = "create";
-      } else
-        internalRequest = request;
+      } else internalRequest = request;
       internalRequest.method = "POST";
       const response = await this._makeRequest(internalRequest);
       return response?.data;
@@ -1653,8 +1682,7 @@ var DynamicsWebApi = class _DynamicsWebApi {
       if (!request.functionName) {
         internalRequest = Utility.copyRequest(request);
         internalRequest.functionName = "retrieve";
-      } else
-        internalRequest = request;
+      } else internalRequest = request;
       internalRequest.method = "GET";
       internalRequest.responseParameters = {
         isRef: internalRequest.select?.length === 1 && internalRequest.select[0].endsWith("/$ref")
@@ -1674,8 +1702,7 @@ var DynamicsWebApi = class _DynamicsWebApi {
       if (!request.functionName) {
         internalRequest = Utility.copyRequest(request);
         internalRequest.functionName = "update";
-      } else
-        internalRequest = request;
+      } else internalRequest = request;
       if (!internalRequest.method)
         internalRequest.method = /EntityDefinitions|RelationshipDefinitions|GlobalOptionSetDefinitions/.test(internalRequest.collection || "") ? "PUT" : "PATCH";
       internalRequest.responseParameters = { valueIfEmpty: true };
@@ -1725,8 +1752,7 @@ var DynamicsWebApi = class _DynamicsWebApi {
       if (!request.functionName) {
         internalRequest = Utility.copyRequest(request);
         internalRequest.functionName = "deleteRecord";
-      } else
-        internalRequest = request;
+      } else internalRequest = request;
       internalRequest.method = "DELETE";
       internalRequest.responseParameters = { valueIfEmpty: true };
       const ifmatch = internalRequest.ifmatch;
@@ -1834,8 +1860,7 @@ var DynamicsWebApi = class _DynamicsWebApi {
       if (!request.functionName) {
         internalRequest = Utility.copyRequest(request);
         internalRequest.functionName = "retrieveMultiple";
-      } else
-        internalRequest = request;
+      } else internalRequest = request;
       internalRequest.method = "GET";
       if (nextPageLink) {
         ErrorHelper.stringParameterCheck(nextPageLink, "DynamicsWebApi.retrieveMultiple", "nextPageLink");
@@ -1922,8 +1947,7 @@ var DynamicsWebApi = class _DynamicsWebApi {
           ErrorHelper.stringParameterCheck(internalRequest.pagingCookie, "DynamicsWebApi.fetch", "request.pagingCookie");
           replacementString += ` paging-cookie="${internalRequest.pagingCookie}"`;
         }
-        if (replacementString)
-          internalRequest.fetchXml = internalRequest.fetchXml.replace(/^(<fetch)/, replacementString);
+        if (replacementString) internalRequest.fetchXml = internalRequest.fetchXml.replace(/^(<fetch)/, replacementString);
       }
       internalRequest.responseParameters = { pageNumber: internalRequest.pageNumber };
       const response = await this._makeRequest(internalRequest);
@@ -2440,8 +2464,7 @@ var DynamicsWebApi = class _DynamicsWebApi {
       const isObject = Utility.isObject(request);
       const parameterName = isObject ? "request.query.search" : "term";
       const internalRequest = isObject ? Utility.copyObject(request) : { query: { search: request } };
-      if (isObject)
-        ErrorHelper.parameterCheck(internalRequest.query, "DynamicsWebApi.autocomplete", "request.query");
+      if (isObject) ErrorHelper.parameterCheck(internalRequest.query, "DynamicsWebApi.autocomplete", "request.query");
       ErrorHelper.stringParameterCheck(internalRequest.query.search, `DynamicsWebApi.autocomplete`, parameterName);
       ErrorHelper.maxLengthStringParameterCheck(internalRequest.query.search, "DynamicsWebApi.autocomplete", parameterName, 100);
       internalRequest.functionName = internalRequest.collection = "autocomplete";

@@ -1,3 +1,17 @@
+<a name="v.2.1.6"></a>
+# [v2.1.6 (v.2.1.6)](https://github.com/AleksandrRogov/DynamicsWebApi/releases/tag/v.2.1.6) - 10 Sep 2024
+
+**Changes**
+- :warning: Deprecated: `fieldName` in request properties for `deleteRecord`, `uploadFile`, `downloadFile`. Please use `property` instead.
+- Curly brackets won't be removed from the GUIDs inside `filter` if the value that contains the GUID is inside single quotes, which means it's a string. This is an improvement of an existing functionality.
+Before: `"attribute eq 'some text {GUID} more text'"` would result in `"attribute eq 'some text GUID more text'"`
+Now: `"attribute eq 'some text {GUID} more text'"` stays the same `"attribute eq 'some text {GUID} more text'"`
+- Improving performance by pre-compiling and optimizing regular expressions.
+- General refactoring to improve code readability.
+
+[Changes][v.2.1.6]
+
+
 <a name="v2.1.5"></a>
 # [v2.1.5](https://github.com/AleksandrRogov/DynamicsWebApi/releases/tag/v2.1.5) - 11 Jul 2024
 
@@ -963,6 +977,7 @@ Added:
 [Changes][v1.2.0]
 
 
+[v.2.1.6]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.1.5...v.2.1.6
 [v2.1.5]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.1.4...v2.1.5
 [v2.1.4]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.1.3...v2.1.4
 [v2.1.3]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v1.7.12...v2.1.3

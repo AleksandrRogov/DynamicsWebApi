@@ -13,7 +13,7 @@ As well as Microsoft Dynamics 365 CE (online), Microsoft Dynamics 365 CE (on-pre
 ## Main Features
 
 - **Microsoft Dataverse Search API**. Access the full power of its Search, Suggestion and Autocomplete capabilities.
-- **Batch Requests**. Convert all requests into a Batch operation with twi lines of code.
+- **Batch Requests**. Convert all requests into a Batch operation with two lines of code.
 - **Simplicity and Automation**. Such as automated paging, big file downloading/uploading in chunks of data, automated conversion of requests with long URLs into a Batch Request in the background and more!
 - **CRUD operations**. Including Fetch XML, Actions and Functions in Microsoft Dataverse Web API.
 - **Table Definitions (Entity Metadata)**. Query and modify Table, Column, Choice (Option Set) and Relationship definitions.

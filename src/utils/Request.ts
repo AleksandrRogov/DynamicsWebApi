@@ -4,6 +4,14 @@ import { Utility } from "./Utility";
 import { Config, HeaderCollection } from "../dynamics-web-api";
 import { ErrorHelper } from "../helpers/ErrorHelper";
 import { InternalConfig } from "./Config";
+import {
+    removeCurlyBracketsFromUuid,
+    removeLeadingSlash,
+    escapeUnicodeSymbols,
+    safelyRemoveCurlyBracketsFromUrl,
+    SEARCH_FOR_ENTITY_NAME_REGEX,
+    removeDoubleQuotes,
+} from "../helpers/Regex";
 
 export let entityNames: Record<string, string | null> | null = null;
 
@@ -128,26 +136,20 @@ export const composeUrl = (request: InternalRequest, config: Config, url: string
 
         if (request.filter) {
             ErrorHelper.stringParameterCheck(request.filter, `DynamicsWebApi.${request.functionName}`, "request.filter");
-            const removeBracketsFromGuidReg = /[^"']{([\w\d]{8}[-]?(?:[\w\d]{4}[-]?){3}[\w\d]{12})}(?:[^"']|$)/g;
-            let filterResult = request.filter;
-
-            //fix bug 2018-06-11
-            let m: RegExpExecArray | null = null;
-            while ((m = removeBracketsFromGuidReg.exec(filterResult)) !== null) {
-                if (m.index === removeBracketsFromGuidReg.lastIndex) {
-                    removeBracketsFromGuidReg.lastIndex++;
-                }
-
-                let replacement = m[0].endsWith(")") ? ")" : " ";
-                filterResult = filterResult.replace(m[0], " " + m[1] + replacement);
-            }
-
+            const filterResult = safelyRemoveCurlyBracketsFromUrl(request.filter);
             queryArray.push("$filter=" + encodeURIComponent(filterResult));
         }
 
+        //todo: delete in v2.5
         if (request.fieldName) {
             ErrorHelper.stringParameterCheck(request.fieldName, `DynamicsWebApi.${request.functionName}`, "request.fieldName");
-            url += "/" + request.fieldName;
+            if (!request.property) request.property = request.fieldName;
+            delete request.fieldName;
+        }
+
+        if (request.property) {
+            ErrorHelper.stringParameterCheck(request.property, `DynamicsWebApi.${request.functionName}`, "request.property");
+            url += "/" + request.property;
         }
 
         if (request.savedQuery) {
@@ -222,16 +224,18 @@ export const composeUrl = (request: InternalRequest, config: Config, url: string
                 queryArray.push("$expand=" + request.expand);
             } else {
                 const expandQueryArray: string[] = [];
-                for (let i = 0; i < request.expand.length; i++) {
-                    if (request.expand[i].property) {
-                        const expand = <InternalRequest>request.expand[i];
-                        expand.functionName = `${request.functionName} $expand`;
-                        let expandConverted = composeUrl(expand, config, "", ";");
-                        if (expandConverted) {
-                            expandConverted = `(${expandConverted.substr(1)})`;
-                        }
-                        expandQueryArray.push(request.expand[i].property + expandConverted);
+                for (const { property, ...expand } of request.expand) {
+                    if (!property) continue;
+
+                    const expandRequest: InternalRequest = {
+                        functionName: `${request.functionName} $expand`,
+                        ...expand,
+                    };
+                    let expandConverted = composeUrl(expandRequest, config, "", ";");
+                    if (expandConverted) {
+                        expandConverted = `(${expandConverted.slice(1)})`;
                     }
+                    expandQueryArray.push(property + expandConverted);
                 }
                 if (expandQueryArray.length) {
                     queryArray.push("$expand=" + expandQueryArray.join(","));
@@ -331,44 +335,37 @@ export const composeHeaders = (request: InternalRequest, config: Config): Header
 };
 
 export const composePreferHeader = (request: InternalRequest, config: Config): string => {
-    let returnRepresentation: boolean | null | undefined = request.returnRepresentation;
-    let includeAnnotations: string | null | undefined = request.includeAnnotations;
-    let maxPageSize: number | null | undefined = request.maxPageSize;
-    let trackChanges: boolean | null | undefined = request.trackChanges;
-    let continueOnError: boolean | null | undefined = request.continueOnError;
-
-    let prefer: string[] = [];
+    let { returnRepresentation, includeAnnotations, maxPageSize, trackChanges, continueOnError } = request;
 
     if (request.prefer && request.prefer.length) {
         ErrorHelper.stringOrArrayParameterCheck(request.prefer, `DynamicsWebApi.${request.functionName}`, "request.prefer");
-        if (typeof request.prefer === "string") {
-            prefer = request.prefer.split(",");
-        }
-        for (let i in prefer) {
-            let item = prefer[i].trim();
-            if (item === "return=representation") {
+        const preferArray = typeof request.prefer === "string" ? request.prefer.split(",") : request.prefer;
+
+        preferArray.forEach((item) => {
+            const trimmedItem = item.trim();
+            if (trimmedItem === "return=representation") {
                 returnRepresentation = true;
-            } else if (item.includes("odata.include-annotations=")) {
-                includeAnnotations = item.replace("odata.include-annotations=", "").replace(/"/g, "");
-            } else if (item.startsWith("odata.maxpagesize=")) {
-                maxPageSize = Number(item.replace("odata.maxpagesize=", "").replace(/"/g, "")) || 0;
-            } else if (item.includes("odata.track-changes")) {
+            } else if (trimmedItem.includes("odata.include-annotations=")) {
+                includeAnnotations = removeDoubleQuotes(trimmedItem.replace("odata.include-annotations=", ""));
+            } else if (trimmedItem.startsWith("odata.maxpagesize=")) {
+                maxPageSize = Number(removeDoubleQuotes(trimmedItem.replace("odata.maxpagesize=", ""))) || 0;
+            } else if (trimmedItem.includes("odata.track-changes")) {
                 trackChanges = true;
-            } else if (item.includes("odata.continue-on-error")) {
+            } else if (trimmedItem.includes("odata.continue-on-error")) {
                 continueOnError = true;
             }
-        }
+        });
     }
 
     //clear array
-    prefer = [];
+    const prefer: string[] = [];
 
     if (config) {
         if (returnRepresentation == null) {
             returnRepresentation = config.returnRepresentation;
         }
-        includeAnnotations = includeAnnotations ? includeAnnotations : config.includeAnnotations;
-        maxPageSize = maxPageSize ? maxPageSize : config.maxPageSize;
+        includeAnnotations = includeAnnotations ?? config.includeAnnotations;
+        maxPageSize = maxPageSize ?? config.maxPageSize;
     }
 
     if (returnRepresentation) {
@@ -405,6 +402,13 @@ export const convertToBatch = (requests: InternalRequest[], config: InternalConf
     const batchBody: string[] = [];
     let currentChangeSet: string | null = null;
     let contentId = 100000;
+
+    const addHeaders = (headers: Record<string, string>, batchBody: string[]) => {
+        for (const key in headers) {
+            if (key === "Authorization" || key === "Content-ID") continue;
+            batchBody.push(`${key}: ${headers[key]}`);
+        }
+    };
 
     requests.forEach((internalRequest) => {
         internalRequest.functionName = "executeBatch";
@@ -453,10 +457,8 @@ export const convertToBatch = (requests: InternalRequest[], config: InternalConf
             batchBody.push("Content-Type: application/json");
         }
 
-        for (let key in internalRequest.headers) {
-            if (key === "Authorization" || key === "Content-ID") continue;
-
-            batchBody.push(`${key}: ${internalRequest.headers[key]}`);
+        if (internalRequest.headers) {
+            addHeaders(internalRequest.headers, batchBody);
         }
 
         if (internalRequest.data) {
@@ -477,15 +479,13 @@ export const convertToBatch = (requests: InternalRequest[], config: InternalConf
 };
 
 export const findCollectionName = (entityName: string): string | null => {
-    let collectionName: string | null = null;
+    if (Utility.isNull(entityNames)) return null;
 
-    if (!Utility.isNull(entityNames)) {
-        collectionName = entityNames![entityName];
-        if (!collectionName) {
-            for (let key in entityNames!) {
-                if (entityNames[key] === entityName) {
-                    return entityName;
-                }
+    const collectionName = entityNames[entityName];
+    if (!collectionName) {
+        for (const key in entityNames) {
+            if (entityNames[key] === entityName) {
+                return entityName;
             }
         }
     }
@@ -494,55 +494,50 @@ export const findCollectionName = (entityName: string): string | null => {
 };
 
 export const processData = (data: any, config: InternalConfig): string | Uint8Array | Uint16Array | Uint32Array | null => {
-    let stringifiedData: string | null = null;
-    if (data) {
-        if (data instanceof Uint8Array || data instanceof Uint16Array || data instanceof Uint32Array) return data;
+    if (!data) return null;
 
-        stringifiedData = JSON.stringify(data, (key, value) => {
-            if (key.endsWith("@odata.bind") || key.endsWith("@odata.id")) {
-                if (typeof value === "string" && !value.startsWith("$")) {
-                    //remove brackets in guid
-                    if (/\(\{[\w\d-]+\}\)/g.test(value)) {
-                        value = value.replace(/(.+)\(\{([\w\d-]+)\}\)/g, "$1($2)");
-                    }
+    if (data instanceof Uint8Array || data instanceof Uint16Array || data instanceof Uint32Array) return data;
 
-                    if (config.useEntityNames) {
-                        //replace entity name with collection name
-                        const regularExpression = /([\w_]+)(\([\d\w-]+\))$/;
-                        const valueParts = regularExpression.exec(value);
-                        if (valueParts && valueParts.length > 2) {
-                            const collectionName = findCollectionName(valueParts[1]);
-
-                            if (!Utility.isNull(collectionName)) {
-                                value = value.replace(regularExpression, collectionName + "$2");
-                            }
-                        }
-                    }
-
-                    if (!value.startsWith(config.dataApi.url)) {
-                        //add full web api url if it's not set
-                        if (key.endsWith("@odata.bind")) {
-                            if (!value.startsWith("/")) {
-                                value = "/" + value;
-                            }
-                        } else {
-                            value = config.dataApi.url + value.replace(/^\//, "");
-                        }
-                    }
-                }
-            } else if (key.startsWith("oData") || key.endsWith("_Formatted") || key.endsWith("_NavigationProperty") || key.endsWith("_LogicalName")) {
-                value = undefined;
+    const replaceEntityNameWithCollectionName = (value: string): string => {
+        const valueParts = SEARCH_FOR_ENTITY_NAME_REGEX.exec(value);
+        if (valueParts && valueParts.length > 2) {
+            const collectionName = findCollectionName(valueParts[1]);
+            if (!Utility.isNull(collectionName)) {
+                return value.replace(SEARCH_FOR_ENTITY_NAME_REGEX, `${collectionName}$2`);
             }
+        }
+        return value;
+    };
 
-            return value;
-        });
+    const addFullWebApiUrl = (key: string, value: string): string => {
+        if (!value.startsWith(config.dataApi.url)) {
+            if (key.endsWith("@odata.bind")) {
+                if (!value.startsWith("/")) {
+                    value = `/${value}`;
+                }
+            } else {
+                value = `${config.dataApi.url}${removeLeadingSlash(value)}`;
+            }
+        }
+        return value;
+    };
 
-        stringifiedData = stringifiedData.replace(/[\u007F-\uFFFF]/g, function (chr: string) {
-            return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).slice(-4);
-        });
-    }
+    const stringifiedData = JSON.stringify(data, (key, value) => {
+        if (key.endsWith("@odata.bind") || key.endsWith("@odata.id")) {
+            if (typeof value === "string" && !value.startsWith("$")) {
+                value = removeCurlyBracketsFromUuid(value);
+                if (config.useEntityNames) {
+                    value = replaceEntityNameWithCollectionName(value);
+                }
+                value = addFullWebApiUrl(key, value);
+            }
+        } else if (key.startsWith("oData") || key.endsWith("_Formatted") || key.endsWith("_NavigationProperty") || key.endsWith("_LogicalName")) {
+            return undefined;
+        }
+        return value;
+    });
 
-    return stringifiedData;
+    return escapeUnicodeSymbols(stringifiedData);
 };
 
 export const setStandardHeaders = (headers: HeaderCollection = {}): HeaderCollection => {

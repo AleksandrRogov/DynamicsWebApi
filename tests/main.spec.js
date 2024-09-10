@@ -12,357 +12,6 @@ Utility.downloadChunkSize = 15;
 
 var dynamicsWebApiTest = new DynamicsWebApi({ serverUrl: mocks.serverUrl, dataApi: { version: "8.2" } });
 
-describe("dynamicsWebApi.create -", function () {
-    before(() => {
-        global.DWA_BROWSER = false;
-    });
-    describe("basic", function () {
-        var scope;
-        before(function () {
-            var response = mocks.responses.createReturnId;
-            scope = nock(mocks.webApiUrl)
-                .post(mocks.responses.collectionUrl, mocks.data.testEntity)
-                .reply(response.status, response.responseText, response.responseHeaders);
-        });
-
-        after(function () {
-            nock.cleanAll();
-        });
-
-        it("returns a correct response", function (done) {
-            dynamicsWebApiTest
-                .create({ data: mocks.data.testEntity, collection: "tests" })
-                .then(function (object) {
-                    expect(object).to.deep.equal(mocks.data.testEntityId);
-                    done();
-                })
-                .catch(function (object) {
-                    done(object);
-                });
-        });
-
-        it("all requests have been made", function () {
-            expect(scope.isDone()).to.be.true;
-        });
-    });
-
-    describe("return representation", function () {
-        var scope;
-        before(function () {
-            var response = mocks.responses.createReturnRepresentation;
-            scope = nock(mocks.webApiUrl, {
-                reqheaders: {
-                    Prefer: DWA.Prefer.ReturnRepresentation,
-                },
-            })
-                .post(mocks.responses.collectionUrl, mocks.data.testEntity)
-                .reply(response.status, response.responseText, response.responseHeaders);
-        });
-
-        after(function () {
-            nock.cleanAll();
-        });
-
-        it("returns a correct response", function (done) {
-            dynamicsWebApiTest
-                .create({ data: mocks.data.testEntity, collection: "tests", returnRepresentation: true })
-                .then(function (object) {
-                    expect(object).to.deep.equal(mocks.data.testEntity);
-                    done();
-                })
-                .catch(function (object) {
-                    done(object);
-                });
-        });
-
-        it("all requests have been made", function () {
-            expect(scope.isDone()).to.be.true;
-        });
-    });
-
-    describe("select", function () {
-        var scope;
-        before(function () {
-            var response = mocks.responses.createReturnRepresentation;
-            scope = nock(mocks.webApiUrl, {
-                reqheaders: {
-                    Prefer: DWA.Prefer.ReturnRepresentation,
-                },
-            })
-                .post(mocks.responses.collectionUrl + "?$select=name", mocks.data.testEntity)
-                .reply(response.status, response.responseText, response.responseHeaders);
-        });
-
-        after(function () {
-            nock.cleanAll();
-        });
-
-        it("returns a correct response", function (done) {
-            dynamicsWebApiTest
-                .create({ data: mocks.data.testEntity, collection: "tests", returnRepresentation: true, select: ["name"] })
-                .then(function (object) {
-                    expect(object).to.deep.equal(mocks.data.testEntity);
-                    done();
-                })
-                .catch(function (object) {
-                    done(object);
-                });
-        });
-
-        it("all requests have been made", function () {
-            expect(scope.isDone()).to.be.true;
-        });
-    });
-});
-
-describe("dynamicsWebApi.update -", function () {
-    describe("basic", function () {
-        var scope;
-        before(function () {
-            var response = mocks.responses.basicEmptyResponseSuccess;
-            scope = nock(mocks.webApiUrl, {
-                reqheaders: {
-                    "If-Match": "*",
-                },
-            })
-                .patch(mocks.responses.testEntityUrl, mocks.data.testEntity)
-                .reply(response.status, response.responseText, response.responseHeaders);
-        });
-
-        after(function () {
-            nock.cleanAll();
-        });
-
-        it("returns a correct response", function (done) {
-            dynamicsWebApiTest
-                .update({ key: mocks.data.testEntityId, collection: "tests", data: mocks.data.testEntity })
-                .then(function (object) {
-                    expect(object).to.be.true;
-                    done();
-                })
-                .catch(function (object) {
-                    done(object);
-                });
-        });
-
-        it("all requests have been made", function () {
-            expect(scope.isDone()).to.be.true;
-        });
-    });
-
-    describe("return representation", function () {
-        var scope;
-        before(function () {
-            var response = mocks.responses.updateReturnRepresentation;
-            scope = nock(mocks.webApiUrl, {
-                reqheaders: {
-                    "If-Match": "*",
-                    Prefer: DWA.Prefer.ReturnRepresentation,
-                },
-            })
-                .patch(mocks.responses.testEntityUrl, mocks.data.testEntity)
-                .reply(response.status, response.responseText, response.responseHeaders);
-        });
-
-        after(function () {
-            nock.cleanAll();
-        });
-
-        it("returns a correct response", function (done) {
-            dynamicsWebApiTest
-                .update({ key: mocks.data.testEntityId, collection: "tests", data: mocks.data.testEntity, returnRepresentation: true })
-                .then(function (object) {
-                    expect(object).to.deep.equal(mocks.data.updatedEntity);
-                    done();
-                })
-                .catch(function (object) {
-                    done(object);
-                });
-        });
-
-        it("all requests have been made", function () {
-            expect(scope.isDone()).to.be.true;
-        });
-    });
-
-    describe("return representation - select", function () {
-        var scope;
-        before(function () {
-            var response = mocks.responses.updateReturnRepresentation;
-            scope = nock(mocks.webApiUrl, {
-                reqheaders: {
-                    "If-Match": "*",
-                    Prefer: DWA.Prefer.ReturnRepresentation,
-                },
-            })
-                .patch(mocks.responses.testEntityUrl + "?$select=fullname", mocks.data.testEntity)
-                .reply(response.status, response.responseText, response.responseHeaders)
-                .patch(mocks.responses.testEntityUrl + "?$select=fullname,subject", mocks.data.testEntity)
-                .reply(response.status, response.responseText, response.responseHeaders);
-        });
-
-        after(function () {
-            nock.cleanAll();
-        });
-
-        it("[fullname] returns a correct response", function (done) {
-            dynamicsWebApiTest
-                .update({
-                    key: mocks.data.testEntityId,
-                    collection: "tests",
-                    data: mocks.data.testEntity,
-                    returnRepresentation: true,
-                    select: ["fullname"],
-                })
-                .then(function (object) {
-                    expect(object).to.deep.equal(mocks.data.updatedEntity);
-                    done();
-                })
-                .catch(function (object) {
-                    done(object);
-                });
-        });
-
-        it("[fullname, subject] returns a correct response", function (done) {
-            dynamicsWebApiTest
-                .update({
-                    key: mocks.data.testEntityId,
-                    collection: "tests",
-                    data: mocks.data.testEntity,
-                    returnRepresentation: true,
-                    select: ["fullname", "subject"],
-                })
-                .then(function (object) {
-                    expect(object).to.deep.equal(mocks.data.updatedEntity);
-                    done();
-                })
-                .catch(function (object) {
-                    done(object);
-                });
-        });
-
-        it("all requests have been made", function () {
-            expect(scope.isDone()).to.be.true;
-        });
-    });
-});
-
-describe("dynamicsWebApi.updateSingleProperty -", function () {
-    describe("basic", function () {
-        var scope;
-        before(function () {
-            var response = mocks.responses.basicEmptyResponseSuccess;
-            scope = nock(mocks.webApiUrl)
-                .put(mocks.responses.testEntityUrl + "/fullname", {
-                    value: mocks.data.updatedEntity.fullname,
-                })
-                .reply(response.status, response.responseText, response.responseHeaders);
-        });
-
-        after(function () {
-            nock.cleanAll();
-        });
-
-        it("returns a correct response", function (done) {
-            dynamicsWebApiTest
-                .updateSingleProperty({ key: mocks.data.testEntityId, collection: "tests", fieldValuePair: mocks.data.updatedEntity })
-                .then(function (object) {
-                    done(object);
-                })
-                .catch(function (object) {
-                    done(object);
-                });
-        });
-
-        it("all requests have been made", function () {
-            expect(scope.isDone()).to.be.true;
-        });
-    });
-
-    describe("return representation", function () {
-        var scope;
-        before(function () {
-            var response = mocks.responses.updateReturnRepresentation;
-            scope = nock(mocks.webApiUrl, {
-                reqheaders: {
-                    Prefer: DWA.Prefer.ReturnRepresentation,
-                },
-            })
-                .put(mocks.responses.testEntityUrl + "/fullname", {
-                    value: mocks.data.updatedEntity.fullname,
-                })
-                .reply(response.status, response.responseText, response.responseHeaders);
-        });
-
-        after(function () {
-            nock.cleanAll();
-        });
-
-        it("returns a correct response", function (done) {
-            dynamicsWebApiTest
-                .updateSingleProperty({
-                    key: mocks.data.testEntityId,
-                    collection: "tests",
-                    fieldValuePair: mocks.data.updatedEntity,
-                    returnRepresentation: true,
-                })
-                .then(function (object) {
-                    expect(object).to.deep.equal(mocks.data.updatedEntity);
-                    done();
-                })
-                .catch(function (object) {
-                    done(object);
-                });
-        });
-
-        it("all requests have been made", function () {
-            expect(scope.isDone()).to.be.true;
-        });
-    });
-
-    describe("select", function () {
-        var scope;
-        before(function () {
-            var response = mocks.responses.updateReturnRepresentation;
-            scope = nock(mocks.webApiUrl, {
-                reqheaders: {
-                    Prefer: DWA.Prefer.ReturnRepresentation,
-                },
-            })
-                .put(mocks.responses.testEntityUrl + "/fullname?$select=name", {
-                    value: mocks.data.updatedEntity.fullname,
-                })
-                .reply(response.status, response.responseText, response.responseHeaders);
-        });
-
-        after(function () {
-            nock.cleanAll();
-        });
-
-        it("returns a correct response", function (done) {
-            dynamicsWebApiTest
-                .updateSingleProperty({
-                    key: mocks.data.testEntityId,
-                    collection: "tests",
-                    fieldValuePair: mocks.data.updatedEntity,
-                    returnRepresentation: true,
-                    select: ["name"],
-                })
-                .then(function (object) {
-                    expect(object).to.deep.equal(mocks.data.updatedEntity);
-                    done();
-                })
-                .catch(function (object) {
-                    done(object);
-                });
-        });
-
-        it("all requests have been made", function () {
-            expect(scope.isDone()).to.be.true;
-        });
-    });
-});
-
 describe("dynamicsWebApi.upsert -", function () {
     describe("basic & update an existing entity", function () {
         var scope;
@@ -3224,7 +2873,7 @@ describe("dynamicsWebApi.deleteRecord -", function () {
 
         it("returns a correct response", function (done) {
             dynamicsWebApiTest
-                .deleteRecord({ key: mocks.data.testEntityId, collection: "tests", navigationProperty: "fullname" })
+                .deleteRecord({ key: mocks.data.testEntityId, collection: "tests", property: "fullname" })
                 .then(function (object) {
                     expect(object).to.be.true;
                     done();
@@ -4955,7 +4604,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
             dynamicsWebApiTest.startBatch();
 
             dynamicsWebApiTest.update({ key: mocks.data.testEntityId2, collection: "records", data: { firstname: "Test", lastname: "Batch!" } });
-            dynamicsWebApiTest.deleteRecord({ key: mocks.data.testEntityId2, collection: "records", navigationProperty: "firstname" });
+            dynamicsWebApiTest.deleteRecord({ key: mocks.data.testEntityId2, collection: "records", property: "firstname" });
 
             dynamicsWebApiTest
                 .executeBatch()
@@ -5017,7 +4666,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
             dynamicsWebApiTest.startBatch();
 
             dynamicsWebApiTest.update({ key: mocks.data.testEntityId2, collection: "records", data: { firstname: "Test", lastname: "Batch!" } });
-            dynamicsWebApiTest.deleteRecord({ key: mocks.data.testEntityId2, collection: "records", navigationProperty: "firstname" });
+            dynamicsWebApiTest.deleteRecord({ key: mocks.data.testEntityId2, collection: "records", property: "firstname" });
 
             dynamicsWebApiTest
                 .executeBatch({ token: "123" })
@@ -5073,7 +4722,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
             dynamicsWebApiTest.startBatch();
 
             dynamicsWebApiTest.update({ key: mocks.data.testEntityId2, collection: "records", data: { firstname: "Test", lastname: "Batch!" } });
-            dynamicsWebApiTest.deleteRecord({ key: mocks.data.testEntityId2, collection: "records", navigationProperty: "firstname" });
+            dynamicsWebApiTest.deleteRecord({ key: mocks.data.testEntityId2, collection: "records", property: "firstname" });
 
             dynamicsWebApiTest
                 .executeBatch()
@@ -5421,7 +5070,7 @@ describe("dynamicsWebApi.uploadFile -", function () {
             key: mocks.data.testEntityId,
             collection: "tests",
             fileName: "test.json",
-            fieldName: "dwa_file",
+            property: "dwa_file",
             data: Buffer.from("Welcome to DynamicsWebApi!", "utf-8"),
         };
 
@@ -5436,7 +5085,7 @@ describe("dynamicsWebApi.uploadFile -", function () {
 
             scope = nock(mocks.webApiUrl)
                 .matchHeader("x-ms-transfer-mode", "chunked")
-                .patch(mocks.responses.testEntityUrl + `/${dwaRequest.fieldName}?x-ms-file-name=${dwaRequest.fileName}`)
+                .patch(mocks.responses.testEntityUrl + `/${dwaRequest.property}?x-ms-file-name=${dwaRequest.fileName}`)
                 .reply(beginResponse.status, "", beginResponse.responseHeaders);
 
             scope1 = nock(mocks.webApiUrl)
@@ -5483,7 +5132,7 @@ describe("dynamicsWebApi.downloadFile -", function () {
         var dwaRequest = {
             key: mocks.data.testEntityId,
             collection: "tests",
-            fieldName: "dwa_file",
+            property: "dwa_file",
         };
 
         var scope;
@@ -5494,12 +5143,12 @@ describe("dynamicsWebApi.downloadFile -", function () {
         before(function () {
             scope = nock(mocks.webApiUrl)
                 .matchHeader("Range", `bytes=0-${Utility.downloadChunkSize - 1}`)
-                .get(mocks.responses.testEntityUrl + `/${dwaRequest.fieldName}?size=full`)
+                .get(mocks.responses.testEntityUrl + `/${dwaRequest.property}?size=full`)
                 .reply(chunk1.status, chunk1.responseText, chunk1.responseHeaders);
 
             scope1 = nock(mocks.webApiUrl)
                 .matchHeader("Range", `bytes=${Utility.downloadChunkSize}-${Utility.downloadChunkSize * 2 - 1}`)
-                .get(mocks.responses.testEntityUrl + `/${dwaRequest.fieldName}?size=full`)
+                .get(mocks.responses.testEntityUrl + `/${dwaRequest.property}?size=full`)
                 .reply(chunk2.status, chunk2.responseText, chunk2.responseHeaders);
         });
 

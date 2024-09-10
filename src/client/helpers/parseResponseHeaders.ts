@@ -1,5 +1,5 @@
-﻿export function parseResponseHeaders(headerStr: string): any {
-	const headers = {};
+﻿export function parseResponseHeaders(headerStr: string): Record<string, string> {
+	const headers: Record<string, string> = {};
 	if (!headerStr) {
 		return headers;
 	}

@@ -1,20 +1,55 @@
 ﻿import type * as Core from "../types";
 import { generateRandomBytes } from "../helpers/Crypto";
-import { isUuid, extractUuid } from "../helpers/Regex";
+import { isUuid, extractUuid, parsePagingCookie } from "../helpers/Regex";
 
 declare var GetGlobalContext: any;
 declare var Xrm: any;
 
-// function isNodeEnv(): boolean {
-//     // tslint:disable:strict-type-predicates
-//     return Object.prototype.toString.call(typeof process !== "undefined" ? process : 0) === "[object process]";
-// }
-
-// function getGlobalObject<T>(): T {
-//     return (isNodeEnv() ? global : typeof window !== "undefined" ? window : typeof self !== "undefined" ? self : {}) as T;
-// }
-
 const downloadChunkSize = 4194304;
+
+function formatParameterValue(value: any): string {
+    if (value == null) return "";
+
+    if (typeof value === "string" && !value.startsWith("Microsoft.Dynamics.CRM") && !isUuid(value)) {
+        return `'${value}'`;
+    } else if (typeof value === "object") {
+        return JSON.stringify(value);
+    }
+
+    return value.toString();
+}
+
+function processParameters(parameters: { [key: string]: any }): { key: string; queryParams: string[] } {
+    const parameterNames = Object.keys(parameters);
+    const functionParams: string[] = [];
+    const urlQuery: string[] = [];
+
+    parameterNames.forEach((parameterName, index) => {
+        let value = parameters[parameterName];
+        if (value == null) return;
+
+        value = formatParameterValue(value);
+
+        const paramIndex = index + 1;
+        functionParams.push(`${parameterName}=@p${paramIndex}`);
+        urlQuery.push(`@p${paramIndex}=${extractUuid(value) || value}`);
+    });
+
+    return {
+        key: `(${functionParams.join(",")})`,
+        queryParams: urlQuery,
+    };
+}
+
+export function hasHeader(headers: Record<string, string>, name: string): boolean {
+    return headers.hasOwnProperty(name) || headers.hasOwnProperty(name.toLowerCase());
+}
+
+export function getHeader(headers: Record<string, string>, name: string): string | undefined {
+    if (headers[name]) return headers[name];
+
+    return headers[name.toLowerCase()];
+}
 
 export class Utility {
     /**
@@ -24,36 +59,7 @@ export class Utility {
      * @returns {string}
      */
     static buildFunctionParameters(parameters?: any): Core.FunctionParameters {
-        if (parameters) {
-            const parameterNames = Object.keys(parameters);
-            const functionParams: string[] = [];
-            const urlQuery: string[] = [];
-
-            for (let i = 1; i <= parameterNames.length; i++) {
-                const parameterName = parameterNames[i - 1];
-                let value = parameters[parameterName];
-
-                if (value == null) continue;
-
-                if (typeof value === "string" && !value.startsWith("Microsoft.Dynamics.CRM") && !isUuid(value)) {
-                    value = `'${value}'`;
-                } else if (typeof value === "object") {
-                    value = JSON.stringify(value);
-                }
-
-                functionParams.push(`${parameterName}=@p${i}`);
-                urlQuery.push(`@p${i}=${extractUuid(value) || value}`);
-            }
-
-            return {
-                key: `(${functionParams.join(",")})`,
-                queryParams: urlQuery,
-            };
-        } else {
-            return {
-                key: "()",
-            };
-        }
+        return parameters ? processParameters(parameters) : { key: "()" };
     }
 
     /**
@@ -67,27 +73,14 @@ export class Utility {
         //get the page cokies
         pageCookies = decodeURIComponent(decodeURIComponent(pageCookies));
 
-        const info = /pagingcookie="(<cookie page="(\d+)".+<\/cookie>)/.exec(pageCookies);
+        const result = parsePagingCookie(pageCookies);
 
-        if (info != null) {
-            let page = parseInt(info[2]);
-            return {
-                cookie: info[1]
-                    .replace(/</g, "&lt;")
-                    .replace(/>/g, "&gt;")
-                    .replace(/\"/g, "'")
-                    .replace(/\'/g, "&" + "quot;"),
-                page: page,
-                nextPage: page + 1,
-            };
-        } else {
-            //http://stackoverflow.com/questions/41262772/execution-of-fetch-xml-using-web-api-dynamics-365 workaround
-            return {
-                cookie: "",
-                page: currentPageNumber,
-                nextPage: currentPageNumber + 1,
-            };
-        }
+        // http://stackoverflow.com/questions/41262772/execution-of-fetch-xml-using-web-api-dynamics-365 workaround
+        return {
+            cookie: result?.sanitizedCookie || "",
+            page: result?.page || currentPageNumber,
+            nextPage: result?.page ? result.page + 1 : currentPageNumber + 1,
+        };
     }
 
     // static isNodeEnv = isNodeEnv;
@@ -95,22 +88,11 @@ export class Utility {
     static downloadChunkSize = downloadChunkSize;
 
     /**
-     * Converts a response to a reference object
-     *
-     * @param {Object} responseData - Response object
-     * @returns {ReferenceObject}
-     */
-    static convertToReferenceObject(responseData: any): Core.ReferenceObject {
-        const result = /\/(\w+)\(([0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12})/i.exec(responseData["@odata.id"]);
-        return { id: result![2], collection: result![1], oDataContext: responseData["@odata.context"] };
-    }
-
-    /**
      * Checks whether the value is JS Null.
      * @param {Object} value
      * @returns {boolean}
      */
-    static isNull(value: any): boolean {
+    static isNull(value: any): value is undefined | null {
         return typeof value === "undefined" || value == null;
     }
 

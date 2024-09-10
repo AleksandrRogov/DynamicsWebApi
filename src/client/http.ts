@@ -116,7 +116,7 @@ function _executeRequest(
                 case 206: //Success with partial content
                 case 304: {
                     // Success with Not Modified
-                    let responseData = parseResponse(rawData, res.headers, responseParams[options.requestId]);
+                    let responseData = parseResponse(rawData, res.headers as Record<string, string>, responseParams[options.requestId]);
 
                     let response = {
                         data: responseData,
@@ -131,7 +131,7 @@ function _executeRequest(
                     // All other statuses are error cases.
                     let crmError;
                     try {
-                        var errorParsed = parseResponse(rawData, res.headers, responseParams[options.requestId]);
+                        var errorParsed = parseResponse(rawData, res.headers as Record<string, string>, responseParams[options.requestId]);
 
                         if (Array.isArray(errorParsed)) {
                             errorCallback(errorParsed);
