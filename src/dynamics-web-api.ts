@@ -5,8 +5,8 @@ import { RequestClient } from "./client/RequestClient";
 import type { InternalRequest, WebApiResponse } from "./types";
 
 /**
- * Microsoft Dynamics CRM Web API helper library written in JavaScript.
- * It is compatible with: Dynamics 365 (online), Dynamics 365 (on-premise), Dynamics CRM 2016, Dynamics CRM Online.
+ * Microsoft Dataverse Web API helper library for Node.js and Browser.
+ * It is compatible with: Dataverse, Dynamics 365 (online), Dynamics 365 (on-premise), Dynamics CRM 2016, Dynamics CRM Online.
  */
 export class DynamicsWebApi {
     private _config = ConfigurationUtility.default();
