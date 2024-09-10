@@ -6,7 +6,7 @@ export const UUID_REGEX = new RegExp(UUID, "i");
 export const EXTRACT_UUID_REGEX = new RegExp("^{?(" + UUID + ")}?$", "i");
 export const EXTRACT_UUID_FROM_URL_REGEX = new RegExp("(" + UUID + ")\\)$", "i");
 //global here is fine because the state is reset inside string.replace function
-export const REMOVE_BRACKETS_FROM_GUID_REGEX = new RegExp(`{(${UUID})}`, "g");
+export const REMOVE_BRACKETS_FROM_UUID_REGEX = new RegExp(`{(${UUID})}`, "g");
 export const ENTITY_UUID_REGEX = new RegExp(`\\/(\\w+)\\((${UUID})`, "i");
 
 export function isUuid(value: string): boolean {
@@ -26,14 +26,21 @@ export function extractUuidFromUrl(url?: string): string | null {
 }
 
 export function removeCurlyBracketsFromUuid(value: string): string {
-    return value.replace(REMOVE_BRACKETS_FROM_GUID_REGEX, (_match, p1) => p1);
+    return value.replace(REMOVE_BRACKETS_FROM_UUID_REGEX, (_match, p1) => p1);
 }
 
+const QUOTATION_MARK_REGEX = /(["'].*?["'])/;
+
+/**
+ * Safely removes curly brackets from guids in a URL
+ * @param url URL to remove curly brackets from
+ * @returns URL with guid without curly brackets
+ */
 export function safelyRemoveCurlyBracketsFromUrl(url: string): string {
     //todo: in future I will need to replace this with a negative lookbehind and lookahead
 
     // Split the filter string by quotation marks
-    const parts = url.split(/(["'].*?["'])/);
+    const parts = url.split(QUOTATION_MARK_REGEX);
     return parts
         .map((part, index) => {
             // Only process parts that are not within quotes
@@ -90,9 +97,25 @@ function sanitizeCookie(cookie: string): string {
     return cookie.replace(SPECIAL_CHARACTER_REGEX, (char) => characterMap[char]);
 }
 
+const LEADING_SLASH_REGEX = /^\//;
+export function removeLeadingSlash(value: string): string {
+    return value.replace(LEADING_SLASH_REGEX, "");
+}
+
+const UNICODE_SYMBOLS_REGEX = /[\u007F-\uFFFF]/g;
+export function escapeUnicodeSymbols(value: string): string {
+    return value.replace(UNICODE_SYMBOLS_REGEX, (chr: string) => `\\u${("0000" + chr.charCodeAt(0).toString(16)).slice(-4)}`);
+}
+
+const DOUBLE_QUOTE_REGEX = /"/g;
+export function removeDoubleQuotes(value: string): string {
+    return value.replace(DOUBLE_QUOTE_REGEX, "");
+}
+
 export const BATCH_RESPONSE_HEADERS_REGEX = /^([^()<>@,;:\\"\/[\]?={} \t]+)\s?:\s?(.*)/;
 export const HTTP_STATUS_REGEX = /HTTP\/?\s*[\d.]*\s+(\d{3})\s+([\w\s]*)$/m;
 export const CONTENT_TYPE_PLAIN_REGEX = /Content-Type: text\/plain/i;
 export const ODATA_ENTITYID_REGEX = /OData-EntityId.+/i;
 export const TEXT_REGEX = /\w+$/g;
 export const LINE_ENDING_REGEX = /\r?\n/;
+export const SEARCH_FOR_ENTITY_NAME_REGEX = /(\w+)(\([\d\w-]+\))$/;

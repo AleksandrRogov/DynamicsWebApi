@@ -4,7 +4,14 @@ import { Utility } from "./Utility";
 import { Config, HeaderCollection } from "../dynamics-web-api";
 import { ErrorHelper } from "../helpers/ErrorHelper";
 import { InternalConfig } from "./Config";
-import { safelyRemoveCurlyBracketsFromUrl } from "../helpers/Regex";
+import {
+    removeCurlyBracketsFromUuid,
+    removeLeadingSlash,
+    escapeUnicodeSymbols,
+    safelyRemoveCurlyBracketsFromUrl,
+    SEARCH_FOR_ENTITY_NAME_REGEX,
+    removeDoubleQuotes,
+} from "../helpers/Regex";
 
 export let entityNames: Record<string, string | null> | null = null;
 
@@ -339,9 +346,9 @@ export const composePreferHeader = (request: InternalRequest, config: Config): s
             if (trimmedItem === "return=representation") {
                 returnRepresentation = true;
             } else if (trimmedItem.includes("odata.include-annotations=")) {
-                includeAnnotations = trimmedItem.replace("odata.include-annotations=", "").replace(/"/g, "");
+                includeAnnotations = removeDoubleQuotes(trimmedItem.replace("odata.include-annotations=", ""));
             } else if (trimmedItem.startsWith("odata.maxpagesize=")) {
-                maxPageSize = Number(trimmedItem.replace("odata.maxpagesize=", "").replace(/"/g, "")) || 0;
+                maxPageSize = Number(removeDoubleQuotes(trimmedItem.replace("odata.maxpagesize=", ""))) || 0;
             } else if (trimmedItem.includes("odata.track-changes")) {
                 trackChanges = true;
             } else if (trimmedItem.includes("odata.continue-on-error")) {
@@ -491,15 +498,12 @@ export const processData = (data: any, config: InternalConfig): string | Uint8Ar
 
     if (data instanceof Uint8Array || data instanceof Uint16Array || data instanceof Uint32Array) return data;
 
-    const replaceGuidBrackets = (value: string): string => value.replace(/(.+)\(\{([\w\d-]+)\}\)/g, "$1($2)");
-
     const replaceEntityNameWithCollectionName = (value: string): string => {
-        const regularExpression = /([\w_]+)(\([\d\w-]+\))$/;
-        const valueParts = regularExpression.exec(value);
+        const valueParts = SEARCH_FOR_ENTITY_NAME_REGEX.exec(value);
         if (valueParts && valueParts.length > 2) {
             const collectionName = findCollectionName(valueParts[1]);
             if (!Utility.isNull(collectionName)) {
-                return value.replace(regularExpression, `${collectionName}$2`);
+                return value.replace(SEARCH_FOR_ENTITY_NAME_REGEX, `${collectionName}$2`);
             }
         }
         return value;
@@ -512,7 +516,7 @@ export const processData = (data: any, config: InternalConfig): string | Uint8Ar
                     value = `/${value}`;
                 }
             } else {
-                value = `${config.dataApi.url}${value.replace(/^\//, "")}`;
+                value = `${config.dataApi.url}${removeLeadingSlash(value)}`;
             }
         }
         return value;
@@ -521,7 +525,7 @@ export const processData = (data: any, config: InternalConfig): string | Uint8Ar
     const stringifiedData = JSON.stringify(data, (key, value) => {
         if (key.endsWith("@odata.bind") || key.endsWith("@odata.id")) {
             if (typeof value === "string" && !value.startsWith("$")) {
-                value = replaceGuidBrackets(value);
+                value = removeCurlyBracketsFromUuid(value);
                 if (config.useEntityNames) {
                     value = replaceEntityNameWithCollectionName(value);
                 }
@@ -533,7 +537,7 @@ export const processData = (data: any, config: InternalConfig): string | Uint8Ar
         return value;
     });
 
-    return stringifiedData.replace(/[\u007F-\uFFFF]/g, (chr: string) => `\\u${("0000" + chr.charCodeAt(0).toString(16)).slice(-4)}`);
+    return escapeUnicodeSymbols(stringifiedData);
 };
 
 export const setStandardHeaders = (headers: HeaderCollection = {}): HeaderCollection => {
