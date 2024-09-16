@@ -3,6 +3,7 @@ import { Utility } from "./utils/Utility";
 import { ErrorHelper } from "./helpers/ErrorHelper";
 import { RequestClient } from "./client/RequestClient";
 import type { InternalRequest, WebApiResponse } from "./types";
+import { FETCH_XML_PAGE_REGEX, FETCH_XML_REPLACE_REGEX, FETCH_XML_TOP_REGEX, getUpdateMethod } from "./helpers/Regex";
 
 /**
  * Microsoft Dataverse Web API helper library for Node.js and Browser.
@@ -126,17 +127,9 @@ export class DynamicsWebApi {
             internalRequest.functionName = "update";
         } else internalRequest = request;
 
-        //Metadata definitions, cannot be updated using "PATCH" method
-        if (!internalRequest.method)
-            internalRequest.method = /EntityDefinitions|RelationshipDefinitions|GlobalOptionSetDefinitions/.test(internalRequest.collection || "")
-                ? "PUT"
-                : "PATCH";
-
+        internalRequest.method ??= getUpdateMethod(internalRequest.collection);
         internalRequest.responseParameters = { valueIfEmpty: true };
-
-        if (internalRequest.ifmatch == null) {
-            internalRequest.ifmatch = "*"; //to prevent upsert
-        }
+        internalRequest.ifmatch ??= "*"; //to prevent upsert
 
         //copy locally
         const ifmatch = internalRequest.ifmatch;
@@ -436,10 +429,10 @@ export class DynamicsWebApi {
         ErrorHelper.stringParameterCheck(internalRequest.fetchXml, "DynamicsWebApi.fetch", "request.fetchXml");
 
         //only add paging if there is no top
-        if (internalRequest.fetchXml && !/^<fetch.+top=/.test(internalRequest.fetchXml)) {
+        if (internalRequest.fetchXml && !FETCH_XML_TOP_REGEX.test(internalRequest.fetchXml)) {
             let replacementString: string = "";
 
-            if (!/^<fetch.+page=/.test(internalRequest.fetchXml)) {
+            if (!FETCH_XML_PAGE_REGEX.test(internalRequest.fetchXml)) {
                 internalRequest.pageNumber = internalRequest.pageNumber || 1;
 
                 ErrorHelper.numberParameterCheck(internalRequest.pageNumber, "DynamicsWebApi.fetch", "request.pageNumber");
@@ -452,7 +445,7 @@ export class DynamicsWebApi {
             }
 
             //add page number and paging cookie to fetch xml
-            if (replacementString) internalRequest.fetchXml = internalRequest.fetchXml.replace(/^(<fetch)/, replacementString);
+            if (replacementString) internalRequest.fetchXml = internalRequest.fetchXml.replace(FETCH_XML_REPLACE_REGEX, replacementString);
         }
 
         internalRequest.responseParameters = { pageNumber: internalRequest.pageNumber };

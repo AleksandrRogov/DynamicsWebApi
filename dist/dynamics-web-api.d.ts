@@ -1,4 +1,4 @@
-/*! dynamics-web-api v2.1.6 (c) 2024 Aleksandr Rogov. License: MIT */
+/*! dynamics-web-api v2.1.7 (c) 2024 Aleksandr Rogov. License: MIT */
 /**
  * Microsoft Dataverse Web API helper library for Node.js and Browser.
  * It is compatible with: Dataverse, Dynamics 365 (online), Dynamics 365 (on-premise), Dynamics CRM 2016, Dynamics CRM Online.
@@ -523,7 +523,7 @@ export interface DeleteRequest extends CRUDRequest {
     /**
      * Field name that needs to be cleared (for example File Field)
      * @deprecated Use "property".
-    */
+     */
     fieldName?: string;
     /**Single property that needs to be cleared (including the File property) */
     property?: string;
@@ -622,7 +622,7 @@ export interface UnboundFunctionRequest extends BaseRequest {
     /**
      * Name of the function.
      * @deprecated Use "name" parameter.
-    */
+     */
     functionName?: string;
     /**Function's input parameters. Example: { param1: "test", param2: 3 }. */
     parameters?: any;
@@ -786,7 +786,7 @@ export interface UploadRequest extends CRUDRequest {
      * File Field Name
      * @deprecated Use "property".
      */
-    fieldName: string;
+    fieldName?: string;
 }
 export interface DownloadRequest extends CRUDRequest {
     /**The name of File Column (field) */
@@ -795,7 +795,7 @@ export interface DownloadRequest extends CRUDRequest {
      * File Field Name
      * @deprecated Use "property".
      */
-    fieldName: string;
+    fieldName?: string;
 }
 export interface CsdlMetadataRequest extends BaseRequest {
     /**If set to "true" the document will include many different kinds of annotations that can be useful. Most annotations are not included by default because they increase the total size of the document. */
