@@ -277,20 +277,12 @@ export class DynamicsWebApi {
         internalRequest.url = response?.data.location;
         delete internalRequest.transferMode;
         delete internalRequest.fieldName;
+        delete internalRequest.property;
         delete internalRequest.fileName;
         return this._uploadFileChunk(internalRequest, request.data, response?.data.chunkSize);
     };
 
-    private _downloadFileChunk = async (
-        request: InternalRequest,
-        bytesDownloaded: number = 0,
-        // fileSize: number = 0,
-        data: string = ""
-    ): Promise<DownloadResponse> => {
-        // bytesDownloaded = bytesDownloaded || 0;
-        // fileSize = fileSize || 0;
-        // data = data || "";
-
+    private _downloadFileChunk = async (request: InternalRequest, bytesDownloaded: number = 0, data: string = ""): Promise<DownloadResponse> => {
         request.range = "bytes=" + bytesDownloaded + "-" + (bytesDownloaded + Utility.downloadChunkSize - 1);
         request.downloadSize = "full";
 
@@ -632,7 +624,7 @@ export class DynamicsWebApi {
      * @returns {Promise} D365 Web Api Response
      */
     callAction: CallAction = async <TResponse = any, TAction = any>(
-        request: BoundActionRequest<TAction> | UnboundActionRequest<TAction>
+        request: BoundActionRequest<TAction> | UnboundActionRequest<TAction>,
     ): Promise<TResponse> => {
         ErrorHelper.parameterCheck(request, `DynamicsWebApi.callAction`, "request");
         ErrorHelper.stringParameterCheck(request.actionName, `DynamicsWebApi.callAction`, "request.actionName");
@@ -1336,9 +1328,9 @@ export interface DeleteRequest extends CRUDRequest {
     /**BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */
     contentId?: string;
     /**
-     * Field name that needs to be cleared (for example File Field) 
+     * Field name that needs to be cleared (for example File Field)
      * @deprecated Use "property".
-    */
+     */
     fieldName?: string;
     /**Single property that needs to be cleared (including the File property) */
     property?: string;
@@ -1442,9 +1434,9 @@ export interface UnboundFunctionRequest extends BaseRequest {
      */
     name?: string;
     /**
-     * Name of the function. 
+     * Name of the function.
      * @deprecated Use "name" parameter.
-    */
+     */
     functionName?: string;
     /**Function's input parameters. Example: { param1: "test", param2: 3 }. */
     parameters?: any;
@@ -1627,20 +1619,20 @@ export interface UploadRequest extends CRUDRequest {
     /**The name of File Column (field) */
     property?: string;
     /**
-     * File Field Name 
+     * File Field Name
      * @deprecated Use "property".
      */
-    fieldName: string;
+    fieldName?: string;
 }
 
 export interface DownloadRequest extends CRUDRequest {
     /**The name of File Column (field) */
     property?: string;
     /**
-     * File Field Name 
+     * File Field Name
      * @deprecated Use "property".
      */
-    fieldName: string;
+    fieldName?: string;
 }
 
 export interface CsdlMetadataRequest extends BaseRequest {
