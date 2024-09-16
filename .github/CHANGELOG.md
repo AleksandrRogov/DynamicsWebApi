@@ -1,3 +1,15 @@
+<a name="v2.1.7"></a>
+# [v2.1.7](https://github.com/AleksandrRogov/DynamicsWebApi/releases/tag/v2.1.7) - 16 Sep 2024
+
+**Fixes:**
+- Wrong type declaration for `UploadRequest` and `DownloadRequest`: `property` and `fieldName` should be optional, until `fieldName` is removed.
+
+**Changes:**
+- Additional optimizations of regular expressions.
+
+[Changes][v2.1.7]
+
+
 <a name="v.2.1.6"></a>
 # [v2.1.6 (v.2.1.6)](https://github.com/AleksandrRogov/DynamicsWebApi/releases/tag/v.2.1.6) - 10 Sep 2024
 
@@ -977,6 +989,7 @@ Added:
 [Changes][v1.2.0]
 
 
+[v2.1.7]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v.2.1.6...v2.1.7
 [v.2.1.6]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.1.5...v.2.1.6
 [v2.1.5]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.1.4...v2.1.5
 [v2.1.4]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.1.3...v2.1.4
