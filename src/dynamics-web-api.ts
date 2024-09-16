@@ -3,6 +3,7 @@ import { Utility } from "./utils/Utility";
 import { ErrorHelper } from "./helpers/ErrorHelper";
 import { RequestClient } from "./client/RequestClient";
 import type { InternalRequest, WebApiResponse } from "./types";
+import { FETCH_XML_PAGE_REGEX, FETCH_XML_REPLACE_REGEX, FETCH_XML_TOP_REGEX, getUpdateMethod } from "./helpers/Regex";
 
 /**
  * Microsoft Dataverse Web API helper library for Node.js and Browser.
@@ -126,17 +127,9 @@ export class DynamicsWebApi {
             internalRequest.functionName = "update";
         } else internalRequest = request;
 
-        //Metadata definitions, cannot be updated using "PATCH" method
-        if (!internalRequest.method)
-            internalRequest.method = /EntityDefinitions|RelationshipDefinitions|GlobalOptionSetDefinitions/.test(internalRequest.collection || "")
-                ? "PUT"
-                : "PATCH";
-
+        internalRequest.method ??= getUpdateMethod(internalRequest.collection);
         internalRequest.responseParameters = { valueIfEmpty: true };
-
-        if (internalRequest.ifmatch == null) {
-            internalRequest.ifmatch = "*"; //to prevent upsert
-        }
+        internalRequest.ifmatch ??= "*"; //to prevent upsert
 
         //copy locally
         const ifmatch = internalRequest.ifmatch;
@@ -277,20 +270,12 @@ export class DynamicsWebApi {
         internalRequest.url = response?.data.location;
         delete internalRequest.transferMode;
         delete internalRequest.fieldName;
+        delete internalRequest.property;
         delete internalRequest.fileName;
         return this._uploadFileChunk(internalRequest, request.data, response?.data.chunkSize);
     };
 
-    private _downloadFileChunk = async (
-        request: InternalRequest,
-        bytesDownloaded: number = 0,
-        // fileSize: number = 0,
-        data: string = ""
-    ): Promise<DownloadResponse> => {
-        // bytesDownloaded = bytesDownloaded || 0;
-        // fileSize = fileSize || 0;
-        // data = data || "";
-
+    private _downloadFileChunk = async (request: InternalRequest, bytesDownloaded: number = 0, data: string = ""): Promise<DownloadResponse> => {
         request.range = "bytes=" + bytesDownloaded + "-" + (bytesDownloaded + Utility.downloadChunkSize - 1);
         request.downloadSize = "full";
 
@@ -444,10 +429,10 @@ export class DynamicsWebApi {
         ErrorHelper.stringParameterCheck(internalRequest.fetchXml, "DynamicsWebApi.fetch", "request.fetchXml");
 
         //only add paging if there is no top
-        if (internalRequest.fetchXml && !/^<fetch.+top=/.test(internalRequest.fetchXml)) {
+        if (internalRequest.fetchXml && !FETCH_XML_TOP_REGEX.test(internalRequest.fetchXml)) {
             let replacementString: string = "";
 
-            if (!/^<fetch.+page=/.test(internalRequest.fetchXml)) {
+            if (!FETCH_XML_PAGE_REGEX.test(internalRequest.fetchXml)) {
                 internalRequest.pageNumber = internalRequest.pageNumber || 1;
 
                 ErrorHelper.numberParameterCheck(internalRequest.pageNumber, "DynamicsWebApi.fetch", "request.pageNumber");
@@ -460,7 +445,7 @@ export class DynamicsWebApi {
             }
 
             //add page number and paging cookie to fetch xml
-            if (replacementString) internalRequest.fetchXml = internalRequest.fetchXml.replace(/^(<fetch)/, replacementString);
+            if (replacementString) internalRequest.fetchXml = internalRequest.fetchXml.replace(FETCH_XML_REPLACE_REGEX, replacementString);
         }
 
         internalRequest.responseParameters = { pageNumber: internalRequest.pageNumber };
@@ -632,7 +617,7 @@ export class DynamicsWebApi {
      * @returns {Promise} D365 Web Api Response
      */
     callAction: CallAction = async <TResponse = any, TAction = any>(
-        request: BoundActionRequest<TAction> | UnboundActionRequest<TAction>
+        request: BoundActionRequest<TAction> | UnboundActionRequest<TAction>,
     ): Promise<TResponse> => {
         ErrorHelper.parameterCheck(request, `DynamicsWebApi.callAction`, "request");
         ErrorHelper.stringParameterCheck(request.actionName, `DynamicsWebApi.callAction`, "request.actionName");
@@ -1336,9 +1321,9 @@ export interface DeleteRequest extends CRUDRequest {
     /**BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */
     contentId?: string;
     /**
-     * Field name that needs to be cleared (for example File Field) 
+     * Field name that needs to be cleared (for example File Field)
      * @deprecated Use "property".
-    */
+     */
     fieldName?: string;
     /**Single property that needs to be cleared (including the File property) */
     property?: string;
@@ -1442,9 +1427,9 @@ export interface UnboundFunctionRequest extends BaseRequest {
      */
     name?: string;
     /**
-     * Name of the function. 
+     * Name of the function.
      * @deprecated Use "name" parameter.
-    */
+     */
     functionName?: string;
     /**Function's input parameters. Example: { param1: "test", param2: 3 }. */
     parameters?: any;
@@ -1627,20 +1612,20 @@ export interface UploadRequest extends CRUDRequest {
     /**The name of File Column (field) */
     property?: string;
     /**
-     * File Field Name 
+     * File Field Name
      * @deprecated Use "property".
      */
-    fieldName: string;
+    fieldName?: string;
 }
 
 export interface DownloadRequest extends CRUDRequest {
     /**The name of File Column (field) */
     property?: string;
     /**
-     * File Field Name 
+     * File Field Name
      * @deprecated Use "property".
      */
-    fieldName: string;
+    fieldName?: string;
 }
 
 export interface CsdlMetadataRequest extends BaseRequest {

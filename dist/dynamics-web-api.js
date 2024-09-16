@@ -1,4 +1,4 @@
-/*! dynamics-web-api v2.1.6 (c) 2024 Aleksandr Rogov. License: MIT */
+/*! dynamics-web-api v2.1.7 (c) 2024 Aleksandr Rogov. License: MIT */
 "use strict";
 var _dynamicsWebApiExports = (() => {
   var __defProp = Object.defineProperty;
@@ -91,7 +91,10 @@ var _dynamicsWebApiExports = (() => {
   function removeDoubleQuotes(value) {
     return value.replace(DOUBLE_QUOTE_REGEX, "");
   }
-  var UUID, UUID_REGEX, EXTRACT_UUID_REGEX, EXTRACT_UUID_FROM_URL_REGEX, REMOVE_BRACKETS_FROM_UUID_REGEX, ENTITY_UUID_REGEX, QUOTATION_MARK_REGEX, PAGING_COOKIE_REGEX, SPECIAL_CHARACTER_REGEX, LEADING_SLASH_REGEX, UNICODE_SYMBOLS_REGEX, DOUBLE_QUOTE_REGEX, BATCH_RESPONSE_HEADERS_REGEX, HTTP_STATUS_REGEX, CONTENT_TYPE_PLAIN_REGEX, ODATA_ENTITYID_REGEX, TEXT_REGEX, LINE_ENDING_REGEX, SEARCH_FOR_ENTITY_NAME_REGEX;
+  function getUpdateMethod(collection) {
+    return SPECIAL_COLLECTION_FOR_UPDATE_REGEX.test(collection ?? "") ? "PUT" : "PATCH";
+  }
+  var UUID, UUID_REGEX, EXTRACT_UUID_REGEX, EXTRACT_UUID_FROM_URL_REGEX, REMOVE_BRACKETS_FROM_UUID_REGEX, ENTITY_UUID_REGEX, QUOTATION_MARK_REGEX, PAGING_COOKIE_REGEX, SPECIAL_CHARACTER_REGEX, LEADING_SLASH_REGEX, UNICODE_SYMBOLS_REGEX, DOUBLE_QUOTE_REGEX, BATCH_RESPONSE_HEADERS_REGEX, HTTP_STATUS_REGEX, CONTENT_TYPE_PLAIN_REGEX, ODATA_ENTITYID_REGEX, TEXT_REGEX, LINE_ENDING_REGEX, SEARCH_FOR_ENTITY_NAME_REGEX, SPECIAL_COLLECTION_FOR_UPDATE_REGEX, FETCH_XML_TOP_REGEX, FETCH_XML_PAGE_REGEX, FETCH_XML_REPLACE_REGEX;
   var init_Regex = __esm({
     "src/helpers/Regex.ts"() {
       "use strict";
@@ -114,6 +117,10 @@ var _dynamicsWebApiExports = (() => {
       TEXT_REGEX = /\w+$/g;
       LINE_ENDING_REGEX = /\r?\n/;
       SEARCH_FOR_ENTITY_NAME_REGEX = /(\w+)(\([\d\w-]+\))$/;
+      SPECIAL_COLLECTION_FOR_UPDATE_REGEX = /EntityDefinitions|RelationshipDefinitions|GlobalOptionSetDefinitions/;
+      FETCH_XML_TOP_REGEX = /^<fetch.+top=/;
+      FETCH_XML_PAGE_REGEX = /^<fetch.+page=/;
+      FETCH_XML_REPLACE_REGEX = /^(<fetch)/;
     }
   });
 
@@ -1613,6 +1620,7 @@ ${processData(internalRequest.data, config)}`);
   };
 
   // src/dynamics-web-api.ts
+  init_Regex();
   var DynamicsWebApi = class _DynamicsWebApi {
     /**
      * Initializes a new instance of DynamicsWebApi
@@ -1711,12 +1719,9 @@ ${processData(internalRequest.data, config)}`);
           internalRequest = Utility.copyRequest(request);
           internalRequest.functionName = "update";
         } else internalRequest = request;
-        if (!internalRequest.method)
-          internalRequest.method = /EntityDefinitions|RelationshipDefinitions|GlobalOptionSetDefinitions/.test(internalRequest.collection || "") ? "PUT" : "PATCH";
+        internalRequest.method ?? (internalRequest.method = getUpdateMethod(internalRequest.collection));
         internalRequest.responseParameters = { valueIfEmpty: true };
-        if (internalRequest.ifmatch == null) {
-          internalRequest.ifmatch = "*";
-        }
+        internalRequest.ifmatch ?? (internalRequest.ifmatch = "*");
         const ifmatch = internalRequest.ifmatch;
         try {
           const response = await this._makeRequest(internalRequest);
@@ -1823,6 +1828,7 @@ ${processData(internalRequest.data, config)}`);
         internalRequest.url = response?.data.location;
         delete internalRequest.transferMode;
         delete internalRequest.fieldName;
+        delete internalRequest.property;
         delete internalRequest.fileName;
         return this._uploadFileChunk(internalRequest, request.data, response?.data.chunkSize);
       };
@@ -1944,9 +1950,9 @@ ${processData(internalRequest.data, config)}`);
         internalRequest.method = "GET";
         internalRequest.functionName = "fetch";
         ErrorHelper.stringParameterCheck(internalRequest.fetchXml, "DynamicsWebApi.fetch", "request.fetchXml");
-        if (internalRequest.fetchXml && !/^<fetch.+top=/.test(internalRequest.fetchXml)) {
+        if (internalRequest.fetchXml && !FETCH_XML_TOP_REGEX.test(internalRequest.fetchXml)) {
           let replacementString = "";
-          if (!/^<fetch.+page=/.test(internalRequest.fetchXml)) {
+          if (!FETCH_XML_PAGE_REGEX.test(internalRequest.fetchXml)) {
             internalRequest.pageNumber = internalRequest.pageNumber || 1;
             ErrorHelper.numberParameterCheck(internalRequest.pageNumber, "DynamicsWebApi.fetch", "request.pageNumber");
             replacementString = `$1 page="${internalRequest.pageNumber}"`;
@@ -1955,7 +1961,7 @@ ${processData(internalRequest.data, config)}`);
             ErrorHelper.stringParameterCheck(internalRequest.pagingCookie, "DynamicsWebApi.fetch", "request.pagingCookie");
             replacementString += ` paging-cookie="${internalRequest.pagingCookie}"`;
           }
-          if (replacementString) internalRequest.fetchXml = internalRequest.fetchXml.replace(/^(<fetch)/, replacementString);
+          if (replacementString) internalRequest.fetchXml = internalRequest.fetchXml.replace(FETCH_XML_REPLACE_REGEX, replacementString);
         }
         internalRequest.responseParameters = { pageNumber: internalRequest.pageNumber };
         const response = await this._makeRequest(internalRequest);

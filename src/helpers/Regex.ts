@@ -119,3 +119,13 @@ export const ODATA_ENTITYID_REGEX = /OData-EntityId.+/i;
 export const TEXT_REGEX = /\w+$/g;
 export const LINE_ENDING_REGEX = /\r?\n/;
 export const SEARCH_FOR_ENTITY_NAME_REGEX = /(\w+)(\([\d\w-]+\))$/;
+export const SPECIAL_COLLECTION_FOR_UPDATE_REGEX = /EntityDefinitions|RelationshipDefinitions|GlobalOptionSetDefinitions/;
+
+/**Metadata definitions cannot be updated using "PATCH" method */
+export function getUpdateMethod(collection: string | undefined | null){
+    return SPECIAL_COLLECTION_FOR_UPDATE_REGEX.test(collection ?? "") ? "PUT" : "PATCH";
+}
+
+export const FETCH_XML_TOP_REGEX = /^<fetch.+top=/;
+export const FETCH_XML_PAGE_REGEX = /^<fetch.+page=/;
+export const FETCH_XML_REPLACE_REGEX = /^(<fetch)/;

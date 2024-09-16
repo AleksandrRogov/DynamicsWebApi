@@ -5,27 +5,16 @@ import sinon, { SinonFakeXMLHttpRequest, SinonFakeXMLHttpRequestStatic } from "s
 import crypto from "crypto";
 import { DynamicsWebApi, RetrieveRequest } from "../src/dynamics-web-api";
 import { XhrWrapper } from "../src/client/xhr";
-import { DWA } from "../lib/dwa";
+import { DWA } from "../src/dwa";
+import { Utility } from "../src/utils/Utility";
+import base64 from "Base64";
+Utility.downloadChunkSize = 15;
 
 const dynamicsWebApiTest = new DynamicsWebApi({
     dataApi: {
         version: "8.2",
     },
 });
-
-// declare global {
-//     namespace Mocha {
-//         interface Context {
-//             requests: SinonFakeXMLHttpRequest[];
-//         }
-//     }
-// }
-
-interface CustomXMLHttpRequest extends XMLHttpRequest {
-    ontimeout: () => void;
-    onabort: () => void;
-    aborted: boolean;
-}
 
 declare module "sinon" {
     interface SinonFakeXMLHttpRequest {
@@ -42,6 +31,8 @@ describe("xhr -", () => {
         global.DWA_BROWSER = true;
         //@ts-ignore
         global.window = {
+            btoa: <any>base64.btoa,
+            atob: base64.atob,
             crypto: <any>crypto.webcrypto,
         };
         (global as any).XMLHttpRequest = sinon.useFakeXMLHttpRequest();
@@ -876,7 +867,7 @@ describe("xhr -", () => {
             it("sends the request to the right end point", function () {
                 expect(requests[0]?.url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, "") + "?$filter=name%20eq%20'name'");
                 expect(requests[1]?.url).to.equal(
-                    mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, "") + "?$select=fullname&$filter=name%20eq%20'name'"
+                    mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, "") + "?$select=fullname&$filter=name%20eq%20'name'",
                 );
             });
 
@@ -966,6 +957,262 @@ describe("xhr -", () => {
             it("returns a correct response", function () {
                 expect(responseObject).to.deep.equal(mocks.responses.multipleWithLink());
                 expect(responseObject2).to.deep.equal(mocks.responses.multiple());
+            });
+        });
+    });
+
+    describe("request error", function () {
+        let responseObject: any;
+
+        before(async function () {
+            (global as any).XMLHttpRequest.onCreate = (xhr: SinonFakeXMLHttpRequest) => {
+                requests.push(xhr);
+            };
+
+            XhrWrapper.afterSendEvent = () => {
+                requests[0]?.onerror?.();
+            };
+
+            try {
+                responseObject = await dynamicsWebApiTest.create({ data: mocks.data.testEntity, collection: "tests" });
+            } catch (error) {
+                responseObject = error;
+            }
+        });
+
+        after(function () {
+            //@ts-ignore
+            XhrWrapper.afterSendEvent = undefined;
+            requests.length = 0; // Clear the requests array
+        });
+
+        it("sends the request to the right end point", function () {
+            expect(requests[0]?.url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ""));
+        });
+
+        it("uses the correct method", function () {
+            expect(requests[0]?.method).to.equal("POST");
+        });
+
+        it("sends the right data", function () {
+            expect(JSON.parse(requests[0]?.requestBody || "")).to.deep.equal(mocks.data.testEntity);
+        });
+
+        it("does not have Prefer header", function () {
+            expect(requests[0]?.requestHeaders["Prefer"]).to.be.undefined;
+        });
+
+        it("returns the correct response", function () {
+            expect(responseObject.message).to.eql("Network Error");
+            expect(responseObject.status).to.eql(0);
+            expect(responseObject.statusText).to.eql("");
+            expect(responseObject.headers).to.eql({});
+        });
+    });
+
+    describe("request timeout", function () {
+        let responseObject: any;
+
+        before(async function () {
+            (global as any).XMLHttpRequest.onCreate = (xhr: SinonFakeXMLHttpRequest) => {
+                requests.push(xhr);
+            };
+
+            XhrWrapper.afterSendEvent = () => {
+                requests[0]?.ontimeout?.();
+            };
+
+            const dynamicsWebApiTimeout = new DynamicsWebApi({ dataApi: { version: "8.2" }, timeout: 100 });
+            try {
+                responseObject = await dynamicsWebApiTimeout.create({ data: mocks.data.testEntity, collection: "tests" });
+            } catch (error) {
+                responseObject = error;
+            }
+        });
+
+        after(function () {
+            //@ts-ignore
+            XhrWrapper.afterSendEvent = undefined;
+            requests.length = 0; // Clear the requests array
+        });
+
+        it("sends the request to the right end point", function () {
+            expect(requests[0]?.url).to.equal(mocks.webApiUrl + mocks.responses.collectionUrl.replace(/^\/|\/$/g, ""));
+        });
+
+        it("uses the correct method", function () {
+            expect(requests[0]?.method).to.equal("POST");
+        });
+
+        it("sends the right data", function () {
+            expect(JSON.parse(requests[0]?.requestBody || "")).to.deep.equal(mocks.data.testEntity);
+        });
+
+        it("does not have Prefer header", function () {
+            expect(requests[0]?.requestHeaders["Prefer"]).to.be.undefined;
+        });
+
+        it("returns the correct response", function () {
+            expect(responseObject.message).to.eql("Request Timed Out");
+            expect(responseObject.status).to.eql(0);
+            expect(responseObject.statusText).to.eql("");
+            expect(responseObject.headers).to.eql({});
+        });
+    });
+
+    describe("dynamicsWebApi.uploadFile -", function () {
+        describe("file upload with 2 chunks", function () {
+            const dwaRequest = {
+                key: mocks.data.testEntityId,
+                collection: "tests",
+                fileName: "test.json",
+                fieldName: "dwa_file",
+                data: Buffer.from("Welcome to DynamicsWebApi!", "utf-8"),
+            };
+
+            const beginResponse = mocks.responses.uploadFileBeginResponse;
+            const response1 = mocks.responses.uploadFile1stResponse;
+
+            let responseObject: any;
+            before(async function () {
+                let i = 0;
+                (global as any).XMLHttpRequest.onCreate = (xhr: SinonFakeXMLHttpRequest) => {
+                    requests.push(xhr);
+                };
+
+                XhrWrapper.afterSendEvent = function () {
+                    switch (i) {
+                        case 0:
+                            requests[i].respond(beginResponse.status, beginResponse.responseHeaders, "");
+                            break;
+                        default:
+                            requests[i].respond(response1.status, [], "");
+                            break;
+                    }
+
+                    i++;
+                };
+
+                responseObject = await dynamicsWebApiTest.uploadFile(dwaRequest);
+            });
+
+            after(function () {
+                //@ts-ignore
+                XhrWrapper.afterSendEvent = undefined;
+                requests.length = 0; // Clear the requests array
+            });
+
+            it("sends the request to the right end point", function () {
+                expect(requests[0]?.url).to.equal(
+                    mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, "") + `/${dwaRequest.fieldName}?x-ms-file-name=${dwaRequest.fileName}`,
+                );
+                expect(requests[1]?.url).to.equal(beginResponse.responseHeaders.Location);
+                expect(requests[2]?.url).to.equal(beginResponse.responseHeaders.Location);
+            });
+
+            it("uses the correct method", function () {
+                expect(requests[0]?.method).to.equal("PATCH");
+                expect(requests[1]?.method).to.equal("PATCH");
+                expect(requests[2]?.method).to.equal("PATCH");
+            });
+
+            it("sends data", function () {
+                expect(requests[0]?.requestBody).to.be.undefined;
+                expect(requests[1]?.requestBody).to.deep.eq(
+                    mocks.utils.toTypedArray(dwaRequest.data.subarray(0, beginResponse.responseHeaders["x-ms-chunk-size"])),
+                );
+                expect(requests[2]?.requestBody).to.deep.eq(
+                    mocks.utils.toTypedArray(dwaRequest.data.subarray(beginResponse.responseHeaders["x-ms-chunk-size"], dwaRequest.data.length)),
+                );
+            });
+
+            it("sends correct headers", function () {
+                expect(requests[0]?.requestHeaders["x-ms-transfer-mode"]).to.be.eq("chunked");
+                expect(requests[1]?.requestHeaders["Content-Range"]).to.be.eq(
+                    `bytes 0-${beginResponse.responseHeaders["x-ms-chunk-size"] - 1}/${dwaRequest.data.length}`,
+                );
+                expect(requests[1]?.requestHeaders["Content-Type"]).to.be.eq("application/octet-stream;charset=utf-8");
+                expect(requests[2]?.requestHeaders["Content-Range"]).to.be.eq(
+                    `bytes ${beginResponse.responseHeaders["x-ms-chunk-size"]}-${dwaRequest.data.length - 1}/${dwaRequest.data.length}`,
+                );
+                expect(requests[2]?.requestHeaders["Content-Type"]).to.be.eq("application/octet-stream;charset=utf-8");
+            });
+
+            it("does not have any response", function () {
+                expect(responseObject).to.be.undefined;
+            });
+        });
+    });
+
+    describe("dynamicsWebApi.downloadFile -", function () {
+        describe("file download in 2 chunks", function () {
+            const dwaRequest = {
+                key: mocks.data.testEntityId,
+                collection: "tests",
+                property: "dwa_file",
+            };
+
+            const chunk1 = mocks.responses.downloadFileResponseChunk1;
+            const chunk2 = mocks.responses.downloadFileResponseChunk2;
+
+            let responseObject: any;
+            before(async function () {
+                (global as any).XMLHttpRequest.onCreate = (xhr: SinonFakeXMLHttpRequest) => {
+                    requests.push(xhr);
+                };
+
+                let i = 0;
+                XhrWrapper.afterSendEvent = function () {
+                    switch (i) {
+                        case 0:
+                            requests[i].respond(chunk1.status, chunk1.responseHeaders, chunk1.responseText);
+                            break;
+                        default:
+                            requests[i].respond(chunk2.status, chunk2.responseHeaders, chunk2.responseText);
+                            break;
+                    }
+
+                    i++;
+                };
+
+                responseObject = await dynamicsWebApiTest.downloadFile(dwaRequest);
+            });
+
+            after(function () {
+                //@ts-ignore
+                XhrWrapper.afterSendEvent = undefined;
+                requests.length = 0; // Clear the requests array
+            });
+
+            it("sends the request to the right end point", function () {
+                expect(requests[0]?.url).to.equal(
+                    mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, "") + `/${dwaRequest.property}?size=full`,
+                );
+                expect(requests[1]?.url).to.equal(
+                    mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, "") + `/${dwaRequest.property}?size=full`,
+                );
+            });
+
+            it("uses the correct method", function () {
+                expect(requests[0]?.method).to.equal("GET");
+                expect(requests[1]?.method).to.equal("GET");
+            });
+
+            it("does not send data", function () {
+                expect(requests[0]?.requestBody).to.be.undefined;
+                expect(requests[1]?.requestBody).to.be.undefined;
+            });
+
+            it("sends correct headers", function () {
+                expect(requests[0]?.requestHeaders["Range"]).to.be.eq(`bytes=0-${Utility.downloadChunkSize - 1}`);
+                expect(requests[1]?.requestHeaders["Range"]).to.be.eq(`bytes=${Utility.downloadChunkSize}-${Utility.downloadChunkSize * 2 - 1}`);
+            });
+
+            it("does not have any response", function () {
+                const text = Buffer.from(responseObject.data).toString();
+                expect(text).to.eq("Welcome to DynamicsWebApi!");
+                expect(responseObject.fileName).to.eq(chunk2.responseHeaders["x-ms-file-name"]);
+                expect(responseObject.fileSize).to.eq(chunk2.responseHeaders["x-ms-file-size"]);
             });
         });
     });
