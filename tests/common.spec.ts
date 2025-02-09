@@ -1,12 +1,13 @@
 import { expect } from "chai";
 import nock from "nock";
-import stubs, * as mocks from "./stubs";
+import * as mocks from "./stubs";
 
 import { RequestClient } from "../src/client/RequestClient";
 import { InternalConfig } from "../src/utils/Config";
 import * as Core from "../src/types";
 import * as Regex from "../src/helpers/Regex";
 import * as RequestUtility from "../src/utils/Request";
+import { DynamicsWebApiError } from "../src/helpers/ErrorHelper";
 
 describe("Regex.", () => {
     describe("isUuid -", () => {
@@ -55,6 +56,45 @@ describe("Regex.", () => {
     });
 });
 
+describe("RequestClient.sendRequest", () => {
+    describe("request error", function () {
+        let scope: nock.Scope;
+        const url = "test";
+        before(() => {
+            scope = nock(mocks.webApiUrl).post("/test", mocks.data.testEntity).reply(500, { Message: "Error" });
+        });
+
+        after(() => {
+            nock.cleanAll();
+            RequestClient._clearTestData();
+        });
+
+        it("returns a correct response", async () => {
+            try {
+                const object = await RequestClient.sendRequest(
+                    { method: "POST", path: url, data: mocks.data.testEntity, async: true },
+                    { dataApi: { url: mocks.webApiUrl }, searchApi: { url: mocks.webApiUrl } },
+                );
+                expect(object).to.be.undefined;
+            } catch (object: any) {
+                if (object.stack) delete object.stack;
+
+                expect(object).to.deep.include({
+                    headers: mocks.data.defaultErrorHeaders,
+                    status: 500,
+                    message: "Error",
+                    statusMessage: "Internal Server Error",
+                    statusText: "",
+                } as DynamicsWebApiError);
+            }
+        });
+
+        it("all requests have been made", function () {
+            expect(scope.isDone()).to.be.true;
+        });
+    });
+});
+
 describe("RequestClient.makeRequest", () => {
     before(() => {
         global.DWA_BROWSER = false;
@@ -94,7 +134,7 @@ describe("RequestClient.makeRequest", () => {
                     code: "ABORT_ERR",
                     name: "AbortError",
                     message: "The operation was aborted",
-                })
+                }),
             );
 
             setTimeout(() => controller.abort(), 0);
@@ -132,7 +172,7 @@ describe("RequestClient.makeRequest", () => {
             scope = nock(mocks.webApiUrl, {
                 reqheaders: {
                     Authorization: `Bearer ${testToken}`,
-                }
+                },
             })
                 .filteringRequestBody(function (body) {
                     body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
@@ -158,7 +198,7 @@ describe("RequestClient.makeRequest", () => {
                 method: "GET",
                 functionName: "test",
                 collection: url,
-                token: testToken
+                token: testToken,
             };
             const config: InternalConfig = {
                 searchApi: { url: "" },
@@ -191,7 +231,7 @@ describe("RequestClient.makeRequest", () => {
 describe("RequestUtility.", () => {
     describe("processData", () => {
         const config = {
-            serverUrl: stubs.serverUrl,
+            serverUrl: mocks.serverUrl,
             dataApi: {
                 url: "data",
                 version: "9.2",

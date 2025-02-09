@@ -1,4 +1,4 @@
-/*! dynamics-web-api v2.1.7 (c) 2024 Aleksandr Rogov. License: MIT */
+/*! dynamics-web-api v2.1.8 (c) 2025 Aleksandr Rogov. License: MIT */
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -24,8 +24,8 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 function getCrypto() {
   return true ? window.crypto : null.getCrypto();
 }
-function generateRandomBytes() {
-  return true ? getCrypto().getRandomValues(new Uint8Array(1)) : getCrypto().randomBytes(1);
+function generateUUID() {
+  return true ? getCrypto().randomUUID() : getCrypto().randomUUID();
 }
 var init_Crypto = __esm({
   "src/helpers/Crypto.ts"() {
@@ -199,7 +199,7 @@ var init_Utility = __esm({
       }
       /** Generates UUID */
       static generateUUID() {
-        return ("10000000-1000-4000-8000" + -1e11).replace(/[018]/g, (c) => (c ^ generateRandomBytes()[0] & 15 >> c / 4).toString(16));
+        return generateUUID();
       }
       static getXrmContext() {
         if (typeof GetGlobalContext !== "undefined") {
@@ -773,9 +773,13 @@ function _executeRequest(options, successCallback, errorCallback) {
       if (signal) signal.removeEventListener("abort", abort);
       switch (request.status) {
         case 200:
+        // Success with content returned in response body.
         case 201:
+        // Success with content returned in response body.
         case 204:
+        // Success with no content returned in response body.
         case 206:
+        // Success with partial content.
         case 304: {
           const responseHeaders = parseResponseHeaders(request.getAllResponseHeaders());
           const responseData = parseResponse(request.responseText, responseHeaders, responseParams[options.requestId]);
@@ -790,6 +794,7 @@ function _executeRequest(options, successCallback, errorCallback) {
         }
         case 0:
           break;
+        //response will be handled by onerror
         default:
           if (!request) break;
           let error;

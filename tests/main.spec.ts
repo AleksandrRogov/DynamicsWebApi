@@ -3,7 +3,7 @@ import nock from "nock";
 import * as mocks from "./stubs";
 
 import { DynamicsWebApi, type RetrieveMultipleRequest } from "../src/dynamics-web-api";
-import { DWA } from "../lib/dwa";
+import { DWA } from "../src/dwa";
 
 const dynamicsWebApiTest = new DynamicsWebApi({
     dataApi: {

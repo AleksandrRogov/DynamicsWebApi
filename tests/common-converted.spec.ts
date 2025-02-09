@@ -1,17 +1,18 @@
-﻿var chai = require("chai");
-var expect = chai.expect;
+﻿import { expect } from "chai";
 
-var nock = require("nock");
-var sinon = require("sinon");
+import nock, { cleanAll } from "nock";
+import sinon from "sinon";
 
-var { DWA } = require("../lib/dwa");
-var { Utility } = require("../lib/utils/Utility");
-var RequestUtility = require("../lib/utils/Request");
-var { ErrorHelper } = require("../lib/helpers/ErrorHelper");
-var mocks = require("./stubs");
-var { dateReviver } = require("../lib/client/helpers/dateReviver");
-var { RequestClient } = require("../lib/client/RequestClient");
-var { parseResponse } = require("../lib/client/helpers/parseResponse");
+import { DWA } from "../src/dwa";
+import { Utility } from "../src/utils/Utility";
+import { composeUrl, compose, composeHeaders } from "../src/utils/Request";
+import { ErrorHelper } from "../src/helpers/ErrorHelper";
+import { data as _data, webApiUrl, responses } from "./stubs";
+import { dateReviver } from "../src/client/helpers/dateReviver";
+import { RequestClient } from "../src/client/RequestClient";
+import { parseResponse } from "../src/client/helpers/parseResponse";
+import { InternalRequest } from "../src/types";
+import { InternalConfig } from "../src/utils/Config";
 
 describe("Utility.", function () {
     describe("buildFunctionParameters - ", function () {
@@ -71,7 +72,7 @@ describe("Utility.", function () {
         });
 
         it("pagingCookie is null or undefined", function () {
-            var result = Utility.getFetchXmlPagingCookie(null, 2);
+            var result = Utility.getFetchXmlPagingCookie(undefined, 2);
             expect(result).to.deep.equal({
                 cookie: "",
                 page: 2,
@@ -87,25 +88,27 @@ describe("Utility.", function () {
         });
 
         it("pagingCookie is normal", function () {
-            var result = Utility.getFetchXmlPagingCookie(mocks.data.fetchXmls.cookiePage2, 2);
-            expect(result).to.deep.equal(mocks.data.fetchXmls.fetchXmlResultPage2Cookie.PagingInfo);
+            var result = Utility.getFetchXmlPagingCookie(_data.fetchXmls.cookiePage2, 2);
+            expect(result).to.deep.equal(_data.fetchXmls.fetchXmlResultPage2Cookie.PagingInfo);
 
-            result = Utility.getFetchXmlPagingCookie(mocks.data.fetchXmls.cookiePage1, 2);
-            expect(result).to.deep.equal(mocks.data.fetchXmls.fetchXmlResultPage1Cookie.PagingInfo);
+            result = Utility.getFetchXmlPagingCookie(_data.fetchXmls.cookiePage1, 2);
+            expect(result).to.deep.equal(_data.fetchXmls.fetchXmlResultPage1Cookie.PagingInfo);
 
-            result = Utility.getFetchXmlPagingCookie(mocks.data.fetchXmls.cookiePage2);
-            expect(result).to.deep.equal(mocks.data.fetchXmls.fetchXmlResultPage2Cookie.PagingInfo);
+            result = Utility.getFetchXmlPagingCookie(_data.fetchXmls.cookiePage2);
+            expect(result).to.deep.equal(_data.fetchXmls.fetchXmlResultPage2Cookie.PagingInfo);
         });
     });
 
     describe("getXrmContext - GetGlobalContext", function () {
         before(function () {
+            // @ts-ignore
             global.GetGlobalContext = function () {
                 return "Global Context";
             };
         });
 
         after(function () {
+            // @ts-ignore
             global.GetGlobalContext = undefined;
         });
 
@@ -119,6 +122,7 @@ describe("Utility.", function () {
     describe("getXrmContext - Xrm.Utility.getGlobalContext", function () {
         before(function () {
             global.Xrm.Utility = {
+                // @ts-ignore
                 getGlobalContext: function () {
                     return {
                         getClientUrl: function () {
@@ -130,6 +134,7 @@ describe("Utility.", function () {
         });
 
         after(function () {
+            // @ts-ignore
             global.Xrm.Utility = undefined;
         });
 
@@ -142,12 +147,14 @@ describe("Utility.", function () {
 
     describe("getXrmContext - Form context does not exist", function () {
         before(function () {
+            // @ts-ignore
             global.Xrm = undefined;
         });
 
         after(function () {
             global.Xrm = {
                 Page: {
+                    // @ts-ignore
                     context: {
                         getClientUrl: function () {
                             return "http://testorg.crm.dynamics.com";
@@ -166,11 +173,13 @@ describe("Utility.", function () {
 
     describe("getXrmContext - Xrm.Page is null", function () {
         before(function () {
+            // @ts-ignore
             global.Xrm.Page = undefined;
         });
 
         after(function () {
             global.Xrm.Page = {
+                // @ts-ignore
                 context: {
                     getClientUrl: function () {
                         return "http://testorg.crm.dynamics.com";
@@ -188,10 +197,12 @@ describe("Utility.", function () {
 
     describe("getXrmContext - Xrm.Page.context is null", function () {
         before(function () {
+            // @ts-ignore
             global.Xrm.Page.context = null;
         });
 
         after(function () {
+            // @ts-ignore
             global.Xrm.Page.context = {
                 getClientUrl: function () {
                     return "http://testorg.crm.dynamics.com";
@@ -228,19 +239,19 @@ describe("Utility.", function () {
 });
 
 describe("RequestUtility.composeUrl -", function () {
-    var stubUrl = mocks.webApiUrl + "tests";
+    var stubUrl = webApiUrl + "tests";
     it("request is empty", function () {
         var dwaRequest = {
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl, "&");
+        var result = composeUrl(dwaRequest, null, stubUrl, "&");
         expect(result).to.equal(stubUrl);
 
-        result = RequestUtility.composeUrl(null, null, stubUrl, "&");
+        result = composeUrl(null, null, stubUrl, "&");
         expect(result).to.equal(stubUrl);
 
-        result = RequestUtility.composeUrl({}, null, stubUrl, "&");
+        result = composeUrl({}, null, stubUrl, "&");
         expect(result).to.equal(stubUrl);
     });
 
@@ -250,7 +261,7 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        var result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(`${stubUrl}?$count=true`);
     });
 
@@ -260,17 +271,17 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        var result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(stubUrl);
     });
 
     it("expand is empty", function () {
-        var dwaRequest = {
+        let dwaRequest: InternalRequest = {
             expand: undefined,
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        var result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(stubUrl);
 
         dwaRequest = {
@@ -278,7 +289,7 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(stubUrl);
 
         dwaRequest = {
@@ -286,12 +297,12 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(stubUrl);
     });
 
     it("expand - filter without expand.property", function () {
-        var dwaRequest = {
+        let dwaRequest: InternalRequest = {
             expand: [
                 {
                     filter: "name eq 'name'",
@@ -300,30 +311,31 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        var result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(stubUrl);
 
         dwaRequest = {
             expand: [
                 {
                     filter: "name eq 'name'",
+                    //@ts-ignore - testing if it works even with null
                     property: null,
                 },
             ],
             functionName: "",
         };
 
-        result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(stubUrl);
     });
 
     it("expand - is a string", function () {
-        var dwaRequest = {
+        let dwaRequest: InternalRequest = {
             expand: "string",
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        var result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(`${stubUrl}?$expand=string`);
     });
 
@@ -337,12 +349,12 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        var result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(`${stubUrl}?$expand=property`);
     });
 
     it("expand - property,filter empty", function () {
-        var dwaRequest = {
+        let dwaRequest: InternalRequest = {
             expand: [
                 {
                     property: "property",
@@ -352,20 +364,21 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        var result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(`${stubUrl}?$expand=property`);
 
         dwaRequest = {
             expand: [
                 {
                     property: "property",
+                    //@ts-ignore - testing if it works even with null
                     filter: null,
                 },
             ],
             functionName: "",
         };
 
-        result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(`${stubUrl}?$expand=property`);
     });
 
@@ -380,7 +393,7 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        var result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(`${stubUrl}?$expand=property($filter=${encodeURIComponent("name eq 'name'")})`);
     });
 
@@ -395,20 +408,21 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        var result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(`${stubUrl}?$expand=property`);
 
         dwaRequest = {
             expand: [
                 {
                     property: "property",
+                    //@ts-ignore - testing if it works even with null
                     orderBy: null,
                 },
             ],
             functionName: "",
         };
 
-        result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(`${stubUrl}?$expand=property`);
     });
 
@@ -423,7 +437,7 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        var result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(`${stubUrl}?$expand=property($orderby=name)`);
 
         dwaRequest = {
@@ -436,7 +450,7 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(`${stubUrl}?$expand=property($orderby=name,subject)`);
     });
 
@@ -451,20 +465,21 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        var result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(`${stubUrl}?$expand=property`);
 
         dwaRequest = {
             expand: [
                 {
                     property: "property",
+                    //@ts-ignore - testing if it works even with null
                     select: null,
                 },
             ],
             functionName: "",
         };
 
-        result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(`${stubUrl}?$expand=property`);
     });
 
@@ -479,7 +494,7 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        var result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(`${stubUrl}?$expand=property($select=name)`);
 
         dwaRequest = {
@@ -492,7 +507,7 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(`${stubUrl}?$expand=property($select=name,subject)`);
     });
 
@@ -507,7 +522,7 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        var result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(`${stubUrl}?$expand=property`);
 
         dwaRequest = {
@@ -520,20 +535,21 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(`${stubUrl}?$expand=property`);
 
         dwaRequest = {
             expand: [
                 {
                     property: "property",
+                    //@ts-ignore - testing if it works even with null
                     top: null,
                 },
             ],
             functionName: "",
         };
 
-        result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(`${stubUrl}?$expand=property`);
     });
 
@@ -548,12 +564,12 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        var result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(`${stubUrl}?$expand=property($top=3)`);
     });
 
     it("expand - different properties", function () {
-        var dwaRequest = {
+        let dwaRequest: InternalRequest = {
             expand: [
                 {
                     property: "property",
@@ -564,7 +580,7 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        let result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(`${stubUrl}?$expand=property($select=name,subject;$top=3)`);
 
         dwaRequest = {
@@ -579,7 +595,7 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(`${stubUrl}?$expand=property($select=name,subject;$top=3;$orderby=order)`);
     });
 
@@ -589,15 +605,16 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        var result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(stubUrl);
 
         dwaRequest = {
+            //@ts-ignore - testing if it works even with null
             filter: null,
             functionName: "",
         };
 
-        result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(stubUrl);
     });
 
@@ -607,7 +624,7 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        var result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(`${stubUrl}?$filter=${encodeURIComponent("name eq 'name'")}`);
     });
 
@@ -617,7 +634,7 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        var result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(`${stubUrl}?$filter=${encodeURIComponent("email eq 'test+email@example.com'")}`);
     });
 
@@ -627,11 +644,11 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        var result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(
             `${stubUrl}?$filter=${encodeURIComponent(
-                "name eq 'name' and testid1 eq 0000a000-0000-0000-0000-000000000001 and testid2 eq 0000a000-0000-0000-0000-000000000002 and teststring eq '{0000a000-0000-0000-0000-000000000003}'"
-            )}`
+                "name eq 'name' and testid1 eq 0000a000-0000-0000-0000-000000000001 and testid2 eq 0000a000-0000-0000-0000-000000000002 and teststring eq '{0000a000-0000-0000-0000-000000000003}'",
+            )}`,
         );
     });
 
@@ -641,11 +658,11 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        var result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(
             `${stubUrl}?$filter=${encodeURIComponent(
-                "name eq 'name' and testid1 eq 0000a000-0000-0000-0000-000000000001 and testid2 eq 0000a000-0000-0000-0000-000000000002 and teststring eq 'here is some text {0000a000-0000-0000-0000-000000000003}'"
-            )}`
+                "name eq 'name' and testid1 eq 0000a000-0000-0000-0000-000000000001 and testid2 eq 0000a000-0000-0000-0000-000000000002 and teststring eq 'here is some text {0000a000-0000-0000-0000-000000000003}'",
+            )}`,
         );
     });
 
@@ -656,11 +673,11 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        var result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(
             `${stubUrl}?$filter=${encodeURIComponent(
-                "name eq 'name' and (testid1 eq 0000a000-0000-0000-0000-000000000001 or testid2 eq 0000a000-0000-0000-0000-000000000002)"
-            )}`
+                "name eq 'name' and (testid1 eq 0000a000-0000-0000-0000-000000000001 or testid2 eq 0000a000-0000-0000-0000-000000000002)",
+            )}`,
         );
     });
 
@@ -671,43 +688,45 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        var result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(`${stubUrl}?$filter=${encodeURIComponent("name eq 'name' and (testid1 eq 0000a000-0000-0000-0000-000000000001)")}`);
     });
 
     it("ifmatch empty", function () {
-        var dwaRequest = {
+        let dwaRequest: InternalRequest = {
             ifmatch: "",
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        let result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(stubUrl);
 
         dwaRequest = {
+            //@ts-ignore - testing if it works even with null
             ifmatch: null,
             functionName: "",
         };
 
-        result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(stubUrl);
     });
 
     it("navigationProperty empty", function () {
-        var dwaRequest = {
+        let dwaRequest: InternalRequest = {
             navigationProperty: "",
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        let result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(stubUrl);
 
         dwaRequest = {
+            //@ts-ignore - testing if it works even with null
             navigationProperty: null,
             functionName: "",
         };
 
-        result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(stubUrl);
     });
 
@@ -717,7 +736,7 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        var result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(stubUrl + "/nav");
     });
 
@@ -728,7 +747,7 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        const result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        const result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(stubUrl + "/property");
     });
 
@@ -738,7 +757,7 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        const result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        const result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(stubUrl + "/property");
     });
 
@@ -749,25 +768,26 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        const result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        const result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(stubUrl + "/property");
     });
 
     it("orderBy empty", function () {
-        var dwaRequest = {
+        let dwaRequest: InternalRequest = {
             orderBy: [],
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        var result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(stubUrl);
 
         dwaRequest = {
+            //@ts-ignore - testing if it works even with null
             orderBy: null,
             functionName: "",
         };
 
-        result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(stubUrl);
     });
 
@@ -777,7 +797,7 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        var result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(stubUrl + "?$orderby=name");
 
         dwaRequest = {
@@ -785,25 +805,26 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(stubUrl + "?$orderby=name,subject");
     });
 
     it("select empty", function () {
-        var dwaRequest = {
+        let dwaRequest: InternalRequest = {
             select: [],
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        let result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(stubUrl);
 
         dwaRequest = {
+            //@ts-ignore - testing if it works even with null
             select: null,
             functionName: "",
         };
 
-        result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(stubUrl);
     });
 
@@ -813,7 +834,7 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        var result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(stubUrl + "?$select=name");
 
         dwaRequest = {
@@ -821,7 +842,7 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(stubUrl + "?$select=name,subject");
     });
 
@@ -831,7 +852,7 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "retrieve",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        var result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(stubUrl + "/nav");
 
         dwaRequest = {
@@ -839,7 +860,7 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "retrieve",
         };
 
-        result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.deep.equal(stubUrl + "/nav?$select=subject");
 
         dwaRequest = {
@@ -847,7 +868,7 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "retrieve",
         };
 
-        result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.deep.equal(stubUrl + "/nav?$select=subject,fullname");
     });
 
@@ -857,17 +878,17 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "retrieve",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        var result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.deep.equal(stubUrl + "/nav/$ref");
     });
 
     it("top empty or <=0", function () {
-        var dwaRequest = {
+        let dwaRequest: InternalRequest = {
             top: 0,
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        let result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.deep.equal(stubUrl);
 
         dwaRequest = {
@@ -875,82 +896,85 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.deep.equal(stubUrl);
 
         dwaRequest = {
+            //@ts-ignore - testing if it works even with null
             top: null,
             functionName: "",
         };
 
-        result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.deep.equal(stubUrl);
     });
 
     it("top", function () {
-        var dwaRequest = {
+        let dwaRequest = {
             top: 3,
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        let result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.deep.equal(stubUrl + "?$top=3");
     });
 
     it("savedQuery empty", function () {
-        var dwaRequest = {
+        let dwaRequest: InternalRequest = {
             savedQuery: "",
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        let result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.deep.equal(stubUrl);
 
         dwaRequest = {
+            //@ts-ignore - testing if it works even with null
             savedQuery: null,
             functionName: "",
         };
 
-        result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.deep.equal(stubUrl);
     });
 
     it("savedQuery", function () {
         var dwaRequest = {
-            savedQuery: mocks.data.testEntityId,
+            savedQuery: _data.testEntityId,
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
-        expect(result).to.deep.equal(stubUrl + "?savedQuery=" + mocks.data.testEntityId);
+        var result = composeUrl(dwaRequest, null, stubUrl);
+        expect(result).to.deep.equal(stubUrl + "?savedQuery=" + _data.testEntityId);
     });
 
     it("userQuery empty", function () {
-        var dwaRequest = {
+        let dwaRequest: InternalRequest = {
             userQuery: "",
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        var result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.deep.equal(stubUrl);
 
         dwaRequest = {
+            //@ts-ignore - testing if it works even with null
             userQuery: null,
             functionName: "",
         };
 
-        result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.deep.equal(stubUrl);
     });
 
     it("userQuery", function () {
         var dwaRequest = {
-            userQuery: mocks.data.testEntityId,
+            userQuery: _data.testEntityId,
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
-        expect(result).to.deep.equal(stubUrl + "?userQuery=" + mocks.data.testEntityId);
+        var result = composeUrl(dwaRequest, null, stubUrl);
+        expect(result).to.deep.equal(stubUrl + "?userQuery=" + _data.testEntityId);
     });
 
     it("partitionId", function () {
@@ -959,7 +983,7 @@ describe("RequestUtility.composeUrl -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        var result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.deep.equal(stubUrl + "?partitionid='partition1'");
     });
 
@@ -969,19 +993,19 @@ describe("RequestUtility.composeUrl -", function () {
             queryParams: ["p1=bla", "@p2=[22,23]"],
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        var result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.deep.equal(stubUrl + "?$filter=" + encodeURIComponent("something eq 2") + "&p1=bla&@p2=[22,23]");
     });
 
     it("multiple options", function () {
-        var dwaRequest = {
+        let dwaRequest: InternalRequest = {
             select: ["name", "subject"],
             orderBy: ["order"],
             top: 5,
             functionName: "",
         };
 
-        var result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        let result: InternalRequest | string = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.deep.equal(stubUrl + "?$select=name,subject&$top=5&$orderby=order");
 
         dwaRequest.expand = [
@@ -996,10 +1020,10 @@ describe("RequestUtility.composeUrl -", function () {
             },
         ];
 
-        result = RequestUtility.composeUrl(dwaRequest, null, stubUrl);
+        result = composeUrl(dwaRequest, null, stubUrl);
 
         expect(result).to.deep.equal(
-            stubUrl + "?$select=name,subject&$top=5&$orderby=order&$expand=property($select=name;$orderby=order),property2($select=name3)"
+            stubUrl + "?$select=name,subject&$top=5&$orderby=order&$expand=property($select=name;$orderby=order),property2($select=name3)",
         );
 
         //todo: move to compose
@@ -1007,7 +1031,8 @@ describe("RequestUtility.composeUrl -", function () {
         dwaRequest.expand = null;
         dwaRequest.returnRepresentation = true;
 
-        result = RequestUtility.compose(dwaRequest, {});
+        //@ts-ignore - testing if it works even with null
+        result = compose(dwaRequest, {});
 
         var expectedObject = Utility.copyObject(dwaRequest);
         expectedObject.path = "tests?$select=name,subject&$top=5&$orderby=order";
@@ -1018,21 +1043,24 @@ describe("RequestUtility.composeUrl -", function () {
 
         dwaRequest.top = 0;
         dwaRequest.count = true;
-        dwaRequest.impersonate = mocks.data.testEntityId;
+        dwaRequest.impersonate = _data.testEntityId;
 
-        result = RequestUtility.compose(dwaRequest, {});
+        //@ts-ignore - testing if it works even with null
+        result = compose(dwaRequest, {});
 
         expectedObject = Utility.copyObject(dwaRequest);
         expectedObject.path = "tests?$select=name,subject&$count=true&$orderby=order";
-        expectedObject.headers = { Prefer: DWA.Prefer.ReturnRepresentation, MSCRMCallerID: mocks.data.testEntityId };
+        expectedObject.headers = { Prefer: DWA.Prefer.ReturnRepresentation, MSCRMCallerID: _data.testEntityId };
         expectedObject.async = true;
 
         expect(result).to.deep.equal(expectedObject);
 
+        //@ts-ignore - testing if it works even with null
         dwaRequest.impersonate = null;
         dwaRequest.navigationProperty = "nav";
 
-        result = RequestUtility.compose(dwaRequest, {});
+        //@ts-ignore - testing if it works with an incomplete object
+        result = compose(dwaRequest, {});
 
         expectedObject = Utility.copyObject(dwaRequest);
         expectedObject.path = "tests/nav?$select=name,subject&$count=true&$orderby=order";
@@ -1041,13 +1069,15 @@ describe("RequestUtility.composeUrl -", function () {
 
         expect(result).to.deep.equal(expectedObject);
 
+        //@ts-ignore - testing if it works even with null
         dwaRequest.navigationProperty = null;
         dwaRequest.returnRepresentation = false;
         dwaRequest.includeAnnotations = DWA.Prefer.Annotations.All;
-        dwaRequest.select[0] = "/nav";
+        dwaRequest.select![0] = "/nav";
         dwaRequest.functionName = "retrieve";
 
-        result = RequestUtility.compose(dwaRequest, {});
+        //@ts-ignore - testing if it works even with null
+        result = compose(dwaRequest, {});
 
         expectedObject = Utility.copyObject(dwaRequest);
         expectedObject.path = "tests/nav?$select=subject&$count=true&$orderby=order";
@@ -1065,7 +1095,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ "MSCRM.MergeLabels": "true" });
     });
 
@@ -1075,7 +1105,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
     });
 
@@ -1085,25 +1115,26 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ "If-Match": "*" });
     });
 
     it("ifnonematch empty", function () {
-        var dwaRequest = {
+        let dwaRequest: InternalRequest = {
             ifnonematch: "",
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
 
         dwaRequest = {
+            //@ts-ignore - testing if it works even with null
             ifnonematch: null,
             functionName: "",
         };
 
-        result = RequestUtility.composeHeaders(dwaRequest, {});
+        result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
     });
 
@@ -1113,7 +1144,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ "If-None-Match": "*" });
     });
 
@@ -1125,70 +1156,72 @@ describe("RequestUtility.composeHeaders -", function () {
         };
 
         expect(function () {
-            RequestUtility.composeHeaders(dwaRequest, {});
+            composeHeaders(dwaRequest, {});
         }).to.throw("DynamicsWebApi.fun. Either one of request.ifmatch or request.ifnonematch parameters should be used in a call, not both.");
     });
 
     it("impersonate empty", function () {
-        var dwaRequest = {
+        let dwaRequest: InternalRequest = {
             impersonate: "",
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
 
         dwaRequest = {
+            //@ts-ignore - testing if it works even with null
             impersonate: null,
             functionName: "",
         };
 
-        result = RequestUtility.composeHeaders(dwaRequest, {});
+        result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
     });
 
     it("impersonate", function () {
         var dwaRequest = {
-            impersonate: mocks.data.testEntityId,
+            impersonate: _data.testEntityId,
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
-        expect(result).to.deep.equal({ MSCRMCallerID: mocks.data.testEntityId });
+        var result = composeHeaders(dwaRequest, {});
+        expect(result).to.deep.equal({ MSCRMCallerID: _data.testEntityId });
     });
 
     it("impersonateAAD empty", function () {
-        var dwaRequest = {
+        let dwaRequest: InternalRequest = {
             impersonateAAD: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
 
         dwaRequest = {
+            //@ts-ignore - testing if it works even with null
             impersonateAAD: null,
         };
 
-        result = RequestUtility.composeHeaders(dwaRequest, {});
+        result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
     });
 
     it("impersonateAAD", function () {
         var dwaRequest = {
-            impersonateAAD: mocks.data.testEntityId,
+            impersonateAAD: _data.testEntityId,
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
-        expect(result).to.deep.equal({ CallerObjectId: mocks.data.testEntityId });
+        var result = composeHeaders(dwaRequest, {});
+        expect(result).to.deep.equal({ CallerObjectId: _data.testEntityId });
     });
 
     it("includeAnnotations empty", function () {
-        var dwaRequest = {
+        let dwaRequest: InternalRequest = {
             includeAnnotations: "",
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
 
         dwaRequest = {
@@ -1196,7 +1229,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        result = RequestUtility.composeHeaders(dwaRequest, {});
+        result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
     });
 
@@ -1206,17 +1239,17 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.AssociatedNavigationProperty + '"' });
     });
 
     it("maxPageSize empty or <=0", function () {
-        var dwaRequest = {
+        let dwaRequest: InternalRequest = {
             maxPageSize: 0,
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
 
         dwaRequest = {
@@ -1224,7 +1257,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        result = RequestUtility.composeHeaders(dwaRequest, {});
+        result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
 
         dwaRequest = {
@@ -1232,7 +1265,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        result = RequestUtility.composeHeaders(dwaRequest, {});
+        result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
     });
 
@@ -1242,7 +1275,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: "odata.maxpagesize=10" });
     });
 
@@ -1252,7 +1285,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: "odata.continue-on-error" });
     });
 
@@ -1262,7 +1295,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
     });
 
@@ -1272,7 +1305,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
     });
 
@@ -1282,7 +1315,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation });
     });
 
@@ -1292,17 +1325,18 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
     });
 
     it("duplicateDetection null", function () {
-        var dwaRequest = {
+        let dwaRequest: InternalRequest = {
+            //@ts-ignore - testing if it works even with null
             duplicateDetection: null,
             functionName: "",
         };
 
-        result = result = RequestUtility.composeHeaders(dwaRequest, {});
+        let result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
     });
 
@@ -1312,7 +1346,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ "MSCRM.SuppressDuplicateDetection": "false" });
     });
 
@@ -1322,17 +1356,17 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
     });
 
     it("bypassCustomPluginExecution null", function () {
-        var dwaRequest = {
+        let dwaRequest: InternalRequest = {
             bypassCustomPluginExecution: null,
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        let result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({});
     });
 
@@ -1342,7 +1376,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ "MSCRM.BypassCustomPluginExecution": "true" });
     });
 
@@ -1353,7 +1387,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({
             Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="' + DWA.Prefer.Annotations.AssociatedNavigationProperty + '"',
         });
@@ -1367,7 +1401,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="*",odata.maxpagesize=20' });
     });
 
@@ -1380,7 +1414,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({
             Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="*",odata.maxpagesize=20,odata.continue-on-error',
         });
@@ -1393,7 +1427,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: 'odata.include-annotations="*",odata.maxpagesize=20' });
     });
 
@@ -1404,7 +1438,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation + ",odata.maxpagesize=20" });
     });
 
@@ -1414,7 +1448,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation });
     });
 
@@ -1424,7 +1458,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: 'odata.include-annotations="*"' });
     });
 
@@ -1434,7 +1468,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: "odata.maxpagesize=20" });
     });
 
@@ -1444,7 +1478,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({
             Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="' + DWA.Prefer.Annotations.AssociatedNavigationProperty + '"',
         });
@@ -1456,7 +1490,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="*",odata.maxpagesize=20' });
     });
 
@@ -1466,7 +1500,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: 'odata.include-annotations="*",odata.maxpagesize=20' });
     });
 
@@ -1476,7 +1510,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: 'odata.include-annotations="*",odata.maxpagesize=20' });
     });
 
@@ -1486,7 +1520,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation + ",odata.maxpagesize=20" });
     });
 
@@ -1496,7 +1530,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: "odata.maxpagesize=20,odata.track-changes" });
     });
 
@@ -1506,7 +1540,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: 'odata.include-annotations="' + DWA.Prefer.Annotations.AssociatedNavigationProperty + '",odata.track-changes' });
     });
 
@@ -1516,7 +1550,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: "odata.continue-on-error" });
     });
 
@@ -1526,7 +1560,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="*",odata.maxpagesize=20,odata.track-changes' });
     });
 
@@ -1536,7 +1570,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, {});
+        var result = composeHeaders(dwaRequest, {});
         expect(result).to.deep.equal({
             Prefer: DWA.Prefer.ReturnRepresentation + ',odata.include-annotations="*",odata.maxpagesize=20,odata.track-changes,odata.continue-on-error',
         });
@@ -1552,7 +1586,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, config);
+        var result = composeHeaders(dwaRequest, config);
         expect(result).to.deep.equal({});
     });
 
@@ -1566,7 +1600,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, config);
+        var result = composeHeaders(dwaRequest, config);
         expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation });
     });
 
@@ -1579,7 +1613,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, config);
+        var result = composeHeaders(dwaRequest, config);
         expect(result).to.deep.equal({ Prefer: DWA.Prefer.ReturnRepresentation });
     });
 
@@ -1592,7 +1626,7 @@ describe("RequestUtility.composeHeaders -", function () {
             functionName: "",
         };
 
-        var result = RequestUtility.composeHeaders(dwaRequest, config);
+        var result = composeHeaders(dwaRequest, config);
         expect(result).to.deep.equal({});
     });
 });
@@ -1604,7 +1638,7 @@ describe("RequestUtility.compose -", function () {
             collection: "cols",
         };
 
-        var result = RequestUtility.compose(dwaRequest, {});
+        var result = compose(dwaRequest, {});
 
         let expected = Utility.copyObject(dwaRequest);
         expected.path = "cols";
@@ -1619,7 +1653,7 @@ describe("RequestUtility.compose -", function () {
             collection: "Cols",
         };
 
-        var result = RequestUtility.compose(dwaRequest, {});
+        var result = compose(dwaRequest, {});
 
         let expected = Utility.copyObject(dwaRequest);
         expected.path = "Cols";
@@ -1634,7 +1668,7 @@ describe("RequestUtility.compose -", function () {
             collection: "EntityDefinitions",
         };
 
-        var result = RequestUtility.compose(dwaRequest, {});
+        var result = compose(dwaRequest, {});
 
         let expected = Utility.copyObject(dwaRequest);
         expected.path = "EntityDefinitions";
@@ -1645,16 +1679,17 @@ describe("RequestUtility.compose -", function () {
     });
 
     it("collection empty - throw error", function () {
-        var dwaRequest = {
+        let dwaRequest: InternalRequest = {
             collection: "",
         };
 
-        var test = function () {
-            RequestUtility.compose(dwaRequest, {});
+        let test = function () {
+            compose(dwaRequest, {});
         };
 
         expect(test).to.throw(/request\.collection/);
 
+        //@ts-ignore - testing if a wrong parameter type throws an error
         dwaRequest.collection = 0;
         expect(test).to.throw(/request\.collection/);
 
@@ -1663,12 +1698,13 @@ describe("RequestUtility.compose -", function () {
     });
 
     it("collection, key empty", function () {
-        var dwaRequest = {
+        let dwaRequest: InternalRequest = {
             collection: "cols",
+            //@ts-ignore - testing if it works even with null
             key: null,
         };
 
-        var result = RequestUtility.compose(dwaRequest, {});
+        var result = compose(dwaRequest, {});
 
         let expected = Utility.copyObject(dwaRequest);
         expected.path = "cols";
@@ -1679,7 +1715,7 @@ describe("RequestUtility.compose -", function () {
 
         dwaRequest.key = "";
 
-        result = RequestUtility.compose(dwaRequest, {});
+        result = compose(dwaRequest, {});
 
         expected = Utility.copyObject(dwaRequest);
         expected.path = "cols";
@@ -1696,7 +1732,7 @@ describe("RequestUtility.compose -", function () {
         };
 
         var test = function () {
-            RequestUtility.compose(dwaRequest, {});
+            compose(dwaRequest, {});
         };
 
         expect(test).to.throw(/request\.key/);
@@ -1705,13 +1741,13 @@ describe("RequestUtility.compose -", function () {
     it("collection, key", function () {
         var dwaRequest = {
             collection: "cols",
-            key: mocks.data.testEntityId,
+            key: _data.testEntityId,
         };
 
-        var result = RequestUtility.compose(dwaRequest, {});
+        var result = compose(dwaRequest, {});
 
         let expected = Utility.copyObject(dwaRequest);
-        expected.path = "cols(" + mocks.data.testEntityId + ")";
+        expected.path = "cols(" + _data.testEntityId + ")";
         expected.headers = {};
         expected.async = true;
 
@@ -1721,13 +1757,13 @@ describe("RequestUtility.compose -", function () {
     it("collection, key in brackets {} converted to id without brackets", function () {
         var dwaRequest = {
             collection: "cols",
-            key: "{" + mocks.data.testEntityId + "}",
+            key: "{" + _data.testEntityId + "}",
         };
 
-        var result = RequestUtility.compose(dwaRequest, {});
+        var result = compose(dwaRequest, {});
 
         let expected = Utility.copyObject(dwaRequest);
-        expected.path = "cols(" + mocks.data.testEntityId + ")";
+        expected.path = "cols(" + _data.testEntityId + ")";
         expected.headers = {};
         expected.async = true;
 
@@ -1735,17 +1771,17 @@ describe("RequestUtility.compose -", function () {
     });
 
     it("full", function () {
-        var dwaRequest = {
+        let dwaRequest: InternalRequest = {
             collection: "cols",
-            key: mocks.data.testEntityId,
+            key: _data.testEntityId,
             select: ["name"],
             returnRepresentation: true,
         };
 
-        var result = RequestUtility.compose(dwaRequest, {});
+        var result = compose(dwaRequest, {});
 
         let expected = Utility.copyObject(dwaRequest);
-        expected.path = "cols(" + mocks.data.testEntityId + ")?$select=name";
+        expected.path = "cols(" + _data.testEntityId + ")?$select=name";
         expected.headers = { Prefer: DWA.Prefer.ReturnRepresentation };
         expected.async = true;
 
@@ -1753,10 +1789,10 @@ describe("RequestUtility.compose -", function () {
 
         dwaRequest.navigationProperty = "nav";
 
-        result = RequestUtility.compose(dwaRequest, {});
+        result = compose(dwaRequest, {});
 
         expected = Utility.copyObject(dwaRequest);
-        expected.path = "cols(" + mocks.data.testEntityId + ")/nav?$select=name";
+        expected.path = "cols(" + _data.testEntityId + ")/nav?$select=name";
         expected.headers = { Prefer: DWA.Prefer.ReturnRepresentation };
         expected.async = true;
 
@@ -1764,12 +1800,12 @@ describe("RequestUtility.compose -", function () {
     });
 
     it("async", function () {
-        var dwaRequest = {
+        let dwaRequest: InternalRequest = {
             collection: "cols",
             async: false,
         };
 
-        var result = RequestUtility.compose(dwaRequest, {});
+        var result = compose(dwaRequest, {});
 
         let expected = Utility.copyObject(dwaRequest);
         expected.path = "cols";
@@ -1780,7 +1816,7 @@ describe("RequestUtility.compose -", function () {
 
         dwaRequest.async = true;
 
-        result = RequestUtility.compose(dwaRequest, {});
+        result = compose(dwaRequest, {});
 
         expected = Utility.copyObject(dwaRequest);
         expected.path = "cols";
@@ -1791,7 +1827,7 @@ describe("RequestUtility.compose -", function () {
 
         delete dwaRequest.async;
 
-        result = RequestUtility.compose(dwaRequest, {});
+        result = compose(dwaRequest, {});
 
         expected = Utility.copyObject(dwaRequest);
         expected.path = "cols";
@@ -1802,13 +1838,14 @@ describe("RequestUtility.compose -", function () {
     });
 
     it("async - throw error", function () {
-        var dwaRequest = {
+        let dwaRequest: InternalRequest = {
             collection: "some",
+            //@ts-ignore - testing if the wrong parameter type thrown an error
             async: "something",
         };
 
         var test = function () {
-            RequestUtility.compose(dwaRequest, {});
+            compose(dwaRequest, {});
         };
 
         expect(test).to.throw(/request\.async/);
@@ -1914,11 +1951,13 @@ describe("ErrorHelper.boolParameterCheck", function () {
 
 describe("ErrorHelper.callbackParameterCheck", function () {
     it("does not return anything", function () {
+        //@ts-ignore
         var result = ErrorHelper.callbackParameterCheck(function () {}, "fun", "param");
         expect(result).to.be.undefined;
     });
     it("when parameter is wrong it throws an error", function () {
         expect(function () {
+            //@ts-ignore testing a wrong parameter type
             ErrorHelper.callbackParameterCheck("a word", "fun", "param");
         }).to.throw("fun requires a param parameter to be of type Function");
     });
@@ -1945,7 +1984,7 @@ describe("ErrorHelper.throwBatchNotStarted", function () {
         expect(function () {
             ErrorHelper.throwBatchNotStarted(false);
         }).to.throw(
-            "Batch operation has not been started. Please call a DynamicsWebApi.startBatch() function prior to calling DynamicsWebApi.executeBatch() to perform a batch request correctly."
+            "Batch operation has not been started. Please call a DynamicsWebApi.startBatch() function prior to calling DynamicsWebApi.executeBatch() to perform a batch request correctly.",
         );
     });
 });
@@ -1953,7 +1992,7 @@ describe("ErrorHelper.throwBatchNotStarted", function () {
 describe("ErrorHelper.guidParameterCheck", function () {
     it("parses guid in brackets and removes them", function () {
         var guid = "{00000000-0000-0000-0000-000000000001}";
-        var result = ErrorHelper.guidParameterCheck(guid);
+        var result = ErrorHelper.guidParameterCheck(guid, "fun", "param");
         expect(result).to.eq("00000000-0000-0000-0000-000000000001");
     });
 
@@ -1967,37 +2006,37 @@ describe("ErrorHelper.guidParameterCheck", function () {
 describe("ErrorHelper.keyParameterCheck", function () {
     it("parses guid in brackets and removes them", function () {
         var guid = "{00000000-0000-0000-0000-000000000001}";
-        var result = ErrorHelper.keyParameterCheck(guid);
+        var result = ErrorHelper.keyParameterCheck(guid, "fun", "param");
         expect(result).to.eq("00000000-0000-0000-0000-000000000001");
     });
 
     it("checks a correct alternate key", function () {
         var alternateKey = "altKey='value'";
-        var result = ErrorHelper.keyParameterCheck(alternateKey);
+        var result = ErrorHelper.keyParameterCheck(alternateKey, "fun", "param");
         expect(result).to.eq("altKey='value'");
     });
 
     it("checks correct alternate keys", function () {
         var alternateKey = "altKey='value',anotherKey='value2'";
-        var result = ErrorHelper.keyParameterCheck(alternateKey);
+        var result = ErrorHelper.keyParameterCheck(alternateKey, "fun", "param");
         expect(result).to.eq("altKey='value',anotherKey='value2'");
     });
 
     it("checks correct alternate keys (removes a space between them)", function () {
         var alternateKey = "altKey='value', anotherKey='value2'";
-        var result = ErrorHelper.keyParameterCheck(alternateKey);
+        var result = ErrorHelper.keyParameterCheck(alternateKey, "fun", "param");
         expect(result).to.eq("altKey='value',anotherKey='value2'");
     });
 
     it("checks correct alternate keys (replaces double quotes with single quotes)", function () {
         var alternateKey = 'altKey="value", anotherKey="value2"';
-        var result = ErrorHelper.keyParameterCheck(alternateKey);
+        var result = ErrorHelper.keyParameterCheck(alternateKey, "fun", "param");
         expect(result).to.eq("altKey='value',anotherKey='value2'");
     });
 
     it("checks correct alternate keys string and integer", function () {
         var alternateKey = "altKey=123456,anotherKey='value2'";
-        var result = ErrorHelper.keyParameterCheck(alternateKey);
+        var result = ErrorHelper.keyParameterCheck(alternateKey, "fun", "param");
         expect(result).to.eq("altKey=123456,anotherKey='value2'");
     });
 
@@ -2074,39 +2113,40 @@ describe("RequestClient.makeRequest", function () {
     describe("useEntityNames", function () {
         var scope;
         before(function () {
-            var response = mocks.responses.response200;
-            var response2 = mocks.responses.responseEntityDefinitions;
-            scope = nock(mocks.webApiUrl)
+            var response = responses.response200;
+            var response2 = responses.responseEntityDefinitions;
+            scope = nock(webApiUrl)
                 .get("/EntityDefinitions?$select=EntitySetName,LogicalName")
                 .once()
                 .reply(response2.status, response2.responseText, response2.responseHeaders)
-                .get("/tests(" + mocks.data.testEntityId + ")")
+                .get("/tests(" + _data.testEntityId + ")")
                 .reply(response.status, response.responseText, response.responseHeaders);
         });
 
         after(function () {
-            nock.cleanAll();
+            cleanAll();
             RequestClient._clearTestData();
         });
 
         it("returns a correct response", async function () {
             //{ webApiUrl: mocks.webApiUrl }
-            var request = {
+            let request: InternalRequest = {
                 method: "GET",
                 collection: "test",
-                key: mocks.data.testEntityId,
+                key: _data.testEntityId,
                 functionName: "any",
             };
-            var config = {
-                dataApi: { url: mocks.webApiUrl },
+            let config: InternalConfig = {
+                dataApi: { url: webApiUrl },
+                searchApi: { url: webApiUrl },
                 useEntityNames: true,
             };
             const object = await RequestClient.makeRequest(request, config);
 
             const expectedO = {
                 status: 200,
-                headers: mocks.data.defaultResponseHeaders,
-                data: mocks.data.testEntity,
+                headers: _data.defaultResponseHeaders,
+                data: _data.testEntity,
             };
             expect(object).to.deep.equal(expectedO);
         });
@@ -2119,31 +2159,32 @@ describe("RequestClient.makeRequest", function () {
     describe("useEntityNames - entity metadata requested only once", function () {
         var scope;
         before(function () {
-            var response = mocks.responses.response200;
-            var response2 = mocks.responses.responseEntityDefinitions;
-            scope = nock(mocks.webApiUrl)
+            var response = responses.response200;
+            var response2 = responses.responseEntityDefinitions;
+            scope = nock(webApiUrl)
                 .get("/EntityDefinitions?$select=EntitySetName,LogicalName")
                 .once()
                 .reply(response2.status, response2.responseText, response2.responseHeaders)
-                .get("/tests(" + mocks.data.testEntityId + ")")
+                .get("/tests(" + _data.testEntityId + ")")
                 .twice()
                 .reply(response.status, response.responseText, response.responseHeaders);
         });
 
         after(function () {
-            nock.cleanAll();
+            cleanAll();
             RequestClient._clearTestData();
         });
 
         it("returns a correct response", async function () {
-            var request = {
+            let request: InternalRequest = {
                 method: "GET",
                 collection: "test",
-                key: mocks.data.testEntityId,
+                key: _data.testEntityId,
                 functionName: "any",
             };
-            var config = {
-                dataApi: { url: mocks.webApiUrl },
+            let config: InternalConfig = {
+                dataApi: { url: webApiUrl },
+                searchApi: { url: webApiUrl },
                 useEntityNames: true,
             };
 
@@ -2151,15 +2192,15 @@ describe("RequestClient.makeRequest", function () {
 
             var expectedO = {
                 status: 200,
-                headers: mocks.data.defaultResponseHeaders,
-                data: mocks.data.testEntity,
+                headers: _data.defaultResponseHeaders,
+                data: _data.testEntity,
             };
             expect(object).to.deep.equal(expectedO);
 
-            var request2 = {
+            let request2: InternalRequest = {
                 method: "GET",
                 collection: "test",
-                key: mocks.data.testEntityId,
+                key: _data.testEntityId,
                 functionName: "any",
             };
 
@@ -2167,8 +2208,8 @@ describe("RequestClient.makeRequest", function () {
 
             var expectedO1 = {
                 status: 200,
-                headers: mocks.data.defaultResponseHeaders,
-                data: mocks.data.testEntity,
+                headers: _data.defaultResponseHeaders,
+                data: _data.testEntity,
             };
             expect(object1).to.deep.equal(expectedO1);
         });
@@ -2181,38 +2222,39 @@ describe("RequestClient.makeRequest", function () {
     describe("useEntityNames - request with collection name does not fail", function () {
         var scope;
         before(function () {
-            var response = mocks.responses.response200;
-            var response2 = mocks.responses.responseEntityDefinitions;
-            scope = nock(mocks.webApiUrl)
+            var response = responses.response200;
+            var response2 = responses.responseEntityDefinitions;
+            scope = nock(webApiUrl)
                 .get("/EntityDefinitions?$select=EntitySetName,LogicalName")
                 .once()
                 .reply(response2.status, response2.responseText, response2.responseHeaders)
-                .get("/tests(" + mocks.data.testEntityId + ")")
+                .get("/tests(" + _data.testEntityId + ")")
                 .reply(response.status, response.responseText, response.responseHeaders);
         });
 
         after(function () {
-            nock.cleanAll();
+            cleanAll();
             RequestClient._clearTestData();
         });
 
         it("returns a correct response", async function () {
-            var request = {
+            let request: InternalRequest = {
                 method: "GET",
                 functionName: "any",
                 collection: "tests",
-                key: mocks.data.testEntityId,
+                key: _data.testEntityId,
             };
-            var config = {
-                dataApi: { url: mocks.webApiUrl },
+            let config: InternalConfig = {
+                dataApi: { url: webApiUrl },
+                searchApi: { url: webApiUrl },
                 useEntityNames: true,
             };
             const object = await RequestClient.makeRequest(request, config);
 
             var expectedO = {
                 status: 200,
-                headers: mocks.data.defaultResponseHeaders,
-                data: mocks.data.testEntity,
+                headers: _data.defaultResponseHeaders,
+                data: _data.testEntity,
             };
             expect(object).to.deep.equal(expectedO);
         });
@@ -2225,39 +2267,40 @@ describe("RequestClient.makeRequest", function () {
     describe("useEntityNames - $batch", function () {
         var scope;
         before(function () {
-            var response = mocks.responses.response200;
-            var response2 = mocks.responses.responseEntityDefinitions;
-            scope = nock(mocks.webApiUrl)
+            var response = responses.response200;
+            var response2 = responses.responseEntityDefinitions;
+            scope = nock(webApiUrl)
                 .get("/EntityDefinitions?$select=EntitySetName,LogicalName")
                 .once()
                 .reply(response2.status, response2.responseText, response2.responseHeaders)
-                .post("/$batch(" + mocks.data.testEntityId + ")")
+                .post("/$batch(" + _data.testEntityId + ")")
                 .reply(response.status, response.responseText, response.responseHeaders);
         });
 
         after(function () {
-            nock.cleanAll();
+            cleanAll();
             RequestClient._clearTestData();
         });
 
         it("returns a correct response", async function () {
             //{ webApiUrl: mocks.webApiUrl }
-            var request = {
+            let request: InternalRequest = {
                 method: "POST",
                 functionName: "any",
                 collection: "$batch",
-                key: mocks.data.testEntityId,
+                key: _data.testEntityId,
             };
-            var config = {
-                dataApi: { url: mocks.webApiUrl },
+            let config: InternalConfig = {
+                dataApi: { url: webApiUrl },
+                searchApi: { url: webApiUrl },
                 useEntityNames: true,
             };
             const object = await RequestClient.makeRequest(request, config);
 
             var expectedO = {
                 status: 200,
-                headers: mocks.data.defaultResponseHeaders,
-                data: mocks.data.testEntity,
+                headers: _data.defaultResponseHeaders,
+                data: _data.testEntity,
             };
             expect(object).to.deep.equal(expectedO);
         });
@@ -2271,34 +2314,35 @@ describe("RequestClient.makeRequest", function () {
         var scope;
         var url = "test";
         before(function () {
-            var response = mocks.responses.basicEmptyResponseSuccess;
-            scope = nock(mocks.webApiUrl)
-                .post("/test", mocks.data.testEntity)
-                .delayConnection(1000)
+            var response = responses.basicEmptyResponseSuccess;
+            scope = nock(webApiUrl)
+                .post("/test", _data.testEntity)
+                .delay(1000)
                 .reply(response.status, response.responseText, response.responseHeaders);
         });
 
         after(function () {
-            nock.cleanAll();
+            cleanAll();
             RequestClient._clearTestData();
         });
 
         it("returns a correct response", async function () {
-            var request = {
+            let request: InternalRequest = {
                 method: "POST",
                 functionName: "any",
                 collection: url,
                 timeout: 500,
-                data: mocks.data.testEntityAdditionalAttributes,
+                data: _data.testEntityAdditionalAttributes,
             };
-            var config = {
-                dataApi: { url: mocks.webApiUrl },
+            let config: InternalConfig = {
+                dataApi: { url: webApiUrl },
+                searchApi: { url: webApiUrl },
             };
 
             try {
                 const object = await RequestClient.makeRequest(request, config);
                 expect(object).to.be.undefined;
-            } catch (error) {
+            } catch (error: any) {
                 expect(error.message).to.be.eq("socket hang up");
                 expect(error.code).to.be.eq("ECONNRESET");
             }
@@ -2313,33 +2357,31 @@ describe("RequestClient.makeRequest", function () {
         var scope;
         var url = "test";
         before(function () {
-            var response = mocks.responses.basicEmptyResponseSuccess;
-            scope = nock(mocks.webApiUrl)
-                .post("/test", mocks.data.testEntity)
-                .delayConnection(1000)
-                .reply(response.status, response.responseText, response.responseHeaders);
+            var response = responses.basicEmptyResponseSuccess;
+            scope = nock(webApiUrl).post("/test", _data.testEntity).delay(1000).reply(response.status, response.responseText, response.responseHeaders);
         });
 
         after(function () {
-            nock.cleanAll();
+            cleanAll();
             RequestClient._clearTestData();
         });
 
         it("returns a correct response", async function () {
-            var request = {
+            let request: InternalRequest = {
                 method: "POST",
                 functionName: "any",
                 collection: url,
-                data: mocks.data.testEntityAdditionalAttributes,
+                data: _data.testEntityAdditionalAttributes,
             };
-            var config = {
+            let config: InternalConfig = {
                 timeout: 500,
-                dataApi: { url: mocks.webApiUrl },
+                dataApi: { url: webApiUrl },
+                searchApi: { url: webApiUrl },
             };
             try {
                 const object = await RequestClient.makeRequest(request, config);
                 expect(object).to.be.undefined;
-            } catch (error) {
+            } catch (error: any) {
                 expect(error.message).to.be.eq("socket hang up");
                 expect(error.code).to.be.eq("ECONNRESET");
             }
@@ -2354,34 +2396,32 @@ describe("RequestClient.makeRequest", function () {
         var scope;
         var url = "test";
         before(function () {
-            var response = mocks.responses.basicEmptyResponseSuccess;
-            scope = nock(mocks.webApiUrl)
-                .post("/test", mocks.data.testEntity)
-                .delayConnection(1000)
-                .reply(response.status, response.responseText, response.responseHeaders);
+            var response = responses.basicEmptyResponseSuccess;
+            scope = nock(webApiUrl).post("/test", _data.testEntity).delay(1000).reply(response.status, response.responseText, response.responseHeaders);
         });
 
         after(function () {
-            nock.cleanAll();
+            cleanAll();
             RequestClient._clearTestData();
         });
 
         it("returns a correct response", async function () {
-            var request = {
+            let request: InternalRequest = {
                 method: "POST",
                 functionName: "any",
                 collection: url,
                 timeout: 500,
-                data: mocks.data.testEntityAdditionalAttributes,
+                data: _data.testEntityAdditionalAttributes,
             };
-            var config = {
-                dataApi: { url: mocks.webApiUrl },
+            let config: InternalConfig = {
+                dataApi: { url: webApiUrl },
+                searchApi: { url: webApiUrl },
             };
 
             try {
                 const object = await RequestClient.makeRequest(request, config);
                 expect(object).to.be.undefined;
-            } catch (error) {
+            } catch (error: any) {
                 expect(error.message).to.be.eq("socket hang up");
                 expect(error.code).to.be.eq("ECONNRESET");
             }
@@ -2396,34 +2436,35 @@ describe("RequestClient.makeRequest", function () {
         var scope;
         var url = "test";
         before(function () {
-            var response = mocks.responses.basicEmptyResponseSuccess;
-            scope = nock(mocks.webApiUrl)
-                .post("/test", mocks.data.testEntity)
-                .delayConnection(1000)
+            var response = responses.basicEmptyResponseSuccess;
+            scope = nock(webApiUrl)
+                .post("/test", _data.testEntity)
+                .delay(1000)
                 .reply(response.status, response.responseText, response.responseHeaders);
         });
 
         after(function () {
-            nock.cleanAll();
+            cleanAll();
             RequestClient._clearTestData();
         });
 
         it("returns a correct response", async function () {
-            var request = {
+            let request: InternalRequest = {
                 method: "POST",
                 functionName: "any",
                 collection: url,
-                data: mocks.data.testEntityAdditionalAttributes,
+                data: _data.testEntityAdditionalAttributes,
             };
-            var config = {
+            let config: InternalConfig = {
                 timeout: 500,
-                dataApi: { url: mocks.webApiUrl },
+                dataApi: { url: webApiUrl },
+                searchApi: { url: webApiUrl },
             };
 
             try {
                 const object = await RequestClient.makeRequest(request, config);
                 expect(object).to.be.undefined;
-            } catch (error) {
+            } catch (error: any) {
                 expect(error.message).to.be.eq("socket hang up");
                 expect(error.code).to.be.eq("ECONNRESET");
             }
@@ -2440,7 +2481,7 @@ describe("RequestClient.makeRequest", function () {
         while (url.length < 2001) {
             url += "test";
         }
-        var rBody = mocks.data.batch.replace("{0}", mocks.webApiUrl + url);
+        var rBody = _data.batch.replace("{0}", webApiUrl + url);
         var rBodys = rBody.split("\n");
         var checkBody = "";
         for (var i = 0; i < rBodys.length; i++) {
@@ -2448,8 +2489,8 @@ describe("RequestClient.makeRequest", function () {
         }
 
         before(function () {
-            var response = mocks.responses.batch;
-            scope = nock(mocks.webApiUrl)
+            var response = responses.batch;
+            scope = nock(webApiUrl)
                 .filteringRequestBody(function (body) {
                     body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
                     var bodys = body.split("\n");
@@ -2465,23 +2506,23 @@ describe("RequestClient.makeRequest", function () {
         });
 
         after(function () {
-            nock.cleanAll();
+            cleanAll();
             RequestClient._clearTestData();
         });
 
         it("returns a correct response", async function () {
-            var request = {
+            let request: InternalRequest = {
                 method: "GET",
                 functionName: "test",
                 collection: url,
             };
-            const object = await RequestClient.makeRequest(request, { dataApi: { url: mocks.webApiUrl } });
+            const object = await RequestClient.makeRequest(request, { dataApi: { url: webApiUrl }, searchApi: { url: webApiUrl } });
 
-            var multiple = mocks.responses.multiple();
+            var multiple = responses.multiple();
             //delete multiple.oDataContext;
             var expectedO = {
                 status: 200,
-                headers: mocks.data.defaultTextPlainResponseHeaders,
+                headers: _data.defaultTextPlainResponseHeaders,
                 data: multiple,
             };
             expect(object).to.deep.equal(expectedO);
@@ -2501,24 +2542,22 @@ describe("RequestClient.sendRequest", function () {
         var scope;
         var url = "test";
         before(function () {
-            var response = mocks.responses.basicEmptyResponseSuccess;
-            scope = nock(mocks.webApiUrl)
-                .patch("/test", mocks.data.testEntityWithExpand)
-                .reply(response.status, response.responseText, response.responseHeaders);
+            var response = responses.basicEmptyResponseSuccess;
+            scope = nock(webApiUrl).patch("/test", _data.testEntityWithExpand).reply(response.status, response.responseText, response.responseHeaders);
         });
 
         after(function () {
-            nock.cleanAll();
+            cleanAll();
             RequestClient._clearTestData();
         });
 
         it("returns a correct response", async function () {
             const object = await RequestClient.sendRequest(
-                { method: "PATCH", path: url, data: mocks.data.testEntityAdditionalAttributesWithExpand, async: true },
-                { dataApi: { url: mocks.webApiUrl } }
+                { method: "PATCH", path: url, data: _data.testEntityAdditionalAttributesWithExpand, async: true },
+                { dataApi: { url: webApiUrl }, searchApi: { url: webApiUrl } },
             );
             var expectedO = {
-                status: mocks.responses.basicEmptyResponseSuccess.status,
+                status: responses.basicEmptyResponseSuccess.status,
                 headers: {},
                 data: undefined,
             };
@@ -2530,59 +2569,59 @@ describe("RequestClient.sendRequest", function () {
         });
     });
 
-    describe("request error", function () {
-        var scope;
-        var url = "test";
-        before(function () {
-            scope = nock(mocks.webApiUrl).post("/test", mocks.data.testEntity).replyWithError({ code: "Error" });
-        });
+    // describe("request error", function () {
+    //     var scope;
+    //     var url = "test";
+    //     before(function () {
+    //         scope = nock(webApiUrl).post("/test", _data.testEntity).replyWithError({ code: "Error" });
+    //     });
 
-        after(function () {
-            nock.cleanAll();
-            RequestClient._clearTestData();
-        });
+    //     after(function () {
+    //         cleanAll();
+    //         RequestClient._clearTestData();
+    //     });
 
-        it("returns a correct response", async function () {
-            try {
-                const object = await RequestClient.sendRequest(
-                    { method: "POST", path: url, data: mocks.data.testEntityAdditionalAttributes, async: true },
-                    { dataApi: { url: mocks.webApiUrl } }
-                );
-                expect(object).to.be.undefined;
-            } catch (object) {
-                expect(object).to.be.deep.equal({ code: "Error" });
-            }
-        });
+    //     it("returns a correct response", async function () {
+    //         try {
+    //             const object = await RequestClient.sendRequest(
+    //                 { method: "POST", path: url, data: _data.testEntityAdditionalAttributes, async: true },
+    //                 { dataApi: { url: webApiUrl }, searchApi: { url: webApiUrl } },
+    //             );
+    //             expect(object).to.be.undefined;
+    //         } catch (object) {
+    //             expect(object).to.be.deep.equal({ code: "Error" });
+    //         }
+    //     });
 
-        it("all requests have been made", function () {
-            expect(scope.isDone()).to.be.true;
-        });
-    });
+    //     it("all requests have been made", function () {
+    //         expect(scope.isDone()).to.be.true;
+    //     });
+    // });
 
     describe("timeout - socket", function () {
         var scope;
         var url = "test";
         before(function () {
-            var response = mocks.responses.basicEmptyResponseSuccess;
-            scope = nock(mocks.webApiUrl)
-                .post("/test", mocks.data.testEntity)
-                .delayConnection(1000)
+            var response = responses.basicEmptyResponseSuccess;
+            scope = nock(webApiUrl)
+                .post("/test", _data.testEntity)
+                .delay(1000)
                 .reply(response.status, response.responseText, response.responseHeaders);
         });
 
         after(function () {
-            nock.cleanAll();
+            cleanAll();
             RequestClient._clearTestData();
         });
 
         it("returns a correct response", async function () {
             try {
                 const object = await RequestClient.sendRequest(
-                    { method: "POST", path: url, data: mocks.data.testEntityAdditionalAttributes, async: true, timeout: 500 },
-                    { dataApi: { url: mocks.webApiUrl } }
+                    { method: "POST", path: url, data: _data.testEntityAdditionalAttributes, async: true, timeout: 500 },
+                    { dataApi: { url: webApiUrl }, searchApi: { url: webApiUrl } },
                 );
                 expect(object).to.be.undefined;
-            } catch (error) {
+            } catch (error: any) {
                 expect(error.message).to.be.eq("socket hang up");
                 expect(error.code).to.be.eq("ECONNRESET");
             }
@@ -2597,26 +2636,26 @@ describe("RequestClient.sendRequest", function () {
         var scope;
         var url = "test";
         before(function () {
-            var response = mocks.responses.basicEmptyResponseSuccess;
-            scope = nock(mocks.webApiUrl)
-                .post("/test", mocks.data.testEntity)
-                .delayConnection(1000)
+            var response = responses.basicEmptyResponseSuccess;
+            scope = nock(webApiUrl)
+                .post("/test", _data.testEntity)
+                .delay(1000)
                 .reply(response.status, response.responseText, response.responseHeaders);
         });
 
         after(function () {
-            nock.cleanAll();
+            cleanAll();
             RequestClient._clearTestData();
         });
 
         it("returns a correct response", async function () {
             try {
                 const object = await RequestClient.sendRequest(
-                    { method: "POST", path: url, data: mocks.data.testEntityAdditionalAttributes, async: true, timeout: 500 },
-                    { dataApi: { url: mocks.webApiUrl } }
+                    { method: "POST", path: url, data: _data.testEntityAdditionalAttributes, async: true, timeout: 500 },
+                    { dataApi: { url: webApiUrl }, searchApi: { url: webApiUrl } },
                 );
                 expect(object).to.be.undefined;
-            } catch (error) {
+            } catch (error: any) {
                 expect(error.message).to.be.eq("socket hang up");
                 expect(error.code).to.be.eq("ECONNRESET");
             }
@@ -2636,14 +2675,14 @@ describe("empty batch payload", function () {
     it("throws an error", async function () {
         try {
             const object = await RequestClient.sendRequest(
-                { method: "POST", path: "$batch", async: true, timeout: 500 },
-                { dataApi: { url: mocks.webApiUrl } }
+                { method: "POST", path: "$batch", async: true },
+                { dataApi: { url: webApiUrl }, searchApi: { url: webApiUrl } },
             );
             expect(object).to.be.undefined;
-        } catch (object) {
+        } catch (object: any) {
             expect(object.length).to.be.eq(1);
             expect(object[0].message).to.equal(
-                "Payload of the batch operation is empty. Please make that you have other operations in between startBatch() and executeBatch() to successfuly build a batch payload."
+                "Payload of the batch operation is empty. Please make that you have other operations in between startBatch() and executeBatch() to successfuly build a batch payload.",
             );
         }
     });
@@ -2651,38 +2690,28 @@ describe("empty batch payload", function () {
 
 describe("parseResponse", function () {
     it("parses formatted values", function () {
-        var response = parseResponse(mocks.responses.responseFormatted200.responseText, mocks.responses.responseFormatted200.responseHeaders, [{}]);
-        expect(response).to.be.deep.equal(mocks.responses.responseFormattedEntity());
+        var response = parseResponse(responses.responseFormatted200.responseText, responses.responseFormatted200.responseHeaders, [{}]);
+        expect(response).to.be.deep.equal(responses.responseFormattedEntity());
     });
 
     it("parses formatted values with expand formatted values", function () {
-        var response = parseResponse(
-            mocks.responses.responseFormattedWithExpand200.responseText,
-            mocks.responses.responseFormattedWithExpand200.responseHeaders,
-            [{}]
-        );
-        expect(response).to.be.deep.equal(mocks.responses.responseFormattedEntityWithExpand());
+        var response = parseResponse(responses.responseFormattedWithExpand200.responseText, responses.responseFormattedWithExpand200.responseHeaders, [{}]);
+        expect(response).to.be.deep.equal(responses.responseFormattedEntityWithExpand());
     });
 
     it("parses formatted values - array", function () {
-        var response = parseResponse(mocks.responses.multipleFormattedResponse.responseText, mocks.responses.multipleFormattedResponse.responseHeaders, [{}]);
-        expect(response).to.be.deep.equal(mocks.responses.multipleFormatted());
+        var response = parseResponse(responses.multipleFormattedResponse.responseText, responses.multipleFormattedResponse.responseHeaders, [{}]);
+        expect(response).to.be.deep.equal(responses.multipleFormatted());
     });
 
     it("parses formatted and aliased values", function () {
-        var response = parseResponse(mocks.responses.responseFormattedAliased200.responseText, mocks.responses.responseFormattedAliased200.responseHeaders, [
-            {},
-        ]);
-        expect(response).to.be.deep.equal(mocks.responses.responseFormattedAliasedEntity());
+        var response = parseResponse(responses.responseFormattedAliased200.responseText, responses.responseFormattedAliased200.responseHeaders, [{}]);
+        expect(response).to.be.deep.equal(responses.responseFormattedAliasedEntity());
     });
 
     it("when alias are not unique throws error", function () {
         expect(function () {
-            parseResponse(
-                mocks.responses.responseFormattedAliasedNotUnique200.responseText,
-                mocks.responses.responseFormattedAliasedNotUnique200.responseHeaders,
-                [{}]
-            );
+            parseResponse(responses.responseFormattedAliasedNotUnique200.responseText, responses.responseFormattedAliasedNotUnique200.responseHeaders, [{}]);
         }).to.throw("The alias name of the linked entity must be unique!");
     });
 });

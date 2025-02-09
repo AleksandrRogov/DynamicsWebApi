@@ -5,6 +5,7 @@ const portalUrl = "https://portal.com";
 
 global.Xrm = {
     Page: {
+        // @ts-ignore
         context: {
             getClientUrl: function () {
                 return serverUrl;
@@ -29,24 +30,24 @@ const dataStubs = {
     testEntity: {
         name: "record",
         subject: "test",
-    },
+    } as Record<string, any>,
     testEntityWithExpand: {
         name: "record",
         subject: "test",
         dwa_NavProperty: {
             key: "key",
         },
-    },
+    } as Record<string, any>,
     testEntityDefinition: {
         name: "record",
         subject: "test",
         MetadataId: "00000000-0000-0000-0000-000000000001",
-    },
+    } as Record<string, any>,
     testAttributeDefinition: {
         name: "record",
         subject: "test",
         MetadataId: "00000000-0000-0000-0000-000000000002",
-    },
+    } as Record<string, any>,
     testEntityAdditionalAttributes: {
         name: "record",
         subject: "test",
@@ -54,7 +55,7 @@ const dataStubs = {
         key_Formatted: "test",
         key_NavigationProperty: "test",
         key_LogicalName: "test",
-    },
+    } as Record<string, any>,
     testEntityAdditionalAttributesWithExpand: {
         name: "record",
         subject: "test",
@@ -66,7 +67,7 @@ const dataStubs = {
         key_Formatted: "test",
         key_NavigationProperty: "test",
         key_LogicalName: "test",
-    },
+    } as Record<string, any>,
     testEntityFormatted: {
         name: "record",
         subject: "test",
@@ -75,7 +76,7 @@ const dataStubs = {
         "option@OData.Community.Display.V1.FormattedValue": "formatted",
         "option@Microsoft.Dynamics.CRM.associatednavigationproperty": "formatted",
         "option@Microsoft.Dynamics.CRM.lookuplogicalname": "formatted",
-    },
+    } as Record<string, any>,
     testEntityFormattedWithExpand: {
         name: "record",
         subject: "test",
@@ -88,7 +89,7 @@ const dataStubs = {
         "option@OData.Community.Display.V1.FormattedValue": "formatted",
         "option@Microsoft.Dynamics.CRM.associatednavigationproperty": "formatted",
         "option@Microsoft.Dynamics.CRM.lookuplogicalname": "formatted",
-    },
+    } as Record<string, any>,
     testEntityFormattedAliased: {
         name: "record",
         subject: "test",
@@ -97,7 +98,7 @@ const dataStubs = {
         "option@OData.Community.Display.V1.FormattedValue": "formatted",
         "alias_x002e_value1@OData.Community.Display.V1.FormattedValue": "formatted",
         alias_x002e_value1: "value",
-    },
+    } as Record<string, any>,
     testEntityFormattedAliasedNotUnique: {
         name: "record",
         subject: "test",
@@ -106,7 +107,7 @@ const dataStubs = {
         "option@OData.Community.Display.V1.FormattedValue": "formatted",
         "alias_x002e_value1@OData.Community.Display.V1.FormattedValue": "formatted",
         option_x002e_value1: "value",
-    },
+    } as Record<string, any>,
     entityDefinitionList: {
         "@odata.context": "context",
         oDataContext: "context",
@@ -122,43 +123,43 @@ const dataStubs = {
                 MetadataId: "18eb9672-3070-478c-be5b-e0324acb1188",
             },
         ],
-    },
+    } as Record<string, any>,
     updatedEntity: {
         fullname: "test record",
-    },
+    } as Record<string, any>,
     updateSinglePropertyRequestEntity: {
         value: "test record",
-    },
+    } as Record<string, any>,
     referenceResponse: {
         "@odata.context": "context",
         "@odata.id": webApiUrl + "refs(00000000-0000-0000-0000-000000000002)",
-    },
+    } as Record<string, any>,
     referenceResponseConverted: {
         oDataContext: "context",
         id: "00000000-0000-0000-0000-000000000002",
         collection: "refs",
-    },
+    } as Record<string, any>,
     multiple: {
         "@odata.context": "context",
         value: [
             { name: "name1", subject: "subject1" },
             { name: "name2", subject: "subject2" },
         ],
-    },
+    } as Record<string, any>,
     multiple2: {
         "@odata.context": "context",
         value: [
             { name: "name3", subject: "subject3" },
             { name: "name4", subject: "subject4" },
         ],
-    },
+    } as Record<string, any>,
     multipleFormatted: {
         "@odata.context": "context",
         value: [
             { name: "name1", subject: "subject1", option: "value", "option@OData.Community.Display.V1.FormattedValue": "formatted" },
             { name: "name2", subject: "subject2" },
         ],
-    },
+    } as Record<string, any>,
     multipleWithCount: {
         "@odata.context": "context",
         "@odata.count": 2,
@@ -166,7 +167,7 @@ const dataStubs = {
             { name: "name1", subject: "subject1" },
             { name: "name2", subject: "subject2" },
         ],
-    },
+    } as Record<string, any>,
     multipleWithLink: {
         "@odata.context": "context",
         "@odata.nextLink":
@@ -176,7 +177,7 @@ const dataStubs = {
             { name: "name1", subject: "subject1" },
             { name: "name2", subject: "subject2" },
         ],
-    },
+    } as Record<string, any>,
     multipleWithLinkAndCount: {
         "@odata.context": "context",
         "@odata.count": 10,
@@ -187,7 +188,7 @@ const dataStubs = {
             { name: "name1", subject: "subject1" },
             { name: "name2", subject: "subject2" },
         ],
-    },
+    } as Record<string, any>,
     multipleWithDeltaLink: {
         "@odata.context": "context",
         "@odata.deltaLink": webApiUrl + "tests?$select=name&$deltatoken=919042%2108%2f22%2f2017%2008%3a10%3a44",
@@ -195,15 +196,15 @@ const dataStubs = {
             { name: "name1", subject: "subject1" },
             { name: "name2", subject: "subject2" },
         ],
-    },
+    } as Record<string, any>,
     downloadFileChunk1: {
         "@odata.context": "context",
         value: Buffer.from("Welcome to Dyna", "utf-8").toString("base64"),
-    },
+    } as Record<string, any>,
     downloadFileChunk2: {
         "@odata.context": "context",
         value: Buffer.from("micsWebApi!", "utf-8").toString("base64"),
-    },
+    } as Record<string, any>,
     suggestMultiple: {
         querycontext: null,
         value: [
@@ -222,7 +223,7 @@ const dataStubs = {
                 },
             },
         ],
-    },
+    } as Record<string, any>,
     searchMultiple: {
         querycontext: null,
         value: [
@@ -245,17 +246,17 @@ const dataStubs = {
         ],
         facets: {},
         totalrecordcount: -1,
-    },
+    } as Record<string, any>,
     autocompleteResult: {
         querycontext: null,
         value: "{crmhit}test{/crmhit}",
-    },
+    } as Record<string, any>,
     error: {
         error: {
             code: "error_code",
-            message: "ERROR!"
-        }
-    },
+            message: "ERROR!",
+        },
+    } as Record<string, any>,
     batch:
         "--dwa_batch_XXX\n" +
         "Content-Type: application/http\n" +
@@ -841,8 +842,9 @@ const dataStubs = {
             },
         },
     },
-    defaultResponseHeaders: { "content-type": "application/json; odata.metadata=minimal" },
-    defaultTextPlainResponseHeaders: { "content-type": "text/plain" },
+    defaultErrorHeaders: { "content-type": "application/json" } as Record<string, any>,
+    defaultResponseHeaders: { "content-type": "application/json; odata.metadata=minimal" } as Record<string, any>,
+    defaultTextPlainResponseHeaders: { "content-type": "text/plain" } as Record<string, any>,
 };
 
 const responseStubs = {
@@ -857,18 +859,18 @@ const responseStubs = {
         responseHeaders: {
             "OData-EntityId": webApiUrl + "tests(" + dataStubs.testEntityId + ")",
         },
-    },
+    } as Record<string, any>,
     createAttributeReturnId: {
         status: 204,
         responseHeaders: {
             "OData-EntityId": webApiUrl + "EntityDefinitions(" + dataStubs.testEntityId + ")/Attributes(" + dataStubs.testEntityId2 + ")",
         },
-    },
+    } as Record<string, any>,
     createReturnRepresentation: {
         status: 201,
         responseText: JSON.stringify(dataStubs.testEntity),
         responseHeaders: dataStubs.defaultResponseHeaders,
-    },
+    } as Record<string, any>,
     testEntityUrl: "/tests(" + dataStubs.testEntityId + ")",
     entityDefinitionsUrl: "/EntityDefinitions",
     entityDefinitionsIdUrl: "/EntityDefinitions(" + dataStubs.testEntityId + ")",
@@ -878,7 +880,7 @@ const responseStubs = {
     globalOptionSetDefinitionsIdUrl: "/GlobalOptionSetDefinitions(" + dataStubs.testEntityId + ")",
     basicEmptyResponseSuccess: {
         status: 204,
-    },
+    } as Record<string, any>,
     response200: {
         status: 200,
         responseText: JSON.stringify(dataStubs.testEntity),
@@ -1231,6 +1233,7 @@ const responseStubs = {
             JSON.stringify(dataStubs.multiple2) +
             "\r\n" +
             "--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae--",
+        // @ts-ignore
         responseHeaders: dataStubs.defaultTextPlainResponseHeadersseHeaders,
     },
     batchRetrieveMultipleCountRetrieveMultiple: {
@@ -1262,6 +1265,7 @@ const responseStubs = {
             JSON.stringify(dataStubs.multiple2) +
             "\r\n" +
             "--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae--",
+        // @ts-ignore
         responseHeaders: dataStubs.defaultTextPlainResponseHeadersseHeaders,
     },
     batchRetrieveMultipleCountFilteredRetrieveMultiple: {
@@ -1294,6 +1298,7 @@ const responseStubs = {
             JSON.stringify(dataStubs.multiple2) +
             "\r\n" +
             "--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae--",
+        // @ts-ignore
         responseHeaders: dataStubs.defaultTextPlainResponseHeadersseHeaders,
     },
     fetchXmlResponsePage1Cookie: {
@@ -1338,6 +1343,7 @@ const responseStubs = {
         responseText: JSON.stringify({
             error: { message: "message" },
         }),
+        // @ts-ignore
         responseHeaders: dataStubs.defaultResponseHeaders,
     },
     upsertPreventUpdateResponse: {
@@ -1382,7 +1388,8 @@ const responseStubs = {
                 _dwaType: "alias",
                 value1: dataStubs.testEntityFormattedAliased["alias_x002e_value1"],
                 value1_Formatted: dataStubs.testEntityFormattedAliased["alias_x002e_value1@OData.Community.Display.V1.FormattedValue"],
-                "value1@OData.Community.Display.V1.FormattedValue": dataStubs.testEntityFormattedAliased["alias_x002e_value1@OData.Community.Display.V1.FormattedValue"],
+                "value1@OData.Community.Display.V1.FormattedValue":
+                    dataStubs.testEntityFormattedAliased["alias_x002e_value1@OData.Community.Display.V1.FormattedValue"],
             },
         };
         return stub;
@@ -1397,36 +1404,47 @@ const responseStubs = {
     },
     multipleWithLinkAndCount: function () {
         const stub = dataStubs.multipleWithLinkAndCount;
+        // @ts-ignore
         stub.oDataContext = stub["@odata.context"];
+        // @ts-ignore
         stub.oDataNextLink = stub["@odata.nextLink"];
+        // @ts-ignore
         stub.oDataCount = stub["@odata.count"];
         return stub;
     },
     multipleWithDeltaLink: function () {
         const stub = dataStubs.multipleWithDeltaLink;
+        // @ts-ignore
         stub.oDataContext = stub["@odata.context"];
+        // @ts-ignore
         stub.oDataDeltaLink = stub["@odata.deltaLink"];
         return stub;
     },
     multiple: function () {
         const stub = dataStubs.multiple;
+        // @ts-ignore
         stub.oDataContext = stub["@odata.context"];
         return stub;
     },
     multiple2: function () {
         const stub = dataStubs.multiple2;
+        // @ts-ignore
         stub.oDataContext = stub["@odata.context"];
         return stub;
     },
     multipleFormatted: function () {
         const stub = dataStubs.multipleFormatted;
+        // @ts-ignore
         stub.oDataContext = stub["@odata.context"];
+        // @ts-ignore
         stub.value[0].option_Formatted = stub.value[0]["option@OData.Community.Display.V1.FormattedValue"];
         return stub;
     },
     multipleWithCount: function () {
         const stub = dataStubs.multipleWithCount;
+        // @ts-ignore
         stub.oDataContext = stub["@odata.context"];
+        // @ts-ignore
         stub.oDataCount = stub["@odata.count"];
         return stub;
     },
@@ -1455,18 +1473,18 @@ const responseStubs = {
     errorResponse: {
         status: 400,
         responseText: JSON.stringify(dataStubs.error),
-        responseHeaders: dataStubs.defaultResponseHeaders
-    }
+        responseHeaders: dataStubs.defaultResponseHeaders,
+    },
 };
 
 const utils = {
     toTypedArray: (b) => new Uint8Array(b.buffer, b.byteOffset, b.byteLength / Uint8Array.BYTES_PER_ELEMENT),
 };
 
-module.exports = {
-    Xrm,
-    data: dataStubs,
-    responses: responseStubs,
+export {
+    // Xrm,
+    dataStubs as data,
+    responseStubs as responses,
     webApiUrl,
     webApiUrl81,
     webApiUrl80,

@@ -3,6 +3,10 @@ import { extractUuid } from "./Regex";
 
 export interface DynamicsWebApiError extends Error {
     status: number;
+    statusText: string;
+    statusMessage: string;
+    headers: Record<string, string>;
+    stack?: string;
 }
 
 function throwParameterError(functionName: string, parameterName: string, type: string | null | undefined): void {

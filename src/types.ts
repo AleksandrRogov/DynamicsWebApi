@@ -59,7 +59,7 @@ export interface InternalRequest {
     /**A String representing collection record's Primary Key (GUID) or Alternate Key(s). */
     key?: string;
     /**v.1.7.5+ If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. */
-    bypassCustomPluginExecution?: boolean;
+    bypassCustomPluginExecution?: boolean | null;
     /**v.1.3.4+ Web API v9+ only! Boolean that enables duplicate detection. */
     duplicateDetection?: boolean;
     /**A String representing the name of a single - valued navigation property.Useful when needed to retrieve information about a related record in a single request. */
@@ -67,7 +67,7 @@ export interface InternalRequest {
     /**v.1.4.3 + A String representing navigation property's Primary Key (GUID) or Alternate Key(s). (For example, to retrieve Attribute Metadata). */
     navigationPropertyKey?: string;
     /**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
-    expand?: Expand[];
+    expand?: string | Expand[] | null;
     /**Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests.*/
     ifmatch?: string;
     /**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types. */
