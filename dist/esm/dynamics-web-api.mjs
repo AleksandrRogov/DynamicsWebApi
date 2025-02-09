@@ -1,4 +1,4 @@
-/*! dynamics-web-api v2.1.8 (c) 2025 Aleksandr Rogov. License: MIT */
+/*! dynamics-web-api v2.2.0 (c) 2025 Aleksandr Rogov. License: MIT */
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -38,9 +38,6 @@ var init_node = __esm({
 // src/helpers/Crypto.ts
 function getCrypto2() {
   return false ? global.window.crypto : (init_node(), __toCommonJS(node_exports)).getCrypto();
-}
-function generateUUID() {
-  return false ? getCrypto2().randomUUID() : getCrypto2().randomUUID();
 }
 var init_Crypto = __esm({
   "src/helpers/Crypto.ts"() {
@@ -107,7 +104,7 @@ function removeDoubleQuotes(value) {
 function getUpdateMethod(collection) {
   return SPECIAL_COLLECTION_FOR_UPDATE_REGEX.test(collection ?? "") ? "PUT" : "PATCH";
 }
-var UUID, UUID_REGEX, EXTRACT_UUID_REGEX, EXTRACT_UUID_FROM_URL_REGEX, REMOVE_BRACKETS_FROM_UUID_REGEX, ENTITY_UUID_REGEX, QUOTATION_MARK_REGEX, PAGING_COOKIE_REGEX, SPECIAL_CHARACTER_REGEX, LEADING_SLASH_REGEX, UNICODE_SYMBOLS_REGEX, DOUBLE_QUOTE_REGEX, BATCH_RESPONSE_HEADERS_REGEX, HTTP_STATUS_REGEX, CONTENT_TYPE_PLAIN_REGEX, ODATA_ENTITYID_REGEX, TEXT_REGEX, LINE_ENDING_REGEX, SEARCH_FOR_ENTITY_NAME_REGEX, SPECIAL_COLLECTION_FOR_UPDATE_REGEX, FETCH_XML_TOP_REGEX, FETCH_XML_PAGE_REGEX, FETCH_XML_REPLACE_REGEX;
+var UUID, UUID_REGEX, EXTRACT_UUID_REGEX, EXTRACT_UUID_FROM_URL_REGEX, REMOVE_BRACKETS_FROM_UUID_REGEX, ENTITY_UUID_REGEX, QUOTATION_MARK_REGEX, PAGING_COOKIE_REGEX, SPECIAL_CHARACTER_REGEX, LEADING_SLASH_REGEX, UNICODE_SYMBOLS_REGEX, DOUBLE_QUOTE_REGEX, BATCH_RESPONSE_HEADERS_REGEX, HTTP_STATUS_REGEX, CONTENT_TYPE_PLAIN_REGEX, ODATA_ENTITYID_REGEX, TEXT_REGEX, LINE_ENDING_REGEX, SEARCH_FOR_ENTITY_NAME_REGEX, SPECIAL_COLLECTION_FOR_UPDATE_REGEX, FETCH_XML_TOP_REGEX, FETCH_XML_PAGE_REGEX, FETCH_XML_REPLACE_REGEX, DATE_FORMAT_REGEX;
 var init_Regex = __esm({
   "src/helpers/Regex.ts"() {
     "use strict";
@@ -134,6 +131,7 @@ var init_Regex = __esm({
     FETCH_XML_TOP_REGEX = /^<fetch.+top=/;
     FETCH_XML_PAGE_REGEX = /^<fetch.+page=/;
     FETCH_XML_REPLACE_REGEX = /^(<fetch)/;
+    DATE_FORMAT_REGEX = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:Z|[-+]\d{2}:\d{2})$/;
   }
 });
 
@@ -214,7 +212,7 @@ var init_Utility = __esm({
       }
       /** Generates UUID */
       static generateUUID() {
-        return generateUUID();
+        return getCrypto2().randomUUID();
       }
       static getXrmContext() {
         if (typeof GetGlobalContext !== "undefined") {
@@ -452,7 +450,7 @@ var init_dwa = __esm({
 // src/client/helpers/dateReviver.ts
 function dateReviver(key, value) {
   if (typeof value === "string") {
-    const a = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:Z|[-+]\d{2}:\d{2})$/.exec(value);
+    const a = DATE_FORMAT_REGEX.exec(value);
     if (a) {
       return new Date(Date.UTC(+a[1], +a[2] - 1, +a[3], +a[4], +a[5], +a[6]));
     }
@@ -462,6 +460,7 @@ function dateReviver(key, value) {
 var init_dateReviver = __esm({
   "src/client/helpers/dateReviver.ts"() {
     "use strict";
+    init_Regex();
   }
 });
 

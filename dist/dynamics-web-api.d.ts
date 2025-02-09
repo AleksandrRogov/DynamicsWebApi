@@ -1,4 +1,4 @@
-/*! dynamics-web-api v2.1.8 (c) 2025 Aleksandr Rogov. License: MIT */
+/*! dynamics-web-api v2.2.0 (c) 2025 Aleksandr Rogov. License: MIT */
 /**
  * Microsoft Dataverse Web API helper library for Node.js and Browser.
  * It is compatible with: Dataverse, Dynamics 365 (online), Dynamics 365 (on-premise), Dynamics CRM 2016, Dynamics CRM Online.
