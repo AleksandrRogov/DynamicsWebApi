@@ -1239,8 +1239,8 @@ export interface CreateRequest<T = any> extends CRUDRequest {
     duplicateDetection?: boolean;
     /**A JavaScript object with properties corresponding to the logical name of entity attributes(exceptions are lookups and single-valued navigation properties). */
     data?: T;
-    /**An array of Expand Objects(described below the table) representing the $expand OData System Query Option value to control which related records are also returned. */
-    expand?: Expand[];
+    /**An array of Expand Objects representing the $expand OData System Query Option value to control which related records are also returned. Can also accept a string. */
+    expand?: string | Expand[];
     /**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types. */
     includeAnnotations?: string;
     /**A String representing the name of a single - valued navigation property. Useful when needed to retrieve information about a related record in a single request. */

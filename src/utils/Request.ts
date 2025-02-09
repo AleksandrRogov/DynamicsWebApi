@@ -25,7 +25,7 @@ export const setEntityNames = (newEntityNames: Record<string, string | null> | n
  * @param config Internal configuration object
  * @returns Modified internal request object
  */
-export const compose = (request: InternalRequest, config: InternalConfig): InternalRequest => {
+export const compose = (request: InternalRequest, config: Partial<InternalConfig>): InternalRequest => {
     request.path = request.path || "";
     request.functionName = request.functionName || "";
     if (!request.url) {
@@ -66,7 +66,7 @@ export const compose = (request: InternalRequest, config: InternalConfig): Inter
         }
     } else {
         ErrorHelper.stringParameterCheck(request.url, `DynamicsWebApi.${request.functionName}`, "request.url");
-        request.path = request.url.replace(config.dataApi.url, "");
+        request.path = request.url.replace(config.dataApi!.url, "");
     }
 
     if (request.hasOwnProperty("async") && request.async != null) {
@@ -88,7 +88,7 @@ export const compose = (request: InternalRequest, config: InternalConfig): Inter
  * @param joinSymbol Join symbol. "&" by default and ";" inside an expand query parameter
  * @returns Request URL
  */
-export const composeUrl = (request: InternalRequest, config: Config, url: string = "", joinSymbol: "&" | ";" = "&"): string => {
+export const composeUrl = (request: InternalRequest | null, config: Config | null, url: string = "", joinSymbol: "&" | ";" = "&"): string => {
     const queryArray: string[] = [];
 
     if (request) {

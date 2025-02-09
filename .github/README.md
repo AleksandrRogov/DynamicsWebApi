@@ -398,7 +398,7 @@ The following table describes `Expand` Object properties:
 
 Property Name | Type | Description
 ------------ | ------------- | -------------
-expand | `Expand[]` | An array of `Expand` Objects representing the $expand OData System Query Option value to control which related records are also returned.
+expand | `string` or `Expand[]` | An array of `Expand` Objects representing the $expand OData System Query Option value to control which related records are also returned. Can also accept a string.
 filter | `string` | Use the $filter system query option to set criteria for which related entities will be returned.
 orderBy | `string[]` | An Array (of strings) representing the order in which related items are returned using the $orderby system query option. Use the asc or desc suffix to specify ascending or descending order respectively. The default is ascending if the suffix isn't applied.
 property | `string` | A name of a single-valued navigation property which needs to be expanded.

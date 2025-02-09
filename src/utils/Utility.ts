@@ -1,5 +1,5 @@
 ﻿import type * as Core from "../types";
-import { generateRandomBytes } from "../helpers/Crypto";
+import { generateRandomBytes, getCrypto } from "../helpers/Crypto";
 import { isUuid, extractUuid, parsePagingCookie } from "../helpers/Regex";
 
 declare var GetGlobalContext: any;
@@ -97,8 +97,8 @@ export class Utility {
     }
 
     /** Generates UUID */
-    static generateUUID(): string {
-        return (<any>[1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) => (c ^ (generateRandomBytes()[0] & (15 >> (c / 4)))).toString(16));
+    static generateUUID() {
+        return getCrypto<Crypto>().randomUUID();
     }
 
     static getXrmContext(): any {
@@ -116,7 +116,7 @@ export class Utility {
         }
 
         throw new Error(
-            "Xrm Context is not available. In most cases, it can be resolved by adding a reference to a ClientGlobalContext.js.aspx. Please refer to MSDN documentation for more details."
+            "Xrm Context is not available. In most cases, it can be resolved by adding a reference to a ClientGlobalContext.js.aspx. Please refer to MSDN documentation for more details.",
         );
     }
 

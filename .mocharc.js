@@ -1,6 +1,6 @@
 module.exports = {
     diff: true,
-    extension: ["ts", "js"],
-    require: "ts-node/register",
-    spec: ["tests/*.spec.js", "tests/*.spec.ts"],
+    extension: ["ts"],
+    require: "tsx",
+    spec: ["tests/*.spec.ts"],
 };

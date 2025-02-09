@@ -20,7 +20,6 @@
 		"lib": ["ESNext", "DOM"],
 		"strict": true,
 	},
-	// "compileOnSave": true,
 	"include": ["./src/**/*"],
 	"exclude": ["node_modules", "typesold", "./tests/"]
 }
