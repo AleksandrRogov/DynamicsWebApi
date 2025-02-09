@@ -2534,7 +2534,7 @@ the config option "formatted" will enable developers to retrieve all information
 - [X] Implement [Dataverse Search API 1.0](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/search/legacy). `Added in v.2.0.0`
 - [X] Allow custom headers to be passed to the request [#151](https://github.com/AleksandrRogov/DynamicsWebApi/issues/151). `Added in v.2.1.0`
 - [X] Support Microsoft Power Pages. `Added in v.2.1.0`
-- [ ] Support Search API 2.0 [#174](https://github.com/AleksandrRogov/DynamicsWebApi/issues/174). `Coming with v.2.2.0`
+- [ ] Support Search API 2.0 [#174](https://github.com/AleksandrRogov/DynamicsWebApi/issues/174). `Coming with v.2.3.0`
 - [ ] Custom requests.
 
 Many more features to come!
