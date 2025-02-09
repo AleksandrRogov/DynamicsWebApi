@@ -356,7 +356,7 @@ continueOnError | `boolean` | `executeBatch` | **BATCH REQUESTS ONLY!** Sets Pre
 count | `boolean` | `retrieveMultiple`, `retrieveAll` | Boolean that sets the $count system query option with a value of true to include a count of entities that match the filter criteria up to 5000 (per page). Do not use $top with $count!
 data | `Object` or `ArrayBuffer` / `Buffer` (for node.js) | `create`, `update`, `upsert`, `uploadFile` | A JavaScript object that represents Dynamics 365 entity, action, metadata and etc. 
 duplicateDetection | `boolean` | `create`, `update`, `upsert` | **D365 Web API v9+** Boolean that enables duplicate detection. [More Info](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/webapi/update-delete-entities-using-web-api#check-for-duplicate-records)
-expand | `Expand[]` | `retrieve`, `retrieveMultiple`, `create`, `update`, `upsert` | An array of `Expand` Objects (described below the table) representing the $expand OData System Query Option value to control which related records are also returned.
+expand | `string` or `Expand[]` | `retrieve`, `retrieveMultiple`, `create`, `update`, `upsert` | An array of `Expand` Objects (described below the table) representing the $expand OData System Query Option value to control which related records are also returned.
 fetchXml | `string` | `fetch`, `fetchAll` | Property that sets FetchXML - a proprietary query language that provides capabilities to perform aggregation.
 fieldName | `string` | `uploadFile`, `downloadFile`, `deleteRecord` | **D365 Web API v9.1+. Deprecated, use `property` instead** Use this option to specify the name of the file attribute in Dynamics 365. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/file-attributes)
 fileName | `string` | `uploadFile` | **D365 Web API v9.1+** Specifies the name of the file
@@ -398,7 +398,7 @@ The following table describes `Expand` Object properties:
 
 Property Name | Type | Description
 ------------ | ------------- | -------------
-expand | `string` or `Expand[]` | An array of `Expand` Objects representing the $expand OData System Query Option value to control which related records are also returned. Can also accept a string.
+expand | `Expand[]` | An array of `Expand` Objects representing the $expand OData System Query Option value to control which related records are also returned. Can also accept a string.
 filter | `string` | Use the $filter system query option to set criteria for which related entities will be returned.
 orderBy | `string[]` | An Array (of strings) representing the order in which related items are returned using the $orderby system query option. Use the asc or desc suffix to specify ascending or descending order respectively. The default is ascending if the suffix isn't applied.
 property | `string` | A name of a single-valued navigation property which needs to be expanded.
