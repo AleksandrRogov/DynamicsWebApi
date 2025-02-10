@@ -1,3 +1,18 @@
+<a name="v2.2.0"></a>
+# [v2.2.0](https://github.com/AleksandrRogov/DynamicsWebApi/releases/tag/v2.2.0) - 09 Feb 2025
+
+**Changes**
+- :warning: Dropping official support for Node.js v16. Mainly because I cannot run actions with that version anymore, so I cannot guarantee that any future changes will continue working in it.
+- Replaced a custom UUID generator function with a built-in `randomUUID` (Crypto API). 
+:warning: This may cause issues in the older browsers, and the library must now run in the "Secure Context" (https).
+- Slightly optimized `dateReviver` function.
+
+**Fixes**
+- Modified `expand` property in the type definitions to accept a `string`. It could always accept a `string` instead of an array of expand objects.
+
+[Changes][v2.2.0]
+
+
 <a name="v2.1.7"></a>
 # [v2.1.7](https://github.com/AleksandrRogov/DynamicsWebApi/releases/tag/v2.1.7) - 16 Sep 2024
 
@@ -989,6 +1004,7 @@ Added:
 [Changes][v1.2.0]
 
 
+[v2.2.0]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.1.7...v2.2.0
 [v2.1.7]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v.2.1.6...v2.1.7
 [v.2.1.6]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.1.5...v.2.1.6
 [v2.1.5]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.1.4...v2.1.5
