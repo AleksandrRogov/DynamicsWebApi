@@ -2,7 +2,7 @@ import { expect } from "chai";
 import nock from "nock";
 import * as mocks from "./stubs";
 
-import { RequestClient } from "../src/client/RequestClient";
+import * as RequestClient from "../src/client/RequestClient";
 import { InternalConfig } from "../src/utils/Config";
 import * as Core from "../src/types";
 import * as Regex from "../src/helpers/Regex";

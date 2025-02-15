@@ -1,4 +1,4 @@
-import { Utility } from "./Utility";
+import { isRunningWithinPortals, getClientUrl } from "./Utility";
 import { ErrorHelper } from "../helpers/ErrorHelper";
 import { ApiConfig, Config } from "../dynamics-web-api";
 
@@ -14,10 +14,10 @@ export interface InternalConfig extends Config {
 }
 
 const getApiUrl = (serverUrl: string | undefined | null, apiConfig: ApiConfig): string => {
-    if (Utility.isRunningWithinPortals()) {
+    if (isRunningWithinPortals()) {
         return new URL("_api", global.window.location.origin).toString() + "/";
     } else {
-        if (!serverUrl) serverUrl = Utility.getClientUrl();
+        if (!serverUrl) serverUrl = getClientUrl();
         return new URL(`api/${apiConfig.path}/v${apiConfig.version}`, serverUrl).toString() + "/";
     }
 };
@@ -122,12 +122,12 @@ export class ConfigurationUtility {
             dataApi: {
                 path: "data",
                 version: "9.2",
-                url: ""
+                url: "",
             },
             searchApi: {
                 path: "search",
                 version: "1.0",
-                url: ""
+                url: "",
             },
         };
     }

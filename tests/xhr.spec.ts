@@ -6,9 +6,10 @@ import crypto from "crypto";
 import { DynamicsWebApi, RetrieveRequest } from "../src/dynamics-web-api";
 import { XhrWrapper } from "../src/client/xhr";
 import { DWA } from "../src/dwa";
-import { Utility } from "../src/utils/Utility";
+import * as Utility from "../src/utils/Utility";
 import base64 from "Base64";
-Utility.downloadChunkSize = 15;
+
+Utility.setDownloadChunkSize(15);
 
 const dynamicsWebApiTest = new DynamicsWebApi({
     dataApi: {

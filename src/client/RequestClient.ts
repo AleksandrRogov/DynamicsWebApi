@@ -1,5 +1,5 @@
 import type * as Core from "../types";
-import { Utility } from "../utils/Utility";
+import { generateUUID, isRunningWithinPortals, isNull } from "../utils/Utility";
 import { InternalConfig } from "../utils/Config";
 import * as RequestUtility from "../utils/Request";
 import { DynamicsWebApiError, ErrorHelper } from "../helpers/ErrorHelper";
@@ -23,7 +23,7 @@ const _clearRequestData = (requestId: string): void => {
 
 const _runRequest = async (request: Core.InternalRequest, config: InternalConfig): Promise<Core.WebApiResponse> => {
     try {
-        const result = await RequestClient.sendRequest(request, config);
+        const result = await sendRequest(request, config);
         _clearRequestData(request.requestId!);
 
         return result;
@@ -54,7 +54,7 @@ const _isEntityNameException = (entityName: string): boolean => {
 };
 
 const _getCollectionNames = async (entityName: string, config: InternalConfig): Promise<string | null | undefined> => {
-    if (!Utility.isNull(RequestUtility.entityNames)) {
+    if (!isNull(RequestUtility.entityNames)) {
         return RequestUtility.findCollectionName(entityName) || entityName;
     }
 
@@ -66,7 +66,7 @@ const _getCollectionNames = async (entityName: string, config: InternalConfig): 
             noCache: true,
             functionName: "retrieveMultiple",
         },
-        config
+        config,
     );
 
     const result = await _runRequest(request, config);
@@ -96,131 +96,129 @@ const _checkCollectionName = async (entityName: string | null | undefined, confi
     }
 };
 
-export class RequestClient {
-    /**
-     * Sends a request to given URL with given parameters
-     *
-     * @param {InternalRequest} request - Composed request to D365 Web Api
-     * @param {InternalConfig} config - DynamicsWebApi config.
-     */
-    static async sendRequest(request: Core.InternalRequest, config: InternalConfig): Promise<Core.WebApiResponse> {
-        request.headers = request.headers || {};
-        request.responseParameters = request.responseParameters || {};
-        request.requestId = request.requestId || Utility.generateUUID();
+/**
+ * Sends a request to given URL with given parameters
+ *
+ * @param {InternalRequest} request - Composed request to D365 Web Api
+ * @param {InternalConfig} config - DynamicsWebApi config.
+ */
+export const sendRequest = async (request: Core.InternalRequest, config: InternalConfig): Promise<Core.WebApiResponse> => {
+    request.headers = request.headers || {};
+    request.responseParameters = request.responseParameters || {};
+    request.requestId = request.requestId || generateUUID();
 
-        //add response parameters to parse
-        _addResponseParams(request.requestId, request.responseParameters);
+    //add response parameters to parse
+    _addResponseParams(request.requestId, request.responseParameters);
 
-        //stringify passed data
-        let processedData = null;
+    //stringify passed data
+    let processedData = null;
 
-        const isBatchConverted = request.responseParameters?.convertedToBatch;
+    const isBatchConverted = request.responseParameters?.convertedToBatch;
 
-        if (request.path === "$batch" && !isBatchConverted) {
-            const batchRequest = _batchRequestCollection[request.requestId];
+    if (request.path === "$batch" && !isBatchConverted) {
+        const batchRequest = _batchRequestCollection[request.requestId];
 
-            if (!batchRequest) throw ErrorHelper.batchIsEmpty();
+        if (!batchRequest) throw ErrorHelper.batchIsEmpty();
 
-            const batchResult = RequestUtility.convertToBatch(batchRequest, config, request);
+        const batchResult = RequestUtility.convertToBatch(batchRequest, config, request);
 
-            processedData = batchResult.body;
-            request.headers = { ...batchResult.headers, ...request.headers };
+        processedData = batchResult.body;
+        request.headers = { ...batchResult.headers, ...request.headers };
 
-            //clear an array of requests
-            delete _batchRequestCollection[request.requestId];
-        } else {
-            processedData = !isBatchConverted ? RequestUtility.processData(request.data, config) : request.data;
+        //clear an array of requests
+        delete _batchRequestCollection[request.requestId];
+    } else {
+        processedData = !isBatchConverted ? RequestUtility.processData(request.data, config) : request.data;
 
-            if (!isBatchConverted) request.headers = RequestUtility.setStandardHeaders(request.headers);
-        }
-
-        if (config.impersonate && !request.headers!["MSCRMCallerID"]) {
-            request.headers!["MSCRMCallerID"] = config.impersonate;
-        }
-
-        if (config.impersonateAAD && !request.headers!["CallerObjectId"]) {
-            request.headers!["CallerObjectId"] = config.impersonateAAD;
-        }
-
-        let token: AccessToken | string | null = null;
-
-        //call a token refresh callback only if it is set and there is no "Authorization" header set yet
-        if (config.onTokenRefresh && (!request.headers || (request.headers && !request.headers["Authorization"]))) {
-            token = await config.onTokenRefresh();
-            if (!token) throw new Error("Token is empty. Request is aborted.");
-        }
-
-        if (token) {
-            request.headers!["Authorization"] = "Bearer " + (token.hasOwnProperty("accessToken") ? (token as AccessToken).accessToken : token);
-        }
-
-        if (Utility.isRunningWithinPortals()) {
-            request.headers!["__RequestVerificationToken"] = await global.window.shell!.getTokenDeferred();
-        }
-
-        const url = request.apiConfig ? request.apiConfig.url : config.dataApi.url;
-
-        return await executeRequest({
-            method: request.method!,
-            uri: url!.toString() + request.path,
-            data: processedData,
-            proxy: config.proxy,
-            isAsync: request.async,
-            headers: request.headers!,
-            requestId: request.requestId!,
-            abortSignal: request.signal,
-            responseParams: _responseParseParams,
-            timeout: request.timeout || config.timeout,
-        });
+        if (!isBatchConverted) request.headers = RequestUtility.setStandardHeaders(request.headers);
     }
 
-    static async makeRequest(request: Core.InternalRequest, config: InternalConfig): Promise<Core.WebApiResponse | undefined> {
-        request.responseParameters = request.responseParameters || {};
-        //we don't want to mix headers set by the library and by the user
-        request.userHeaders = request.headers;
-        delete request.headers;
+    if (config.impersonate && !request.headers!["MSCRMCallerID"]) {
+        request.headers!["MSCRMCallerID"] = config.impersonate;
+    }
 
-        if (!request.isBatch) {
-            const collectionName = await _checkCollectionName(request.collection, config);
+    if (config.impersonateAAD && !request.headers!["CallerObjectId"]) {
+        request.headers!["CallerObjectId"] = config.impersonateAAD;
+    }
 
-            request.collection = collectionName;
-            RequestUtility.compose(request, config);
-            request.responseParameters.convertedToBatch = false;
+    let token: AccessToken | string | null = null;
 
-            //the URL contains more characters than max possible limit, convert the request to a batch request
-            if (request.path!.length > 2000) {
-                const batchRequest = RequestUtility.convertToBatch([request], config);
+    //call a token refresh callback only if it is set and there is no "Authorization" header set yet
+    if (config.onTokenRefresh && (!request.headers || (request.headers && !request.headers["Authorization"]))) {
+        token = await config.onTokenRefresh();
+        if (!token) throw new Error("Token is empty. Request is aborted.");
+    }
 
-                //#175 authorization header must be copied as well. 
-                //todo: is it the only one that needs to be copied?
-                if (request.headers!["Authorization"]) {
-                    batchRequest.headers["Authorization"] = request.headers!["Authorization"];
-                }
+    if (token) {
+        request.headers!["Authorization"] = "Bearer " + (token.hasOwnProperty("accessToken") ? (token as AccessToken).accessToken : token);
+    }
 
-                request.method = "POST";
-                request.path = "$batch";
-                request.data = batchRequest.body;
-                request.headers = { ...batchRequest.headers, ...request.userHeaders };
-                request.responseParameters.convertedToBatch = true;
+    if (isRunningWithinPortals()) {
+        request.headers!["__RequestVerificationToken"] = await global.window.shell!.getTokenDeferred();
+    }
+
+    const url = request.apiConfig ? request.apiConfig.url : config.dataApi.url;
+
+    return await executeRequest({
+        method: request.method!,
+        uri: url!.toString() + request.path,
+        data: processedData,
+        proxy: config.proxy,
+        isAsync: request.async,
+        headers: request.headers!,
+        requestId: request.requestId!,
+        abortSignal: request.signal,
+        responseParams: _responseParseParams,
+        timeout: request.timeout || config.timeout,
+    });
+};
+
+export const makeRequest = async (request: Core.InternalRequest, config: InternalConfig): Promise<Core.WebApiResponse | undefined> => {
+    request.responseParameters = request.responseParameters || {};
+    //we don't want to mix headers set by the library and by the user
+    request.userHeaders = request.headers;
+    delete request.headers;
+
+    if (!request.isBatch) {
+        const collectionName = await _checkCollectionName(request.collection, config);
+
+        request.collection = collectionName;
+        RequestUtility.compose(request, config);
+        request.responseParameters.convertedToBatch = false;
+
+        //the URL contains more characters than max possible limit, convert the request to a batch request
+        if (request.path!.length > 2000) {
+            const batchRequest = RequestUtility.convertToBatch([request], config);
+
+            //#175 authorization header must be copied as well.
+            //todo: is it the only one that needs to be copied?
+            if (request.headers!["Authorization"]) {
+                batchRequest.headers["Authorization"] = request.headers!["Authorization"];
             }
 
-            return _runRequest(request, config);
+            request.method = "POST";
+            request.path = "$batch";
+            request.data = batchRequest.body;
+            request.headers = { ...batchRequest.headers, ...request.userHeaders };
+            request.responseParameters.convertedToBatch = true;
         }
 
-        //no need to make a request to web api if it's a part of batch
-        RequestUtility.compose(request, config);
-        //add response parameters to parse
-        _addResponseParams(request.requestId!, request.responseParameters);
-        _addRequestToBatchCollection(request.requestId!, request);
+        return _runRequest(request, config);
     }
 
-    static _clearTestData(): void {
-        RequestUtility.setEntityNames(null);
-        _responseParseParams = {};
-        _batchRequestCollection = {};
-    }
+    //no need to make a request to web api if it's a part of batch
+    RequestUtility.compose(request, config);
+    //add response parameters to parse
+    _addResponseParams(request.requestId!, request.responseParameters);
+    _addRequestToBatchCollection(request.requestId!, request);
+};
 
-    static getCollectionName(entityName: string): string | null {
-        return RequestUtility.findCollectionName(entityName);
-    }
-}
+export const _clearTestData = (): void => {
+    RequestUtility.setEntityNames(null);
+    _responseParseParams = {};
+    _batchRequestCollection = {};
+};
+
+export const getCollectionName = (entityName: string): string | null => {
+    return RequestUtility.findCollectionName(entityName);
+};

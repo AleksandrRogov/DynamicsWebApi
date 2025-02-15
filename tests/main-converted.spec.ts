@@ -6,8 +6,8 @@ import { serverUrl as _serverUrl, responses, webApiUrl, data as _data, webApiUrl
 import { DWA } from "../src/dwa";
 import { DynamicsWebApi } from "../src/dynamics-web-api";
 
-import { Utility } from "../src/utils/Utility";
-Utility.downloadChunkSize = 15;
+import * as Utility from "../src/utils/Utility";
+Utility.setDownloadChunkSize(15);
 
 var dynamicsWebApiTest = new DynamicsWebApi({ serverUrl: _serverUrl, dataApi: { version: "8.2" } });
 
@@ -16,9 +16,7 @@ describe("dynamicsWebApi.upsert -", function () {
         var scope;
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
-            scope = nock(webApiUrl)
-                .patch(responses.testEntityUrl, _data.testEntity)
-                .reply(response.status, response.responseText, response.responseHeaders);
+            scope = nock(webApiUrl).patch(responses.testEntityUrl, _data.testEntity).reply(response.status, response.responseText, response.responseHeaders);
         });
 
         after(function () {
@@ -45,9 +43,7 @@ describe("dynamicsWebApi.upsert -", function () {
         var scope;
         before(function () {
             var response = responses.createReturnId;
-            scope = nock(webApiUrl)
-                .patch(responses.testEntityUrl, _data.testEntity)
-                .reply(response.status, response.responseText, response.responseHeaders);
+            scope = nock(webApiUrl).patch(responses.testEntityUrl, _data.testEntity).reply(response.status, response.responseText, response.responseHeaders);
         });
 
         after(function () {

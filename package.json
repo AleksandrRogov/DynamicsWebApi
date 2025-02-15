@@ -1,6 +1,6 @@
 {
     "name": "dynamics-web-api",
-    "version": "2.2.0",
+    "version": "2.3.0-beta",
     "description": "DynamicsWebApi is a Microsoft Dataverse Web API helper library",
     "keywords": [
         "dataverse",

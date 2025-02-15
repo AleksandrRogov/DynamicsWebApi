@@ -1,6 +1,6 @@
 import type { InternalRequest, InternalBatchRequest } from "../types";
 
-import { Utility } from "./Utility";
+import { isNull, generateUUID } from "./Utility";
 import { Config, HeaderCollection } from "../dynamics-web-api";
 import { ErrorHelper } from "../helpers/ErrorHelper";
 import { InternalConfig } from "./Config";
@@ -100,7 +100,7 @@ export const composeUrl = (request: InternalRequest | null, config: Config | nul
                 let navigationKey = ErrorHelper.keyParameterCheck(
                     request.navigationPropertyKey,
                     `DynamicsWebApi.${request.functionName}`,
-                    "request.navigationPropertyKey"
+                    "request.navigationPropertyKey",
                 );
                 url += "(" + navigationKey + ")";
             }
@@ -208,11 +208,11 @@ export const composeUrl = (request: InternalRequest | null, config: Config | nul
             ErrorHelper.boolParameterCheck(request.isBatch, `DynamicsWebApi.${request.functionName}`, "request.isBatch");
         }
 
-        if (!Utility.isNull(request.inChangeSet)) {
+        if (!isNull(request.inChangeSet)) {
             ErrorHelper.boolParameterCheck(request.inChangeSet, `DynamicsWebApi.${request.functionName}`, "request.inChangeSet");
         }
 
-        if (request.isBatch && Utility.isNull(request.inChangeSet)) request.inChangeSet = true;
+        if (request.isBatch && isNull(request.inChangeSet)) request.inChangeSet = true;
 
         if (request.timeout) {
             ErrorHelper.numberParameterCheck(request.timeout, `DynamicsWebApi.${request.functionName}`, "request.timeout");
@@ -265,7 +265,7 @@ export const composeHeaders = (request: InternalRequest, config: Config): Header
 
     if (request.ifmatch != null && request.ifnonematch != null) {
         throw new Error(
-            `DynamicsWebApi.${request.functionName}. Either one of request.ifmatch or request.ifnonematch parameters should be used in a call, not both.`
+            `DynamicsWebApi.${request.functionName}. Either one of request.ifmatch or request.ifnonematch parameters should be used in a call, not both.`,
         );
     }
 
@@ -397,7 +397,7 @@ export const composePreferHeader = (request: InternalRequest, config: Config): s
 };
 
 export const convertToBatch = (requests: InternalRequest[], config: InternalConfig, batchRequest?: InternalRequest): InternalBatchRequest => {
-    const batchBoundary = `dwa_batch_${Utility.generateUUID()}`;
+    const batchBoundary = `dwa_batch_${generateUUID()}`;
 
     const batchBody: string[] = [];
     let currentChangeSet: string | null = null;
@@ -427,7 +427,7 @@ export const convertToBatch = (requests: InternalRequest[], config: InternalConf
             batchBody.push(`\n--${batchBoundary}`);
 
             if (inChangeSet) {
-                currentChangeSet = `changeset_${Utility.generateUUID()}`;
+                currentChangeSet = `changeset_${generateUUID()}`;
                 batchBody.push("Content-Type: multipart/mixed;boundary=" + currentChangeSet);
             }
         }
@@ -479,7 +479,7 @@ export const convertToBatch = (requests: InternalRequest[], config: InternalConf
 };
 
 export const findCollectionName = (entityName: string): string | null => {
-    if (Utility.isNull(entityNames)) return null;
+    if (isNull(entityNames)) return null;
 
     const collectionName = entityNames[entityName];
     if (!collectionName) {
@@ -502,7 +502,7 @@ export const processData = (data: any, config: InternalConfig): string | Uint8Ar
         const valueParts = SEARCH_FOR_ENTITY_NAME_REGEX.exec(value);
         if (valueParts && valueParts.length > 2) {
             const collectionName = findCollectionName(valueParts[1]);
-            if (!Utility.isNull(collectionName)) {
+            if (!isNull(collectionName)) {
                 return value.replace(SEARCH_FOR_ENTITY_NAME_REGEX, `${collectionName}$2`);
             }
         }

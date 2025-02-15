@@ -4,12 +4,12 @@ import nock, { cleanAll } from "nock";
 import sinon from "sinon";
 
 import { DWA } from "../src/dwa";
-import { Utility } from "../src/utils/Utility";
+import * as Utility from "../src/utils/Utility";
 import { composeUrl, compose, composeHeaders } from "../src/utils/Request";
 import { ErrorHelper } from "../src/helpers/ErrorHelper";
 import { data as _data, webApiUrl, responses } from "./stubs";
 import { dateReviver } from "../src/client/helpers/dateReviver";
-import { RequestClient } from "../src/client/RequestClient";
+import * as RequestClient from "../src/client/RequestClient";
 import { parseResponse } from "../src/client/helpers/parseResponse";
 import { InternalRequest } from "../src/types";
 import { InternalConfig } from "../src/utils/Config";
@@ -2315,10 +2315,7 @@ describe("RequestClient.makeRequest", function () {
         var url = "test";
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
-            scope = nock(webApiUrl)
-                .post("/test", _data.testEntity)
-                .delay(1000)
-                .reply(response.status, response.responseText, response.responseHeaders);
+            scope = nock(webApiUrl).post("/test", _data.testEntity).delay(1000).reply(response.status, response.responseText, response.responseHeaders);
         });
 
         after(function () {
@@ -2437,10 +2434,7 @@ describe("RequestClient.makeRequest", function () {
         var url = "test";
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
-            scope = nock(webApiUrl)
-                .post("/test", _data.testEntity)
-                .delay(1000)
-                .reply(response.status, response.responseText, response.responseHeaders);
+            scope = nock(webApiUrl).post("/test", _data.testEntity).delay(1000).reply(response.status, response.responseText, response.responseHeaders);
         });
 
         after(function () {
@@ -2603,10 +2597,7 @@ describe("RequestClient.sendRequest", function () {
         var url = "test";
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
-            scope = nock(webApiUrl)
-                .post("/test", _data.testEntity)
-                .delay(1000)
-                .reply(response.status, response.responseText, response.responseHeaders);
+            scope = nock(webApiUrl).post("/test", _data.testEntity).delay(1000).reply(response.status, response.responseText, response.responseHeaders);
         });
 
         after(function () {
@@ -2637,10 +2628,7 @@ describe("RequestClient.sendRequest", function () {
         var url = "test";
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
-            scope = nock(webApiUrl)
-                .post("/test", _data.testEntity)
-                .delay(1000)
-                .reply(response.status, response.responseText, response.responseHeaders);
+            scope = nock(webApiUrl).post("/test", _data.testEntity).delay(1000).reply(response.status, response.responseText, response.responseHeaders);
         });
 
         after(function () {

@@ -1,5 +1,5 @@
 ﻿import { DWA } from "../../dwa";
-import { getHeader, hasHeader, Utility } from "../../utils/Utility";
+import { getHeader, hasHeader, getFetchXmlPagingCookie } from "../../utils/Utility";
 import { dateReviver } from "./dateReviver";
 import type * as Core from "../../types";
 import { convertToReferenceObject, extractUuidFromUrl } from "../../helpers/Regex";
@@ -99,7 +99,7 @@ export function parseData(object: Record<string, any>, parseParams?: any): any {
 
     if (parseParams) {
         if (parseParams.hasOwnProperty("pageNumber") && object["@" + DWA.Prefer.Annotations.FetchXmlPagingCookie] != null) {
-            object.PagingInfo = Utility.getFetchXmlPagingCookie(object["@" + DWA.Prefer.Annotations.FetchXmlPagingCookie], parseParams.pageNumber);
+            object.PagingInfo = getFetchXmlPagingCookie(object["@" + DWA.Prefer.Annotations.FetchXmlPagingCookie], parseParams.pageNumber);
         }
     }
 
