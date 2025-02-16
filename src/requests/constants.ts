@@ -1,0 +1,1 @@
+export const LIBRARY_NAME = "DynamicsWebApi";

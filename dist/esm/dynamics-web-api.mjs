@@ -247,18 +247,18 @@ function copyRequest(src, excludeProps = []) {
 }
 function setFileChunk(request, fileBuffer, chunkSize, offset) {
   offset = offset || 0;
-  const count = offset + chunkSize > fileBuffer.length ? fileBuffer.length % chunkSize : chunkSize;
+  const count2 = offset + chunkSize > fileBuffer.length ? fileBuffer.length % chunkSize : chunkSize;
   let content;
   if (false) {
-    content = new Uint8Array(count);
-    for (let i = 0; i < count; i++) {
+    content = new Uint8Array(count2);
+    for (let i = 0; i < count2; i++) {
       content[i] = fileBuffer[offset + i];
     }
   } else {
-    content = fileBuffer.slice(offset, offset + count);
+    content = fileBuffer.slice(offset, offset + count2);
   }
   request.data = content;
-  request.contentRange = "bytes " + offset + "-" + (offset + count - 1) + "/" + fileBuffer.length;
+  request.contentRange = "bytes " + offset + "-" + (offset + count2 - 1) + "/" + fileBuffer.length;
 }
 function convertToFileBuffer(binaryString) {
   if (true) return Buffer.from(binaryString, "binary");
@@ -1463,23 +1463,496 @@ var getCollectionName = (entityName) => {
   return findCollectionName(entityName);
 };
 
-// src/dynamics-web-api.ts
-init_Regex();
+// src/requests/associate.ts
+init_ErrorHelper();
+init_Utility();
+
+// src/requests/constants.ts
+var LIBRARY_NAME = "DynamicsWebApi";
+
+// src/requests/associate.ts
+var FUNCTION_NAME = "associate";
+var REQUEST_NAME = `${LIBRARY_NAME}.${FUNCTION_NAME}`;
+var associate = async (request, client) => {
+  ErrorHelper.parameterCheck(request, REQUEST_NAME, "request");
+  let internalRequest = copyRequest(request);
+  internalRequest.method = "POST";
+  internalRequest.functionName = FUNCTION_NAME;
+  ErrorHelper.stringParameterCheck(request.relatedCollection, REQUEST_NAME, "request.relatedcollection");
+  ErrorHelper.stringParameterCheck(request.relationshipName, REQUEST_NAME, "request.relationshipName");
+  const primaryKey = ErrorHelper.keyParameterCheck(request.primaryKey, REQUEST_NAME, "request.primaryKey");
+  const relatedKey = ErrorHelper.keyParameterCheck(request.relatedKey, REQUEST_NAME, "request.relatedKey");
+  internalRequest.navigationProperty = request.relationshipName + "/$ref";
+  internalRequest.key = primaryKey;
+  internalRequest.data = { "@odata.id": `${request.relatedCollection}(${relatedKey})` };
+  await client.makeRequest(internalRequest);
+};
+
+// src/requests/associateSingleValued.ts
+init_ErrorHelper();
+init_Utility();
+var FUNCTION_NAME2 = "associateSingleValued";
+var REQUEST_NAME2 = `${LIBRARY_NAME}.${FUNCTION_NAME2}`;
+var associateSingleValued = async (request, client) => {
+  ErrorHelper.parameterCheck(request, REQUEST_NAME2, "request");
+  let internalRequest = copyRequest(request);
+  internalRequest.method = "PUT";
+  internalRequest.functionName = FUNCTION_NAME2;
+  const primaryKey = ErrorHelper.keyParameterCheck(request.primaryKey, REQUEST_NAME2, "request.primaryKey");
+  const relatedKey = ErrorHelper.keyParameterCheck(request.relatedKey, REQUEST_NAME2, "request.relatedKey");
+  ErrorHelper.stringParameterCheck(request.navigationProperty, REQUEST_NAME2, "request.navigationProperty");
+  ErrorHelper.stringParameterCheck(request.relatedCollection, REQUEST_NAME2, "request.relatedcollection");
+  internalRequest.navigationProperty += "/$ref";
+  internalRequest.key = primaryKey;
+  internalRequest.data = { "@odata.id": `${request.relatedCollection}(${relatedKey})` };
+  await client.makeRequest(internalRequest);
+};
+
+// src/requests/callAction.ts
+init_ErrorHelper();
+init_Utility();
+var FUNCTION_NAME3 = "callAction";
+var REQUEST_NAME3 = `${LIBRARY_NAME}.${FUNCTION_NAME3}`;
+var callAction = async (request, client) => {
+  ErrorHelper.parameterCheck(request, REQUEST_NAME3, "request");
+  ErrorHelper.stringParameterCheck(request.actionName, REQUEST_NAME3, "request.actionName");
+  const internalRequest = copyRequest(request, ["action"]);
+  internalRequest.method = "POST";
+  internalRequest.functionName = FUNCTION_NAME3;
+  internalRequest.addPath = request.actionName;
+  internalRequest._isUnboundRequest = !internalRequest.collection;
+  internalRequest.data = request.action;
+  const response = await client.makeRequest(internalRequest);
+  return response == null ? void 0 : response.data;
+};
+
+// src/requests/callFunction.ts
+init_ErrorHelper();
+init_Utility();
+var FUNCTION_NAME4 = "callFunction";
+var REQUEST_NAME4 = `${LIBRARY_NAME}.${FUNCTION_NAME4}`;
+var callFunction = async (request, client) => {
+  ErrorHelper.parameterCheck(request, REQUEST_NAME4, "request");
+  const getFunctionName = (request2) => request2.name || request2.functionName;
+  const isObject2 = typeof request !== "string";
+  const functionName = isObject2 ? getFunctionName(request) : request;
+  const parameterName = isObject2 ? "request.name" : "name";
+  const internalRequest = isObject2 ? copyObject(request, ["name"]) : { functionName };
+  ErrorHelper.stringParameterCheck(functionName, REQUEST_NAME4, parameterName);
+  const functionParameters = buildFunctionParameters(internalRequest.parameters);
+  internalRequest.method = "GET";
+  internalRequest.addPath = functionName + functionParameters.key;
+  internalRequest.queryParams = functionParameters.queryParams;
+  internalRequest._isUnboundRequest = !internalRequest.collection;
+  internalRequest.functionName = FUNCTION_NAME4;
+  const response = await client.makeRequest(internalRequest);
+  return response == null ? void 0 : response.data;
+};
 
 // src/requests/create.ts
 init_ErrorHelper();
 init_Utility();
-var REQUEST_NAME = "DynamicsWebApi.create";
+var FUNCTION_NAME5 = "create";
+var REQUEST_NAME5 = `${LIBRARY_NAME}.${FUNCTION_NAME5}`;
 var create = async (request, client) => {
-  ErrorHelper.parameterCheck(request, REQUEST_NAME, "request");
+  ErrorHelper.parameterCheck(request, REQUEST_NAME5, "request");
   let internalRequest;
   if (!request.functionName) {
     internalRequest = copyRequest(request);
-    internalRequest.functionName = "create";
+    internalRequest.functionName = FUNCTION_NAME5;
   } else internalRequest = request;
   internalRequest.method = "POST";
   const response = await client.makeRequest(internalRequest);
   return response == null ? void 0 : response.data;
+};
+
+// src/requests/count.ts
+init_ErrorHelper();
+init_Utility();
+var FUNCTION_NAME6 = "count";
+var REQUEST_NAME6 = `${LIBRARY_NAME}.${FUNCTION_NAME6}`;
+var count = async (request, client) => {
+  var _a2;
+  ErrorHelper.parameterCheck(request, REQUEST_NAME6, "request");
+  const internalRequest = copyRequest(request);
+  internalRequest.method = "GET";
+  internalRequest.functionName = FUNCTION_NAME6;
+  if ((_a2 = internalRequest.filter) == null ? void 0 : _a2.length) {
+    internalRequest.count = true;
+  } else {
+    internalRequest.navigationProperty = "$count";
+  }
+  internalRequest.responseParameters = { toCount: internalRequest.count };
+  const response = await client.makeRequest(internalRequest);
+  return response == null ? void 0 : response.data;
+};
+
+// src/requests/countAll.ts
+init_ErrorHelper();
+
+// src/requests/retrieveAll.ts
+init_ErrorHelper();
+
+// src/requests/retrieveMultiple.ts
+init_ErrorHelper();
+init_Utility();
+var FUNCTION_NAME7 = "retrieveMultiple";
+var REQUEST_NAME7 = `${LIBRARY_NAME}.${FUNCTION_NAME7}`;
+var retrieveMultiple = async (request, client, nextPageLink) => {
+  ErrorHelper.parameterCheck(request, REQUEST_NAME7, "request");
+  let internalRequest;
+  if (!request.functionName) {
+    internalRequest = copyRequest(request);
+    internalRequest.functionName = FUNCTION_NAME7;
+  } else internalRequest = request;
+  internalRequest.method = "GET";
+  if (nextPageLink) {
+    ErrorHelper.stringParameterCheck(nextPageLink, REQUEST_NAME7, "nextPageLink");
+    internalRequest.url = nextPageLink;
+  }
+  const response = await client.makeRequest(internalRequest);
+  return response == null ? void 0 : response.data;
+};
+
+// src/requests/retrieveAll.ts
+var FUNCTION_NAME8 = "retrieveAll";
+var REQUEST_NAME8 = `${LIBRARY_NAME}.${FUNCTION_NAME8}`;
+var retrieveAllRequest = async (request, client, nextPageLink, records = []) => {
+  const response = await retrieveMultiple(request, client, nextPageLink);
+  records = records.concat(response.value);
+  const pageLink = response.oDataNextLink;
+  if (pageLink) {
+    return retrieveAllRequest(request, client, pageLink, records);
+  }
+  const result = { value: records };
+  if (response.oDataDeltaLink) {
+    result["@odata.deltaLink"] = response.oDataDeltaLink;
+    result.oDataDeltaLink = response.oDataDeltaLink;
+  }
+  return result;
+};
+var retrieveAll = (request, client) => {
+  ErrorHelper.throwBatchIncompatible(REQUEST_NAME8, client.isBatch);
+  return retrieveAllRequest(request, client);
+};
+
+// src/requests/countAll.ts
+var FUNCTION_NAME9 = "countAll";
+var REQUEST_NAME9 = `${LIBRARY_NAME}.${FUNCTION_NAME9}`;
+var countAll = async (request, client) => {
+  ErrorHelper.throwBatchIncompatible(REQUEST_NAME9, client.isBatch);
+  ErrorHelper.parameterCheck(request, REQUEST_NAME9, "request");
+  const response = await retrieveAllRequest(request, client);
+  return response ? response.value ? response.value.length : 0 : 0;
+};
+
+// src/requests/disassociate.ts
+init_ErrorHelper();
+init_Utility();
+var FUNCTION_NAME10 = "disassociate";
+var REQUEST_NAME10 = `${LIBRARY_NAME}.${FUNCTION_NAME10}`;
+var disassociate = async (request, client) => {
+  ErrorHelper.parameterCheck(request, REQUEST_NAME10, "request");
+  let internalRequest = copyRequest(request);
+  internalRequest.method = "DELETE";
+  internalRequest.functionName = FUNCTION_NAME10;
+  ErrorHelper.stringParameterCheck(request.relationshipName, REQUEST_NAME10, "request.relationshipName");
+  const primaryKey = ErrorHelper.keyParameterCheck(request.primaryKey, REQUEST_NAME10, "request.primaryKey");
+  const relatedKey = ErrorHelper.keyParameterCheck(request.relatedKey, REQUEST_NAME10, "request.relatedId");
+  internalRequest.key = primaryKey;
+  internalRequest.navigationProperty = `${request.relationshipName}(${relatedKey})/$ref`;
+  await client.makeRequest(internalRequest);
+};
+
+// src/requests/disassociateSingleValued.ts
+init_ErrorHelper();
+init_Utility();
+var FUNCTION_NAME11 = "disassociateSingleValued";
+var REQUEST_NAME11 = `${LIBRARY_NAME}.${FUNCTION_NAME11}`;
+var disassociateSingleValued = async (request, client) => {
+  ErrorHelper.parameterCheck(request, REQUEST_NAME11, "request");
+  let internalRequest = copyRequest(request);
+  internalRequest.method = "DELETE";
+  internalRequest.functionName = FUNCTION_NAME11;
+  ErrorHelper.stringParameterCheck(request.navigationProperty, REQUEST_NAME11, "request.navigationProperty");
+  const primaryKey = ErrorHelper.keyParameterCheck(request.primaryKey, REQUEST_NAME11, "request.primaryKey");
+  internalRequest.navigationProperty += "/$ref";
+  internalRequest.key = primaryKey;
+  await client.makeRequest(internalRequest);
+};
+
+// src/requests/retrieve.ts
+init_ErrorHelper();
+init_Utility();
+var FUNCTION_NAME12 = "retrieve";
+var REQUEST_NAME12 = `${LIBRARY_NAME}.${FUNCTION_NAME12}`;
+var retrieve = async (request, client) => {
+  var _a2;
+  ErrorHelper.parameterCheck(request, REQUEST_NAME12, "request");
+  let internalRequest;
+  if (!request.functionName) {
+    internalRequest = copyRequest(request);
+    internalRequest.functionName = FUNCTION_NAME12;
+  } else internalRequest = request;
+  internalRequest.method = "GET";
+  internalRequest.responseParameters = {
+    isRef: ((_a2 = internalRequest.select) == null ? void 0 : _a2.length) === 1 && internalRequest.select[0].endsWith("/$ref")
+  };
+  const response = await client.makeRequest(internalRequest);
+  return response == null ? void 0 : response.data;
+};
+
+// src/requests/fetchXml.ts
+init_ErrorHelper();
+init_Regex();
+init_Utility();
+var FUNCTION_NAME13 = "fetch";
+var REQUEST_NAME13 = `${LIBRARY_NAME}.${FUNCTION_NAME13}`;
+var fetchXml = async (request, client) => {
+  ErrorHelper.parameterCheck(request, REQUEST_NAME13, "request");
+  const internalRequest = copyRequest(request);
+  internalRequest.method = "GET";
+  internalRequest.functionName = FUNCTION_NAME13;
+  ErrorHelper.stringParameterCheck(internalRequest.fetchXml, REQUEST_NAME13, "request.fetchXml");
+  if (internalRequest.fetchXml && !FETCH_XML_TOP_REGEX.test(internalRequest.fetchXml)) {
+    let replacementString = "";
+    if (!FETCH_XML_PAGE_REGEX.test(internalRequest.fetchXml)) {
+      internalRequest.pageNumber = internalRequest.pageNumber || 1;
+      ErrorHelper.numberParameterCheck(internalRequest.pageNumber, REQUEST_NAME13, "request.pageNumber");
+      replacementString = `$1 page="${internalRequest.pageNumber}"`;
+    }
+    if (internalRequest.pagingCookie != null) {
+      ErrorHelper.stringParameterCheck(internalRequest.pagingCookie, REQUEST_NAME13, "request.pagingCookie");
+      replacementString += ` paging-cookie="${internalRequest.pagingCookie}"`;
+    }
+    if (replacementString) internalRequest.fetchXml = internalRequest.fetchXml.replace(FETCH_XML_REPLACE_REGEX, replacementString);
+  }
+  internalRequest.responseParameters = { pageNumber: internalRequest.pageNumber };
+  const response = await client.makeRequest(internalRequest);
+  return response == null ? void 0 : response.data;
+};
+
+// src/requests/fetchXmlAll.ts
+init_ErrorHelper();
+var FUNCTION_NAME14 = "fetchAll";
+var REQUEST_NAME14 = `${LIBRARY_NAME}.${FUNCTION_NAME14}`;
+var executeFetchXmlAll = async (request, client, records = []) => {
+  const response = await fetchXml(request, client);
+  records = records.concat(response.value);
+  if (response.PagingInfo) {
+    request.pageNumber = response.PagingInfo.nextPage;
+    request.pagingCookie = response.PagingInfo.cookie;
+    return executeFetchXmlAll(request, client, records);
+  }
+  return { value: records };
+};
+var fetchXmlAll = async (request, client) => {
+  ErrorHelper.parameterCheck(request, REQUEST_NAME14, "request");
+  ErrorHelper.throwBatchIncompatible(REQUEST_NAME14, client.isBatch);
+  return executeFetchXmlAll(request, client);
+};
+
+// src/requests/update.ts
+init_ErrorHelper();
+init_Regex();
+init_Utility();
+var FUNCTION_NAME15 = "update";
+var REQUEST_NAME15 = `${LIBRARY_NAME}.${FUNCTION_NAME15}`;
+var update = async (request, client) => {
+  ErrorHelper.parameterCheck(request, REQUEST_NAME15, "request");
+  let internalRequest;
+  if (!request.functionName) {
+    internalRequest = copyRequest(request);
+    internalRequest.functionName = FUNCTION_NAME15;
+  } else internalRequest = request;
+  internalRequest.method ?? (internalRequest.method = getUpdateMethod(internalRequest.collection));
+  internalRequest.responseParameters = { valueIfEmpty: true };
+  internalRequest.ifmatch ?? (internalRequest.ifmatch = "*");
+  const ifmatch = internalRequest.ifmatch;
+  try {
+    const response = await client.makeRequest(internalRequest);
+    return response == null ? void 0 : response.data;
+  } catch (error) {
+    if (ifmatch && error.status === 412) {
+      return false;
+    }
+    throw error;
+  }
+};
+
+// src/requests/updateSingleProperty.ts
+init_ErrorHelper();
+init_Utility();
+var FUNCTION_NAME16 = "updateSingleProperty";
+var REQUEST_NAME16 = `${LIBRARY_NAME}.${FUNCTION_NAME16}`;
+var updateSingleProperty = async (request, client) => {
+  ErrorHelper.parameterCheck(request, REQUEST_NAME16, "request");
+  ErrorHelper.parameterCheck(request.fieldValuePair, REQUEST_NAME16, "request.fieldValuePair");
+  var field = Object.keys(request.fieldValuePair)[0];
+  var fieldValue = request.fieldValuePair[field];
+  const internalRequest = copyRequest(request);
+  internalRequest.navigationProperty = field;
+  internalRequest.data = { value: fieldValue };
+  internalRequest.functionName = FUNCTION_NAME16;
+  internalRequest.method = "PUT";
+  delete internalRequest["fieldValuePair"];
+  const response = await client.makeRequest(internalRequest);
+  return response == null ? void 0 : response.data;
+};
+
+// src/requests/upsert.ts
+init_ErrorHelper();
+init_Utility();
+var FUNCTION_NAME17 = "upsert";
+var REQUEST_NAME17 = `${LIBRARY_NAME}.${FUNCTION_NAME17}`;
+var upsert = async (request, client) => {
+  ErrorHelper.parameterCheck(request, REQUEST_NAME17, "request");
+  const internalRequest = copyRequest(request);
+  internalRequest.method = "PATCH";
+  internalRequest.functionName = FUNCTION_NAME17;
+  const ifnonematch = internalRequest.ifnonematch;
+  const ifmatch = internalRequest.ifmatch;
+  try {
+    const response = await client.makeRequest(internalRequest);
+    return response == null ? void 0 : response.data;
+  } catch (error) {
+    if (ifnonematch && error.status === 412) {
+      return null;
+    } else if (ifmatch && error.status === 404) {
+      return null;
+    }
+    throw error;
+  }
+};
+
+// src/requests/delete.ts
+init_ErrorHelper();
+init_Utility();
+var FUNCTION_NAME18 = "deleteRecord";
+var REQUEST_NAME18 = `${LIBRARY_NAME}.${FUNCTION_NAME18}`;
+var deleteRecord = async (request, client) => {
+  ErrorHelper.parameterCheck(request, REQUEST_NAME18, "request");
+  let internalRequest;
+  if (!request.functionName) {
+    internalRequest = copyRequest(request);
+    internalRequest.functionName = FUNCTION_NAME18;
+  } else internalRequest = request;
+  internalRequest.method = "DELETE";
+  internalRequest.responseParameters = { valueIfEmpty: true };
+  const ifmatch = internalRequest.ifmatch;
+  try {
+    const response = await client.makeRequest(internalRequest);
+    return response == null ? void 0 : response.data;
+  } catch (error) {
+    if (ifmatch && error.status === 412) {
+      return false;
+    }
+    throw error;
+  }
+};
+
+// src/requests/uploadFile.ts
+init_ErrorHelper();
+init_Utility();
+var FUNCTION_NAME19 = "uploadFile";
+var REQUEST_NAME19 = `${LIBRARY_NAME}.${FUNCTION_NAME19}`;
+var _uploadFileChunk = async (request, client, fileBytes, chunkSize, offset = 0) => {
+  setFileChunk(request, fileBytes, chunkSize, offset);
+  await client.makeRequest(request);
+  offset += chunkSize;
+  if (offset <= fileBytes.length) {
+    return _uploadFileChunk(request, client, fileBytes, chunkSize, offset);
+  }
+};
+var uploadFile = async (request, client) => {
+  ErrorHelper.throwBatchIncompatible(REQUEST_NAME19, client.isBatch);
+  ErrorHelper.parameterCheck(request, REQUEST_NAME19, "request");
+  const internalRequest = copyRequest(request, ["data"]);
+  internalRequest.method = "PATCH";
+  internalRequest.functionName = FUNCTION_NAME19;
+  internalRequest.transferMode = "chunked";
+  const response = await client.makeRequest(internalRequest);
+  internalRequest.url = response == null ? void 0 : response.data.location;
+  delete internalRequest.transferMode;
+  delete internalRequest.fieldName;
+  delete internalRequest.property;
+  delete internalRequest.fileName;
+  return _uploadFileChunk(internalRequest, client, request.data, response == null ? void 0 : response.data.chunkSize);
+};
+
+// src/requests/downloadFile.ts
+init_ErrorHelper();
+init_Utility();
+var FUNCTION_NAME20 = "deleteRecord";
+var REQUEST_NAME20 = `${LIBRARY_NAME}.${FUNCTION_NAME20}`;
+var downloadFileChunk = async (request, client, bytesDownloaded = 0, data = "") => {
+  request.range = "bytes=" + bytesDownloaded + "-" + (bytesDownloaded + downloadChunkSize - 1);
+  request.downloadSize = "full";
+  const response = await client.makeRequest(request);
+  request.url = response == null ? void 0 : response.data.location;
+  data += response == null ? void 0 : response.data.value;
+  bytesDownloaded += downloadChunkSize;
+  if (bytesDownloaded <= (response == null ? void 0 : response.data.fileSize)) {
+    return downloadFileChunk(request, client, bytesDownloaded, data);
+  }
+  return {
+    fileName: response == null ? void 0 : response.data.fileName,
+    fileSize: response == null ? void 0 : response.data.fileSize,
+    data: convertToFileBuffer(data)
+  };
+};
+var downloadFile = (request, client) => {
+  ErrorHelper.throwBatchIncompatible(REQUEST_NAME20, client.isBatch);
+  ErrorHelper.parameterCheck(request, REQUEST_NAME20, "request");
+  const internalRequest = copyRequest(request);
+  internalRequest.method = "GET";
+  internalRequest.functionName = FUNCTION_NAME20;
+  internalRequest.responseParameters = { parse: true };
+  return downloadFileChunk(internalRequest, client);
+};
+
+// src/requests/metadata/createEntity.ts
+init_ErrorHelper();
+init_Utility();
+var FUNCTION_NAME21 = "createEntity";
+var REQUEST_NAME21 = `${LIBRARY_NAME}.${FUNCTION_NAME21}`;
+var createEntity = async (request, client) => {
+  ErrorHelper.parameterCheck(request, REQUEST_NAME21, "request");
+  ErrorHelper.parameterCheck(request.data, REQUEST_NAME21, "request.data");
+  const internalRequest = copyRequest(request);
+  internalRequest.collection = "EntityDefinitions";
+  internalRequest.functionName = FUNCTION_NAME21;
+  return create(internalRequest, client);
+};
+
+// src/requests/metadata/updateEntity.ts
+init_ErrorHelper();
+init_Utility();
+var FUNCTION_NAME22 = "updateEntity";
+var REQUEST_NAME22 = `${LIBRARY_NAME}.${FUNCTION_NAME22}`;
+var updateEntity = async (request, client) => {
+  ErrorHelper.parameterCheck(request, REQUEST_NAME22, "request");
+  ErrorHelper.parameterCheck(request.data, REQUEST_NAME22, "request.data");
+  const internalRequest = copyRequest(request);
+  internalRequest.collection = "EntityDefinitions";
+  internalRequest.functionName = FUNCTION_NAME22;
+  internalRequest.key = internalRequest.data.MetadataId;
+  internalRequest.method = "PUT";
+  return await update(internalRequest, client);
+};
+
+// src/requests/metadata/retrieveEntity.ts
+init_ErrorHelper();
+init_Utility();
+var FUNCTION_NAME23 = "retrieveEntity";
+var REQUEST_NAME23 = `${LIBRARY_NAME}.${FUNCTION_NAME23}`;
+var retrieveEntity = async (request, client) => {
+  ErrorHelper.parameterCheck(request, REQUEST_NAME23, "request");
+  ErrorHelper.keyParameterCheck(request.key, REQUEST_NAME23, "request.key");
+  const internalRequest = copyRequest(request);
+  internalRequest.collection = "EntityDefinitions";
+  internalRequest.functionName = "retrieveEntity";
+  return await retrieve(internalRequest, client);
 };
 
 // src/utils/Config.ts
@@ -1675,176 +2148,46 @@ var _DynamicsWebApi = class _DynamicsWebApi {
      *
      *const response = await dynamicsWebApi.retrieve(request);
      */
-    this.retrieve = async (request) => {
-      var _a2;
-      ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieve", "request");
-      let internalRequest;
-      if (!request.functionName) {
-        internalRequest = copyRequest(request);
-        internalRequest.functionName = "retrieve";
-      } else internalRequest = request;
-      internalRequest.method = "GET";
-      internalRequest.responseParameters = {
-        isRef: ((_a2 = internalRequest.select) == null ? void 0 : _a2.length) === 1 && internalRequest.select[0].endsWith("/$ref")
-      };
-      const response = await __privateGet(this, _client).makeRequest(internalRequest);
-      return response == null ? void 0 : response.data;
-    };
+    this.retrieve = async (request) => retrieve(request, __privateGet(this, _client));
     /**
      * Sends an asynchronous request to update a record.
      *
      * @param {DWARequest} request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    this.update = async (request) => {
-      ErrorHelper.parameterCheck(request, "DynamicsWebApi.update", "request");
-      let internalRequest;
-      if (!request.functionName) {
-        internalRequest = copyRequest(request);
-        internalRequest.functionName = "update";
-      } else internalRequest = request;
-      internalRequest.method ?? (internalRequest.method = getUpdateMethod(internalRequest.collection));
-      internalRequest.responseParameters = { valueIfEmpty: true };
-      internalRequest.ifmatch ?? (internalRequest.ifmatch = "*");
-      const ifmatch = internalRequest.ifmatch;
-      try {
-        const response = await __privateGet(this, _client).makeRequest(internalRequest);
-        return response == null ? void 0 : response.data;
-      } catch (error) {
-        if (ifmatch && error.status === 412) {
-          return false;
-        }
-        throw error;
-      }
-    };
+    this.update = async (request) => update(request, __privateGet(this, _client));
     /**
      * Sends an asynchronous request to update a single value in the record.
      *
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    this.updateSingleProperty = async (request) => {
-      ErrorHelper.parameterCheck(request, "DynamicsWebApi.updateSingleProperty", "request");
-      ErrorHelper.parameterCheck(request.fieldValuePair, "DynamicsWebApi.updateSingleProperty", "request.fieldValuePair");
-      var field = Object.keys(request.fieldValuePair)[0];
-      var fieldValue = request.fieldValuePair[field];
-      const internalRequest = copyRequest(request);
-      internalRequest.navigationProperty = field;
-      internalRequest.data = { value: fieldValue };
-      internalRequest.functionName = "updateSingleProperty";
-      internalRequest.method = "PUT";
-      delete internalRequest["fieldValuePair"];
-      const response = await __privateGet(this, _client).makeRequest(internalRequest);
-      return response == null ? void 0 : response.data;
-    };
+    this.updateSingleProperty = async (request) => updateSingleProperty(request, __privateGet(this, _client));
     /**
      * Sends an asynchronous request to delete a record.
      *
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    this.deleteRecord = async (request) => {
-      ErrorHelper.parameterCheck(request, "DynamicsWebApi.deleteRecord", "request");
-      let internalRequest;
-      if (!request.functionName) {
-        internalRequest = copyRequest(request);
-        internalRequest.functionName = "deleteRecord";
-      } else internalRequest = request;
-      internalRequest.method = "DELETE";
-      internalRequest.responseParameters = { valueIfEmpty: true };
-      const ifmatch = internalRequest.ifmatch;
-      try {
-        const response = await __privateGet(this, _client).makeRequest(internalRequest);
-        return response == null ? void 0 : response.data;
-      } catch (error) {
-        if (ifmatch && error.status === 412) {
-          return false;
-        }
-        throw error;
-      }
-    };
+    this.deleteRecord = async (request) => deleteRecord(request, __privateGet(this, _client));
     /**
      * Sends an asynchronous request to upsert a record.
      *
      * @param {DWARequest} request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    this.upsert = async (request) => {
-      ErrorHelper.parameterCheck(request, "DynamicsWebApi.upsert", "request");
-      const internalRequest = copyRequest(request);
-      internalRequest.method = "PATCH";
-      internalRequest.functionName = "upsert";
-      const ifnonematch = internalRequest.ifnonematch;
-      const ifmatch = internalRequest.ifmatch;
-      try {
-        const response = await __privateGet(this, _client).makeRequest(internalRequest);
-        return response == null ? void 0 : response.data;
-      } catch (error) {
-        if (ifnonematch && error.status === 412) {
-          return null;
-        } else if (ifmatch && error.status === 404) {
-          return null;
-        }
-        throw error;
-      }
-    };
-    this._uploadFileChunk = async (request, fileBytes, chunkSize, offset = 0) => {
-      setFileChunk(request, fileBytes, chunkSize, offset);
-      await __privateGet(this, _client).makeRequest(request);
-      offset += chunkSize;
-      if (offset <= fileBytes.length) {
-        return this._uploadFileChunk(request, fileBytes, chunkSize, offset);
-      }
-    };
+    this.upsert = async (request) => upsert(request, __privateGet(this, _client));
     /**
      * Upload file to a File Attribute
      *
      * @param request - An object that represents all possible options for a current request.
      */
-    this.uploadFile = async (request) => {
-      ErrorHelper.throwBatchIncompatible("DynamicsWebApi.uploadFile", __privateGet(this, _client).isBatch);
-      ErrorHelper.parameterCheck(request, "DynamicsWebApi.uploadFile", "request");
-      const internalRequest = copyRequest(request, ["data"]);
-      internalRequest.method = "PATCH";
-      internalRequest.functionName = "uploadFile";
-      internalRequest.transferMode = "chunked";
-      const response = await __privateGet(this, _client).makeRequest(internalRequest);
-      internalRequest.url = response == null ? void 0 : response.data.location;
-      delete internalRequest.transferMode;
-      delete internalRequest.fieldName;
-      delete internalRequest.property;
-      delete internalRequest.fileName;
-      return this._uploadFileChunk(internalRequest, request.data, response == null ? void 0 : response.data.chunkSize);
-    };
-    this._downloadFileChunk = async (request, bytesDownloaded = 0, data = "") => {
-      request.range = "bytes=" + bytesDownloaded + "-" + (bytesDownloaded + downloadChunkSize - 1);
-      request.downloadSize = "full";
-      const response = await __privateGet(this, _client).makeRequest(request);
-      request.url = response == null ? void 0 : response.data.location;
-      data += response == null ? void 0 : response.data.value;
-      bytesDownloaded += downloadChunkSize;
-      if (bytesDownloaded <= (response == null ? void 0 : response.data.fileSize)) {
-        return this._downloadFileChunk(request, bytesDownloaded, data);
-      }
-      return {
-        fileName: response == null ? void 0 : response.data.fileName,
-        fileSize: response == null ? void 0 : response.data.fileSize,
-        data: convertToFileBuffer(data)
-      };
-    };
+    this.uploadFile = async (request) => uploadFile(request, __privateGet(this, _client));
     /**
      * Download a file from a File Attribute
      * @param request - An object that represents all possible options for a current request.
      */
-    this.downloadFile = (request) => {
-      ErrorHelper.throwBatchIncompatible("DynamicsWebApi.downloadFile", __privateGet(this, _client).isBatch);
-      ErrorHelper.parameterCheck(request, "DynamicsWebApi.downloadFile", "request");
-      const internalRequest = copyRequest(request);
-      internalRequest.method = "GET";
-      internalRequest.functionName = "downloadFile";
-      internalRequest.responseParameters = { parse: true };
-      return this._downloadFileChunk(internalRequest);
-    };
+    this.downloadFile = (request) => downloadFile(request, __privateGet(this, _client));
     /**
      * Sends an asynchronous request to retrieve records.
      *
@@ -1852,288 +2195,104 @@ var _DynamicsWebApi = class _DynamicsWebApi {
      * @param {string} [nextPageLink] - Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
      * @returns {Promise} D365 Web Api Response
      */
-    this.retrieveMultiple = async (request, nextPageLink) => {
-      ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieveMultiple", "request");
-      let internalRequest;
-      if (!request.functionName) {
-        internalRequest = copyRequest(request);
-        internalRequest.functionName = "retrieveMultiple";
-      } else internalRequest = request;
-      internalRequest.method = "GET";
-      if (nextPageLink) {
-        ErrorHelper.stringParameterCheck(nextPageLink, "DynamicsWebApi.retrieveMultiple", "nextPageLink");
-        internalRequest.url = nextPageLink;
-      }
-      const response = await __privateGet(this, _client).makeRequest(internalRequest);
-      return response == null ? void 0 : response.data;
-    };
-    this._retrieveAllRequest = async (request, nextPageLink, records = []) => {
-      const response = await this.retrieveMultiple(request, nextPageLink);
-      records = records.concat(response.value);
-      const pageLink = response.oDataNextLink;
-      if (pageLink) {
-        return this._retrieveAllRequest(request, pageLink, records);
-      }
-      const result = { value: records };
-      if (response.oDataDeltaLink) {
-        result["@odata.deltaLink"] = response.oDataDeltaLink;
-        result.oDataDeltaLink = response.oDataDeltaLink;
-      }
-      return result;
-    };
+    this.retrieveMultiple = async (request, nextPageLink) => retrieveMultiple(request, __privateGet(this, _client), nextPageLink);
     /**
      * Sends an asynchronous request to retrieve all records.
      *
      * @param {DWARequest} request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    this.retrieveAll = (request) => {
-      ErrorHelper.throwBatchIncompatible("DynamicsWebApi.retrieveAll", __privateGet(this, _client).isBatch);
-      return this._retrieveAllRequest(request);
-    };
+    this.retrieveAll = (request) => retrieveAll(request, __privateGet(this, _client));
     /**
      * Sends an asynchronous request to count records. IMPORTANT! The count value does not represent the total number of entities in the system. It is limited by the maximum number of entities that can be returned. Returns: Number
      *
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    this.count = async (request) => {
-      var _a2;
-      ErrorHelper.parameterCheck(request, "DynamicsWebApi.count", "request");
-      const internalRequest = copyRequest(request);
-      internalRequest.method = "GET";
-      internalRequest.functionName = "count";
-      if ((_a2 = internalRequest.filter) == null ? void 0 : _a2.length) {
-        internalRequest.count = true;
-      } else {
-        internalRequest.navigationProperty = "$count";
-      }
-      internalRequest.responseParameters = { toCount: internalRequest.count };
-      const response = await __privateGet(this, _client).makeRequest(internalRequest);
-      return response == null ? void 0 : response.data;
-    };
+    this.count = async (request) => count(request, __privateGet(this, _client));
     /**
      * Sends an asynchronous request to count records. Returns: Number
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    this.countAll = async (request) => {
-      ErrorHelper.throwBatchIncompatible("DynamicsWebApi.countAll", __privateGet(this, _client).isBatch);
-      ErrorHelper.parameterCheck(request, "DynamicsWebApi.countAll", "request");
-      const response = await this._retrieveAllRequest(request);
-      return response ? response.value ? response.value.length : 0 : 0;
-    };
+    this.countAll = async (request) => countAll(request, __privateGet(this, _client));
     /**
      * Sends an asynchronous request to execute FetchXml to retrieve records. Returns: DWA.Types.FetchXmlResponse
      *
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    this.fetch = async (request) => {
-      ErrorHelper.parameterCheck(request, "DynamicsWebApi.fetch", "request");
-      const internalRequest = copyRequest(request);
-      internalRequest.method = "GET";
-      internalRequest.functionName = "fetch";
-      ErrorHelper.stringParameterCheck(internalRequest.fetchXml, "DynamicsWebApi.fetch", "request.fetchXml");
-      if (internalRequest.fetchXml && !FETCH_XML_TOP_REGEX.test(internalRequest.fetchXml)) {
-        let replacementString = "";
-        if (!FETCH_XML_PAGE_REGEX.test(internalRequest.fetchXml)) {
-          internalRequest.pageNumber = internalRequest.pageNumber || 1;
-          ErrorHelper.numberParameterCheck(internalRequest.pageNumber, "DynamicsWebApi.fetch", "request.pageNumber");
-          replacementString = `$1 page="${internalRequest.pageNumber}"`;
-        }
-        if (internalRequest.pagingCookie != null) {
-          ErrorHelper.stringParameterCheck(internalRequest.pagingCookie, "DynamicsWebApi.fetch", "request.pagingCookie");
-          replacementString += ` paging-cookie="${internalRequest.pagingCookie}"`;
-        }
-        if (replacementString) internalRequest.fetchXml = internalRequest.fetchXml.replace(FETCH_XML_REPLACE_REGEX, replacementString);
-      }
-      internalRequest.responseParameters = { pageNumber: internalRequest.pageNumber };
-      const response = await __privateGet(this, _client).makeRequest(internalRequest);
-      return response == null ? void 0 : response.data;
-    };
+    this.fetch = async (request) => fetchXml(request, __privateGet(this, _client));
     /**
      * Sends an asynchronous request to execute FetchXml to retrieve all records.
      *
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    this.fetchAll = async (request) => {
-      ErrorHelper.parameterCheck(request, "DynamicsWebApi.fetchAll", "request");
-      const _executeFetchXmlAll = async (request2, records = []) => {
-        const response = await this.fetch(request2);
-        records = records.concat(response.value);
-        if (response.PagingInfo) {
-          request2.pageNumber = response.PagingInfo.nextPage;
-          request2.pagingCookie = response.PagingInfo.cookie;
-          return _executeFetchXmlAll(request2, records);
-        }
-        return { value: records };
-      };
-      ErrorHelper.throwBatchIncompatible("DynamicsWebApi.fetchAll", __privateGet(this, _client).isBatch);
-      return _executeFetchXmlAll(request);
-    };
+    this.fetchAll = async (request) => fetchXmlAll(request, __privateGet(this, _client));
     /**
      * Associate for a collection-valued navigation property. (1:N or N:N)
      *
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    this.associate = async (request) => {
-      ErrorHelper.parameterCheck(request, "DynamicsWebApi.associate", "request");
-      const internalRequest = copyRequest(request);
-      internalRequest.method = "POST";
-      internalRequest.functionName = "associate";
-      ErrorHelper.stringParameterCheck(request.relatedCollection, "DynamicsWebApi.associate", "request.relatedcollection");
-      ErrorHelper.stringParameterCheck(request.relationshipName, "DynamicsWebApi.associate", "request.relationshipName");
-      const primaryKey = ErrorHelper.keyParameterCheck(request.primaryKey, "DynamicsWebApi.associate", "request.primaryKey");
-      const relatedKey = ErrorHelper.keyParameterCheck(request.relatedKey, "DynamicsWebApi.associate", "request.relatedKey");
-      internalRequest.navigationProperty = request.relationshipName + "/$ref";
-      internalRequest.key = primaryKey;
-      internalRequest.data = { "@odata.id": `${request.relatedCollection}(${relatedKey})` };
-      await __privateGet(this, _client).makeRequest(internalRequest);
-    };
+    this.associate = async (request) => associate(request, __privateGet(this, _client));
     /**
      * Disassociate for a collection-valued navigation property.
      *
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    this.disassociate = async (request) => {
-      ErrorHelper.parameterCheck(request, "DynamicsWebApi.disassociate", "request");
-      const internalRequest = copyRequest(request);
-      internalRequest.method = "DELETE";
-      internalRequest.functionName = "disassociate";
-      ErrorHelper.stringParameterCheck(request.relationshipName, "DynamicsWebApi.disassociate", "request.relationshipName");
-      const primaryKey = ErrorHelper.keyParameterCheck(request.primaryKey, "DynamicsWebApi.disassociate", "request.primaryKey");
-      const relatedKey = ErrorHelper.keyParameterCheck(request.relatedKey, "DynamicsWebApi.disassociate", "request.relatedId");
-      internalRequest.key = primaryKey;
-      internalRequest.navigationProperty = `${request.relationshipName}(${relatedKey})/$ref`;
-      await __privateGet(this, _client).makeRequest(internalRequest);
-    };
+    this.disassociate = async (request) => disassociate(request, __privateGet(this, _client));
     /**
      * Associate for a single-valued navigation property. (1:N)
      *
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    this.associateSingleValued = async (request) => {
-      ErrorHelper.parameterCheck(request, "DynamicsWebApi.associateSingleValued", "request");
-      const internalRequest = copyRequest(request);
-      internalRequest.method = "PUT";
-      internalRequest.functionName = "associateSingleValued";
-      const primaryKey = ErrorHelper.keyParameterCheck(request.primaryKey, "DynamicsWebApi.associateSingleValued", "request.primaryKey");
-      const relatedKey = ErrorHelper.keyParameterCheck(request.relatedKey, "DynamicsWebApi.associateSingleValued", "request.relatedKey");
-      ErrorHelper.stringParameterCheck(request.navigationProperty, "DynamicsWebApi.associateSingleValued", "request.navigationProperty");
-      ErrorHelper.stringParameterCheck(request.relatedCollection, "DynamicsWebApi.associateSingleValued", "request.relatedcollection");
-      internalRequest.navigationProperty += "/$ref";
-      internalRequest.key = primaryKey;
-      internalRequest.data = { "@odata.id": `${request.relatedCollection}(${relatedKey})` };
-      await __privateGet(this, _client).makeRequest(internalRequest);
-    };
+    this.associateSingleValued = async (request) => associateSingleValued(request, __privateGet(this, _client));
     /**
      * Removes a reference to an entity for a single-valued navigation property. (1:N)
      *
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    this.disassociateSingleValued = async (request) => {
-      ErrorHelper.parameterCheck(request, "DynamicsWebApi.disassociateSingleValued", "request");
-      const internalRequest = copyRequest(request);
-      internalRequest.method = "DELETE";
-      internalRequest.functionName = "disassociateSingleValued";
-      const primaryKey = ErrorHelper.keyParameterCheck(request.primaryKey, "DynamicsWebApi.disassociateSingleValued", "request.primaryKey");
-      ErrorHelper.stringParameterCheck(request.navigationProperty, "DynamicsWebApi.disassociateSingleValued", "request.navigationProperty");
-      internalRequest.navigationProperty += "/$ref";
-      internalRequest.key = primaryKey;
-      await __privateGet(this, _client).makeRequest(internalRequest);
-    };
+    this.disassociateSingleValued = async (request) => disassociateSingleValued(request, __privateGet(this, _client));
     /**
      * Calls a Web API function
      *
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    this.callFunction = async (request) => {
-      ErrorHelper.parameterCheck(request, `DynamicsWebApi.callFunction`, "request");
-      const getFunctionName = (request2) => request2.name || request2.functionName;
-      const isObject2 = typeof request !== "string";
-      const functionName = isObject2 ? getFunctionName(request) : request;
-      const parameterName = isObject2 ? "request.name" : "name";
-      const internalRequest = isObject2 ? copyObject(request, ["name"]) : { functionName };
-      ErrorHelper.stringParameterCheck(functionName, `DynamicsWebApi.callFunction`, parameterName);
-      const functionParameters = buildFunctionParameters(internalRequest.parameters);
-      internalRequest.method = "GET";
-      internalRequest.addPath = functionName + functionParameters.key;
-      internalRequest.queryParams = functionParameters.queryParams;
-      internalRequest._isUnboundRequest = !internalRequest.collection;
-      internalRequest.functionName = "callFunction";
-      const response = await __privateGet(this, _client).makeRequest(internalRequest);
-      return response == null ? void 0 : response.data;
-    };
+    this.callFunction = async (request) => callFunction(request, __privateGet(this, _client));
     /**
      * Calls a Web API action
      *
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    this.callAction = async (request) => {
-      ErrorHelper.parameterCheck(request, `DynamicsWebApi.callAction`, "request");
-      ErrorHelper.stringParameterCheck(request.actionName, `DynamicsWebApi.callAction`, "request.actionName");
-      const internalRequest = copyRequest(request, ["action"]);
-      internalRequest.method = "POST";
-      internalRequest.functionName = "callAction";
-      internalRequest.addPath = request.actionName;
-      internalRequest._isUnboundRequest = !internalRequest.collection;
-      internalRequest.data = request.action;
-      const response = await __privateGet(this, _client).makeRequest(internalRequest);
-      return response == null ? void 0 : response.data;
-    };
+    this.callAction = async (request) => callAction(request, __privateGet(this, _client));
     /**
      * Sends an asynchronous request to create an entity definition.
      *
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    this.createEntity = (request) => {
-      ErrorHelper.parameterCheck(request, `DynamicsWebApi.createEntity`, "request");
-      ErrorHelper.parameterCheck(request.data, "DynamicsWebApi.createEntity", "request.data");
-      const internalRequest = copyRequest(request);
-      internalRequest.collection = "EntityDefinitions";
-      internalRequest.functionName = "createEntity";
-      return this.create(internalRequest);
-    };
+    this.createEntity = (request) => createEntity(request, __privateGet(this, _client));
     /**
      * Sends an asynchronous request to update an entity definition.
      *
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    this.updateEntity = (request) => {
-      ErrorHelper.parameterCheck(request, "DynamicsWebApi.updateEntity", "request");
-      ErrorHelper.parameterCheck(request.data, "DynamicsWebApi.updateEntity", "request.data");
-      ErrorHelper.guidParameterCheck(request.data.MetadataId, "DynamicsWebApi.updateEntity", "request.data.MetadataId");
-      const internalRequest = copyRequest(request);
-      internalRequest.collection = "EntityDefinitions";
-      internalRequest.key = internalRequest.data.MetadataId;
-      internalRequest.functionName = "updateEntity";
-      internalRequest.method = "PUT";
-      return this.update(internalRequest);
-    };
+    this.updateEntity = (request) => updateEntity(request, __privateGet(this, _client));
     /**
      * Sends an asynchronous request to retrieve a specific entity definition.
      *
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    this.retrieveEntity = (request) => {
-      ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieveEntity", "request");
-      ErrorHelper.keyParameterCheck(request.key, "DynamicsWebApi.retrieveEntity", "request.key");
-      const internalRequest = copyRequest(request);
-      internalRequest.collection = "EntityDefinitions";
-      internalRequest.functionName = "retrieveEntity";
-      return this.retrieve(internalRequest);
-    };
+    this.retrieveEntity = (request) => retrieveEntity(request, __privateGet(this, _client));
     /**
      * Sends an asynchronous request to retrieve entity definitions.
      *

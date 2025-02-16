@@ -1,14 +1,14 @@
 import type { IDataverseClient } from "../client/dataverse";
-import type { CreateRequest } from "../dynamics-web-api";
+import type { RetrieveRequest } from "../dynamics-web-api";
 import { ErrorHelper } from "../helpers/ErrorHelper";
 import type { InternalRequest } from "../types";
 import { copyRequest } from "../utils/Utility";
 import { LIBRARY_NAME } from "./constants";
 
-const FUNCTION_NAME = "create";
+const FUNCTION_NAME = "retrieve";
 const REQUEST_NAME = `${LIBRARY_NAME}.${FUNCTION_NAME}`;
 
-export const create = async <TData = any>(request: CreateRequest<TData>, client: IDataverseClient): Promise<TData> => {
+export const retrieve = async <T = any>(request: RetrieveRequest, client: IDataverseClient): Promise<T> => {
     ErrorHelper.parameterCheck(request, REQUEST_NAME, "request");
 
     let internalRequest: InternalRequest;
@@ -16,11 +16,13 @@ export const create = async <TData = any>(request: CreateRequest<TData>, client:
     if (!(<InternalRequest>request).functionName) {
         internalRequest = copyRequest(request);
         internalRequest.functionName = FUNCTION_NAME;
-    } else internalRequest = <InternalRequest>request;
+    } else internalRequest = request;
 
-    internalRequest.method = "POST";
+    internalRequest.method = "GET";
+    internalRequest.responseParameters = {
+        isRef: internalRequest.select?.length === 1 && internalRequest.select[0].endsWith("/$ref"),
+    };
 
     const response = await client.makeRequest(internalRequest);
-
     return response?.data;
 };

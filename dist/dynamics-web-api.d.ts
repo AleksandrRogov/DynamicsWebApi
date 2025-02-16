@@ -86,14 +86,12 @@ export declare class DynamicsWebApi {
      * @returns {Promise} D365 Web Api Response
      */
     upsert: <TData = any>(request: UpsertRequest<TData>) => Promise<TData>;
-    private _uploadFileChunk;
     /**
      * Upload file to a File Attribute
      *
      * @param request - An object that represents all possible options for a current request.
      */
     uploadFile: (request: UploadRequest) => Promise<void>;
-    private _downloadFileChunk;
     /**
      * Download a file from a File Attribute
      * @param request - An object that represents all possible options for a current request.
@@ -107,7 +105,6 @@ export declare class DynamicsWebApi {
      * @returns {Promise} D365 Web Api Response
      */
     retrieveMultiple: <T = any>(request: RetrieveMultipleRequest, nextPageLink?: string) => Promise<RetrieveMultipleResponse<T>>;
-    private _retrieveAllRequest;
     /**
      * Sends an asynchronous request to retrieve all records.
      *

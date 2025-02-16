@@ -1,18 +1,32 @@
-﻿import {
-    generateUUID,
-    isObject,
-    buildFunctionParameters,
-    copyRequest,
-    setFileChunk,
-    downloadChunkSize,
-    convertToFileBuffer,
-    copyObject,
-} from "./utils/Utility";
+﻿import { generateUUID, isObject, copyRequest, copyObject } from "./utils/Utility";
 import { ErrorHelper } from "./helpers/ErrorHelper";
 import { getCollectionName } from "./client/RequestClient";
 import type { InternalRequest } from "./types";
-import { FETCH_XML_PAGE_REGEX, FETCH_XML_REPLACE_REGEX, FETCH_XML_TOP_REGEX, getUpdateMethod } from "./helpers/Regex";
-import { create } from "./requests";
+import {
+    associate,
+    associateSingleValued,
+    callAction,
+    callFunction,
+    count,
+    countAll,
+    create,
+    createEntity,
+    deleteRecord,
+    disassociate,
+    disassociateSingleValued,
+    downloadFile,
+    fetchXml,
+    fetchXmlAll,
+    retrieve,
+    retrieveAll,
+    retrieveEntity,
+    retrieveMultiple,
+    update,
+    updateEntity,
+    updateSingleProperty,
+    uploadFile,
+    upsert,
+} from "./requests";
 import { DataverseClient, type IDataverseClient } from "./client/dataverse";
 
 /**
@@ -79,24 +93,7 @@ export class DynamicsWebApi {
      *
      *const response = await dynamicsWebApi.retrieve(request);
      */
-    retrieve = async <T = any>(request: RetrieveRequest): Promise<T> => {
-        ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieve", "request");
-
-        let internalRequest: InternalRequest;
-
-        if (!(<InternalRequest>request).functionName) {
-            internalRequest = copyRequest(request);
-            internalRequest.functionName = "retrieve";
-        } else internalRequest = request;
-
-        internalRequest.method = "GET";
-        internalRequest.responseParameters = {
-            isRef: internalRequest.select?.length === 1 && internalRequest.select[0].endsWith("/$ref"),
-        };
-
-        const response = await this.#client.makeRequest(internalRequest);
-        return response?.data;
-    };
+    retrieve = async <T = any>(request: RetrieveRequest): Promise<T> => retrieve(request, this.#client);
 
     /**
      * Sends an asynchronous request to update a record.
@@ -104,35 +101,7 @@ export class DynamicsWebApi {
      * @param {DWARequest} request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    update = async <TData = any>(request: UpdateRequest<TData>): Promise<TData> => {
-        ErrorHelper.parameterCheck(request, "DynamicsWebApi.update", "request");
-
-        let internalRequest: InternalRequest;
-
-        if (!(<InternalRequest>request).functionName) {
-            internalRequest = copyRequest(request);
-            internalRequest.functionName = "update";
-        } else internalRequest = request;
-
-        internalRequest.method ??= getUpdateMethod(internalRequest.collection);
-        internalRequest.responseParameters = { valueIfEmpty: true };
-        internalRequest.ifmatch ??= "*"; //to prevent upsert
-
-        //copy locally
-        const ifmatch = internalRequest.ifmatch;
-
-        try {
-            const response = await this.#client.makeRequest(internalRequest);
-            return response?.data;
-        } catch (error: any) {
-            if (ifmatch && error.status === 412) {
-                //precondition failed - not updated
-                return <any>false; //todo: check this
-            }
-            //rethrow error otherwise
-            throw error;
-        }
-    };
+    update = async <TData = any>(request: UpdateRequest<TData>): Promise<TData> => update(request, this.#client);
 
     /**
      * Sends an asynchronous request to update a single value in the record.
@@ -140,24 +109,7 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    updateSingleProperty = async <T = any>(request: UpdateSinglePropertyRequest): Promise<T> => {
-        ErrorHelper.parameterCheck(request, "DynamicsWebApi.updateSingleProperty", "request");
-        ErrorHelper.parameterCheck(request.fieldValuePair, "DynamicsWebApi.updateSingleProperty", "request.fieldValuePair");
-
-        var field = Object.keys(request.fieldValuePair)[0];
-        var fieldValue = request.fieldValuePair[field];
-
-        const internalRequest = copyRequest(request);
-        internalRequest.navigationProperty = field;
-        internalRequest.data = { value: fieldValue };
-        internalRequest.functionName = "updateSingleProperty";
-        internalRequest.method = "PUT";
-
-        delete internalRequest["fieldValuePair"];
-
-        const response = await this.#client.makeRequest(internalRequest);
-        return response?.data;
-    };
+    updateSingleProperty = async <T = any>(request: UpdateSinglePropertyRequest): Promise<T> => updateSingleProperty(request, this.#client);
 
     /**
      * Sends an asynchronous request to delete a record.
@@ -165,34 +117,7 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    deleteRecord = async (request: DeleteRequest): Promise<any> => {
-        ErrorHelper.parameterCheck(request, "DynamicsWebApi.deleteRecord", "request");
-
-        let internalRequest: InternalRequest;
-
-        if (!(<InternalRequest>request).functionName) {
-            internalRequest = copyRequest(request);
-            internalRequest.functionName = "deleteRecord";
-        } else internalRequest = request;
-
-        internalRequest.method = "DELETE";
-        internalRequest.responseParameters = { valueIfEmpty: true };
-
-        //copy locally
-        const ifmatch = internalRequest.ifmatch;
-
-        try {
-            const response = await this.#client.makeRequest(internalRequest);
-            return response?.data;
-        } catch (error: any) {
-            if (ifmatch && error.status === 412) {
-                //precondition failed - not updated
-                return false; //todo: check this
-            }
-            //rethrow error otherwise
-            throw error;
-        }
-    };
+    deleteRecord = async (request: DeleteRequest): Promise<any> => deleteRecord(request, this.#client);
 
     /**
      * Sends an asynchronous request to upsert a record.
@@ -200,105 +125,20 @@ export class DynamicsWebApi {
      * @param {DWARequest} request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    upsert = async <TData = any>(request: UpsertRequest<TData>): Promise<TData> => {
-        ErrorHelper.parameterCheck(request, "DynamicsWebApi.upsert", "request");
-
-        const internalRequest = copyRequest(request);
-        internalRequest.method = "PATCH";
-        internalRequest.functionName = "upsert";
-
-        //copy locally
-        const ifnonematch = internalRequest.ifnonematch;
-        const ifmatch = internalRequest.ifmatch;
-        try {
-            const response = await this.#client.makeRequest(internalRequest);
-            return response?.data;
-        } catch (error: any) {
-            if (ifnonematch && error.status === 412) {
-                //if prevent update
-                return <any>null; //todo: check this
-            } else if (ifmatch && error.status === 404) {
-                //if prevent create
-                return <any>null; //todo: check this
-            }
-            //rethrow error otherwise
-            throw error;
-        }
-    };
-
-    private _uploadFileChunk = async (request: InternalRequest, fileBytes: Uint8Array | Buffer, chunkSize: number, offset: number = 0): Promise<void> => {
-        // offset = offset || 0;
-        setFileChunk(request, fileBytes, chunkSize, offset);
-
-        await this.#client.makeRequest(request);
-
-        offset += chunkSize;
-        if (offset <= fileBytes.length) {
-            return this._uploadFileChunk(request, fileBytes, chunkSize, offset);
-        }
-    };
+    upsert = async <TData = any>(request: UpsertRequest<TData>): Promise<TData> => upsert(request, this.#client);
 
     /**
      * Upload file to a File Attribute
      *
      * @param request - An object that represents all possible options for a current request.
      */
-    uploadFile = async (request: UploadRequest): Promise<void> => {
-        ErrorHelper.throwBatchIncompatible("DynamicsWebApi.uploadFile", this.#client.isBatch);
-        ErrorHelper.parameterCheck(request, "DynamicsWebApi.uploadFile", "request");
-
-        const internalRequest = copyRequest(request, ["data"]);
-        internalRequest.method = "PATCH";
-        internalRequest.functionName = "uploadFile";
-        internalRequest.transferMode = "chunked";
-
-        const response = await this.#client.makeRequest(internalRequest);
-
-        internalRequest.url = response?.data.location;
-        delete internalRequest.transferMode;
-        delete internalRequest.fieldName;
-        delete internalRequest.property;
-        delete internalRequest.fileName;
-        return this._uploadFileChunk(internalRequest, request.data, response?.data.chunkSize);
-    };
-
-    private _downloadFileChunk = async (request: InternalRequest, bytesDownloaded: number = 0, data: string = ""): Promise<DownloadResponse> => {
-        request.range = "bytes=" + bytesDownloaded + "-" + (bytesDownloaded + downloadChunkSize - 1);
-        request.downloadSize = "full";
-
-        const response = await this.#client.makeRequest(request);
-
-        request.url = response?.data.location;
-        data += response?.data.value;
-
-        bytesDownloaded += downloadChunkSize;
-
-        if (bytesDownloaded <= response?.data.fileSize) {
-            return this._downloadFileChunk(request, bytesDownloaded, data);
-        }
-
-        return {
-            fileName: response?.data.fileName,
-            fileSize: response?.data.fileSize,
-            data: convertToFileBuffer(data),
-        };
-    };
+    uploadFile = async (request: UploadRequest): Promise<void> => uploadFile(request, this.#client);
 
     /**
      * Download a file from a File Attribute
      * @param request - An object that represents all possible options for a current request.
      */
-    downloadFile = (request: DownloadRequest): Promise<DownloadResponse> => {
-        ErrorHelper.throwBatchIncompatible("DynamicsWebApi.downloadFile", this.#client.isBatch);
-        ErrorHelper.parameterCheck(request, "DynamicsWebApi.downloadFile", "request");
-
-        const internalRequest = copyRequest(request);
-        internalRequest.method = "GET";
-        internalRequest.functionName = "downloadFile";
-        internalRequest.responseParameters = { parse: true };
-
-        return this._downloadFileChunk(internalRequest);
-    };
+    downloadFile = (request: DownloadRequest): Promise<DownloadResponse> => downloadFile(request, this.#client);
 
     /**
      * Sends an asynchronous request to retrieve records.
@@ -307,47 +147,8 @@ export class DynamicsWebApi {
      * @param {string} [nextPageLink] - Use the value of the @odata.nextLink property with a new GET request to return the next page of data. Pass null to retrieveMultipleOptions.
      * @returns {Promise} D365 Web Api Response
      */
-    retrieveMultiple = async <T = any>(request: RetrieveMultipleRequest, nextPageLink?: string): Promise<RetrieveMultipleResponse<T>> => {
-        ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieveMultiple", "request");
-
-        let internalRequest: InternalRequest;
-
-        if (!(<InternalRequest>request).functionName) {
-            internalRequest = copyRequest(request);
-            internalRequest.functionName = "retrieveMultiple";
-        } else internalRequest = request;
-
-        internalRequest.method = "GET";
-
-        if (nextPageLink) {
-            ErrorHelper.stringParameterCheck(nextPageLink, "DynamicsWebApi.retrieveMultiple", "nextPageLink");
-            internalRequest.url = nextPageLink;
-        }
-
-        const response = await this.#client.makeRequest(internalRequest);
-
-        return response?.data;
-    };
-
-    private _retrieveAllRequest = async <T = any>(request: RetrieveMultipleRequest, nextPageLink?: string, records: any[] = []): Promise<AllResponse<T>> => {
-        const response = await this.retrieveMultiple(request, nextPageLink);
-        records = records.concat(response.value);
-
-        const pageLink = response.oDataNextLink;
-
-        if (pageLink) {
-            return this._retrieveAllRequest(request, pageLink, records);
-        }
-
-        const result: AllResponse<T> = { value: records };
-
-        if (response.oDataDeltaLink) {
-            result["@odata.deltaLink"] = response.oDataDeltaLink;
-            result.oDataDeltaLink = response.oDataDeltaLink;
-        }
-
-        return result;
-    };
+    retrieveMultiple = async <T = any>(request: RetrieveMultipleRequest, nextPageLink?: string): Promise<RetrieveMultipleResponse<T>> =>
+        retrieveMultiple(request, this.#client, nextPageLink);
 
     /**
      * Sends an asynchronous request to retrieve all records.
@@ -355,10 +156,7 @@ export class DynamicsWebApi {
      * @param {DWARequest} request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    retrieveAll = <T = any>(request: RetrieveMultipleRequest): Promise<AllResponse<T>> => {
-        ErrorHelper.throwBatchIncompatible("DynamicsWebApi.retrieveAll", this.#client.isBatch);
-        return this._retrieveAllRequest(request);
-    };
+    retrieveAll = <T = any>(request: RetrieveMultipleRequest): Promise<AllResponse<T>> => retrieveAll(request, this.#client);
 
     /**
      * Sends an asynchronous request to count records. IMPORTANT! The count value does not represent the total number of entities in the system. It is limited by the maximum number of entities that can be returned. Returns: Number
@@ -366,39 +164,14 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    count = async (request: CountRequest): Promise<number> => {
-        ErrorHelper.parameterCheck(request, "DynamicsWebApi.count", "request");
-
-        const internalRequest = copyRequest(request);
-        internalRequest.method = "GET";
-        internalRequest.functionName = "count";
-
-        if (internalRequest.filter?.length) {
-            internalRequest.count = true;
-        } else {
-            internalRequest.navigationProperty = "$count";
-        }
-
-        internalRequest.responseParameters = { toCount: internalRequest.count };
-
-        //if filter has not been specified then simplify the request
-        const response = await this.#client.makeRequest(internalRequest);
-        return response?.data;
-    };
+    count = async (request: CountRequest): Promise<number> => count(request, this.#client);
 
     /**
      * Sends an asynchronous request to count records. Returns: Number
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    countAll = async (request: CountAllRequest): Promise<number> => {
-        ErrorHelper.throwBatchIncompatible("DynamicsWebApi.countAll", this.#client.isBatch);
-        ErrorHelper.parameterCheck(request, "DynamicsWebApi.countAll", "request");
-
-        const response = await this._retrieveAllRequest(request);
-
-        return response ? (response.value ? response.value.length : 0) : 0;
-    };
+    countAll = async (request: CountAllRequest): Promise<number> => countAll(request, this.#client);
 
     /**
      * Sends an asynchronous request to execute FetchXml to retrieve records. Returns: DWA.Types.FetchXmlResponse
@@ -406,41 +179,7 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    fetch = async <T = any>(request: FetchXmlRequest): Promise<FetchXmlResponse<T>> => {
-        ErrorHelper.parameterCheck(request, "DynamicsWebApi.fetch", "request");
-
-        const internalRequest = copyRequest(request);
-        internalRequest.method = "GET";
-        internalRequest.functionName = "fetch";
-
-        ErrorHelper.stringParameterCheck(internalRequest.fetchXml, "DynamicsWebApi.fetch", "request.fetchXml");
-
-        //only add paging if there is no top
-        if (internalRequest.fetchXml && !FETCH_XML_TOP_REGEX.test(internalRequest.fetchXml)) {
-            let replacementString: string = "";
-
-            if (!FETCH_XML_PAGE_REGEX.test(internalRequest.fetchXml)) {
-                internalRequest.pageNumber = internalRequest.pageNumber || 1;
-
-                ErrorHelper.numberParameterCheck(internalRequest.pageNumber, "DynamicsWebApi.fetch", "request.pageNumber");
-                replacementString = `$1 page="${internalRequest.pageNumber}"`;
-            }
-
-            if (internalRequest.pagingCookie != null) {
-                ErrorHelper.stringParameterCheck(internalRequest.pagingCookie, "DynamicsWebApi.fetch", "request.pagingCookie");
-                replacementString += ` paging-cookie="${internalRequest.pagingCookie}"`;
-            }
-
-            //add page number and paging cookie to fetch xml
-            if (replacementString) internalRequest.fetchXml = internalRequest.fetchXml.replace(FETCH_XML_REPLACE_REGEX, replacementString);
-        }
-
-        internalRequest.responseParameters = { pageNumber: internalRequest.pageNumber };
-
-        const response = await this.#client.makeRequest(internalRequest);
-
-        return response?.data;
-    };
+    fetch = async <T = any>(request: FetchXmlRequest): Promise<FetchXmlResponse<T>> => fetchXml(request, this.#client);
 
     /**
      * Sends an asynchronous request to execute FetchXml to retrieve all records.
@@ -448,29 +187,7 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    fetchAll = async <T = any>(request: FetchAllRequest): Promise<FetchXmlResponse<T>> => {
-        ErrorHelper.parameterCheck(request, "DynamicsWebApi.fetchAll", "request");
-
-        const _executeFetchXmlAll = async (request: FetchXmlRequest, records: any[] = []): Promise<FetchXmlResponse<T>> => {
-            // records = records || [];
-
-            const response = await this.fetch(request);
-
-            records = records.concat(response.value);
-
-            if (response.PagingInfo) {
-                request.pageNumber = response.PagingInfo.nextPage;
-                request.pagingCookie = response.PagingInfo.cookie;
-
-                return _executeFetchXmlAll(request, records);
-            }
-
-            return { value: records };
-        };
-
-        ErrorHelper.throwBatchIncompatible("DynamicsWebApi.fetchAll", this.#client.isBatch);
-        return _executeFetchXmlAll(request);
-    };
+    fetchAll = async <T = any>(request: FetchAllRequest): Promise<FetchXmlResponse<T>> => fetchXmlAll(request, this.#client);
 
     /**
      * Associate for a collection-valued navigation property. (1:N or N:N)
@@ -478,24 +195,7 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    associate = async (request: AssociateRequest): Promise<void> => {
-        ErrorHelper.parameterCheck(request, "DynamicsWebApi.associate", "request");
-
-        const internalRequest = copyRequest(request);
-        internalRequest.method = "POST";
-        internalRequest.functionName = "associate";
-
-        ErrorHelper.stringParameterCheck(request.relatedCollection, "DynamicsWebApi.associate", "request.relatedcollection");
-        ErrorHelper.stringParameterCheck(request.relationshipName, "DynamicsWebApi.associate", "request.relationshipName");
-        const primaryKey = ErrorHelper.keyParameterCheck(request.primaryKey, "DynamicsWebApi.associate", "request.primaryKey");
-        const relatedKey = ErrorHelper.keyParameterCheck(request.relatedKey, "DynamicsWebApi.associate", "request.relatedKey");
-
-        internalRequest.navigationProperty = request.relationshipName + "/$ref";
-        internalRequest.key = primaryKey;
-        internalRequest.data = { "@odata.id": `${request.relatedCollection}(${relatedKey})` };
-
-        await this.#client.makeRequest(internalRequest);
-    };
+    associate = async (request: AssociateRequest): Promise<void> => associate(request, this.#client);
 
     /**
      * Disassociate for a collection-valued navigation property.
@@ -503,22 +203,7 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    disassociate = async (request: DisassociateRequest): Promise<void> => {
-        ErrorHelper.parameterCheck(request, "DynamicsWebApi.disassociate", "request");
-
-        const internalRequest = copyRequest(request);
-        internalRequest.method = "DELETE";
-        internalRequest.functionName = "disassociate";
-
-        ErrorHelper.stringParameterCheck(request.relationshipName, "DynamicsWebApi.disassociate", "request.relationshipName");
-        const primaryKey = ErrorHelper.keyParameterCheck(request.primaryKey, "DynamicsWebApi.disassociate", "request.primaryKey");
-        const relatedKey = ErrorHelper.keyParameterCheck(request.relatedKey, "DynamicsWebApi.disassociate", "request.relatedId");
-
-        internalRequest.key = primaryKey;
-        internalRequest.navigationProperty = `${request.relationshipName}(${relatedKey})/$ref`;
-
-        await this.#client.makeRequest(internalRequest);
-    };
+    disassociate = async (request: DisassociateRequest): Promise<void> => disassociate(request, this.#client);
 
     /**
      * Associate for a single-valued navigation property. (1:N)
@@ -526,24 +211,7 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    associateSingleValued = async (request: AssociateSingleValuedRequest): Promise<void> => {
-        ErrorHelper.parameterCheck(request, "DynamicsWebApi.associateSingleValued", "request");
-
-        const internalRequest = copyRequest(request);
-        internalRequest.method = "PUT";
-        internalRequest.functionName = "associateSingleValued";
-
-        const primaryKey = ErrorHelper.keyParameterCheck(request.primaryKey, "DynamicsWebApi.associateSingleValued", "request.primaryKey");
-        const relatedKey = ErrorHelper.keyParameterCheck(request.relatedKey, "DynamicsWebApi.associateSingleValued", "request.relatedKey");
-        ErrorHelper.stringParameterCheck(request.navigationProperty, "DynamicsWebApi.associateSingleValued", "request.navigationProperty");
-        ErrorHelper.stringParameterCheck(request.relatedCollection, "DynamicsWebApi.associateSingleValued", "request.relatedcollection");
-
-        internalRequest.navigationProperty += "/$ref";
-        internalRequest.key = primaryKey;
-        internalRequest.data = { "@odata.id": `${request.relatedCollection}(${relatedKey})` };
-
-        await this.#client.makeRequest(internalRequest);
-    };
+    associateSingleValued = async (request: AssociateSingleValuedRequest): Promise<void> => associateSingleValued(request, this.#client);
 
     /**
      * Removes a reference to an entity for a single-valued navigation property. (1:N)
@@ -551,21 +219,7 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    disassociateSingleValued = async (request: DisassociateSingleValuedRequest): Promise<void> => {
-        ErrorHelper.parameterCheck(request, "DynamicsWebApi.disassociateSingleValued", "request");
-
-        const internalRequest = copyRequest(request);
-        internalRequest.method = "DELETE";
-        internalRequest.functionName = "disassociateSingleValued";
-
-        const primaryKey = ErrorHelper.keyParameterCheck(request.primaryKey, "DynamicsWebApi.disassociateSingleValued", "request.primaryKey");
-        ErrorHelper.stringParameterCheck(request.navigationProperty, "DynamicsWebApi.disassociateSingleValued", "request.navigationProperty");
-
-        internalRequest.navigationProperty += "/$ref";
-        internalRequest.key = primaryKey;
-
-        await this.#client.makeRequest(internalRequest);
-    };
+    disassociateSingleValued = async (request: DisassociateSingleValuedRequest): Promise<void> => disassociateSingleValued(request, this.#client);
 
     /**
      * Calls a Web API function
@@ -573,29 +227,8 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    callFunction: CallFunction = async <T = any>(request: string | BoundFunctionRequest | UnboundFunctionRequest): Promise<T> => {
-        ErrorHelper.parameterCheck(request, `DynamicsWebApi.callFunction`, "request");
-
-        const getFunctionName = (request: BoundFunctionRequest | UnboundFunctionRequest) => request.name || request.functionName;
-
-        const isObject = typeof request !== "string";
-        const functionName = isObject ? getFunctionName(request) : request;
-        const parameterName = isObject ? "request.name" : "name";
-        const internalRequest: InternalRequest = isObject ? copyObject(request, ["name"]) : { functionName: functionName };
-
-        ErrorHelper.stringParameterCheck(functionName, `DynamicsWebApi.callFunction`, parameterName);
-
-        const functionParameters = buildFunctionParameters(internalRequest.parameters);
-
-        internalRequest.method = "GET";
-        internalRequest.addPath = functionName + functionParameters.key;
-        internalRequest.queryParams = functionParameters.queryParams;
-        internalRequest._isUnboundRequest = !internalRequest.collection;
-        internalRequest.functionName = "callFunction";
-
-        const response = await this.#client.makeRequest(internalRequest);
-        return response?.data;
-    };
+    callFunction: CallFunction = async <T = any>(request: string | BoundFunctionRequest | UnboundFunctionRequest): Promise<T> =>
+        callFunction(request, this.#client);
 
     /**
      * Calls a Web API action
@@ -603,39 +236,15 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    callAction: CallAction = async <TResponse = any, TAction = any>(
-        request: BoundActionRequest<TAction> | UnboundActionRequest<TAction>,
-    ): Promise<TResponse> => {
-        ErrorHelper.parameterCheck(request, `DynamicsWebApi.callAction`, "request");
-        ErrorHelper.stringParameterCheck(request.actionName, `DynamicsWebApi.callAction`, "request.actionName");
-
-        const internalRequest = copyRequest(request, ["action"]);
-        internalRequest.method = "POST";
-        internalRequest.functionName = "callAction";
-
-        internalRequest.addPath = request.actionName;
-        internalRequest._isUnboundRequest = !internalRequest.collection;
-        internalRequest.data = request.action;
-
-        const response = await this.#client.makeRequest(internalRequest);
-        return response?.data;
-    };
+    callAction: CallAction = async <TResponse = any, TAction = any>(request: BoundActionRequest<TAction> | UnboundActionRequest<TAction>): Promise<TResponse> =>
+        callAction(request, this.#client);
     /**
      * Sends an asynchronous request to create an entity definition.
      *
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    createEntity = <T = any>(request: CreateEntityRequest): Promise<T> => {
-        ErrorHelper.parameterCheck(request, `DynamicsWebApi.createEntity`, "request");
-        ErrorHelper.parameterCheck(request.data, "DynamicsWebApi.createEntity", "request.data");
-
-        const internalRequest = copyRequest(request);
-        internalRequest.collection = "EntityDefinitions";
-        internalRequest.functionName = "createEntity";
-
-        return this.create(<CreateRequest>internalRequest);
-    };
+    createEntity = <T = any>(request: CreateEntityRequest): Promise<T> => createEntity(request, this.#client);
 
     /**
      * Sends an asynchronous request to update an entity definition.
@@ -643,19 +252,7 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    updateEntity = <T = any>(request: UpdateEntityRequest): Promise<T> => {
-        ErrorHelper.parameterCheck(request, "DynamicsWebApi.updateEntity", "request");
-        ErrorHelper.parameterCheck(request.data, "DynamicsWebApi.updateEntity", "request.data");
-        ErrorHelper.guidParameterCheck(request.data.MetadataId, "DynamicsWebApi.updateEntity", "request.data.MetadataId");
-
-        const internalRequest = copyRequest(request);
-        internalRequest.collection = "EntityDefinitions";
-        internalRequest.key = internalRequest.data.MetadataId;
-        internalRequest.functionName = "updateEntity";
-        internalRequest.method = "PUT";
-
-        return this.update(<UpdateRequest>internalRequest);
-    };
+    updateEntity = <T = any>(request: UpdateEntityRequest): Promise<T> => updateEntity(request, this.#client);
 
     /**
      * Sends an asynchronous request to retrieve a specific entity definition.
@@ -663,16 +260,7 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    retrieveEntity = <T = any>(request: RetrieveEntityRequest): Promise<T> => {
-        ErrorHelper.parameterCheck(request, "DynamicsWebApi.retrieveEntity", "request");
-        ErrorHelper.keyParameterCheck(request.key, "DynamicsWebApi.retrieveEntity", "request.key");
-
-        const internalRequest = copyRequest(request);
-        internalRequest.collection = "EntityDefinitions";
-        internalRequest.functionName = "retrieveEntity";
-
-        return this.retrieve(<RetrieveRequest>internalRequest);
-    };
+    retrieveEntity = <T = any>(request: RetrieveEntityRequest): Promise<T> => retrieveEntity(request, this.#client);
 
     /**
      * Sends an asynchronous request to retrieve entity definitions.
