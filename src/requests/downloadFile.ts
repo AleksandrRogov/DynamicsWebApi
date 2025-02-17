@@ -5,7 +5,7 @@ import type { InternalRequest } from "../types";
 import { convertToFileBuffer, copyRequest, downloadChunkSize } from "../utils/Utility";
 import { LIBRARY_NAME } from "./constants";
 
-const FUNCTION_NAME = "deleteRecord";
+const FUNCTION_NAME = "downloadFile";
 const REQUEST_NAME = `${LIBRARY_NAME}.${FUNCTION_NAME}`;
 
 const downloadFileChunk = async (

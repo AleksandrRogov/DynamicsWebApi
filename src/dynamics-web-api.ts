@@ -10,6 +10,7 @@ import {
     count,
     countAll,
     create,
+    createAttribute,
     createEntity,
     deleteRecord,
     disassociate,
@@ -277,19 +278,7 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    createAttribute = <T = any>(request: CreateAttributeRequest): Promise<T> => {
-        ErrorHelper.parameterCheck(request, "DynamicsWebApi.createAttribute", "request");
-        ErrorHelper.parameterCheck(request.data, "DynamicsWebApi.createAttribute", "request.data");
-        ErrorHelper.keyParameterCheck(request.entityKey, "DynamicsWebApi.createAttribute", "request.entityKey");
-
-        const internalRequest = copyRequest(request);
-        internalRequest.collection = "EntityDefinitions";
-        internalRequest.functionName = "retrieveEntity";
-        internalRequest.navigationProperty = "Attributes";
-        internalRequest.key = request.entityKey;
-
-        return this.create(<CreateRequest>internalRequest);
-    };
+    createAttribute = <T = any>(request: CreateAttributeRequest): Promise<T> => createAttribute(request, this.#client);
 
     /**
      * Sends an asynchronous request to update an attribute.
