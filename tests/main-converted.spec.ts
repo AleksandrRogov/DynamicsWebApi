@@ -6072,7 +6072,7 @@ describe("dynamicsWebApi.initializeInstance -", function () {
         });
 
         it("sends the request to the right end point", function (done) {
-            var dynamicsWebApiCopy = dynamicsWebApi81.initializeInstance();
+            let dynamicsWebApiCopy = dynamicsWebApi81.initializeInstance();
             dynamicsWebApiCopy
                 .create({ data: _data.testEntity, collection: "tests" })
                 .then(function (object) {
@@ -6105,7 +6105,7 @@ describe("dynamicsWebApi.initializeInstance -", function () {
 
         it("sends the request to the right end point", function (done) {
             //@ts-ignore
-            dynamicsWebApiCopy = dynamicsWebApi81.initializeInstance({ dataApi: { version: "8.2" } });
+            let dynamicsWebApiCopy = dynamicsWebApi81.initializeInstance({ dataApi: { version: "8.2" } });
             //@ts-ignore
             dynamicsWebApiCopy
                 .retrieveMultiple({ collection: "tests" })
@@ -6240,7 +6240,7 @@ const expectThrowsAsync = async (method, errorMessage) => {
     try {
         await method();
     } catch (err) {
-        error = err;
+        error = err as any;
     }
     expect(error).to.be.an("Error");
     if (errorMessage) {

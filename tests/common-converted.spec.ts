@@ -1,7 +1,6 @@
 ﻿import { expect } from "chai";
 
 import nock, { cleanAll } from "nock";
-import sinon from "sinon";
 
 import { DWA } from "../src/dwa";
 import * as Utility from "../src/utils/Utility";
