@@ -32,9 +32,9 @@ describe("xhr -", () => {
         global.DWA_BROWSER = true;
         //@ts-ignore
         global.window = {
-            btoa: <any>base64.btoa,
+            btoa: base64.btoa as any,
             atob: base64.atob,
-            crypto: <any>crypto.webcrypto,
+            crypto: crypto.webcrypto as any,
         };
         (global as any).XMLHttpRequest = sinon.useFakeXMLHttpRequest();
 
