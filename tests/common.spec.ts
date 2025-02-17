@@ -21,7 +21,7 @@ describe("Regex.", () => {
         it("uuid === false", function () {
             const result = Regex.isUuid("something");
             expect(result).to.be.false;
-            const result2 = Regex.isUuid(<any>null);
+            const result2 = Regex.isUuid(null as any);
             expect(result2).to.be.false;
         });
     });

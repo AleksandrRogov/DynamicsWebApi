@@ -23,10 +23,10 @@ export const upsert = async <TData = any>(request: UpsertRequest<TData>, client:
     } catch (error: any) {
         if (ifnonematch && error.status === 412) {
             //if prevent update
-            return <any>null; //todo: check this
+            return null as any; //todo: check this
         } else if (ifmatch && error.status === 404) {
             //if prevent create
-            return <any>null; //todo: check this
+            return null as any; //todo: check this
         }
         //rethrow error otherwise
         throw error;

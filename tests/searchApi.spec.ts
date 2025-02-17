@@ -23,7 +23,7 @@ describe("dynamicsWebApi.search -", () => {
         before(() => {
             const response = mocks.responses.searchMultiple;
             scope = nock(mocks.searchApiUrl)
-                .post(mocks.responses.searchUrl, <any>searchQuery)
+                .post(mocks.responses.searchUrl, searchQuery as any)
                 .reply(response.status, response.responseText, response.responseHeaders);
         });
 
@@ -56,7 +56,7 @@ describe("dynamicsWebApi.search -", () => {
         before(() => {
             const response = mocks.responses.searchMultiple;
             scope = nock(mocks.searchApiUrl)
-                .post(mocks.responses.searchUrl, <any>searchQuery)
+                .post(mocks.responses.searchUrl, searchQuery as any)
                 .reply(response.status, response.responseText, response.responseHeaders);
         });
 
@@ -91,7 +91,7 @@ describe("dynamicsWebApi.search -", () => {
                     CallerObjectId: mocks.data.testEntityId3,
                 },
             })
-                .post(mocks.responses.searchUrl, <any>searchQuery)
+                .post(mocks.responses.searchUrl, searchQuery as any)
                 .reply(response.status, response.responseText, response.responseHeaders);
         });
 
@@ -128,7 +128,7 @@ describe("dynamicsWebApi.suggest -", () => {
         before(() => {
             const response = mocks.responses.suggestMultiple;
             scope = nock(mocks.searchApiUrl)
-                .post(mocks.responses.suggestUrl, <any>suggestQuery)
+                .post(mocks.responses.suggestUrl, suggestQuery as any)
                 .reply(response.status, response.responseText, response.responseHeaders);
         });
 
@@ -161,7 +161,7 @@ describe("dynamicsWebApi.suggest -", () => {
         before(() => {
             const response = mocks.responses.suggestMultiple;
             scope = nock(mocks.searchApiUrl)
-                .post(mocks.responses.suggestUrl, <any>suggestQuery)
+                .post(mocks.responses.suggestUrl, suggestQuery as any)
                 .reply(response.status, response.responseText, response.responseHeaders);
         });
 
@@ -196,7 +196,7 @@ describe("dynamicsWebApi.suggest -", () => {
                     CallerObjectId: mocks.data.testEntityId3,
                 },
             })
-                .post(mocks.responses.suggestUrl, <any>suggestQuery)
+                .post(mocks.responses.suggestUrl, suggestQuery as any)
                 .reply(response.status, response.responseText, response.responseHeaders);
         });
 
@@ -233,7 +233,7 @@ describe("dynamicsWebApi.autocomplete -", () => {
         before(() => {
             const response = mocks.responses.autocompleteResult;
             scope = nock(mocks.searchApiUrl)
-                .post(mocks.responses.autocompleteUrl, <any>autocompleteQuery)
+                .post(mocks.responses.autocompleteUrl, autocompleteQuery as any)
                 .reply(response.status, response.responseText, response.responseHeaders);
         });
 
@@ -270,7 +270,7 @@ describe("dynamicsWebApi.autocomplete -", () => {
                     CallerObjectId: mocks.data.testEntityId3,
                 },
             })
-                .post(mocks.responses.autocompleteUrl, <any>autocompleteQuery)
+                .post(mocks.responses.autocompleteUrl, autocompleteQuery as any)
                 .reply(response.status, response.responseText, response.responseHeaders);
         });
 
@@ -304,7 +304,7 @@ describe("dynamicsWebApi.autocomplete -", () => {
         before(() => {
             const response = mocks.responses.autocompleteResult;
             scope = nock(mocks.searchApiUrl)
-                .post(mocks.responses.autocompleteUrl, <any>autocompleteQuery)
+                .post(mocks.responses.autocompleteUrl, autocompleteQuery as any)
                 .reply(response.status, response.responseText, response.responseHeaders);
         });
 
