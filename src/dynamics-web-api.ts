@@ -19,6 +19,7 @@ import {
     fetchXmlAll,
     retrieve,
     retrieveAll,
+    retrieveEntities,
     retrieveEntity,
     retrieveMultiple,
     update,
@@ -268,14 +269,7 @@ export class DynamicsWebApi {
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise} D365 Web Api Response
      */
-    retrieveEntities = <T = any>(request?: RetrieveEntitiesRequest): Promise<RetrieveMultipleResponse<T>> => {
-        const internalRequest: InternalRequest = !request ? {} : copyRequest(request);
-
-        internalRequest.collection = "EntityDefinitions";
-        internalRequest.functionName = "retrieveEntities";
-
-        return this.retrieveMultiple(<RetrieveMultipleRequest>internalRequest);
-    };
+    retrieveEntities = <T = any>(request?: RetrieveEntitiesRequest): Promise<RetrieveMultipleResponse<T>> => retrieveEntities(this.#client, request);
 
     /**
      * Sends an asynchronous request to create an attribute.

@@ -23,3 +23,4 @@ export * from "./downloadFile";
 export * from "./metadata/createEntity";
 export * from "./metadata/updateEntity";
 export * from "./metadata/retrieveEntity";
+export * from "./metadata/retrieveEntities";

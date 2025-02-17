@@ -32,7 +32,7 @@ export const update = async <TData = any>(request: UpdateRequest<TData>, client:
     } catch (error: any) {
         if (ifmatch && error.status === 412) {
             //precondition failed - not updated
-            return <any>false; //todo: check this
+            return false as any; //todo: check this
         }
         //rethrow error otherwise
         throw error;
