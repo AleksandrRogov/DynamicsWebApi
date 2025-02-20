@@ -2482,7 +2482,7 @@ describe("RequestClient.makeRequest", function () {
             url += "test";
         }
         var rBody = _data.batch.replace("{0}", webApiUrl + url);
-        var rBodys = rBody.split("\n");
+        var rBodys = rBody.split("\r\n");
         var checkBody = "";
         for (var i = 0; i < rBodys.length; i++) {
             checkBody += rBodys[i];
@@ -2493,7 +2493,7 @@ describe("RequestClient.makeRequest", function () {
             scope = nock(webApiUrl)
                 .filteringRequestBody(function (body) {
                     body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
-                    var bodys = body.split("\n");
+                    var bodys = body.split("\r\n");
 
                     var resultBody = "";
                     for (var i = 0; i < bodys.length; i++) {

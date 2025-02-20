@@ -395,7 +395,7 @@ describe("xhr -", () => {
         describe("update / delete - returns an error", function () {
             let responseObject: any;
             const rBody = mocks.data.batchUpdateDelete;
-            const rBodys = rBody.split("\n");
+            const rBodys = rBody.split("\r\n");
             let checkBody = "";
             for (let i = 0; i < rBodys.length; i++) {
                 checkBody += rBodys[i];
@@ -443,7 +443,7 @@ describe("xhr -", () => {
                 function filterBody(body: string): string {
                     body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
                     body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "changeset_XXX");
-                    const bodys = body.split("\n");
+                    const bodys = body.split("\r\n");
 
                     let resultBody = "";
                     for (let i = 0; i < bodys.length; i++) {

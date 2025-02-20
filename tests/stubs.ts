@@ -258,470 +258,470 @@ const dataStubs = {
         },
     } as Record<string, any>,
     batch:
-        "--dwa_batch_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n\n" +
-        "GET {0} HTTP/1.1\n" +
-        "Accept: application/json\n" +
-        "--dwa_batch_XXX--",
+        "--dwa_batch_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n\r\n" +
+        "GET {0} HTTP/1.1\r\n" +
+        "Accept: application/json\r\n" +
+        "--dwa_batch_XXX--\r\n",
     batchRetrieveMultipleCreateRetrieveMultiple:
-        "--dwa_batch_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "\n" +
+        "--dwa_batch_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "\r\n" +
         "GET " +
         webApiUrl +
-        "tests HTTP/1.1\n" +
-        "Accept: application/json\n" +
-        "\n" +
-        "--dwa_batch_XXX\n" +
-        "Content-Type: multipart/mixed;boundary=changeset_XXX\n" +
-        "\n" +
-        "--changeset_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "Content-ID: 100001\n" +
-        "\n" +
+        "tests HTTP/1.1\r\n" +
+        "Accept: application/json\r\n" +
+        "\r\n" +
+        "--dwa_batch_XXX\r\n" +
+        "Content-Type: multipart/mixed;boundary=changeset_XXX\r\n" +
+        "\r\n" +
+        "--changeset_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "Content-ID: 100001\r\n" +
+        "\r\n" +
         "POST " +
         webApiUrl +
-        "records HTTP/1.1\n" +
-        "Content-Type: application/json\n" +
-        "\n" +
-        '{"firstname":"Test","lastname":"Batch!"}\n' +
-        "\n" +
-        "--changeset_XXX--\n" +
-        "\n" +
-        "--dwa_batch_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "\n" +
+        "records HTTP/1.1\r\n" +
+        "Content-Type: application/json\r\n" +
+        "\r\n" +
+        '{"firstname":"Test","lastname":"Batch!"}\r\n' +
+        "\r\n" +
+        "--changeset_XXX--\r\n" +
+        "\r\n" +
+        "--dwa_batch_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "\r\n" +
         "GET " +
         webApiUrl +
-        "morerecords HTTP/1.1\n" +
-        "Accept: application/json\n" +
-        "\n" +
-        "--dwa_batch_XXX--",
+        "morerecords HTTP/1.1\r\n" +
+        "Accept: application/json\r\n" +
+        "\r\n" +
+        "--dwa_batch_XXX--\r\n",
     batchRetrieveMultipleUpdateRetrieveMultiple:
-        "--dwa_batch_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "\n" +
+        "--dwa_batch_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "\r\n" +
         "GET " +
         webApiUrl +
-        "tests HTTP/1.1\n" +
-        "Accept: application/json\n" +
-        "\n" +
-        "--dwa_batch_XXX\n" +
-        "Content-Type: multipart/mixed;boundary=changeset_XXX\n" +
-        "\n" +
-        "--changeset_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "Content-ID: 100001\n" +
-        "\n" +
+        "tests HTTP/1.1\r\n" +
+        "Accept: application/json\r\n" +
+        "\r\n" +
+        "--dwa_batch_XXX\r\n" +
+        "Content-Type: multipart/mixed;boundary=changeset_XXX\r\n" +
+        "\r\n" +
+        "--changeset_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "Content-ID: 100001\r\n" +
+        "\r\n" +
         "PATCH " +
         webApiUrl +
-        "records(00000000-0000-0000-0000-000000000002) HTTP/1.1\n" +
-        "Content-Type: application/json\n" +
-        "If-Match: *\n" +
-        "\n" +
-        '{"firstname":"Test","lastname":"Batch!"}\n' +
-        "\n" +
-        "--changeset_XXX--\n" +
-        "\n" +
-        "--dwa_batch_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "\n" +
+        "records(00000000-0000-0000-0000-000000000002) HTTP/1.1\r\n" +
+        "Content-Type: application/json\r\n" +
+        "If-Match: *\r\n" +
+        "\r\n" +
+        '{"firstname":"Test","lastname":"Batch!"}\r\n' +
+        "\r\n" +
+        "--changeset_XXX--\r\n" +
+        "\r\n" +
+        "--dwa_batch_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "\r\n" +
         "GET " +
         webApiUrl +
-        "morerecords HTTP/1.1\n" +
-        "Accept: application/json\n" +
-        "\n" +
-        "--dwa_batch_XXX--",
+        "morerecords HTTP/1.1\r\n" +
+        "Accept: application/json\r\n" +
+        "\r\n" +
+        "--dwa_batch_XXX--\r\n",
     batchUpsertUpsertUpsertWithAlternateKeys:
-        "--dwa_batch_XXX\n" +
-        "Content-Type: multipart/mixed;boundary=changeset_XXX\n" +
-        "\n" +
-        "--changeset_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "Content-ID: 100001\n" +
-        "\n" +
+        "--dwa_batch_XXX\r\n" +
+        "Content-Type: multipart/mixed;boundary=changeset_XXX\r\n" +
+        "\r\n" +
+        "--changeset_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "Content-ID: 100001\r\n" +
+        "\r\n" +
         "PATCH " +
         webApiUrl +
-        "records(key='key1') HTTP/1.1\n" +
-        "Content-Type: application/json\n" +
-        "\n" +
-        '{"firstname":"Test","lastname":"Batch!"}\n' +
-        "\n" +
-        "--changeset_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "Content-ID: 100002\n" +
-        "\n" +
+        "records(key='key1') HTTP/1.1\r\n" +
+        "Content-Type: application/json\r\n" +
+        "\r\n" +
+        '{"firstname":"Test","lastname":"Batch!"}\r\n' +
+        "\r\n" +
+        "--changeset_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "Content-ID: 100002\r\n" +
+        "\r\n" +
         "PATCH " +
         webApiUrl +
-        "records(key='key2') HTTP/1.1\n" +
-        "Content-Type: application/json\n" +
-        "\n" +
-        '{"firstname":"Test","lastname":"Batch!"}\n' +
-        "\n" +
-        "--changeset_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "Content-ID: 100003\n" +
-        "\n" +
+        "records(key='key2') HTTP/1.1\r\n" +
+        "Content-Type: application/json\r\n" +
+        "\r\n" +
+        '{"firstname":"Test","lastname":"Batch!"}\r\n' +
+        "\r\n" +
+        "--changeset_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "Content-ID: 100003\r\n" +
+        "\r\n" +
         "PATCH " +
         webApiUrl +
-        "records(key='key3') HTTP/1.1\n" +
-        "Content-Type: application/json\n" +
-        "\n" +
-        '{"firstname":"Test","lastname":"Batch!"}\n' +
-        "\n" +
-        "--changeset_XXX--\n" +
-        "\n" +
-        "--dwa_batch_XXX--",
+        "records(key='key3') HTTP/1.1\r\n" +
+        "Content-Type: application/json\r\n" +
+        "\r\n" +
+        '{"firstname":"Test","lastname":"Batch!"}\r\n' +
+        "\r\n" +
+        "--changeset_XXX--\r\n" +
+        "\r\n" +
+        "--dwa_batch_XXX--\r\n",
     batchUpdateDelete:
-        "--dwa_batch_XXX\n" +
-        "Content-Type: multipart/mixed;boundary=changeset_XXX\n" +
-        "\n" +
-        "--changeset_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "Content-ID: 100001\n" +
-        "\n" +
+        "--dwa_batch_XXX\r\n" +
+        "Content-Type: multipart/mixed;boundary=changeset_XXX\r\n" +
+        "\r\n" +
+        "--changeset_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "Content-ID: 100001\r\n" +
+        "\r\n" +
         "PATCH " +
         webApiUrl +
-        "records(00000000-0000-0000-0000-000000000002) HTTP/1.1\n" +
-        "Content-Type: application/json\n" +
-        "If-Match: *\n" +
-        "\n" +
-        '{"firstname":"Test","lastname":"Batch!"}\n' +
-        "\n" +
-        "--changeset_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "Content-ID: 100002\n" +
-        "\n" +
+        "records(00000000-0000-0000-0000-000000000002) HTTP/1.1\r\n" +
+        "Content-Type: application/json\r\n" +
+        "If-Match: *\r\n" +
+        "\r\n" +
+        '{"firstname":"Test","lastname":"Batch!"}\r\n' +
+        "\r\n" +
+        "--changeset_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "Content-ID: 100002\r\n" +
+        "\r\n" +
         "DELETE " +
         webApiUrl +
-        "records(00000000-0000-0000-0000-000000000002)/firstname HTTP/1.1\n" +
-        "Content-Type: application/json\n" +
-        "\n" +
-        "--changeset_XXX--\n" +
-        "\n" +
-        "--dwa_batch_XXX--",
+        "records(00000000-0000-0000-0000-000000000002)/firstname HTTP/1.1\r\n" +
+        "Content-Type: application/json\r\n" +
+        "\r\n" +
+        "--changeset_XXX--\r\n" +
+        "\r\n" +
+        "--dwa_batch_XXX--\r\n",
     batchCreateContentID:
-        "--dwa_batch_XXX\n" +
-        "Content-Type: multipart/mixed;boundary=changeset_XXX\n" +
-        "\n" +
-        "--changeset_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "Content-ID: 1\n" +
-        "\n" +
+        "--dwa_batch_XXX\r\n" +
+        "Content-Type: multipart/mixed;boundary=changeset_XXX\r\n" +
+        "\r\n" +
+        "--changeset_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "Content-ID: 1\r\n" +
+        "\r\n" +
         "POST " +
         webApiUrl +
-        "records HTTP/1.1\n" +
-        "Content-Type: application/json\n" +
-        "\n" +
-        '{"firstname":"Test","lastname":"Batch!"}\n' +
-        "\n" +
-        "--changeset_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "Content-ID: 100001\n" +
-        "\n" +
-        "POST $1/test_property HTTP/1.1\n" +
-        "Content-Type: application/json\n" +
-        "\n" +
-        '{"firstname":"Test1","lastname":"Batch!"}\n' +
-        "\n" +
-        "--changeset_XXX--\n" +
-        "\n" +
-        "--dwa_batch_XXX--",
+        "records HTTP/1.1\r\n" +
+        "Content-Type: application/json\r\n" +
+        "\r\n" +
+        '{"firstname":"Test","lastname":"Batch!"}\r\n' +
+        "\r\n" +
+        "--changeset_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "Content-ID: 100001\r\n" +
+        "\r\n" +
+        "POST $1/test_property HTTP/1.1\r\n" +
+        "Content-Type: application/json\r\n" +
+        "\r\n" +
+        '{"firstname":"Test1","lastname":"Batch!"}\r\n' +
+        "\r\n" +
+        "--changeset_XXX--\r\n" +
+        "\r\n" +
+        "--dwa_batch_XXX--\r\n",
     batchCreateContentIDNoCollection:
-        "--dwa_batch_XXX\n" +
-        "Content-Type: multipart/mixed;boundary=changeset_XXX\n" +
-        "\n" +
-        "--changeset_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "Content-ID: 1\n" +
-        "\n" +
+        "--dwa_batch_XXX\r\n" +
+        "Content-Type: multipart/mixed;boundary=changeset_XXX\r\n" +
+        "\r\n" +
+        "--changeset_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "Content-ID: 1\r\n" +
+        "\r\n" +
         "POST " +
         webApiUrl +
-        "records HTTP/1.1\n" +
-        "Content-Type: application/json\n" +
-        "\n" +
-        '{"firstname":"Test","lastname":"Batch!"}\n' +
-        "\n" +
-        "--changeset_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "Content-ID: 100001\n" +
-        "\n" +
-        "POST $1 HTTP/1.1\n" +
-        "Content-Type: application/json\n" +
-        "\n" +
-        '{"firstname":"Test1","lastname":"Batch!"}\n' +
-        "\n" +
-        "--changeset_XXX--\n" +
-        "\n" +
-        "--dwa_batch_XXX--",
+        "records HTTP/1.1\r\n" +
+        "Content-Type: application/json\r\n" +
+        "\r\n" +
+        '{"firstname":"Test","lastname":"Batch!"}\r\n' +
+        "\r\n" +
+        "--changeset_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "Content-ID: 100001\r\n" +
+        "\r\n" +
+        "POST $1 HTTP/1.1\r\n" +
+        "Content-Type: application/json\r\n" +
+        "\r\n" +
+        '{"firstname":"Test1","lastname":"Batch!"}\r\n' +
+        "\r\n" +
+        "--changeset_XXX--\r\n" +
+        "\r\n" +
+        "--dwa_batch_XXX--\r\n",
     batchCreateContentIDURLReplace:
-        "--dwa_batch_XXX\n" +
-        "Content-Type: multipart/mixed;boundary=changeset_XXX\n" +
-        "\n" +
-        "--changeset_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "Content-ID: 1\n" +
-        "\n" +
+        "--dwa_batch_XXX\r\n" +
+        "Content-Type: multipart/mixed;boundary=changeset_XXX\r\n" +
+        "\r\n" +
+        "--changeset_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "Content-ID: 1\r\n" +
+        "\r\n" +
         "POST " +
         webApiUrl +
-        "records HTTP/1.1\n" +
-        "Content-Type: application/json\n" +
-        "\n" +
-        '{"firstname":"Test","lastname":"Batch!"}\n' +
-        "\n" +
-        "--changeset_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "Content-ID: 100001\n" +
-        "\n" +
-        "POST $1 HTTP/1.1\n" +
-        "Content-Type: application/json\n" +
-        "\n" +
-        '{"firstname":"Test1","lastname":"Batch!"}\n' +
-        "\n" +
-        "--changeset_XXX--\n" +
-        "\n" +
-        "--dwa_batch_XXX--",
+        "records HTTP/1.1\r\n" +
+        "Content-Type: application/json\r\n" +
+        "\r\n" +
+        '{"firstname":"Test","lastname":"Batch!"}\r\n' +
+        "\r\n" +
+        "--changeset_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "Content-ID: 100001\r\n" +
+        "\r\n" +
+        "POST $1 HTTP/1.1\r\n" +
+        "Content-Type: application/json\r\n" +
+        "\r\n" +
+        '{"firstname":"Test1","lastname":"Batch!"}\r\n' +
+        "\r\n" +
+        "--changeset_XXX--\r\n" +
+        "\r\n" +
+        "--dwa_batch_XXX--\r\n",
     batchCreateContentIDPayload:
-        "--dwa_batch_XXX\n" +
-        "Content-Type: multipart/mixed;boundary=changeset_XXX\n" +
-        "\n" +
-        "--changeset_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "Content-ID: 1\n" +
-        "\n" +
+        "--dwa_batch_XXX\r\n" +
+        "Content-Type: multipart/mixed;boundary=changeset_XXX\r\n" +
+        "\r\n" +
+        "--changeset_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "Content-ID: 1\r\n" +
+        "\r\n" +
         "POST " +
         webApiUrl +
-        "records HTTP/1.1\n" +
-        "Content-Type: application/json\n" +
-        "\n" +
-        '{"firstname":"Test","lastname":"Batch!"}\n' +
-        "\n" +
-        "--changeset_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "Content-ID: 100001\n" +
-        "\n" +
+        "records HTTP/1.1\r\n" +
+        "Content-Type: application/json\r\n" +
+        "\r\n" +
+        '{"firstname":"Test","lastname":"Batch!"}\r\n' +
+        "\r\n" +
+        "--changeset_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "Content-ID: 100001\r\n" +
+        "\r\n" +
         "POST " +
         webApiUrl +
-        "tests HTTP/1.1\n" +
-        "Content-Type: application/json\n" +
-        "\n" +
-        '{"firstname":"Test1","lastname":"Batch!","prop@odata.bind":"$1"}\n' +
-        "\n" +
-        "--changeset_XXX--\n" +
-        "\n" +
-        "--dwa_batch_XXX--",
+        "tests HTTP/1.1\r\n" +
+        "Content-Type: application/json\r\n" +
+        "\r\n" +
+        '{"firstname":"Test1","lastname":"Batch!","prop@odata.bind":"$1"}\r\n' +
+        "\r\n" +
+        "--changeset_XXX--\r\n" +
+        "\r\n" +
+        "--dwa_batch_XXX--\r\n",
     batchCreateContentIDPayloadNonAtomic:
-        "--dwa_batch_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "\n" +
+        "--dwa_batch_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "\r\n" +
         "POST " +
         webApiUrl +
-        "records HTTP/1.1\n" +
-        "Content-Type: application/json\n" +
-        "\n" +
-        '{"firstname":"Test","lastname":"Batch!"}\n' +
-        "\n" +
-        "--dwa_batch_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "\n" +
+        "records HTTP/1.1\r\n" +
+        "Content-Type: application/json\r\n" +
+        "\r\n" +
+        '{"firstname":"Test","lastname":"Batch!"}\r\n' +
+        "\r\n" +
+        "--dwa_batch_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "\r\n" +
         "POST " +
         webApiUrl +
-        "tests HTTP/1.1\n" +
-        "Content-Type: application/json\n" +
-        "\n" +
-        '{"firstname":"Test1","lastname":"Batch!","prop@odata.bind":"$1"}\n' +
-        "\n" +
-        "--dwa_batch_XXX--",
+        "tests HTTP/1.1\r\n" +
+        "Content-Type: application/json\r\n" +
+        "\r\n" +
+        '{"firstname":"Test1","lastname":"Batch!","prop@odata.bind":"$1"}\r\n' +
+        "\r\n" +
+        "--dwa_batch_XXX--\r\n",
     batchCreateContentIDPayloadNonAtomicMixed:
-        "--dwa_batch_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "\n" +
+        "--dwa_batch_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "\r\n" +
         "POST " +
         webApiUrl +
-        "records HTTP/1.1\n" +
-        "Content-Type: application/json\n" +
-        "\n" +
-        '{"firstname":"Test","lastname":"Batch!"}\n' +
-        "\n" +
-        "--dwa_batch_XXX\n" +
-        "Content-Type: multipart/mixed;boundary=changeset_XXX\n" +
-        "\n" +
-        "--changeset_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "Content-ID: 100001\n" +
-        "\n" +
+        "records HTTP/1.1\r\n" +
+        "Content-Type: application/json\r\n" +
+        "\r\n" +
+        '{"firstname":"Test","lastname":"Batch!"}\r\n' +
+        "\r\n" +
+        "--dwa_batch_XXX\r\n" +
+        "Content-Type: multipart/mixed;boundary=changeset_XXX\r\n" +
+        "\r\n" +
+        "--changeset_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "Content-ID: 100001\r\n" +
+        "\r\n" +
         "POST " +
         webApiUrl +
-        "tests HTTP/1.1\n" +
-        "Content-Type: application/json\n" +
-        "\n" +
-        '{"firstname":"Test1","lastname":"Batch!","prop@odata.bind":"$1"}\n' +
-        "\n" +
-        "--changeset_XXX--\n" +
-        "\n" +
-        "--dwa_batch_XXX--",
+        "tests HTTP/1.1\r\n" +
+        "Content-Type: application/json\r\n" +
+        "\r\n" +
+        '{"firstname":"Test1","lastname":"Batch!","prop@odata.bind":"$1"}\r\n' +
+        "\r\n" +
+        "--changeset_XXX--\r\n" +
+        "\r\n" +
+        "--dwa_batch_XXX--\r\n",
     batchCreateContentIDPayloadNonAtomicCustomHeaders:
-        "--dwa_batch_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "\n" +
+        "--dwa_batch_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "\r\n" +
         "POST " +
         webApiUrl +
-        "records HTTP/1.1\n" +
-        "Content-Type: application/json\n" +
-        "my-header: success!\n" +
-        "custom: header\n" +
-        "\n" +
-        '{"firstname":"Test","lastname":"Batch!"}\n' +
-        "\n" +
-        "--dwa_batch_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "\n" +
+        "records HTTP/1.1\r\n" +
+        "Content-Type: application/json\r\n" +
+        "my-header: success!\r\n" +
+        "custom: header\r\n" +
+        "\r\n" +
+        '{"firstname":"Test","lastname":"Batch!"}\r\n' +
+        "\r\n" +
+        "--dwa_batch_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "\r\n" +
         "POST " +
         webApiUrl +
-        "tests HTTP/1.1\n" +
-        "Content-Type: application/json\n" +
-        "my-header: success!\n" +
-        "\n" +
-        '{"firstname":"Test1","lastname":"Batch!","prop@odata.bind":"$1"}\n' +
-        "\n" +
-        "--dwa_batch_XXX--",
+        "tests HTTP/1.1\r\n" +
+        "Content-Type: application/json\r\n" +
+        "my-header: success!\r\n" +
+        "\r\n" +
+        '{"firstname":"Test1","lastname":"Batch!","prop@odata.bind":"$1"}\r\n' +
+        "\r\n" +
+        "--dwa_batch_XXX--\r\n",
     batchRetrieveMultipleDeleteRetrieveMultiple:
-        "--dwa_batch_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "\n" +
+        "--dwa_batch_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "\r\n" +
         "GET " +
         webApiUrl +
-        "tests HTTP/1.1\n" +
-        "Accept: application/json\n" +
-        "\n" +
-        "--dwa_batch_XXX\n" +
-        "Content-Type: multipart/mixed;boundary=changeset_XXX\n" +
-        "\n" +
-        "--changeset_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "Content-ID: 100001\n" +
-        "\n" +
+        "tests HTTP/1.1\r\n" +
+        "Accept: application/json\r\n" +
+        "\r\n" +
+        "--dwa_batch_XXX\r\n" +
+        "Content-Type: multipart/mixed;boundary=changeset_XXX\r\n" +
+        "\r\n" +
+        "--changeset_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "Content-ID: 100001\r\n" +
+        "\r\n" +
         "DELETE " +
         webApiUrl +
-        "records(00000000-0000-0000-0000-000000000002) HTTP/1.1\n" +
-        "Content-Type: application/json\n" +
-        "\n" +
-        "--changeset_XXX--\n" +
-        "\n" +
-        "--dwa_batch_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "\n" +
+        "records(00000000-0000-0000-0000-000000000002) HTTP/1.1\r\n" +
+        "Content-Type: application/json\r\n" +
+        "\r\n" +
+        "--changeset_XXX--\r\n" +
+        "\r\n" +
+        "--dwa_batch_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "\r\n" +
         "GET " +
         webApiUrl +
-        "morerecords HTTP/1.1\n" +
-        "Accept: application/json\n" +
-        "\n" +
-        "--dwa_batch_XXX--",
+        "morerecords HTTP/1.1\r\n" +
+        "Accept: application/json\r\n" +
+        "\r\n" +
+        "--dwa_batch_XXX--\r\n",
     batchRetrieveMultipleCountRetrieveMultiple:
-        "--dwa_batch_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "\n" +
+        "--dwa_batch_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "\r\n" +
         "GET " +
         webApiUrl +
-        "tests HTTP/1.1\n" +
-        "Accept: application/json\n" +
-        "\n" +
-        "--dwa_batch_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "\n" +
+        "tests HTTP/1.1\r\n" +
+        "Accept: application/json\r\n" +
+        "\r\n" +
+        "--dwa_batch_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "\r\n" +
         "GET " +
         webApiUrl +
-        "records/$count HTTP/1.1\n" +
-        "Accept: application/json\n" +
-        "\n" +
-        "--dwa_batch_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "\n" +
+        "records/$count HTTP/1.1\r\n" +
+        "Accept: application/json\r\n" +
+        "\r\n" +
+        "--dwa_batch_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "\r\n" +
         "GET " +
         webApiUrl +
-        "morerecords HTTP/1.1\n" +
-        "Accept: application/json\n" +
-        "\n" +
-        "--dwa_batch_XXX--",
+        "morerecords HTTP/1.1\r\n" +
+        "Accept: application/json\r\n" +
+        "\r\n" +
+        "--dwa_batch_XXX--\r\n",
     batchRetrieveMultipleCountFilteredRetrieveMultiple:
-        "--dwa_batch_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "\n" +
+        "--dwa_batch_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "\r\n" +
         "GET " +
         webApiUrl +
-        "tests HTTP/1.1\n" +
-        "Accept: application/json\n" +
-        "\n" +
-        "--dwa_batch_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "\n" +
+        "tests HTTP/1.1\r\n" +
+        "Accept: application/json\r\n" +
+        "\r\n" +
+        "--dwa_batch_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "\r\n" +
         "GET " +
         webApiUrl +
-        "records?$filter=statecode%20eq%200&$count=true HTTP/1.1\n" +
-        "Accept: application/json\n" +
-        "\n" +
-        "--dwa_batch_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "\n" +
+        "records?$filter=statecode%20eq%200&$count=true HTTP/1.1\r\n" +
+        "Accept: application/json\r\n" +
+        "\r\n" +
+        "--dwa_batch_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "\r\n" +
         "GET " +
         webApiUrl +
-        "morerecords HTTP/1.1\n" +
-        "Accept: application/json\n" +
-        "\n" +
-        "--dwa_batch_XXX--",
+        "morerecords HTTP/1.1\r\n" +
+        "Accept: application/json\r\n" +
+        "\r\n" +
+        "--dwa_batch_XXX--\r\n",
     batchErrorChangeSet:
-        "--dwa_batch_XXX\n" +
-        "Content-Type: multipart/mixed;boundary=changeset_XXX\n" +
-        "\n" +
-        "--changeset_XXX\n" +
-        "Content-Type: application/http\n" +
-        "Content-Transfer-Encoding: binary\n" +
-        "Content-ID: 100001\n" +
-        "\n" +
-        "HTTP/1.1 400 Bad Request\n" +
-        "REQ_ID: 5fe339e5-c75e-4dad-9597-b257ebce666b\n" +
-        "Content-Type: application/json\n" +
-        "OData-Version: 4.0\n" +
-        "\n" +
-        '{"error":{"code":"0x0","message":"error"}}\n' +
-        "\n" +
-        "--changeset_XXX\n" +
-        "--dwa_batch_XXX--",
+        "--dwa_batch_XXX\r\n" +
+        "Content-Type: multipart/mixed;boundary=changeset_XXX\r\n" +
+        "\r\n" +
+        "--changeset_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "Content-ID: 100001\r\n" +
+        "\r\n" +
+        "HTTP/1.1 400 Bad Request\r\n" +
+        "REQ_ID: 5fe339e5-c75e-4dad-9597-b257ebce666b\r\n" +
+        "Content-Type: application/json\r\n" +
+        "OData-Version: 4.0\r\n" +
+        "\r\n" +
+        '{"error":{"code":"0x0","message":"error"}}\r\n' +
+        "\r\n" +
+        "--changeset_XXX\r\n" +
+        "--dwa_batch_XXX--\r\n",
     fetchXmls: {
         cookiePage1:
             "%253Ccookie%2520pagenumber%253D%25222%2522%2520pagingcookie%253D%2522%253Ccookie%2520page%253D%25221%2522%253E%253Caccountid%2520last%253D%2522%257BEF72AE29-B3DE-E611-8102-5065F38A7BF1%257D%2522%2520first%253D%2522%257B475B158C-541C-E511-80D3-3863BB347BA8%257D%2522%2520/%253E%253C/cookie%253E%2522%2520istracking%253D%2522False%2522%2520/%253E",

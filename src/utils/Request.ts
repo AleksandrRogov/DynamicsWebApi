@@ -417,14 +417,14 @@ export const convertToBatch = (requests: InternalRequest[], config: InternalConf
 
         if (!inChangeSet && currentChangeSet) {
             //end current change set
-            batchBody.push(`\n--${currentChangeSet}--`);
+            batchBody.push(`\r\n--${currentChangeSet}--`);
 
             currentChangeSet = null;
             contentId = 100000;
         }
 
         if (!currentChangeSet) {
-            batchBody.push(`\n--${batchBoundary}`);
+            batchBody.push(`\r\n--${batchBoundary}`);
 
             if (inChangeSet) {
                 currentChangeSet = `changeset_${Utility.generateUUID()}`;
@@ -433,7 +433,7 @@ export const convertToBatch = (requests: InternalRequest[], config: InternalConf
         }
 
         if (inChangeSet) {
-            batchBody.push(`\n--${currentChangeSet}`);
+            batchBody.push(`\r\n--${currentChangeSet}`);
         }
 
         batchBody.push("Content-Type: application/http");
@@ -446,9 +446,9 @@ export const convertToBatch = (requests: InternalRequest[], config: InternalConf
         }
 
         if (!internalRequest.path?.startsWith("$")) {
-            batchBody.push(`\n${internalRequest.method} ${config.dataApi.url}${internalRequest.path} HTTP/1.1`);
+            batchBody.push(`\r\n${internalRequest.method} ${config.dataApi.url}${internalRequest.path} HTTP/1.1`);
         } else {
-            batchBody.push(`\n${internalRequest.method} ${internalRequest.path} HTTP/1.1`);
+            batchBody.push(`\r\n${internalRequest.method} ${internalRequest.path} HTTP/1.1`);
         }
 
         if (internalRequest.method === "GET") {
@@ -462,20 +462,20 @@ export const convertToBatch = (requests: InternalRequest[], config: InternalConf
         }
 
         if (internalRequest.data) {
-            batchBody.push(`\n${processData(internalRequest.data, config)}`);
+            batchBody.push(`\r\n${processData(internalRequest.data, config)}`);
         }
     });
 
     if (currentChangeSet) {
-        batchBody.push(`\n--${currentChangeSet}--`);
+        batchBody.push(`\r\n--${currentChangeSet}--`);
     }
 
-    batchBody.push(`\n--${batchBoundary}--`);
+    batchBody.push(`\r\n--${batchBoundary}--\r\n`);
 
     const headers = setStandardHeaders(batchRequest?.userHeaders);
     headers["Content-Type"] = `multipart/mixed;boundary=${batchBoundary}`;
 
-    return { headers: headers, body: batchBody.join("\n") };
+    return { headers: headers, body: batchBody.join("\r\n") };
 };
 
 export const findCollectionName = (entityName: string): string | null => {

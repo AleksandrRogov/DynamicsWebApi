@@ -4184,7 +4184,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
     describe("retrieve multiple / create / retrieve multiple", function () {
         var scope;
         var rBody = _data.batchRetrieveMultipleCreateRetrieveMultiple;
-        var rBodys = rBody.split("\n");
+        var rBodys = rBody.split("\r\n");
         var checkBody = "";
         for (var i = 0; i < rBodys.length; i++) {
             checkBody += rBodys[i];
@@ -4195,7 +4195,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
                 .filteringRequestBody(function (body) {
                     body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
                     body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "changeset_XXX");
-                    var bodys = body.split("\n");
+                    var bodys = body.split("\r\n");
 
                     var resultBody = "";
                     for (var i = 0; i < bodys.length; i++) {
@@ -4242,7 +4242,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
     describe("retrieve multiple / update / retrieve multiple", function () {
         var scope;
         var rBody = _data.batchRetrieveMultipleUpdateRetrieveMultiple;
-        var rBodys = rBody.split("\n");
+        var rBodys = rBody.split("\r\n");
         var checkBody = "";
         for (var i = 0; i < rBodys.length; i++) {
             checkBody += rBodys[i];
@@ -4253,7 +4253,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
                 .filteringRequestBody(function (body) {
                     body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
                     body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "changeset_XXX");
-                    var bodys = body.split("\n");
+                    var bodys = body.split("\r\n");
 
                     var resultBody = "";
                     for (var i = 0; i < bodys.length; i++) {
@@ -4300,7 +4300,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
     describe("retrieve multiple / delete / retrieve multiple", function () {
         var scope;
         var rBody = _data.batchRetrieveMultipleDeleteRetrieveMultiple;
-        var rBodys = rBody.split("\n");
+        var rBodys = rBody.split("\r\n");
         var checkBody = "";
         for (var i = 0; i < rBodys.length; i++) {
             checkBody += rBodys[i];
@@ -4311,7 +4311,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
                 .filteringRequestBody(function (body) {
                     body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
                     body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "changeset_XXX");
-                    var bodys = body.split("\n");
+                    var bodys = body.split("\r\n");
 
                     var resultBody = "";
                     for (var i = 0; i < bodys.length; i++) {
@@ -4358,7 +4358,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
     describe("retrieve multiple / count / retrieve multiple", function () {
         var scope;
         var rBody = _data.batchRetrieveMultipleCountRetrieveMultiple;
-        var rBodys = rBody.split("\n");
+        var rBodys = rBody.split("\r\n");
         var checkBody = "";
         for (var i = 0; i < rBodys.length; i++) {
             checkBody += rBodys[i];
@@ -4369,7 +4369,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
                 .filteringRequestBody(function (body) {
                     body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
                     body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "changeset_XXX");
-                    var bodys = body.split("\n");
+                    var bodys = body.split("\r\n");
 
                     var resultBody = "";
                     for (var i = 0; i < bodys.length; i++) {
@@ -4416,7 +4416,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
     describe("retrieve multiple / retrieve multiple (count) / retrieve multiple", function () {
         var scope;
         var rBody = _data.batchRetrieveMultipleCountFilteredRetrieveMultiple;
-        var rBodys = rBody.split("\n");
+        var rBodys = rBody.split("\r\n");
         var checkBody = "";
         for (var i = 0; i < rBodys.length; i++) {
             checkBody += rBodys[i];
@@ -4427,7 +4427,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
                 .filteringRequestBody(function (body) {
                     body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
                     body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "changeset_XXX");
-                    var bodys = body.split("\n");
+                    var bodys = body.split("\r\n");
 
                     var resultBody = "";
                     for (var i = 0; i < bodys.length; i++) {
@@ -4474,7 +4474,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
     describe("retrieve multiple / count (filtered) / retrieve multiple", function () {
         var scope;
         var rBody = _data.batchRetrieveMultipleCountFilteredRetrieveMultiple;
-        var rBodys = rBody.split("\n");
+        var rBodys = rBody.split("\r\n");
         var checkBody = "";
         for (var i = 0; i < rBodys.length; i++) {
             checkBody += rBodys[i];
@@ -4485,7 +4485,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
                 .filteringRequestBody(function (body) {
                     body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
                     body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "changeset_XXX");
-                    var bodys = body.split("\n");
+                    var bodys = body.split("\r\n");
 
                     var resultBody = "";
                     for (var i = 0; i < bodys.length; i++) {
@@ -4558,7 +4558,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
     describe("update / delete", function () {
         var scope;
         var rBody = _data.batchUpdateDelete;
-        var rBodys = rBody.split("\n");
+        var rBodys = rBody.split("\r\n");
         var checkBody = "";
         for (var i = 0; i < rBodys.length; i++) {
             checkBody += rBodys[i];
@@ -4569,7 +4569,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
                 .filteringRequestBody(function (body) {
                     body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
                     body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "changeset_XXX");
-                    var bodys = body.split("\n");
+                    var bodys = body.split("\r\n");
 
                     var resultBody = "";
                     for (var i = 0; i < bodys.length; i++) {
@@ -4616,7 +4616,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
     describe("update / delete - passing a request parameter", function () {
         var scope;
         var rBody = _data.batchUpdateDelete;
-        var rBodys = rBody.split("\n");
+        var rBodys = rBody.split("\r\n");
         var checkBody = "";
         for (var i = 0; i < rBodys.length; i++) {
             checkBody += rBodys[i];
@@ -4631,7 +4631,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
                 .filteringRequestBody(function (body) {
                     body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
                     body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "changeset_XXX");
-                    var bodys = body.split("\n");
+                    var bodys = body.split("\r\n");
 
                     var resultBody = "";
                     for (var i = 0; i < bodys.length; i++) {
@@ -4676,7 +4676,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
     describe("update / delete - returns an error", function () {
         var scope;
         var rBody = _data.batchUpdateDelete;
-        var rBodys = rBody.split("\n");
+        var rBodys = rBody.split("\r\n");
         var checkBody = "";
         for (var i = 0; i < rBodys.length; i++) {
             checkBody += rBodys[i];
@@ -4687,7 +4687,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
                 .filteringRequestBody(function (body) {
                     body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
                     body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "changeset_XXX");
-                    var bodys = body.split("\n");
+                    var bodys = body.split("\r\n");
 
                     var resultBody = "";
                     for (var i = 0; i < bodys.length; i++) {
@@ -4745,7 +4745,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
     describe("create / create with Content-ID", function () {
         var scope;
         var rBody = _data.batchCreateContentID;
-        var rBodys = rBody.split("\n");
+        var rBodys = rBody.split("\r\n");
         var checkBody = "";
         for (var i = 0; i < rBodys.length; i++) {
             checkBody += rBodys[i];
@@ -4756,7 +4756,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
                 .filteringRequestBody(function (body) {
                     body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
                     body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "changeset_XXX");
-                    var bodys = body.split("\n");
+                    var bodys = body.split("\r\n");
 
                     var resultBody = "";
                     for (var i = 0; i < bodys.length; i++) {
@@ -4801,7 +4801,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
     describe("create / create with Content-ID - URL Replacement", function () {
         var scope;
         var rBody = _data.batchCreateContentIDURLReplace;
-        var rBodys = rBody.split("\n");
+        var rBodys = rBody.split("\r\n");
         var checkBody = "";
         for (var i = 0; i < rBodys.length; i++) {
             checkBody += rBodys[i];
@@ -4812,7 +4812,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
                 .filteringRequestBody(function (body) {
                     body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
                     body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "changeset_XXX");
-                    var bodys = body.split("\n");
+                    var bodys = body.split("\r\n");
 
                     var resultBody = "";
                     for (var i = 0; i < bodys.length; i++) {
@@ -4857,7 +4857,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
     describe("create / create with Content-ID in a payload", function () {
         var scope;
         var rBody = _data.batchCreateContentIDPayload;
-        var rBodys = rBody.split("\n");
+        var rBodys = rBody.split("\r\n");
         var checkBody = "";
         for (var i = 0; i < rBodys.length; i++) {
             checkBody += rBodys[i];
@@ -4868,7 +4868,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
                 .filteringRequestBody(function (body) {
                     body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
                     body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "changeset_XXX");
-                    var bodys = body.split("\n");
+                    var bodys = body.split("\r\n");
 
                     var resultBody = "";
                     for (var i = 0; i < bodys.length; i++) {
@@ -4913,7 +4913,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
     describe("upsert / upsert / upsert with alternate keys", function () {
         var scope;
         var rBody = _data.batchUpsertUpsertUpsertWithAlternateKeys;
-        var rBodys = rBody.split("\n");
+        var rBodys = rBody.split("\r\n");
         var checkBody = "";
         for (var i = 0; i < rBodys.length; i++) {
             checkBody += rBodys[i];
@@ -4924,7 +4924,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
                 .filteringRequestBody(function (body) {
                     body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
                     body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "changeset_XXX");
-                    var bodys = body.split("\n");
+                    var bodys = body.split("\r\n");
 
                     var resultBody = "";
                     for (var i = 0; i < bodys.length; i++) {
@@ -4972,7 +4972,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
         var scope;
         //1st request body check
         var rBody = _data.batchRetrieveMultipleCreateRetrieveMultiple;
-        var rBodys = rBody.split("\n");
+        var rBodys = rBody.split("\r\n");
         var checkBody = "";
         for (var i = 0; i < rBodys.length; i++) {
             checkBody += rBodys[i];
@@ -4987,7 +4987,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
                 .filteringRequestBody(function (body) {
                     body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
                     body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "changeset_XXX");
-                    var bodys = body.split("\n");
+                    var bodys = body.split("\r\n");
 
                     var resultBody = "";
                     for (var i = 0; i < bodys.length; i++) {

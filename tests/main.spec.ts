@@ -613,7 +613,7 @@ describe("dynamicsWebApi.executeBatch -", () => {
     describe("non-atomic global - create / create (Content-ID in a header gets cleared)", function () {
         let scope;
         const rBody = mocks.data.batchCreateContentIDPayloadNonAtomic;
-        const rBodys = rBody.split("\n");
+        const rBodys = rBody.split("\r\n");
         let checkBody = "";
         for (let i = 0; i < rBodys.length; i++) {
             checkBody += rBodys[i];
@@ -624,7 +624,7 @@ describe("dynamicsWebApi.executeBatch -", () => {
                 .filteringRequestBody((body) => {
                     body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
                     body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "changeset_XXX");
-                    const bodys = body.split("\n");
+                    const bodys = body.split("\r\n");
 
                     let resultBody = "";
                     for (let i = 0; i < bodys.length; i++) {
@@ -670,7 +670,7 @@ describe("dynamicsWebApi.executeBatch -", () => {
     describe("non-atomic per request - create / create (Content-ID in a header gets cleared)", function () {
         let scope;
         const rBody = mocks.data.batchCreateContentIDPayloadNonAtomic;
-        const rBodys = rBody.split("\n");
+        const rBodys = rBody.split("\r\n");
         let checkBody = "";
         for (let i = 0; i < rBodys.length; i++) {
             checkBody += rBodys[i];
@@ -681,7 +681,7 @@ describe("dynamicsWebApi.executeBatch -", () => {
                 .filteringRequestBody((body) => {
                     body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
                     body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "changeset_XXX");
-                    const bodys = body.split("\n");
+                    const bodys = body.split("\r\n");
 
                     let resultBody = "";
                     for (let i = 0; i < bodys.length; i++) {
@@ -725,7 +725,7 @@ describe("dynamicsWebApi.executeBatch -", () => {
     describe("non-atomic & atomic mixed - create / create (Content-ID in a payload)", function () {
         let scope;
         const rBody = mocks.data.batchCreateContentIDPayloadNonAtomicMixed;
-        const rBodys = rBody.split("\n");
+        const rBodys = rBody.split("\r\n");
         let checkBody = "";
         for (let i = 0; i < rBodys.length; i++) {
             checkBody += rBodys[i];
@@ -736,7 +736,7 @@ describe("dynamicsWebApi.executeBatch -", () => {
                 .filteringRequestBody((body) => {
                     body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
                     body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "changeset_XXX");
-                    const bodys = body.split("\n");
+                    const bodys = body.split("\r\n");
 
                     let resultBody = "";
                     for (let i = 0; i < bodys.length; i++) {
@@ -780,7 +780,7 @@ describe("dynamicsWebApi.executeBatch -", () => {
     describe("create / create with Content-ID / No Collection", function () {
         let scope;
         const rBody = mocks.data.batchCreateContentIDNoCollection;
-        const rBodys = rBody.split("\n");
+        const rBodys = rBody.split("\r\n");
         let checkBody = "";
         for (var i = 0; i < rBodys.length; i++) {
             checkBody += rBodys[i];
@@ -791,7 +791,7 @@ describe("dynamicsWebApi.executeBatch -", () => {
                 .filteringRequestBody(function (body) {
                     body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
                     body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "changeset_XXX");
-                    var bodys = body.split("\n");
+                    var bodys = body.split("\r\n");
 
                     var resultBody = "";
                     for (var i = 0; i < bodys.length; i++) {
@@ -974,7 +974,7 @@ describe("dynamicsWebApi: custom headers - ", () => {
         });
         let scope;
         const rBody = mocks.data.batchCreateContentIDPayloadNonAtomicCustomHeaders;
-        const rBodys = rBody.split("\n");
+        const rBodys = rBody.split("\r\n");
         let checkBody = "";
         for (let i = 0; i < rBodys.length; i++) {
             checkBody += rBodys[i];
@@ -989,7 +989,7 @@ describe("dynamicsWebApi: custom headers - ", () => {
                 .filteringRequestBody((body) => {
                     body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
                     body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "changeset_XXX");
-                    const bodys = body.split("\n");
+                    const bodys = body.split("\r\n");
 
                     let resultBody = "";
                     for (let i = 0; i < bodys.length; i++) {

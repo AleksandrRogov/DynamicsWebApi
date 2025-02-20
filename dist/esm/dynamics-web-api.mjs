@@ -1,4 +1,4 @@
-/*! dynamics-web-api v2.2.0 (c) 2025 Aleksandr Rogov. License: MIT */
+/*! dynamics-web-api v2.2.1 (c) 2025 Aleksandr Rogov. License: MIT */
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -1313,13 +1313,13 @@ var convertToBatch = (requests, config, batchRequest) => {
     if ((batchRequest == null ? void 0 : batchRequest.inChangeSet) === false) internalRequest.inChangeSet = false;
     const inChangeSet = internalRequest.method === "GET" ? false : !!internalRequest.inChangeSet;
     if (!inChangeSet && currentChangeSet) {
-      batchBody.push(`
+      batchBody.push(`\r
 --${currentChangeSet}--`);
       currentChangeSet = null;
       contentId = 1e5;
     }
     if (!currentChangeSet) {
-      batchBody.push(`
+      batchBody.push(`\r
 --${batchBoundary}`);
       if (inChangeSet) {
         currentChangeSet = `changeset_${Utility.generateUUID()}`;
@@ -1327,7 +1327,7 @@ var convertToBatch = (requests, config, batchRequest) => {
       }
     }
     if (inChangeSet) {
-      batchBody.push(`
+      batchBody.push(`\r
 --${currentChangeSet}`);
     }
     batchBody.push("Content-Type: application/http");
@@ -1337,10 +1337,10 @@ var convertToBatch = (requests, config, batchRequest) => {
       batchBody.push(`Content-ID: ${contentIdValue}`);
     }
     if (!((_a2 = internalRequest.path) == null ? void 0 : _a2.startsWith("$"))) {
-      batchBody.push(`
+      batchBody.push(`\r
 ${internalRequest.method} ${config.dataApi.url}${internalRequest.path} HTTP/1.1`);
     } else {
-      batchBody.push(`
+      batchBody.push(`\r
 ${internalRequest.method} ${internalRequest.path} HTTP/1.1`);
     }
     if (internalRequest.method === "GET") {
@@ -1352,19 +1352,20 @@ ${internalRequest.method} ${internalRequest.path} HTTP/1.1`);
       addHeaders(internalRequest.headers, batchBody);
     }
     if (internalRequest.data) {
-      batchBody.push(`
+      batchBody.push(`\r
 ${processData(internalRequest.data, config)}`);
     }
   });
   if (currentChangeSet) {
-    batchBody.push(`
+    batchBody.push(`\r
 --${currentChangeSet}--`);
   }
-  batchBody.push(`
---${batchBoundary}--`);
+  batchBody.push(`\r
+--${batchBoundary}--\r
+`);
   const headers = setStandardHeaders(batchRequest == null ? void 0 : batchRequest.userHeaders);
   headers["Content-Type"] = `multipart/mixed;boundary=${batchBoundary}`;
-  return { headers, body: batchBody.join("\n") };
+  return { headers, body: batchBody.join("\r\n") };
 };
 var findCollectionName = (entityName) => {
   if (Utility.isNull(entityNames)) return null;

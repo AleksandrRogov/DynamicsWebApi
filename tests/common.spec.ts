@@ -161,7 +161,7 @@ describe("RequestClient.makeRequest", () => {
             url += "test";
         }
         const rBody = mocks.data.batch.replace("{0}", mocks.webApiUrl + url);
-        const rBodys = rBody.split("\n");
+        const rBodys = rBody.split("\r\n");
         let checkBody = "";
         for (let i = 0; i < rBodys.length; i++) {
             checkBody += rBodys[i];
@@ -176,7 +176,7 @@ describe("RequestClient.makeRequest", () => {
             })
                 .filteringRequestBody(function (body) {
                     body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
-                    const bodys = body.split("\n");
+                    const bodys = body.split("\r\n");
 
                     let resultBody = "";
                     for (let i = 0; i < bodys.length; i++) {
