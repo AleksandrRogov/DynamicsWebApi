@@ -1,3 +1,78 @@
+<a name="v2.3.0"></a>
+# [v2.3.0](https://github.com/AleksandrRogov/DynamicsWebApi/releases/tag/v2.3.0) - 11 May 2025
+
+Bigger minor release than usual with new features! 🙂
+
+### Search API v2.0 🎉
+The library now fully supports a Search API v2.0 with `query` (previously known as `search`)[^1], `suggest` and `autocomplete` functions!
+
+Requests for v1 and v2 are _almost_ fully compatible [^2]. I had to adjust the library's API slightly to include new features in Search 2.0 and because of that you will see "legacy" properties marked as deprecated to encourage the use of the new properties. If you don't want to use the new syntax and stick with v1, it's fine, just beware that the new features that got introduced in v2 are not going to be available in v1.
+
+Responses by default are not compatible between v1 and v2. But it's possible to enable the compatibility by setting `enableResponseCompatibility` to `true`:
+
+```ts
+const webApi = new DynamicsWebApi({
+    searchApi: {
+        // version: "2.0",
+        options: {
+            enableResponseCompatibility: true
+        }
+    }
+})
+```
+
+> [!IMPORTANT]
+> I would recommend enabling this option only temporarily, just to test if your code is fully compatible with `2.0` or to rewrite your v1 code to v2 without switching your Search API version (by keeping `version: "1.0"`) and deal with all incompatibility errors later. The main reason is because it will consume more memory and cpu power by duplicating all properties in responses to achieve a full compatibility.
+
+Also note that the `search` function is renamed to `query` and is marked as deprecated.
+
+All deprecated features will be removed in the next major version.
+
+### Background Operations 🎉
+
+> [!NOTE]
+> This feature is currently **in preview** in an [official documentation](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/background-operations?tabs=webapi) and is **only supported when calling custom APIs**.
+
+Background operations are now supported in DynamicsWebApi.
+
+_"Use background operations to send requests that Dataverse processes asynchronously. Background operations are useful when you don't want to maintain a connection while a request runs."_
+
+DynamicsWebApi supports calls to the Status Monitor resource, as well as regular requests to the `backgroundoperations` table. For more info check the [documentation](https://github.com/AleksandrRogov/DynamicsWebApi?tab=readme-ov-file#background-operations).
+
+### Summary
+
+**Changes**
+* **Search API:** Added support for Search API v2.0 for `query`, `suggest` and `autocomplete` functions. Simply change a version in the `searchApi` configuration to `2.0` to start using it.
+* **Search API:** Special symbols in a search term can now be automatically escaped if the Search API's config option `escapeSpecialCharacters` is set as `true` (it works for both v1 and v2):
+```ts
+const dynamicsWebApi = new DynamicsWebApi({
+  searchApi: {
+    options: { escapeSpecialCharacters: true }
+  }
+});
+```
+* **Search API:** Added a new option to enable Search API v1 and v2 response compatibility: `enableResponseCompatibility`.
+* **Background Operations:** Added support for background operations `respondAsync: true`. This feature is still in preview in [official documentation](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/background-operations?tabs=webapi). Currently `respondAsync` is available for a `callAction` and **works only for custom api actions**.
+* **Background Operations:** Added support for a Status Monitor service. Note, that it is NOT a Dataverse Web API service and has a different behavior (requests, responses, errors, etc).
+* **Background Operations:** Background operation callback URL can be set by default in the configuration, or per each request: `backgroundOperationCallbackUrl`.
+* **Background Operations:** `BackgroundOperationResponse` type can be used in a `TResponse` to get a strongly typed background operation response.
+* Added a new request parameter `tag`. It can be used to pass a shared variable to a custom plugin. [More Info](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/optional-parameters?tabs=webapi#add-a-shared-variable-to-the-plugin-execution-context).
+* Added `TResponse` to `create`, `update` and `upsert` functions. By default, it would still return `TData` unless specified otherwise. This is done to avoid a breaking change in the types. Normally, all those operations would not return `TData`, unless `returnRepresentation` is set to `true`. This 2nd template parameter is added as a workaround. In the future there will possibly be a more solid solution.
+* General refactoring of the codebase.
+
+**Fixes**
+* `returnRepresentation` and `useEntityNames` would not be overwritten by `false` if their values were `true` when using `setConfig` function.
+* `prefer` option now accepts custom prefer values, not only the ones that are supported by the library.
+
+Feel free to let me know about any bugs, issues or suggestions. Thank you! ❤️
+
+---
+[^1]: I made a decision to rename `search` into `query` just to align with Microsoft's official Search API documentation. We will see if this was a mistake in the future. 🙂
+[^2]: Microsoft has changed `filter` syntax. Therefore, if your v1 Search API requests were heavily relying on filters, most likely your v2 requests would fail. You can try it by temporarily switching to `2.0` and setting `enableResponseCompatibility` to `true` in a `searchApi` config. Check documentation for [more info](https://github.com/AleksandrRogov/DynamicsWebApi?tab=readme-ov-file#work-with-dataverse-search-api).
+
+[Changes][v2.3.0]
+
+
 <a name="v2.2.1"></a>
 # [v2.2.1](https://github.com/AleksandrRogov/DynamicsWebApi/releases/tag/v2.2.1) - 20 Feb 2025
 
@@ -1013,6 +1088,7 @@ Added:
 [Changes][v1.2.0]
 
 
+[v2.3.0]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.2.1...v2.3.0
 [v2.2.1]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.2.0...v2.2.1
 [v2.2.0]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.1.7...v2.2.0
 [v2.1.7]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v.2.1.6...v2.1.7
