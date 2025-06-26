@@ -1,4 +1,4 @@
-/*! dynamics-web-api v2.3.0 (c) 2025 Aleksandr Rogov. License: MIT */
+/*! dynamics-web-api v2.3.1 (c) 2025 Aleksandr Rogov. License: MIT */
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -1711,16 +1711,21 @@ var FUNCTION_NAME2 = "associate";
 var REQUEST_NAME = `${LIBRARY_NAME}.${FUNCTION_NAME2}`;
 var associate = async (request, client) => {
   ErrorHelper.parameterCheck(request, REQUEST_NAME, "request");
-  let internalRequest = copyRequest(request);
+  ErrorHelper.parameterCheck(request.relatedKey, REQUEST_NAME, "request.relatedKey");
+  ErrorHelper.stringParameterCheck(request.relationshipName, REQUEST_NAME, "request.relationshipName");
+  let relatedKey = request.relatedKey;
+  let odataId = request.relatedKey;
+  if (!client.isBatch || client.isBatch && !request.relatedKey.startsWith("$")) {
+    ErrorHelper.stringParameterCheck(request.relatedCollection, REQUEST_NAME, "request.relatedCollection");
+    relatedKey = ErrorHelper.keyParameterCheck(request.relatedKey, REQUEST_NAME, "request.relatedKey");
+    odataId = `${request.relatedCollection}(${relatedKey})`;
+  }
+  let internalRequest = copyRequest(request, ["primaryKey"]);
   internalRequest.method = "POST";
   internalRequest.functionName = FUNCTION_NAME2;
-  ErrorHelper.stringParameterCheck(request.relatedCollection, REQUEST_NAME, "request.relatedcollection");
-  ErrorHelper.stringParameterCheck(request.relationshipName, REQUEST_NAME, "request.relationshipName");
-  const primaryKey = ErrorHelper.keyParameterCheck(request.primaryKey, REQUEST_NAME, "request.primaryKey");
-  const relatedKey = ErrorHelper.keyParameterCheck(request.relatedKey, REQUEST_NAME, "request.relatedKey");
   internalRequest.navigationProperty = request.relationshipName + "/$ref";
-  internalRequest.key = primaryKey;
-  internalRequest.data = { "@odata.id": `${request.relatedCollection}(${relatedKey})` };
+  internalRequest.key = request.primaryKey;
+  internalRequest.data = { "@odata.id": odataId };
   await client.makeRequest(internalRequest);
 };
 
@@ -1731,16 +1736,21 @@ var FUNCTION_NAME3 = "associateSingleValued";
 var REQUEST_NAME2 = `${LIBRARY_NAME}.${FUNCTION_NAME3}`;
 var associateSingleValued = async (request, client) => {
   ErrorHelper.parameterCheck(request, REQUEST_NAME2, "request");
-  let internalRequest = copyRequest(request);
+  ErrorHelper.parameterCheck(request.relatedKey, REQUEST_NAME2, "request.relatedKey");
+  ErrorHelper.stringParameterCheck(request.navigationProperty, REQUEST_NAME2, "request.navigationProperty");
+  let relatedKey = request.relatedKey;
+  let odataId = request.relatedKey;
+  if (!client.isBatch || client.isBatch && !request.relatedKey.startsWith("$")) {
+    ErrorHelper.stringParameterCheck(request.relatedCollection, REQUEST_NAME2, "request.relatedCollection");
+    relatedKey = ErrorHelper.keyParameterCheck(request.relatedKey, REQUEST_NAME2, "request.relatedKey");
+    odataId = `${request.relatedCollection}(${relatedKey})`;
+  }
+  let internalRequest = copyRequest(request, ["primaryKey"]);
   internalRequest.method = "PUT";
   internalRequest.functionName = FUNCTION_NAME3;
-  const primaryKey = ErrorHelper.keyParameterCheck(request.primaryKey, REQUEST_NAME2, "request.primaryKey");
-  const relatedKey = ErrorHelper.keyParameterCheck(request.relatedKey, REQUEST_NAME2, "request.relatedKey");
-  ErrorHelper.stringParameterCheck(request.navigationProperty, REQUEST_NAME2, "request.navigationProperty");
-  ErrorHelper.stringParameterCheck(request.relatedCollection, REQUEST_NAME2, "request.relatedcollection");
   internalRequest.navigationProperty += "/$ref";
-  internalRequest.key = primaryKey;
-  internalRequest.data = { "@odata.id": `${request.relatedCollection}(${relatedKey})` };
+  internalRequest.key = request.primaryKey;
+  internalRequest.data = { "@odata.id": odataId };
   await client.makeRequest(internalRequest);
 };
 

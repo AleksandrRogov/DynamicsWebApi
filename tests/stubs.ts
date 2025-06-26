@@ -588,6 +588,23 @@ const dataStubs = {
         "--changeset_XXX--\r\n" +
         "\r\n" +
         "--dwa_batch_XXX--\r\n",
+    batchAssociateContentIDNoCollection:
+        "--dwa_batch_XXX\r\n" +
+        "Content-Type: multipart/mixed;boundary=changeset_XXX\r\n" +
+        "\r\n" +
+        "--changeset_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "Content-ID: 100001\r\n" +
+        "\r\n" +
+        "POST $1/relationshipName/$ref HTTP/1.1\r\n" +
+        "Content-Type: application/json\r\n" +
+        "\r\n" +
+        '{"@odata.id":"$2"}\r\n' +
+        "\r\n" +
+        "--changeset_XXX--\r\n" +
+        "\r\n" +
+        "--dwa_batch_XXX--\r\n",
     batchCreateContentIDURLReplace:
         "--dwa_batch_XXX\r\n" +
         "Content-Type: multipart/mixed;boundary=changeset_XXX\r\n" +

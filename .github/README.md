@@ -364,7 +364,7 @@ async | `boolean` | All | **XHR requests only!** Indicates whether the requests 
 backgroundOperationCallbackUrl | `string` | `callAction` | `v2.3.0+` Background operation callback URL. [More Info](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/background-operations?tabs=webapi#request-a-callback)
 bypassCustomPluginExecution | `boolean` | `create`, `update`, `upsert`, `delete` | If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/data-platform/bypass-custom-business-logic)
 collection | `string` | All | Entity Collection name.
-contentId | `string` | `create`, `update`, `upsert`, `deleteRecord` | **BATCH REQUESTS ONLY!** Sets Content-ID header or references request in a Change Set. [More Info](https://www.odata.org/documentation/odata-version-3-0/batch-processing/)
+contentId | `string` | `create`, `update`, `upsert`, `deleteRecord`, `associate`, `associateSingleValued` | **BATCH REQUESTS ONLY!** Sets Content-ID header or references request in a Change Set. [More Info](https://www.odata.org/documentation/odata-version-3-0/batch-processing/)
 continueOnError | `boolean` | `executeBatch` | **BATCH REQUESTS ONLY!** Sets Prefer header to `odata.continue-on-error` that allows more requests be processed when errors occur. The batch request will return `200 OK` and individual response errors will be returned in the batch response body. [More Info](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/execute-batch-operations-using-web-api#handling-errors)
 count | `boolean` | `retrieveMultiple`, `retrieveAll` | Boolean that sets the $count system query option with a value of true to include a count of entities that match the filter criteria up to 5000 (per page). Do not use $top with $count!
 data | `Object` or `ArrayBuffer` / `Buffer` (for node.js) | `create`, `update`, `upsert`, `uploadFile` | A JavaScript object that represents Dynamics 365 entity, action, metadata and etc. 
@@ -2862,7 +2862,7 @@ the config option "formatted" will enable developers to retrieve all information
 - [X] Support Microsoft Power Pages. `Added in v2.1.0`
 - [X] Background Operations for custom actions. `Added in v2.3.0`
 - [X] Support Search API 2.0 [#174](https://github.com/AleksandrRogov/DynamicsWebApi/issues/174). `Added in v2.3.0`
-- [ ] [Session token](https://learn.microsoft.com/en-ca/power-apps/developer/data-platform/use-elastic-tables?tabs=webapi#work-with-the-session-token) support. `Coming in v2.3.1`
+- [ ] [Session token](https://learn.microsoft.com/en-ca/power-apps/developer/data-platform/use-elastic-tables?tabs=webapi#work-with-the-session-token) support. `Coming in v2.3.2`
 - [ ] Custom requests.
 
 Many more features to come!

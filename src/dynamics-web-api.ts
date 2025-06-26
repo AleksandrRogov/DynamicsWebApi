@@ -542,7 +542,10 @@ export interface Request extends BaseRequest {
 }
 
 export interface CRUDRequest extends Request {
-    /**A String representing collection record's Primary Key (GUID) or Alternate Key(s). */
+    /**
+     * A String representing collection record's Primary Key (GUID) or Alternate Key(s).
+     * Can be ommitted in a Batch request when contentId is set.
+     */
     key?: string;
 }
 
@@ -728,25 +731,41 @@ export interface RetrieveMultipleRequest extends Request {
 }
 
 export interface AssociateRequest extends Request {
-    /**Primary entity record id/key. */
-    primaryKey: string;
+    /**
+     * Primary entity record id/key.
+     * Can be ommitted in a Batch request when contentId is set.
+     */
+    primaryKey?: string;
     /**Relationship name. */
     relationshipName: string;
-    /**Related name of the Entity Collection or Entity Logical name. */
-    relatedCollection: string;
-    /**Related entity record id/key. */
+    /**
+     * Related name of the Entity Collection or Entity Logical name.
+     * Can be omitted in a Batch request when relatedKey is set to a ContentId.
+     */
+    relatedCollection?: string;
+    /**Related entity record id/key or a ContentId in a Batch request (e.g. $2). */
     relatedKey: string;
+    /**v2.3.1+ BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */
+    contentId?: string;
 }
 
 export interface AssociateSingleValuedRequest extends Request {
-    /**Primary entity record id/key. */
-    primaryKey: string;
+    /**
+     * Primary entity record id/key.
+     * Can be ommitted in a Batch request when contentId is set.
+     */
+    primaryKey?: string;
     /**Navigation property name. */
     navigationProperty: string;
-    /**Related name of the Entity Collection or Entity Logical name. */
-    relatedCollection: string;
-    /**Related entity record id/key. */
+    /**
+     * Related name of the Entity Collection or Entity Logical name.
+     * Can be omitted in a Batch request when relatedKey is set to a ContentId.
+     */
+    relatedCollection?: string;
+    /**Related entity record id/key or a ContentId in a Batch request (e.g. $2). */
     relatedKey: string;
+    /**v2.3.1+ BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */
+    contentId?: string;
 }
 
 export interface DisassociateRequest extends Request {

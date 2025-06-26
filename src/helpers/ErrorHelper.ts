@@ -9,7 +9,7 @@ export interface DynamicsWebApiError extends Error {
     stack?: string;
 }
 
-function throwParameterError(functionName: string, parameterName: string, type: string | null | undefined): void {
+function throwParameterError(functionName: string, parameterName: string, type: string | null | undefined): never {
     throw new Error(
         type ? `${functionName} requires a ${parameterName} parameter to be of type ${type}.` : `${functionName} requires a ${parameterName} parameter.`
     );
@@ -107,7 +107,7 @@ export class ErrorHelper {
         return match!;
     }
 
-    static keyParameterCheck(parameter: any, functionName: string, parameterName: string): string | undefined {
+    static keyParameterCheck(parameter: any, functionName: string, parameterName: string): string {
         try {
             ErrorHelper.stringParameterCheck(parameter, functionName, parameterName);
 
