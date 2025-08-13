@@ -79,7 +79,7 @@ export const convertToBatch = (requests: InternalRequest[], config: InternalConf
 
     batchBody.push(`\r\n--${batchBoundary}--\r\n`);
 
-    const headers = setStandardHeaders(batchRequest?.userHeaders);
+    const headers = setStandardHeaders(batchRequest);
     headers["Content-Type"] = `multipart/mixed;boundary=${batchBoundary}`;
 
     return { headers: headers, body: batchBody.join("\r\n") };

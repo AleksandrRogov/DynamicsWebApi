@@ -1127,6 +1127,7 @@ describe("xhr -", () => {
 
             it("sends correct headers", function () {
                 expect(requests[0]?.requestHeaders["x-ms-transfer-mode"]).to.be.eq("chunked");
+                expect(requests[0]?.requestHeaders["Content-Type"]).not.to.contain('application/json');
                 expect(requests[1]?.requestHeaders["Content-Range"]).to.be.eq(
                     `bytes 0-${beginResponse.responseHeaders["x-ms-chunk-size"] - 1}/${dwaRequest.data.length}`,
                 );
