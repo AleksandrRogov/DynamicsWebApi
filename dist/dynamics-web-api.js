@@ -1447,14 +1447,13 @@ var _dynamicsWebApiExports = (() => {
   };
 
   // src/client/request/setStandardHeaders.ts
-  var setStandardHeaders = (request = {}) => {
-    if (!request.headers) request.headers = {};
-    if (!request.headers["Accept"]) request.headers["Accept"] = "application/json";
-    if (!request.headers["OData-MaxVersion"]) request.headers["OData-MaxVersion"] = "4.0";
-    if (!request.headers["OData-Version"]) request.headers["OData-Version"] = "4.0";
-    if (request.headers["Content-Range"]) request.headers["Content-Type"] = "application/octet-stream";
-    else if (!request.headers["Content-Type"] && request.data) request.headers["Content-Type"] = "application/json; charset=utf-8";
-    return request.headers;
+  var setStandardHeaders = (headers = {}, data) => {
+    if (!headers["Accept"]) headers["Accept"] = "application/json";
+    if (!headers["OData-MaxVersion"]) headers["OData-MaxVersion"] = "4.0";
+    if (!headers["OData-Version"]) headers["OData-Version"] = "4.0";
+    if (headers["Content-Range"]) headers["Content-Type"] = "application/octet-stream";
+    else if (!headers["Content-Type"] && data) headers["Content-Type"] = "application/json; charset=utf-8";
+    return headers;
   };
 
   // src/client/request/convertToBatch.ts
@@ -1525,7 +1524,7 @@ ${processData(internalRequest.data, config)}`);
     batchBody.push(`\r
 --${batchBoundary}--\r
 `);
-    const headers = setStandardHeaders(batchRequest);
+    const headers = setStandardHeaders(batchRequest?.userHeaders, batchRequest?.data);
     headers["Content-Type"] = `multipart/mixed;boundary=${batchBoundary}`;
     return { headers, body: batchBody.join("\r\n") };
   };
@@ -1622,7 +1621,7 @@ ${processData(internalRequest.data, config)}`);
     } else {
       processedData = !isBatchConverted ? processData(request.data, config) : request.data;
       if (!isBatchConverted && request.includeDefaultDataverseHeaders !== false) {
-        request.headers = setStandardHeaders(request);
+        request.headers = setStandardHeaders(request.headers, request.data);
       }
     }
     if (config.impersonate && !request.headers["MSCRMCallerID"]) {

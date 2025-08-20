@@ -135,7 +135,7 @@ export const sendRequest = async (request: Core.InternalRequest, config: Interna
         // or if it is set to not include default dataverse headers
         // todo: use the latter option in batch requests as well
         if (!isBatchConverted && request.includeDefaultDataverseHeaders !== false) {
-            request.headers = setStandardHeaders(request);
+            request.headers = setStandardHeaders(request.headers, request.data);
         }
     }
 
