@@ -5066,6 +5066,7 @@ describe("dynamicsWebApi.uploadFile -", function () {
 
             scope = nock(webApiUrl)
                 .matchHeader("x-ms-transfer-mode", "chunked")
+                .matchHeader("Content-type", "")
                 .patch(responses.testEntityUrl + `/${dwaRequest.property}?x-ms-file-name=${dwaRequest.fileName}`)
                 //@ts-ignore
                 .reply(beginResponse.status, "", beginResponse.responseHeaders);
