@@ -1,6 +1,7 @@
 ﻿import { DataverseClient, type IDataverseClient } from "./client/dataverse";
 import { getCollectionName } from "./client/RequestClient";
 import * as Dataverse from "./requests";
+import { toAbsoluteUrl } from "./utils/Utility";
 
 /**
  * Microsoft Dataverse Web API helper library for Node.js and Browser.
@@ -480,6 +481,13 @@ export class DynamicsWebApi {
          * @returns {string | null} collection name
          */
         getCollectionName: (entityName: string): string | null => getCollectionName(entityName),
+
+        /**
+         * Adds an absolute Web API URL to the beginning of a provided value.
+         * @param value The value to modify.
+         * @returns The absolute URL.
+         */
+        toAbsoluteUrl: (value: string): string => toAbsoluteUrl(this.#client,value),
     };
 }
 
@@ -1193,6 +1201,12 @@ export interface Config {
      * You can also set a callback URL per request.
      */
     backgroundOperationCallbackUrl?: string;
+    /**
+     * Disables enforcement of absolute URLs for @odata.id properties in the request body.
+     * In some cases, @odata.id has an alternate key format that does not use absolute URLs, for example:
+     * In an UpsertMultiple action body.
+     */
+    disableODataIdAbsoluteUrl?: boolean;
 }
 
 /**Header collection type */

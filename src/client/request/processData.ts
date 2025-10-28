@@ -33,13 +33,18 @@ export const processData = (data: any, config: InternalConfig): string | Uint8Ar
     };
 
     const stringifiedData = JSON.stringify(data, (key, value) => {
-        if (key.endsWith("@odata.bind") || key.endsWith("@odata.id")) {
+        if (key === "@odata.id" || key.endsWith("@odata.bind")) {
             if (typeof value === "string" && !value.startsWith("$")) {
                 value = removeCurlyBracketsFromUuid(value);
                 if (config.useEntityNames) {
                     value = replaceEntityNameWithCollectionName(value);
                 }
-                value = addFullWebApiUrl(key, value);
+
+                // the full Web API URL is only added in requests to /$ref
+                // the value itself is set directly in the requests that require it
+                if (key !== "@odata.id") {
+                    value = addFullWebApiUrl(key, value);
+                }
             }
         } else if (key.startsWith("oData") || key.endsWith("_Formatted") || key.endsWith("_NavigationProperty") || key.endsWith("_LogicalName")) {
             return undefined;

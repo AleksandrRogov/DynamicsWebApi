@@ -1,6 +1,7 @@
 ﻿import type * as Core from "../types";
 import { getCrypto } from "../helpers/Crypto";
-import { isUuid, extractUuid, parsePagingCookie } from "../helpers/Regex";
+import { isUuid, extractUuid, parsePagingCookie, removeLeadingSlash } from "../helpers/Regex";
+import { IDataverseClient } from "../client/dataverse";
 
 declare var GetGlobalContext: any;
 declare var Xrm: any;
@@ -205,4 +206,8 @@ export function convertToFileBuffer(binaryString: string): Uint8Array | Buffer {
         bytes[i] = binaryString.charCodeAt(i);
     }
     return bytes;
+}
+
+export function toAbsoluteUrl(client: IDataverseClient, value: string): string {
+    return `${client.config.dataApi.url}${removeLeadingSlash(value)}`;
 }

@@ -1,4 +1,4 @@
-/*! dynamics-web-api v2.3.2 (c) 2025 Aleksandr Rogov. License: MIT */
+/*! dynamics-web-api v2.4.0 (c) 2025 Aleksandr Rogov. License: MIT */
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -85,7 +85,7 @@ function sanitizeCookie(cookie) {
   return cookie.replace(SPECIAL_CHARACTER_REGEX, (char) => characterMap[char]);
 }
 function removeLeadingSlash(value) {
-  return value.replace(LEADING_SLASH_REGEX, "");
+  return value.startsWith("/") ? value.slice(1) : value;
 }
 function escapeUnicodeSymbols(value) {
   return value.replace(UNICODE_SYMBOLS_REGEX, (chr) => `\\u${("0000" + chr.charCodeAt(0).toString(16)).slice(-4)}`);
@@ -103,7 +103,7 @@ function extractPreferCallbackUrl(value) {
   const match = PREFER_CALLBACK_URL_REGEX.exec(value);
   return match ? match[1] : null;
 }
-var UUID, UUID_REGEX, EXTRACT_UUID_REGEX, EXTRACT_UUID_FROM_URL_REGEX, REMOVE_BRACKETS_FROM_UUID_REGEX, ENTITY_UUID_REGEX, QUOTATION_MARK_REGEX, PAGING_COOKIE_REGEX, SPECIAL_CHARACTER_REGEX, LEADING_SLASH_REGEX, UNICODE_SYMBOLS_REGEX, DOUBLE_QUOTE_REGEX, BATCH_RESPONSE_HEADERS_REGEX, HTTP_STATUS_REGEX, CONTENT_TYPE_PLAIN_REGEX, ODATA_ENTITYID_REGEX, TEXT_REGEX, LINE_ENDING_REGEX, SEARCH_FOR_ENTITY_NAME_REGEX, SPECIAL_COLLECTION_FOR_UPDATE_REGEX, FETCH_XML_TOP_REGEX, FETCH_XML_PAGE_REGEX, FETCH_XML_REPLACE_REGEX, DATE_FORMAT_REGEX, SEARCH_SPECIAL_CHARACTERS_REGEX, PREFER_CALLBACK_URL_REGEX;
+var UUID, UUID_REGEX, EXTRACT_UUID_REGEX, EXTRACT_UUID_FROM_URL_REGEX, REMOVE_BRACKETS_FROM_UUID_REGEX, ENTITY_UUID_REGEX, QUOTATION_MARK_REGEX, PAGING_COOKIE_REGEX, SPECIAL_CHARACTER_REGEX, UNICODE_SYMBOLS_REGEX, DOUBLE_QUOTE_REGEX, BATCH_RESPONSE_HEADERS_REGEX, HTTP_STATUS_REGEX, CONTENT_TYPE_PLAIN_REGEX, ODATA_ENTITYID_REGEX, TEXT_REGEX, LINE_ENDING_REGEX, SEARCH_FOR_ENTITY_NAME_REGEX, SPECIAL_COLLECTION_FOR_UPDATE_REGEX, FETCH_XML_TOP_REGEX, FETCH_XML_PAGE_REGEX, FETCH_XML_REPLACE_REGEX, DATE_FORMAT_REGEX, SEARCH_SPECIAL_CHARACTERS_REGEX, PREFER_CALLBACK_URL_REGEX;
 var init_Regex = __esm({
   "src/helpers/Regex.ts"() {
     "use strict";
@@ -116,7 +116,6 @@ var init_Regex = __esm({
     QUOTATION_MARK_REGEX = /(["'].*?["'])/;
     PAGING_COOKIE_REGEX = /pagingcookie="(<cookie page="(\d+)".+<\/cookie>)/;
     SPECIAL_CHARACTER_REGEX = /[<>"']/g;
-    LEADING_SLASH_REGEX = /^\//;
     UNICODE_SYMBOLS_REGEX = /[\u007F-\uFFFF]/g;
     DOUBLE_QUOTE_REGEX = /"/g;
     BATCH_RESPONSE_HEADERS_REGEX = /^([^()<>@,;:\\"\/[\]?={} \t]+)\s?:\s?(.*)/;
@@ -261,6 +260,9 @@ function convertToFileBuffer(binaryString) {
     bytes[i] = binaryString.charCodeAt(i);
   }
   return bytes;
+}
+function toAbsoluteUrl(client, value) {
+  return `${client.config.dataApi.url}${removeLeadingSlash(value)}`;
 }
 var downloadChunkSize;
 var init_Utility = __esm({
@@ -1422,13 +1424,15 @@ var processData = (data, config) => {
     return value;
   };
   const stringifiedData = JSON.stringify(data, (key, value) => {
-    if (key.endsWith("@odata.bind") || key.endsWith("@odata.id")) {
+    if (key === "@odata.id" || key.endsWith("@odata.bind")) {
       if (typeof value === "string" && !value.startsWith("$")) {
         value = removeCurlyBracketsFromUuid(value);
         if (config.useEntityNames) {
           value = replaceEntityNameWithCollectionName(value);
         }
-        value = addFullWebApiUrl(key, value);
+        if (key !== "@odata.id") {
+          value = addFullWebApiUrl(key, value);
+        }
       }
     } else if (key.startsWith("oData") || key.endsWith("_Formatted") || key.endsWith("_NavigationProperty") || key.endsWith("_LogicalName")) {
       return void 0;
@@ -1726,7 +1730,7 @@ var associate = async (request, client) => {
   if (!client.isBatch || client.isBatch && !request.relatedKey.startsWith("$")) {
     ErrorHelper.stringParameterCheck(request.relatedCollection, REQUEST_NAME, "request.relatedCollection");
     relatedKey = ErrorHelper.keyParameterCheck(request.relatedKey, REQUEST_NAME, "request.relatedKey");
-    odataId = `${request.relatedCollection}(${relatedKey})`;
+    odataId = `${client.config.dataApi.url}${request.relatedCollection}(${relatedKey})`;
   }
   let internalRequest = copyRequest(request, ["primaryKey"]);
   internalRequest.method = "POST";
@@ -1751,7 +1755,7 @@ var associateSingleValued = async (request, client) => {
   if (!client.isBatch || client.isBatch && !request.relatedKey.startsWith("$")) {
     ErrorHelper.stringParameterCheck(request.relatedCollection, REQUEST_NAME2, "request.relatedCollection");
     relatedKey = ErrorHelper.keyParameterCheck(request.relatedKey, REQUEST_NAME2, "request.relatedKey");
-    odataId = `${request.relatedCollection}(${relatedKey})`;
+    odataId = `${client.config.dataApi.url}${request.relatedCollection}(${relatedKey})`;
   }
   let internalRequest = copyRequest(request, ["primaryKey"]);
   internalRequest.method = "PUT";
@@ -2896,6 +2900,7 @@ async function cancelBackgroundOperation(backgroundOperationId, client) {
 }
 
 // src/dynamics-web-api.ts
+init_Utility();
 var _client;
 var _DynamicsWebApi = class _DynamicsWebApi {
   /**
@@ -3304,7 +3309,13 @@ var _DynamicsWebApi = class _DynamicsWebApi {
        * @param {string} entityName entity name
        * @returns {string | null} collection name
        */
-      getCollectionName: (entityName) => getCollectionName(entityName)
+      getCollectionName: (entityName) => getCollectionName(entityName),
+      /**
+       * Adds an absolute Web API URL to the beginning of a provided value.
+       * @param value The value to modify.
+       * @returns The absolute URL.
+       */
+      toAbsoluteUrl: (value) => toAbsoluteUrl(__privateGet(this, _client), value)
     };
     __privateSet(this, _client, new DataverseClient(config));
   }

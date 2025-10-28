@@ -1,4 +1,4 @@
-/*! dynamics-web-api v2.3.2 (c) 2025 Aleksandr Rogov. License: MIT */
+/*! dynamics-web-api v2.4.0 (c) 2025 Aleksandr Rogov. License: MIT */
 /**
  * Microsoft Dataverse Web API helper library for Node.js and Browser.
  * It is compatible with: Dataverse, Dynamics 365 (online), Dynamics 365 (on-premise), Dynamics CRM 2016, Dynamics CRM Online.
@@ -408,6 +408,12 @@ export declare class DynamicsWebApi {
          * @returns {string | null} collection name
          */
         getCollectionName: (entityName: string) => string | null;
+        /**
+         * Adds an absolute Web API URL to the beginning of a provided value.
+         * @param value The value to modify.
+         * @returns The absolute URL.
+         */
+        toAbsoluteUrl: (value: string) => string;
     };
 }
 export interface Expand {
@@ -1058,6 +1064,12 @@ export interface Config {
      * You can also set a callback URL per request.
      */
     backgroundOperationCallbackUrl?: string;
+    /**
+     * Disables enforcement of absolute URLs for @odata.id properties in the request body.
+     * In some cases, @odata.id has an alternate key format that does not use absolute URLs, for example:
+     * In an UpsertMultiple action body.
+     */
+    disableODataIdAbsoluteUrl?: boolean;
 }
 /**Header collection type */
 export type HeaderCollection = Record<string, string>;

@@ -2863,6 +2863,7 @@ the config option "formatted" will enable developers to retrieve all information
 - [X] Background Operations for custom actions. `Added in v2.3.0`
 - [X] Support Search API 2.0 [#174](https://github.com/AleksandrRogov/DynamicsWebApi/issues/174). `Added in v2.3.0`
 - [ ] [Session token](https://learn.microsoft.com/en-ca/power-apps/developer/data-platform/use-elastic-tables?tabs=webapi#work-with-the-session-token) support. `Coming in v2.3.x`
+- [ ] Support for a custom logger + a console fallback debug logging.
 - [ ] Custom requests.
 
 Many more features to come!

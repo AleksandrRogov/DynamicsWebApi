@@ -13,7 +13,7 @@ var dynamicsWebApiTest = new DynamicsWebApi({ serverUrl: _serverUrl, dataApi: { 
 
 describe("dynamicsWebApi.upsert -", function () {
     describe("basic & update an existing entity", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
             scope = nock(webApiUrl).patch(responses.testEntityUrl, _data.testEntity).reply(response.status, response.responseText, response.responseHeaders);
@@ -40,7 +40,7 @@ describe("dynamicsWebApi.upsert -", function () {
     });
 
     describe("basic & create an entity", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.createReturnId;
             scope = nock(webApiUrl).patch(responses.testEntityUrl, _data.testEntity).reply(response.status, response.responseText, response.responseHeaders);
@@ -68,7 +68,7 @@ describe("dynamicsWebApi.upsert -", function () {
     });
 
     describe("return representation & update an existing entity", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.updateReturnRepresentation;
             scope = nock(webApiUrl, {
@@ -102,7 +102,7 @@ describe("dynamicsWebApi.upsert -", function () {
     });
 
     describe("return representation & create an entity", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.createReturnRepresentation;
             scope = nock(webApiUrl, {
@@ -136,7 +136,7 @@ describe("dynamicsWebApi.upsert -", function () {
     });
 
     describe("return representation & update an existing entity & select", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.updateReturnRepresentation;
             scope = nock(webApiUrl, {
@@ -196,7 +196,7 @@ describe("dynamicsWebApi.upsert -", function () {
     });
 
     describe("return representation & create an entity & select", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.createReturnRepresentation;
             scope = nock(webApiUrl, {
@@ -258,7 +258,7 @@ describe("dynamicsWebApi.upsert -", function () {
 
 describe("dynamicsWebApi.retrieve -", function () {
     describe("basic", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.response200;
             scope = nock(webApiUrl).get(responses.testEntityUrl).reply(response.status, response.responseText, response.responseHeaders);
@@ -286,7 +286,7 @@ describe("dynamicsWebApi.retrieve -", function () {
     });
 
     describe("basic - alternate key", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.response200;
             scope = nock(webApiUrl)
@@ -316,7 +316,7 @@ describe("dynamicsWebApi.retrieve -", function () {
     });
 
     describe("select", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.response200;
             scope = nock(webApiUrl)
@@ -360,7 +360,7 @@ describe("dynamicsWebApi.retrieve -", function () {
     });
 
     describe("single value or navigation property", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.response200;
             scope = nock(webApiUrl)
@@ -418,7 +418,7 @@ describe("dynamicsWebApi.retrieve -", function () {
     });
 
     describe("reference", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.retrieveReferenceResponse;
             scope = nock(webApiUrl)
@@ -448,7 +448,7 @@ describe("dynamicsWebApi.retrieve -", function () {
     });
 
     describe("expand basic", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.response200;
             scope = nock(webApiUrl)
@@ -478,7 +478,7 @@ describe("dynamicsWebApi.retrieve -", function () {
     });
 
     describe("select & expand basic", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.response200;
             scope = nock(webApiUrl)
@@ -532,7 +532,7 @@ describe("dynamicsWebApi.retrieve -", function () {
     });
 
     describe("select & expand navigation property", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.response200;
             scope = nock(webApiUrl)
@@ -607,7 +607,7 @@ describe("dynamicsWebApi.retrieve -", function () {
 
 describe("dynamicsWebApi.count -", function () {
     describe("basic", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.countBasic;
             scope = nock(webApiUrl)
@@ -637,7 +637,7 @@ describe("dynamicsWebApi.count -", function () {
     });
 
     describe("filter", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.multipleWithCountResponse;
             scope = nock(webApiUrl)
@@ -669,7 +669,7 @@ describe("dynamicsWebApi.count -", function () {
 
 describe("dynamicsWebApi.countAll -", function () {
     describe("filter", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.multipleWithCountResponse;
             scope = nock(webApiUrl)
@@ -701,7 +701,7 @@ describe("dynamicsWebApi.countAll -", function () {
 
 describe("dynamicsWebApi.fetch -", function () {
     describe("basic", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.fetchXmlResponsePage1Cookie;
             scope = nock(webApiUrl)
@@ -731,7 +731,7 @@ describe("dynamicsWebApi.fetch -", function () {
     });
 
     describe("paging", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.fetchXmlResponsePage2Cookie;
             scope = nock(webApiUrl)
@@ -762,7 +762,7 @@ describe("dynamicsWebApi.fetch -", function () {
     });
 
     describe("paging - no cookie", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.fetchXmlResponsePage1;
             scope = nock(webApiUrl)
@@ -792,7 +792,7 @@ describe("dynamicsWebApi.fetch -", function () {
     });
 
     describe("with prefer", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.fetchXmlResponsePage2Cookie;
             scope = nock(webApiUrl, {
@@ -833,7 +833,7 @@ describe("dynamicsWebApi.fetch -", function () {
     });
 
     describe("with top attribute", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.fetchXmlResponsePage1Cookie;
             scope = nock(webApiUrl)
@@ -868,7 +868,7 @@ describe("dynamicsWebApi.fetch -", function () {
 
 describe("dynamicsWebApi.fetchAll -", function () {
     describe("basic", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.fetchXmlResponsePage1Cookie;
             var response2 = responses.fetchXmlResponsePage2NoCookie;
@@ -905,7 +905,7 @@ describe("dynamicsWebApi.fetchAll -", function () {
 
 describe("dynamicsWebApi.associate -", function () {
     describe("basic", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
             scope = nock(webApiUrl)
@@ -942,7 +942,7 @@ describe("dynamicsWebApi.associate -", function () {
     });
 
     describe("basic - use entity names: true", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
             var response2 = responses.responseEntityDefinitions;
@@ -987,7 +987,7 @@ describe("dynamicsWebApi.associate -", function () {
     });
 
     describe("impersonation", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
             scope = nock(webApiUrl, {
@@ -1031,7 +1031,7 @@ describe("dynamicsWebApi.associate -", function () {
 
 describe("dynamicsWebApi.disassociate -", function () {
     describe("basic", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
             scope = nock(webApiUrl)
@@ -1065,7 +1065,7 @@ describe("dynamicsWebApi.disassociate -", function () {
     });
 
     describe("impersonation", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
             scope = nock(webApiUrl, {
@@ -1106,7 +1106,7 @@ describe("dynamicsWebApi.disassociate -", function () {
 
 describe("dynamicsWebApi.associateSingleValued -", function () {
     describe("basic", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
             scope = nock(webApiUrl)
@@ -1143,7 +1143,7 @@ describe("dynamicsWebApi.associateSingleValued -", function () {
     });
 
     describe("impersonation", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
             scope = nock(webApiUrl, {
@@ -1187,7 +1187,7 @@ describe("dynamicsWebApi.associateSingleValued -", function () {
 
 describe("dynamicsWebApi.disassociateSingleValued -", function () {
     describe("basic", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
             scope = nock(webApiUrl)
@@ -1216,7 +1216,7 @@ describe("dynamicsWebApi.disassociateSingleValued -", function () {
     });
 
     describe("impersonation", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
             scope = nock(webApiUrl, {
@@ -1252,7 +1252,7 @@ describe("dynamicsWebApi.disassociateSingleValued -", function () {
 
 describe("dynamicsWebApi.callFunction -", function () {
     describe("unbound", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.response200;
             scope = nock(webApiUrl)
@@ -1296,7 +1296,7 @@ describe("dynamicsWebApi.callFunction -", function () {
     });
 
     describe("unbound - short version", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.response200;
             scope = nock(webApiUrl).get("/FUN()").reply(response.status, response.responseText, response.responseHeaders);
@@ -1324,7 +1324,7 @@ describe("dynamicsWebApi.callFunction -", function () {
     });
 
     describe("unbound impersonation", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.response200;
             scope = nock(webApiUrl, {
@@ -1372,7 +1372,7 @@ describe("dynamicsWebApi.callFunction -", function () {
     });
 
     describe("bound", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.response200;
             var response2 = responses.basicEmptyResponseSuccess;
@@ -1421,7 +1421,7 @@ describe("dynamicsWebApi.callFunction -", function () {
     });
 
     describe("bound impersonation", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.response200;
             scope = nock(webApiUrl, {
@@ -1477,7 +1477,7 @@ describe("dynamicsWebApi.callFunction -", function () {
 
 describe("dynamicsWebApi.callAction -", function () {
     describe("unbound", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
             scope = nock(webApiUrl).post("/FUN", responses.actionRequestModified).reply(response.status, response.responseText, response.responseHeaders);
@@ -1504,7 +1504,7 @@ describe("dynamicsWebApi.callAction -", function () {
     });
 
     describe("unbound impersonation", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
             scope = nock(webApiUrl, {
@@ -1537,7 +1537,7 @@ describe("dynamicsWebApi.callAction -", function () {
     });
 
     describe("bound", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.response200;
             scope = nock(webApiUrl)
@@ -1567,7 +1567,7 @@ describe("dynamicsWebApi.callAction -", function () {
     });
 
     describe("bound impersonation", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.response200;
             scope = nock(webApiUrl, {
@@ -1609,7 +1609,7 @@ describe("dynamicsWebApi.callAction -", function () {
 
 describe("dynamicsWebApi.update -", function () {
     describe("basic", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
             scope = nock(webApiUrl, {
@@ -1649,7 +1649,7 @@ describe("dynamicsWebApi.update -", function () {
     });
 
     describe("return representation", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.updateReturnRepresentation;
             scope = nock(webApiUrl, {
@@ -1713,7 +1713,7 @@ describe("dynamicsWebApi.update -", function () {
     });
 
     describe("(success) check optimistic concurrency", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
 
@@ -1755,7 +1755,7 @@ describe("dynamicsWebApi.update -", function () {
     });
 
     describe("(pre condition failed) check optimistic concurrency", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.upsertPreventUpdateResponse;
 
@@ -1797,7 +1797,7 @@ describe("dynamicsWebApi.update -", function () {
     });
 
     describe("(error response) check optimistic concurrency", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.upsertPreventCreateResponse;
 
@@ -1847,7 +1847,7 @@ describe("dynamicsWebApi.upsert -", function () {
             data: _data.testEntity,
         };
 
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
             var response2 = responses.createReturnId;
@@ -1892,7 +1892,7 @@ describe("dynamicsWebApi.upsert -", function () {
     });
 
     describe("return representation", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.updateReturnRepresentation;
             var response2 = responses.createReturnRepresentation;
@@ -1964,7 +1964,7 @@ describe("dynamicsWebApi.upsert -", function () {
             returnRepresentation: true,
             ifmatch: "*",
         };
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.upsertPreventCreateResponse;
             var response2 = responses.createReturnRepresentation;
@@ -2039,7 +2039,7 @@ describe("dynamicsWebApi.upsert -", function () {
             returnRepresentation: true,
             ifnonematch: "*",
         };
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.upsertPreventUpdateResponse;
             var response2 = responses.updateReturnRepresentation;
@@ -2109,7 +2109,7 @@ describe("dynamicsWebApi.upsert -", function () {
 
 describe("dynamicsWebApi.retrieve -", function () {
     describe("match and impersonation", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.response200;
             scope = nock(webApiUrl, {
@@ -2152,7 +2152,7 @@ describe("dynamicsWebApi.retrieve -", function () {
     });
 
     describe("match and impersonation - expand filter", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.response200;
             scope = nock(webApiUrl, {
@@ -2195,7 +2195,7 @@ describe("dynamicsWebApi.retrieve -", function () {
     });
 
     describe("match and impersonation - retrieve reference", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.retrieveReferenceResponse;
             scope = nock(webApiUrl, {
@@ -2241,7 +2241,7 @@ describe("dynamicsWebApi.retrieve -", function () {
 
 describe("dynamicsWebApi.retrieveMultiple -", function () {
     describe("basic", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.multipleResponse;
             scope = nock(webApiUrl).get(responses.collectionUrl).reply(response.status, response.responseText, response.responseHeaders);
@@ -2269,7 +2269,7 @@ describe("dynamicsWebApi.retrieveMultiple -", function () {
     });
 
     describe("select", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.multipleResponse;
             scope = nock(webApiUrl)
@@ -2313,7 +2313,7 @@ describe("dynamicsWebApi.retrieveMultiple -", function () {
     });
 
     describe("filter", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.multipleResponse;
             scope = nock(webApiUrl)
@@ -2357,7 +2357,7 @@ describe("dynamicsWebApi.retrieveMultiple -", function () {
     });
 
     describe("includeAnnotations", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.multipleResponse;
             var response2 = responses.multipleWithCountResponse;
@@ -2419,7 +2419,7 @@ describe("dynamicsWebApi.retrieveMultiple -", function () {
     });
 
     describe("retrieves the next page link", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.multipleWithLinkResponse;
             scope = nock(webApiUrl, {
@@ -2459,7 +2459,7 @@ describe("dynamicsWebApi.retrieveMultiple -", function () {
     });
 
     describe("when goes by next page link", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.multipleResponse;
             var linkQuery = responses.multipleWithLink().oDataNextLink.split("?");
@@ -2502,7 +2502,7 @@ describe("dynamicsWebApi.retrieveMultiple -", function () {
     });
 
     describe("retrieves the delta link (@odata.deltaLink)", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.multipleWithDeltaLinkResponse;
             scope = nock(webApiUrl, {
@@ -2542,7 +2542,7 @@ describe("dynamicsWebApi.retrieveMultiple -", function () {
     });
 
     describe("when goes by delta link (@odata.deltaLink)", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.multipleResponse;
             var linkQuery = responses.multipleWithDeltaLink().oDataDeltaLink.split("?");
@@ -2585,7 +2585,7 @@ describe("dynamicsWebApi.retrieveMultiple -", function () {
     });
 
     describe("$apply", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.multipleResponse;
             scope = nock(webApiUrl, {
@@ -2625,7 +2625,7 @@ describe("dynamicsWebApi.retrieveMultiple -", function () {
     });
 
     describe("filter & queryParams parameters", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.multipleResponse;
             scope = nock(webApiUrl, {
@@ -2671,7 +2671,7 @@ describe("dynamicsWebApi.retrieveMultiple -", function () {
 
 describe("dynamicsWebApi.retrieveAll -", function () {
     describe("single page", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.multipleResponse;
             scope = nock(webApiUrl, {
@@ -2712,8 +2712,8 @@ describe("dynamicsWebApi.retrieveAll -", function () {
     });
 
     describe("multiple pages", function () {
-        var scope;
-        var scope2;
+        let scope: nock.Scope;
+        let scope2: nock.Scope;
         before(function () {
             var response = responses.multipleWithLinkResponse;
             var response2 = responses.multipleResponse;
@@ -2767,8 +2767,8 @@ describe("dynamicsWebApi.retrieveAll -", function () {
     });
 
     describe("multiple pages - delta link", function () {
-        var scope;
-        var scope2;
+        let scope: nock.Scope;
+        let scope2: nock.Scope;
         before(function () {
             var response = responses.multipleWithLinkResponse;
             var response2 = responses.multipleWithDeltaLinkResponse;
@@ -2812,7 +2812,7 @@ describe("dynamicsWebApi.retrieveAll -", function () {
 
 describe("dynamicsWebApi.deleteRecord -", function () {
     describe("basic", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
             scope = nock(webApiUrl, {
@@ -2852,7 +2852,7 @@ describe("dynamicsWebApi.deleteRecord -", function () {
     });
 
     describe("single property", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
             scope = nock(webApiUrl)
@@ -2882,7 +2882,7 @@ describe("dynamicsWebApi.deleteRecord -", function () {
     });
 
     describe("If-Match", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
             var response2 = responses.upsertPreventUpdateResponse;
@@ -2970,7 +2970,7 @@ describe("dynamicsWebApi.deleteRecord -", function () {
 
 describe("dynamicsWebApi.createEntity -", function () {
     describe("basic", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.createReturnId;
             scope = nock(webApiUrl)
@@ -3002,7 +3002,7 @@ describe("dynamicsWebApi.createEntity -", function () {
 
 describe("dynamicsWebApi.updateEntity -", function () {
     describe("basic", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
             scope = nock(webApiUrl, {
@@ -3036,7 +3036,7 @@ describe("dynamicsWebApi.updateEntity -", function () {
     });
 
     describe("mergeLabels = true", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
             scope = nock(webApiUrl, {
@@ -3073,7 +3073,7 @@ describe("dynamicsWebApi.updateEntity -", function () {
 
 describe("dynamicsWebApi.retrieveEntity -", function () {
     describe("basic", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.response200;
             scope = nock(webApiUrl).get(responses.entityDefinitionsIdUrl).reply(response.status, response.responseText, response.responseHeaders);
@@ -3101,7 +3101,7 @@ describe("dynamicsWebApi.retrieveEntity -", function () {
     });
 
     describe("basic - alternate key", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.response200;
             scope = nock(webApiUrl)
@@ -3131,7 +3131,7 @@ describe("dynamicsWebApi.retrieveEntity -", function () {
     });
 
     describe("select", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.response200;
             scope = nock(webApiUrl)
@@ -3177,7 +3177,7 @@ describe("dynamicsWebApi.retrieveEntity -", function () {
 
 describe("dynamicsWebApi.retrieveEntities -", function () {
     describe("basic", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.responseEntityDefinitions;
             scope = nock(webApiUrl).get(responses.entityDefinitionsUrl).reply(response.status, response.responseText, response.responseHeaders);
@@ -3207,7 +3207,7 @@ describe("dynamicsWebApi.retrieveEntities -", function () {
 
 describe("dynamicsWebApi.createAttribute -", function () {
     describe("basic", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.createAttributeReturnId;
             scope = nock(webApiUrl)
@@ -3239,7 +3239,7 @@ describe("dynamicsWebApi.createAttribute -", function () {
 
 describe("dynamicsWebApi.updateAttribute -", function () {
     describe("basic", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
             scope = nock(webApiUrl, {
@@ -3273,7 +3273,7 @@ describe("dynamicsWebApi.updateAttribute -", function () {
     });
 
     describe("mergeLabels = true", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
             scope = nock(webApiUrl, {
@@ -3308,7 +3308,7 @@ describe("dynamicsWebApi.updateAttribute -", function () {
     });
 
     describe("with Attribute Type", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
             scope = nock(webApiUrl, {
@@ -3342,7 +3342,7 @@ describe("dynamicsWebApi.updateAttribute -", function () {
     });
 
     describe("with Attribute Type & mergeLabels = true", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
             scope = nock(webApiUrl, {
@@ -3384,7 +3384,7 @@ describe("dynamicsWebApi.updateAttribute -", function () {
 
 describe("dynamicsWebApi.retrieveAttributes -", function () {
     describe("basic", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.responseEntityDefinitions;
             scope = nock(webApiUrl)
@@ -3414,7 +3414,7 @@ describe("dynamicsWebApi.retrieveAttributes -", function () {
     });
 
     describe("with AttributeType", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.responseEntityDefinitions;
             scope = nock(webApiUrl)
@@ -3446,7 +3446,7 @@ describe("dynamicsWebApi.retrieveAttributes -", function () {
 
 describe("dynamicsWebApi.retrieveAttribute -", function () {
     describe("basic", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.response200;
             scope = nock(webApiUrl)
@@ -3476,7 +3476,7 @@ describe("dynamicsWebApi.retrieveAttribute -", function () {
     });
 
     describe("basic - AlternateKeys", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.response200;
             scope = nock(webApiUrl)
@@ -3506,7 +3506,7 @@ describe("dynamicsWebApi.retrieveAttribute -", function () {
     });
 
     describe("with AttributeType", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.response200;
             scope = nock(webApiUrl)
@@ -3538,7 +3538,7 @@ describe("dynamicsWebApi.retrieveAttribute -", function () {
 
 describe("dynamicsWebApi.createRelationship -", function () {
     describe("basic", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.createReturnId;
             scope = nock(webApiUrl)
@@ -3570,7 +3570,7 @@ describe("dynamicsWebApi.createRelationship -", function () {
 
 describe("dynamicsWebApi.updateRelationship -", function () {
     describe("basic", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
             scope = nock(webApiUrl, {
@@ -3604,7 +3604,7 @@ describe("dynamicsWebApi.updateRelationship -", function () {
     });
 
     describe("cast relationship", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
             scope = nock(webApiUrl, {
@@ -3638,7 +3638,7 @@ describe("dynamicsWebApi.updateRelationship -", function () {
     });
 
     describe("mergeLabels = true", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
             scope = nock(webApiUrl, {
@@ -3675,7 +3675,7 @@ describe("dynamicsWebApi.updateRelationship -", function () {
 
 describe("dynamicsWebApi.deleteRelationship -", function () {
     describe("basic", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
             scope = nock(webApiUrl).delete(responses.relationshipDefinitionsIdUrl).reply(response.status, response.responseText, response.responseHeaders);
@@ -3705,7 +3705,7 @@ describe("dynamicsWebApi.deleteRelationship -", function () {
 
 describe("dynamicsWebApi.retrieveRelationship -", function () {
     describe("basic", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.response200;
             scope = nock(webApiUrl).get(responses.relationshipDefinitionsIdUrl).reply(response.status, response.responseText, response.responseHeaders);
@@ -3733,7 +3733,7 @@ describe("dynamicsWebApi.retrieveRelationship -", function () {
     });
 
     describe("select", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.response200;
             scope = nock(webApiUrl)
@@ -3777,7 +3777,7 @@ describe("dynamicsWebApi.retrieveRelationship -", function () {
     });
 
     describe("cast relationship, select", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.response200;
             scope = nock(webApiUrl)
@@ -3823,7 +3823,7 @@ describe("dynamicsWebApi.retrieveRelationship -", function () {
 
 describe("dynamicsWebApi.retrieveRelationships -", function () {
     describe("basic", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.responseEntityDefinitions;
             scope = nock(webApiUrl).get(responses.relationshipDefinitionsUrl).reply(response.status, response.responseText, response.responseHeaders);
@@ -3851,7 +3851,7 @@ describe("dynamicsWebApi.retrieveRelationships -", function () {
     });
 
     describe("cast, select", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.responseEntityDefinitions;
             scope = nock(webApiUrl)
@@ -3897,7 +3897,7 @@ describe("dynamicsWebApi.retrieveRelationships -", function () {
 
 describe("dynamicsWebApi.createGlobalOptionSet -", function () {
     describe("basic", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.createReturnId;
             scope = nock(webApiUrl)
@@ -3929,7 +3929,7 @@ describe("dynamicsWebApi.createGlobalOptionSet -", function () {
 
 describe("dynamicsWebApi.updateGlobalOptionSet -", function () {
     describe("basic", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
             scope = nock(webApiUrl, {
@@ -3963,7 +3963,7 @@ describe("dynamicsWebApi.updateGlobalOptionSet -", function () {
     });
 
     describe("mergeLabels = true", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
             scope = nock(webApiUrl, {
@@ -4000,7 +4000,7 @@ describe("dynamicsWebApi.updateGlobalOptionSet -", function () {
 
 describe("dynamicsWebApi.deleteGlobalOptionSet -", function () {
     describe("basic", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
             scope = nock(webApiUrl).delete(responses.globalOptionSetDefinitionsIdUrl).reply(response.status, response.responseText, response.responseHeaders);
@@ -4030,7 +4030,7 @@ describe("dynamicsWebApi.deleteGlobalOptionSet -", function () {
 
 describe("dynamicsWebApi.retrieveGlobalOptionSet -", function () {
     describe("basic", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.response200;
             scope = nock(webApiUrl).get(responses.globalOptionSetDefinitionsIdUrl).reply(response.status, response.responseText, response.responseHeaders);
@@ -4058,7 +4058,7 @@ describe("dynamicsWebApi.retrieveGlobalOptionSet -", function () {
     });
 
     describe("select", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.response200;
             scope = nock(webApiUrl)
@@ -4104,7 +4104,7 @@ describe("dynamicsWebApi.retrieveGlobalOptionSet -", function () {
 
 describe("dynamicsWebApi.retrieveGlobalOptionSets -", function () {
     describe("basic", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.responseEntityDefinitions;
             scope = nock(webApiUrl).get(responses.globalOptionSetDefinitionsUrl).reply(response.status, response.responseText, response.responseHeaders);
@@ -4132,7 +4132,7 @@ describe("dynamicsWebApi.retrieveGlobalOptionSets -", function () {
     });
 
     describe("cast, select", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.responseEntityDefinitions;
             scope = nock(webApiUrl)
@@ -4178,7 +4178,7 @@ describe("dynamicsWebApi.retrieveGlobalOptionSets -", function () {
 
 describe("dynamicsWebApi.executeBatch -", function () {
     describe("retrieve multiple / create / retrieve multiple", function () {
-        var scope;
+        let scope: nock.Scope;
         var rBody = _data.batchRetrieveMultipleCreateRetrieveMultiple;
         var rBodys = rBody.split("\r\n");
         var checkBody = "";
@@ -4236,7 +4236,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
     });
 
     describe("retrieve multiple / update / retrieve multiple", function () {
-        var scope;
+        let scope: nock.Scope;
         var rBody = _data.batchRetrieveMultipleUpdateRetrieveMultiple;
         var rBodys = rBody.split("\r\n");
         var checkBody = "";
@@ -4294,7 +4294,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
     });
 
     describe("retrieve multiple / delete / retrieve multiple", function () {
-        var scope;
+        let scope: nock.Scope;
         var rBody = _data.batchRetrieveMultipleDeleteRetrieveMultiple;
         var rBodys = rBody.split("\r\n");
         var checkBody = "";
@@ -4352,7 +4352,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
     });
 
     describe("retrieve multiple / count / retrieve multiple", function () {
-        var scope;
+        let scope: nock.Scope;
         var rBody = _data.batchRetrieveMultipleCountRetrieveMultiple;
         var rBodys = rBody.split("\r\n");
         var checkBody = "";
@@ -4410,7 +4410,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
     });
 
     describe("retrieve multiple / retrieve multiple (count) / retrieve multiple", function () {
-        var scope;
+        let scope: nock.Scope;
         var rBody = _data.batchRetrieveMultipleCountFilteredRetrieveMultiple;
         var rBodys = rBody.split("\r\n");
         var checkBody = "";
@@ -4468,7 +4468,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
     });
 
     describe("retrieve multiple / count (filtered) / retrieve multiple", function () {
-        var scope;
+        let scope: nock.Scope;
         var rBody = _data.batchRetrieveMultipleCountFilteredRetrieveMultiple;
         var rBodys = rBody.split("\r\n");
         var checkBody = "";
@@ -4552,7 +4552,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
     });
 
     describe("update / delete", function () {
-        var scope;
+        let scope: nock.Scope;
         var rBody = _data.batchUpdateDelete;
         var rBodys = rBody.split("\r\n");
         var checkBody = "";
@@ -4610,7 +4610,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
     });
 
     describe("update / delete - passing a request parameter", function () {
-        var scope;
+        let scope: nock.Scope;
         var rBody = _data.batchUpdateDelete;
         var rBodys = rBody.split("\r\n");
         var checkBody = "";
@@ -4670,7 +4670,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
     });
 
     describe("update / delete - returns an error", function () {
-        var scope;
+        let scope: nock.Scope;
         var rBody = _data.batchUpdateDelete;
         var rBodys = rBody.split("\r\n");
         var checkBody = "";
@@ -4739,7 +4739,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
     });
 
     describe("create / create with Content-ID", function () {
-        var scope;
+        let scope: nock.Scope;
         var rBody = _data.batchCreateContentID;
         var rBodys = rBody.split("\r\n");
         var checkBody = "";
@@ -4795,7 +4795,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
     });
 
     describe("create / create with Content-ID - URL Replacement", function () {
-        var scope;
+        let scope: nock.Scope;
         var rBody = _data.batchCreateContentIDURLReplace;
         var rBodys = rBody.split("\r\n");
         var checkBody = "";
@@ -4851,7 +4851,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
     });
 
     describe("create / create with Content-ID in a payload", function () {
-        var scope;
+        let scope: nock.Scope;
         var rBody = _data.batchCreateContentIDPayload;
         var rBodys = rBody.split("\r\n");
         var checkBody = "";
@@ -4907,7 +4907,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
     });
 
     describe("upsert / upsert / upsert with alternate keys", function () {
-        var scope;
+        let scope: nock.Scope;
         var rBody = _data.batchUpsertUpsertUpsertWithAlternateKeys;
         var rBodys = rBody.split("\r\n");
         var checkBody = "";
@@ -4965,7 +4965,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
     });
 
     describe("next request has a new requestId", function () {
-        var scope;
+        let scope: nock.Scope;
         //1st request body check
         var rBody = _data.batchRetrieveMultipleCreateRetrieveMultiple;
         var rBodys = rBody.split("\r\n");
@@ -5055,9 +5055,9 @@ describe("dynamicsWebApi.uploadFile -", function () {
             data: Buffer.from("Welcome to DynamicsWebApi!", "utf-8"),
         };
 
-        var scope;
-        var scope1;
-        var scope2;
+        let scope: nock.Scope;
+        let scope1: nock.Scope;
+        let scope2: nock.Scope;
         before(function () {
             var beginResponse = responses.uploadFileBeginResponse;
             var response1 = responses.uploadFile1stResponse;
@@ -5118,8 +5118,8 @@ describe("dynamicsWebApi.downloadFile -", function () {
             property: "dwa_file",
         };
 
-        var scope;
-        var scope1;
+        let scope: nock.Scope;
+        let scope1: nock.Scope;
 
         var chunk1 = responses.downloadFileResponseChunk1;
         var chunk2 = responses.downloadFileResponseChunk2;
@@ -5168,7 +5168,7 @@ describe("dynamicsWebApi.downloadFile -", function () {
 
 describe("dynamicsWebApi.retrieveCsdlMetadata -", function () {
     describe("basic", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             const response = responses.xmlResponse;
             scope = nock(webApiUrl, {
@@ -5202,7 +5202,7 @@ describe("dynamicsWebApi.retrieveCsdlMetadata -", function () {
     });
 
     describe("annotations = true", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             const response = responses.xmlResponse;
             scope = nock(webApiUrl, {
@@ -5242,7 +5242,7 @@ describe("dynamicsWebApi.retrieveCsdlMetadata -", function () {
 describe("dynamicsWebApi.constructor -", function () {
     describe("dataApi.version", function () {
         var dynamicsWebApi92 = new DynamicsWebApi();
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.createReturnId;
             scope = nock(webApiUrl92).post("/tests", _data.testEntity).reply(response.status, response.responseText, response.responseHeaders);
@@ -5271,7 +5271,7 @@ describe("dynamicsWebApi.constructor -", function () {
 
     describe("impersonate", function () {
         var dynamicsWebApi92 = new DynamicsWebApi({ impersonate: _data.testEntityId2 });
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.createReturnId;
             scope = nock(webApiUrl92, {
@@ -5305,7 +5305,7 @@ describe("dynamicsWebApi.constructor -", function () {
     });
 
     describe("authorization", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.multipleResponse;
             scope = nock(webApiUrl, {
@@ -5323,7 +5323,7 @@ describe("dynamicsWebApi.constructor -", function () {
 
         it("sends the request to the right end point and returns a response", function (done) {
             const getToken = async function () {
-                var adalCallback = async function (token) {
+                var adalCallback = async function (token: string | { accessToken: string } | null) {
                     return token;
                 };
 
@@ -5350,7 +5350,7 @@ describe("dynamicsWebApi.constructor -", function () {
     });
 
     describe("authorization - token is empty", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.multipleResponse;
             scope = nock(webApiUrl, {
@@ -5368,7 +5368,7 @@ describe("dynamicsWebApi.constructor -", function () {
 
         it("sends the request to the right end point and returns a response", async () => {
             const getToken = async function () {
-                const adalCallback = async function (token) {
+                const adalCallback = async function (token: string | { accessToken: string } | null) {
                     return token;
                 };
 
@@ -5393,7 +5393,7 @@ describe("dynamicsWebApi.constructor -", function () {
     });
 
     describe("authorization - plain token", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.multipleResponse;
             scope = nock(webApiUrl, {
@@ -5411,7 +5411,7 @@ describe("dynamicsWebApi.constructor -", function () {
 
         it("sends the request to the right end point and returns a response", function (done) {
             const getToken = async function () {
-                var adalCallback = async function (token) {
+                var adalCallback = async function (token: string | { accessToken: string } | null) {
                     return token;
                 };
 
@@ -5438,8 +5438,8 @@ describe("dynamicsWebApi.constructor -", function () {
     });
 
     describe("authorization - two requests use different authorization tokens", function () {
-        var scope;
-        var scope2;
+        let scope: nock.Scope;
+        let scope2: nock.Scope;
         before(function () {
             var response = responses.multipleResponse;
             scope = nock(webApiUrl, {
@@ -5463,9 +5463,9 @@ describe("dynamicsWebApi.constructor -", function () {
             cleanAll();
         });
 
-        var i = 0;
+        let i = 0;
         const getToken = async function () {
-            var adalCallback = async function (token) {
+            let adalCallback = async function (token: string | { accessToken: string } | null) {
                 return token;
             };
 
@@ -5503,7 +5503,7 @@ describe("dynamicsWebApi.constructor -", function () {
     });
 
     describe("authorization - when token set in the request it overrides token returned from a callback", function () {
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.multipleResponse;
             scope = nock(webApiUrl, {
@@ -5547,7 +5547,7 @@ describe("dynamicsWebApi.constructor -", function () {
 
     describe("prefer - include annotations added to request if set in the config", function () {
         var dynamicsWebApi82 = new DynamicsWebApi({ dataApi: { version: "8.2" }, includeAnnotations: "some-annotations" });
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.response200;
             scope = nock(webApiUrl, {
@@ -5582,7 +5582,7 @@ describe("dynamicsWebApi.constructor -", function () {
 
     describe("prefer - include annotations overriden if set in the request", function () {
         var dynamicsWebApi82 = new DynamicsWebApi({ dataApi: { version: "8.2" }, includeAnnotations: "some-annotations" });
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.multipleResponse;
             scope = nock(webApiUrl, {
@@ -5623,7 +5623,7 @@ describe("dynamicsWebApi.constructor -", function () {
 
     describe("prefer - return representation added to request if set in the config", function () {
         var dynamicsWebApi82 = new DynamicsWebApi({ dataApi: { version: "8.2" }, returnRepresentation: true });
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.createReturnRepresentation;
             scope = nock(webApiUrl, {
@@ -5658,8 +5658,8 @@ describe("dynamicsWebApi.constructor -", function () {
 
     describe("prefer - return representation overriden if set in the request", function () {
         var dynamicsWebApi82 = new DynamicsWebApi({ dataApi: { version: "8.2" }, returnRepresentation: true });
-        var scope;
-        var scope2;
+        let scope: nock.Scope;
+        let scope2: nock.Scope;
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
             scope = nock(webApiUrl, {
@@ -5714,7 +5714,7 @@ describe("dynamicsWebApi.constructor -", function () {
 
     describe("prefer - maxPageSize added to request if set in the config", function () {
         var dynamicsWebApi82 = new DynamicsWebApi({ dataApi: { version: "8.2" }, maxPageSize: 10 });
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.multipleResponse;
             scope = nock(webApiUrl, {
@@ -5749,7 +5749,7 @@ describe("dynamicsWebApi.constructor -", function () {
 
     describe("prefer - maxPageSize overriden if set in the request", function () {
         var dynamicsWebApi82 = new DynamicsWebApi({ dataApi: { version: "8.2" }, maxPageSize: 10 });
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.multipleWithLinkResponse;
             scope = nock(webApiUrl, {
@@ -5795,7 +5795,7 @@ describe("dynamicsWebApi.setConfig -", function () {
         var dynamicsWebApi81 = new DynamicsWebApi();
         dynamicsWebApi81.setConfig({ dataApi: { version: "8.1" }, impersonate: _data.testEntityId2 });
 
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.createReturnId;
             scope = nock(webApiUrl81, {
@@ -5831,7 +5831,7 @@ describe("dynamicsWebApi.setConfig -", function () {
     describe("impersonate overriden with a request.impersonate", function () {
         var dynamicsWebApi81 = new DynamicsWebApi();
 
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.multipleResponse;
             scope = nock(webApiUrl81, {
@@ -5869,7 +5869,7 @@ describe("dynamicsWebApi.setConfig -", function () {
         var dynamicsWebApi90 = new DynamicsWebApi();
         dynamicsWebApi90.setConfig({ dataApi: { version: "9.0" }, impersonateAAD: _data.testEntityId2 });
 
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.createReturnId;
             scope = nock(webApiUrl90, {
@@ -5905,7 +5905,7 @@ describe("dynamicsWebApi.setConfig -", function () {
     describe("impersonateAAD overriden with a request.impersonateAAD", function () {
         var dynamicsWebApi90 = new DynamicsWebApi();
 
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.multipleResponse;
             scope = nock(webApiUrl90, {
@@ -5942,7 +5942,7 @@ describe("dynamicsWebApi.setConfig -", function () {
     describe("dataApi.version is overriden by version set in setConfig", function () {
         var dynamicsWebApi81 = new DynamicsWebApi({ dataApi: { version: "8.1" }, impersonate: _data.testEntityId2 });
 
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.multipleResponse;
             scope = nock(webApiUrl, {
@@ -5979,7 +5979,7 @@ describe("dynamicsWebApi.setConfig -", function () {
     describe("impersonate uses the same url as original instance", function () {
         var dynamicsWebApi82 = new DynamicsWebApi({ dataApi: { version: "8.2" } });
 
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.multipleResponse;
             scope = nock(webApiUrl, {
@@ -6016,7 +6016,7 @@ describe("dynamicsWebApi.setConfig -", function () {
     describe("dataApi.version is overriden by the new config set", function () {
         var dynamicsWebApi81 = new DynamicsWebApi({ dataApi: { version: "8.1" } });
 
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.multipleResponse;
             scope = nock(webApiUrl, {
@@ -6056,7 +6056,7 @@ describe("dynamicsWebApi.initializeInstance -", function () {
         var dynamicsWebApi81 = new DynamicsWebApi();
         dynamicsWebApi81.setConfig({ dataApi: { version: "8.1" }, impersonate: _data.testEntityId2 });
 
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.createReturnId;
             scope = nock(webApiUrl81, {
@@ -6094,7 +6094,7 @@ describe("dynamicsWebApi.initializeInstance -", function () {
         var dynamicsWebApi81 = new DynamicsWebApi();
         dynamicsWebApi81.setConfig({ dataApi: { version: "8.1" }, impersonate: _data.testEntityId2 });
 
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.multipleResponse;
             scope = nock(webApiUrl).get(responses.collectionUrl).reply(response.status, response.responseText, response.responseHeaders);
@@ -6134,7 +6134,7 @@ describe("dynamicsWebApi proxy -", function () {
             },
         });
 
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.multipleResponse;
             scope = nock(webApiUrl).get(responses.collectionUrl).reply(response.status, response.responseText, response.responseHeaders);
@@ -6173,7 +6173,7 @@ describe("dynamicsWebApi proxy -", function () {
             },
         });
 
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.multipleResponse;
             scope = nock(webApiUrl).get(responses.collectionUrl).reply(response.status, response.responseText, response.responseHeaders);
@@ -6208,7 +6208,7 @@ describe("dynamicsWebApi proxy -", function () {
             },
         });
 
-        var scope;
+        let scope: nock.Scope;
         before(function () {
             var response = responses.multipleResponse;
             scope = nock(webApiUrl).get(responses.collectionUrl).reply(response.status, response.responseText, response.responseHeaders);
@@ -6236,7 +6236,7 @@ describe("dynamicsWebApi proxy -", function () {
     });
 });
 
-const expectThrowsAsync = async (method, errorMessage) => {
+const expectThrowsAsync = async (method: () => Promise<any>, errorMessage?: string) => {
     let error = null;
     try {
         await method();

@@ -13,6 +13,7 @@ const dynamicsWebApiTest = new DynamicsWebApi({
 
 describe("dynamicsWebApi.create -", function () {
     before(() => {
+        //@ts-ignore
         global.DWA_BROWSER = false;
     });
 
@@ -367,6 +368,7 @@ describe("dynamicsWebApi.updateSingleProperty -", function () {
 
 describe("dynamicsWebApi.retrieveMultiple -", () => {
     before(() => {
+        //@ts-ignore
         global.DWA_BROWSER = false;
     });
     describe("AbortSignal - multiple requests", () => {
@@ -611,7 +613,7 @@ describe("dynamicsWebApi.fetchAll -", () => {
 
 describe("dynamicsWebApi.executeBatch -", () => {
     describe("non-atomic global - create / create (Content-ID in a header gets cleared)", function () {
-        let scope;
+        let scope: nock.Scope;
         const rBody = mocks.data.batchCreateContentIDPayloadNonAtomic;
         const rBodys = rBody.split("\r\n");
         let checkBody = "";
@@ -668,7 +670,7 @@ describe("dynamicsWebApi.executeBatch -", () => {
     });
 
     describe("non-atomic per request - create / create (Content-ID in a header gets cleared)", function () {
-        let scope;
+        let scope: nock.Scope;
         const rBody = mocks.data.batchCreateContentIDPayloadNonAtomic;
         const rBodys = rBody.split("\r\n");
         let checkBody = "";
@@ -723,7 +725,7 @@ describe("dynamicsWebApi.executeBatch -", () => {
     });
 
     describe("non-atomic & atomic mixed - create / create (Content-ID in a payload)", function () {
-        let scope;
+        let scope: nock.Scope;
         const rBody = mocks.data.batchCreateContentIDPayloadNonAtomicMixed;
         const rBodys = rBody.split("\r\n");
         let checkBody = "";
@@ -778,7 +780,7 @@ describe("dynamicsWebApi.executeBatch -", () => {
     });
 
     describe("create / create with Content-ID / No Collection", function () {
-        let scope;
+        let scope: nock.Scope;
         const rBody = mocks.data.batchCreateContentIDNoCollection;
         const rBodys = rBody.split("\r\n");
         let checkBody = "";
@@ -832,7 +834,7 @@ describe("dynamicsWebApi.executeBatch -", () => {
     });
 
     describe("associate - contentId + relatedKey starts with '$'", function () {
-        let scope;
+        let scope: nock.Scope;
         const rBody = mocks.data.batchAssociateContentIDNoCollection;
         const rBodys = rBody.split("\r\n");
         let checkBody = "";
@@ -1025,7 +1027,7 @@ describe("dynamicsWebApi: custom headers - ", () => {
             },
             headers: { "my-header": "success!" },
         });
-        let scope;
+        let scope: nock.Scope;
         const rBody = mocks.data.batchCreateContentIDPayloadNonAtomicCustomHeaders;
         const rBodys = rBody.split("\r\n");
         let checkBody = "";
@@ -1330,5 +1332,18 @@ describe("dynamicsWebApi.getBackgroundOperationStatus -", () => {
         it("all requests have been made", function () {
             expect(scope.isDone()).to.be.true;
         });
+    });
+});
+
+describe("dynamicsWebApi.Utility.toAbsoluteUrl -", () => {
+    it("prepends web API URL to provided value", () => {
+        const value = "accounts(key='value')"
+        const absoluteUrl = dynamicsWebApiTest.Utility.toAbsoluteUrl(value);
+        expect(absoluteUrl).to.equal(`${mocks.webApiUrl}${value}`);
+
+        //should remove slash at the beginning
+        const value2 = "/accounts(key='value')"
+        const absoluteUrl2 = dynamicsWebApiTest.Utility.toAbsoluteUrl(value2);
+        expect(absoluteUrl2).to.equal(`${mocks.webApiUrl}${value}`);
     });
 });

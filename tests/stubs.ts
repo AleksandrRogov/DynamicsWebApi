@@ -1753,7 +1753,7 @@ const responseStubs = {
 };
 
 const utils = {
-    toTypedArray: (b) => new Uint8Array(b.buffer, b.byteOffset, b.byteLength / Uint8Array.BYTES_PER_ELEMENT),
+    toTypedArray: (b: any) => new Uint8Array(b.buffer, b.byteOffset, b.byteLength / Uint8Array.BYTES_PER_ELEMENT),
 };
 
 export {

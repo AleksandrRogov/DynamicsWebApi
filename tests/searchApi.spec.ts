@@ -31,10 +31,11 @@ const dynamicsWebApiSearchV2NoCompatibility = new DynamicsWebApi({
 
 describe("dynamicsWebApi.query -", () => {
     before(() => {
+        //@ts-ignore
         global.DWA_BROWSER = false;
     });
     describe("basic", () => {
-        let scope;
+        let scope: nock.Scope;
         const searchQuery: Query = {
             search: "test",
         };
@@ -67,7 +68,7 @@ describe("dynamicsWebApi.query -", () => {
         });
     });
     describe("basic - term parameter", () => {
-        let scope;
+        let scope: nock.Scope;
         const searchQuery: Query = {
             search: "test",
         };
@@ -98,7 +99,7 @@ describe("dynamicsWebApi.query -", () => {
         });
     });
     describe("impersonate", () => {
-        let scope;
+        let scope: nock.Scope;
         const searchQuery: Query = {
             search: "test",
         };
@@ -136,7 +137,7 @@ describe("dynamicsWebApi.query -", () => {
         });
     });
     describe("v2.0 - basic, count", () => {
-        let scope;
+        let scope: nock.Scope;
         const searchQuery: Query = {
             search: "test",
             count: true,
@@ -171,7 +172,7 @@ describe("dynamicsWebApi.query -", () => {
     });
 
     describe("v2.0 - enableResponseCompatibility = false", () => {
-        let scope;
+        let scope: nock.Scope;
         const searchQuery: Query = {
             search: "test",
             count: true,
@@ -206,7 +207,7 @@ describe("dynamicsWebApi.query -", () => {
     });
 
     describe("v1.0 - enableResponseCompatibility = false", () => {
-        let scope;
+        let scope: nock.Scope;
         const searchQuery: Query = {
             search: "test",
             returnTotalRecordCount: true,
@@ -243,7 +244,7 @@ describe("dynamicsWebApi.query -", () => {
 
 describe("dynamicsWebApi.suggest -", () => {
     describe("basic", () => {
-        let scope;
+        let scope: nock.Scope;
         const suggestQuery: Suggest = {
             search: "test",
         };
@@ -276,7 +277,7 @@ describe("dynamicsWebApi.suggest -", () => {
         });
     });
     describe("basic - term parameter", () => {
-        let scope;
+        let scope: nock.Scope;
         const suggestQuery: Suggest = {
             search: "test",
         };
@@ -307,7 +308,7 @@ describe("dynamicsWebApi.suggest -", () => {
         });
     });
     describe("additional header", () => {
-        let scope;
+        let scope: nock.Scope;
         const suggestQuery: Suggest = {
             search: "test",
         };
@@ -346,7 +347,7 @@ describe("dynamicsWebApi.suggest -", () => {
     });
 
     describe("v1.0 - enableResponseCompatibility = false", () => {
-        let scope;
+        let scope: nock.Scope;
         const suggestQuery: Suggest = {
             search: "test",
         };
@@ -380,7 +381,7 @@ describe("dynamicsWebApi.suggest -", () => {
     });
 
     describe("v2.0 - enableResponseCompatibility = false", () => {
-        let scope;
+        let scope: nock.Scope;
         const suggestQuery: Suggest = {
             search: "test",
         };
@@ -416,7 +417,7 @@ describe("dynamicsWebApi.suggest -", () => {
 
 describe("dynamicsWebApi.autocomplete -", () => {
     describe("basic", () => {
-        let scope;
+        let scope: nock.Scope;
         const autocompleteQuery: Autocomplete = {
             search: "test",
         };
@@ -449,7 +450,7 @@ describe("dynamicsWebApi.autocomplete -", () => {
         });
     });
     describe("additional header", () => {
-        let scope;
+        let scope: nock.Scope;
         const autocompleteQuery: Autocomplete = {
             search: "test",
         };
@@ -487,7 +488,7 @@ describe("dynamicsWebApi.autocomplete -", () => {
         });
     });
     describe("basic - term parameter", () => {
-        let scope;
+        let scope: nock.Scope;
         const autocompleteQuery: Autocomplete = {
             search: "test",
         };
@@ -518,7 +519,7 @@ describe("dynamicsWebApi.autocomplete -", () => {
         });
     });
     describe("v1.0 - enableResponseCompatibility = false", () => {
-        let scope;
+        let scope: nock.Scope;
         const autocompleteQuery: Autocomplete = {
             search: "test",
         };
@@ -551,7 +552,7 @@ describe("dynamicsWebApi.autocomplete -", () => {
         });
     });
     describe("v2.0 - enableResponseCompatibility = false", () => {
-        let scope;
+        let scope: nock.Scope;
         const autocompleteQuery: Autocomplete = {
             search: "test",
         };

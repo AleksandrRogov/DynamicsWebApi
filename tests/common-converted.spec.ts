@@ -2117,10 +2117,11 @@ describe("dateReviver", function () {
 
 describe("RequestClient.makeRequest", function () {
     before(() => {
+        //@ts-ignore
         global.DWA_BROWSER = false;
     });
     describe("useEntityNames", function () {
-        var scope;
+        var scope: nock.Scope;
         before(function () {
             var response = responses.response200;
             var response2 = responses.responseEntityDefinitions;
@@ -2167,7 +2168,7 @@ describe("RequestClient.makeRequest", function () {
     });
 
     describe("useEntityNames - entity metadata requested only once", function () {
-        var scope;
+        var scope: nock.Scope;
         before(function () {
             var response = responses.response200;
             var response2 = responses.responseEntityDefinitions;
@@ -2231,7 +2232,7 @@ describe("RequestClient.makeRequest", function () {
     });
 
     describe("useEntityNames - request with collection name does not fail", function () {
-        var scope;
+        var scope: nock.Scope;
         before(function () {
             var response = responses.response200;
             var response2 = responses.responseEntityDefinitions;
@@ -2277,7 +2278,7 @@ describe("RequestClient.makeRequest", function () {
     });
 
     describe("useEntityNames - $batch", function () {
-        var scope;
+        var scope: nock.Scope;
         before(function () {
             var response = responses.response200;
             var response2 = responses.responseEntityDefinitions;
@@ -2324,7 +2325,7 @@ describe("RequestClient.makeRequest", function () {
     });
 
     describe("timeout - socket (request timeout)", function () {
-        var scope;
+        var scope: nock.Scope;
         var url = "test";
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
@@ -2365,7 +2366,7 @@ describe("RequestClient.makeRequest", function () {
     });
 
     describe("timeout - socket (config)", async function () {
-        var scope;
+        var scope: nock.Scope;
         var url = "test";
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
@@ -2405,7 +2406,7 @@ describe("RequestClient.makeRequest", function () {
     });
 
     describe("timeout - connection delay (request timeout)", function () {
-        var scope;
+        var scope: nock.Scope;
         var url = "test";
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
@@ -2446,7 +2447,7 @@ describe("RequestClient.makeRequest", function () {
     });
 
     describe("timeout - connection delay (config)", function () {
-        var scope;
+        var scope: nock.Scope;
         var url = "test";
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
@@ -2487,7 +2488,7 @@ describe("RequestClient.makeRequest", function () {
     });
 
     describe("when url is long, request is converted to batch", function () {
-        var scope;
+        var scope: nock.Scope;
         var url = "test";
         while (url.length < 2001) {
             url += "test";
@@ -2551,10 +2552,11 @@ describe("RequestClient.makeRequest", function () {
 
 describe("RequestClient.sendRequest", function () {
     before(() => {
+        //@ts-ignore
         global.DWA_BROWSER = false;
     });
     describe("removes additional properties set by DynamicsWebApi", function () {
-        var scope;
+        var scope: nock.Scope;
         var url = "test";
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
@@ -2618,7 +2620,7 @@ describe("RequestClient.sendRequest", function () {
     // });
 
     describe("timeout - socket", function () {
-        var scope;
+        var scope: nock.Scope;
         var url = "test";
         before(function () {
             var response = responses.basicEmptyResponseSuccess;
@@ -2649,7 +2651,7 @@ describe("RequestClient.sendRequest", function () {
     });
 
     describe("timeout - connection delay", function () {
-        var scope;
+        var scope: nock.Scope;
         var url = "test";
         before(function () {
             var response = responses.basicEmptyResponseSuccess;

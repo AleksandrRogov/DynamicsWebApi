@@ -127,6 +127,7 @@ describe("RequestClient.sendRequest", () => {
 
 describe("RequestClient.makeRequest", () => {
     before(() => {
+        //@ts-ignore
         global.DWA_BROWSER = false;
     });
     describe("AbortSignal", () => {
@@ -277,7 +278,7 @@ describe("RequestUtility.", () => {
             },
         };
 
-        it("removes brackets from the guids & adds a slash in front", () => {
+        it("@odata.bind - removes brackets from the guids & adds a slash in front", () => {
             const guid = "00000000-0000-0000-0000-000000000001";
             const data = {
                 "ref1@odata.bind": `contacts({${guid}})`,
@@ -285,7 +286,18 @@ describe("RequestUtility.", () => {
 
             const result = RequestUtility.processData(data, config);
 
-            expect(result).to.be.eq('{"ref1@odata.bind":"/contacts(00000000-0000-0000-0000-000000000001)"}');
+            expect(result).to.be.eq(`{"ref1@odata.bind":"/contacts(${guid})"}`);
+        });
+
+        it("@odata.id - removes brackets from the guids and does not prepend an absolute URL", () => {
+            const guid = "00000000-0000-0000-0000-000000000001";
+            const data = {
+                "@odata.id": `contacts({${guid}})`,
+            };
+
+            const result = RequestUtility.processData(data, config);
+
+            expect(result).to.be.eq(`{"@odata.id":"contacts(${guid})"}`);
         });
     });
 });

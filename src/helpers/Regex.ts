@@ -97,9 +97,8 @@ function sanitizeCookie(cookie: string): string {
     return cookie.replace(SPECIAL_CHARACTER_REGEX, (char) => characterMap[char]);
 }
 
-const LEADING_SLASH_REGEX = /^\//;
 export function removeLeadingSlash(value: string): string {
-    return value.replace(LEADING_SLASH_REGEX, "");
+    return value.startsWith("/") ? value.slice(1) : value;
 }
 
 const UNICODE_SYMBOLS_REGEX = /[\u007F-\uFFFF]/g;

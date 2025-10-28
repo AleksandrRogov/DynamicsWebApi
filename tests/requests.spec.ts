@@ -269,3 +269,9 @@ describe("associateSingleValued", () => {
         }
     });
 });
+
+describe("callAction", () => {
+    it ("multipleUpsert action with @odata.id should not prepend full URL", async () => {
+        
+    });
+});

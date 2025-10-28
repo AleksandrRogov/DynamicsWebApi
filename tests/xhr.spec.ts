@@ -1,12 +1,13 @@
 import { expect } from "chai";
 import * as mocks from "./stubs";
 
-import sinon, { SinonFakeXMLHttpRequest, SinonFakeXMLHttpRequestStatic } from "sinon";
+import sinon, { SinonFakeXMLHttpRequest } from "sinon";
 import crypto from "crypto";
 import { DynamicsWebApi, RetrieveRequest } from "../src/dynamics-web-api";
 import { XhrWrapper } from "../src/client/xhr";
 import { DWA } from "../src/dwa";
 import * as Utility from "../src/utils/Utility";
+//@ts-ignore
 import base64 from "Base64";
 
 Utility.setDownloadChunkSize(15);
@@ -29,6 +30,7 @@ const requests: SinonFakeXMLHttpRequest[] = [];
 
 describe("xhr -", () => {
     before(function () {
+        //@ts-ignore
         global.DWA_BROWSER = true;
         //@ts-ignore
         global.window = {
@@ -43,7 +45,7 @@ describe("xhr -", () => {
     after(function () {
         //@ts-ignore
         global.XMLHttpRequest.restore();
-
+        //@ts-ignore
         global.DWA_BROWSER = false;
         //@ts-ignore
         global.window = null;
@@ -1127,7 +1129,7 @@ describe("xhr -", () => {
 
             it("sends correct headers", function () {
                 expect(requests[0]?.requestHeaders["x-ms-transfer-mode"]).to.be.eq("chunked");
-                expect(requests[0]?.requestHeaders["Content-Type"]).not.to.contain('application/json');
+                expect(requests[0]?.requestHeaders["Content-Type"]).not.to.contain("application/json");
                 expect(requests[1]?.requestHeaders["Content-Range"]).to.be.eq(
                     `bytes 0-${beginResponse.responseHeaders["x-ms-chunk-size"] - 1}/${dwaRequest.data.length}`,
                 );

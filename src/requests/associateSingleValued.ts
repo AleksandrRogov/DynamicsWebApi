@@ -20,7 +20,7 @@ export const associateSingleValued = async (request: AssociateSingleValuedReques
     if (!client.isBatch || (client.isBatch && !request.relatedKey.startsWith("$"))) {
         ErrorHelper.stringParameterCheck(request.relatedCollection, REQUEST_NAME, "request.relatedCollection");
         relatedKey = ErrorHelper.keyParameterCheck(request.relatedKey, REQUEST_NAME, "request.relatedKey");
-        odataId = `${request.relatedCollection}(${relatedKey})`;
+        odataId = `${client.config.dataApi.url}${request.relatedCollection}(${relatedKey})`;
     }
 
     let internalRequest = copyRequest(request, ["primaryKey"]);
