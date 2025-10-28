@@ -1,3 +1,16 @@
+<a name="v2.4.0"></a>
+# [v2.4.0](https://github.com/AleksandrRogov/DynamicsWebApi/releases/tag/v2.4.0) - 28 Oct 2025
+
+## What's Changed
+* Allowing `@odata.id` to have an alternate key format. It used to force an absolute URL which should have only been done in POST requests to `/$ref`. Fixes [#195](https://github.com/AleksandrRogov/DynamicsWebApi/issues/195) .
+:warning: This change may be a breaking change in case you were making an _undocumented_ request that included `@odata.id` in the body of the request which will result in the value of the `@odata.id` to not have an absolute URL. A quick fix could be done by using a new utility function:
+* `dynamicsWebApi.Utility.toAbsoluteUrl` - a new utility function that prepends a url from the `dataApi` config to a provided value.
+
+**Full Changelog**: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.3.2...v2.4.0
+
+[Changes][v2.4.0]
+
+
 <a name="v2.3.2"></a>
 # [v2.3.2](https://github.com/AleksandrRogov/DynamicsWebApi/releases/tag/v2.3.2) - 20 Aug 2025
 
@@ -1141,6 +1154,7 @@ Added:
 [Changes][v1.2.0]
 
 
+[v2.4.0]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.3.2...v2.4.0
 [v2.3.2]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.3.1...v2.3.2
 [v2.3.1]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.3.0...v2.3.1
 [v2.3.0]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.2.1...v2.3.0
