@@ -61,7 +61,7 @@
         "typescript": "^5.9.3"
     },
     "dependencies": {
-        "http-proxy-agent": "^4.0.1",
+        "http-proxy-agent": "^7.0.2",
         "https-proxy-agent": "^5.0.1"
     },
     "license": "MIT",
