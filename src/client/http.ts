@@ -27,7 +27,9 @@ const getAgent = (options: Core.RequestOptions, protocol: string): http.Agent =>
             if (proxy.auth) proxyOptions.auth = proxy.auth.username + ":" + proxy.auth.password;
             else if (parsedProxyUrl.username && parsedProxyUrl.password) proxyOptions.auth = `${parsedProxyUrl.username}:${parsedProxyUrl.password}`;
 
-            agents[agentName] = new proxyAgent(proxyOptions);
+            //todo: proxy agent package will need to be updated to latest version. this is going to be a breaking change
+            //since the lowest node version will not be supported anymore
+            agents[agentName] = new proxyAgent(proxyOptions) as unknown as http.Agent;
         } else {
             const protocolInterface = isHttp ? http : https;
 

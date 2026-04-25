@@ -1133,11 +1133,11 @@ describe("xhr -", () => {
                 expect(requests[1]?.requestHeaders["Content-Range"]).to.be.eq(
                     `bytes 0-${beginResponse.responseHeaders["x-ms-chunk-size"] - 1}/${dwaRequest.data.length}`,
                 );
-                expect(requests[1]?.requestHeaders["Content-Type"]).to.be.eq("application/octet-stream;charset=utf-8");
+                expect(requests[1]?.requestHeaders["Content-Type"]).to.be.eq("application/octet-stream");
                 expect(requests[2]?.requestHeaders["Content-Range"]).to.be.eq(
                     `bytes ${beginResponse.responseHeaders["x-ms-chunk-size"]}-${dwaRequest.data.length - 1}/${dwaRequest.data.length}`,
                 );
-                expect(requests[2]?.requestHeaders["Content-Type"]).to.be.eq("application/octet-stream;charset=utf-8");
+                expect(requests[2]?.requestHeaders["Content-Type"]).to.be.eq("application/octet-stream");
             });
 
             it("does not have any response", function () {

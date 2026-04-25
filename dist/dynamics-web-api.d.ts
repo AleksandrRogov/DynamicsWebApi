@@ -1,4 +1,4 @@
-/*! dynamics-web-api v2.4.0 (c) 2025 Aleksandr Rogov. License: MIT */
+/*! dynamics-web-api v2.5.0 (c) 2026 Aleksandr Rogov. License: MIT */
 /**
  * Microsoft Dataverse Web API helper library for Node.js and Browser.
  * It is compatible with: Dataverse, Dynamics 365 (online), Dynamics 365 (on-premise), Dynamics CRM 2016, Dynamics CRM Online.
@@ -1040,6 +1040,11 @@ export interface Config {
     impersonateAAD?: string | null;
     /**A function that is called when a security token needs to be refreshed. */
     onTokenRefresh?: (() => Promise<AccessToken | string | null>) | null;
+    /**
+     * When true, the library does not catch request errors in convenience wrappers; lets errors propagate to a caller. Useful for disabling legacy error handling in update, upsert and delete operations.
+     * NOTE! This option is temporary and will be removed in the next major version.
+     */
+    propagateErrors?: boolean | null;
     /**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types.*/
     includeAnnotations?: string | null;
     /**Sets the odata.maxpagesize preference value to request the number of entities returned in the response. */

@@ -1,9 +1,9 @@
 import { expect } from "chai";
-import { IDataverseClient } from "../src/client/dataverse";
-import { Config } from "../src/dynamics-web-api";
-import { associate, associateSingleValued, countAll } from "../src/requests";
-import { InternalRequest, WebApiResponse } from "../src/types";
-import { defaultConfig } from "../src/utils/Config";
+import { IDataverseClient } from "../../src/client/dataverse";
+import { Config } from "../../src/dynamics-web-api";
+import { associate, associateSingleValued, countAll } from "../../src/requests";
+import { InternalRequest, WebApiResponse } from "../../src/types";
+import { defaultConfig } from "../../src/utils/Config";
 
 const defaultClient: IDataverseClient = {
     config: defaultConfig(),

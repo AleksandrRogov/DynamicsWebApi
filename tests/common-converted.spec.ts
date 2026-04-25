@@ -12,6 +12,7 @@ import * as RequestClient from "../src/client/RequestClient";
 import { parseResponse } from "../src/client/helpers/parseResponse";
 import { InternalRequest } from "../src/types";
 import { InternalConfig } from "../src/utils/Config";
+import { findCollectionName } from "../src/client/helpers";
 
 describe("Utility.", function () {
     describe("buildFunctionParameters - ", function () {
@@ -153,14 +154,13 @@ describe("Utility.", function () {
         after(function () {
             global.Xrm = {
                 Page: {
-                    // @ts-ignore
                     context: {
                         getClientUrl: function () {
                             return "http://testorg.crm.dynamics.com";
                         },
-                    },
-                },
-            };
+                    } as any ,
+                } as any,
+            } as any;
         });
 
         it("throws an error", function () {
@@ -233,6 +233,18 @@ describe("Utility.", function () {
             var result = Utility.getClientUrl();
 
             expect(result).to.be.eq("http://testorg.crm.dynamics.com");
+        });
+    });
+
+    describe("formatParameterValue", function () {
+        it ("returns empty string for null", function () {
+            let result = Utility.formatParameterValue(null);
+            expect(result).to.be.eq("");
+        });
+
+        it ("returns empty string for undefined", function () {
+            let result = Utility.formatParameterValue(undefined);
+            expect(result).to.be.eq("");
         });
     });
 });
@@ -317,8 +329,7 @@ describe("RequestUtility.composeUrl -", function () {
             expand: [
                 {
                     filter: "name eq 'name'",
-                    //@ts-ignore - testing if it works even with null
-                    property: null,
+                    property: null as any,
                 },
             ],
             functionName: "",
@@ -370,8 +381,7 @@ describe("RequestUtility.composeUrl -", function () {
             expand: [
                 {
                     property: "property",
-                    //@ts-ignore - testing if it works even with null
-                    filter: null,
+                    filter: null as any,
                 },
             ],
             functionName: "",
@@ -414,8 +424,8 @@ describe("RequestUtility.composeUrl -", function () {
             expand: [
                 {
                     property: "property",
-                    //@ts-ignore - testing if it works even with null
-                    orderBy: null,
+                    // testing if it works even with null
+                    orderBy: null as any,
                 },
             ],
             functionName: "",
@@ -471,8 +481,8 @@ describe("RequestUtility.composeUrl -", function () {
             expand: [
                 {
                     property: "property",
-                    //@ts-ignore - testing if it works even with null
-                    select: null,
+                    // testing if it works even with null
+                    select: null as any,
                 },
             ],
             functionName: "",
@@ -541,8 +551,8 @@ describe("RequestUtility.composeUrl -", function () {
             expand: [
                 {
                     property: "property",
-                    //@ts-ignore - testing if it works even with null
-                    top: null,
+                    // testing if it works even with null
+                    top: null as any,
                 },
             ],
             functionName: "",
@@ -608,8 +618,8 @@ describe("RequestUtility.composeUrl -", function () {
         expect(result).to.equal(stubUrl);
 
         dwaRequest = {
-            //@ts-ignore - testing if it works even with null
-            filter: null,
+            // testing if it works even with null
+            filter: null as any,
             functionName: "",
         };
 
@@ -701,8 +711,8 @@ describe("RequestUtility.composeUrl -", function () {
         expect(result).to.equal(stubUrl);
 
         dwaRequest = {
-            //@ts-ignore - testing if it works even with null
-            ifmatch: null,
+            // testing if it works even with null
+            ifmatch: null as any,
             functionName: "",
         };
 
@@ -720,8 +730,8 @@ describe("RequestUtility.composeUrl -", function () {
         expect(result).to.equal(stubUrl);
 
         dwaRequest = {
-            //@ts-ignore - testing if it works even with null
-            navigationProperty: null,
+            // testing if it works even with null
+            navigationProperty: null as any,
             functionName: "",
         };
 
@@ -737,6 +747,17 @@ describe("RequestUtility.composeUrl -", function () {
 
         var result = composeUrl(dwaRequest, null, stubUrl);
         expect(result).to.equal(stubUrl + "/nav");
+    });
+
+    it("navigationProperty with select /nav and retrieve function - should not duplicate", function () {
+        var dwaRequest = {
+            navigationProperty: "nav",
+            functionName: "retrieve",
+            select: ["/nav"],
+        };
+
+        var result = composeUrl(dwaRequest, null);
+        expect(result).to.equal("/nav");
     });
 
     //todo: delete in the future
@@ -781,8 +802,8 @@ describe("RequestUtility.composeUrl -", function () {
         expect(result).to.equal(stubUrl);
 
         dwaRequest = {
-            //@ts-ignore - testing if it works even with null
-            orderBy: null,
+            // testing if it works even with null
+            orderBy: null as any,
             functionName: "",
         };
 
@@ -818,8 +839,8 @@ describe("RequestUtility.composeUrl -", function () {
         expect(result).to.equal(stubUrl);
 
         dwaRequest = {
-            //@ts-ignore - testing if it works even with null
-            select: null,
+            // testing if it works even with null
+            select: null as any,
             functionName: "",
         };
 
@@ -928,8 +949,8 @@ describe("RequestUtility.composeUrl -", function () {
         expect(result).to.deep.equal(stubUrl);
 
         dwaRequest = {
-            //@ts-ignore - testing if it works even with null
-            savedQuery: null,
+            // testing if it works even with null
+            savedQuery: null as any,
             functionName: "",
         };
 
@@ -957,8 +978,8 @@ describe("RequestUtility.composeUrl -", function () {
         expect(result).to.deep.equal(stubUrl);
 
         dwaRequest = {
-            //@ts-ignore - testing if it works even with null
-            userQuery: null,
+            // testing if it works even with null
+            userQuery: null as any,
             functionName: "",
         };
 
@@ -1138,8 +1159,8 @@ describe("RequestUtility.composeHeaders -", function () {
         expect(result).to.deep.equal({});
 
         dwaRequest = {
-            //@ts-ignore - testing if it works even with null
-            ifnonematch: null,
+            // testing if it works even with null
+            ifnonematch: null as any,
             functionName: "",
         };
 
@@ -1179,8 +1200,8 @@ describe("RequestUtility.composeHeaders -", function () {
         expect(result).to.deep.equal({});
 
         dwaRequest = {
-            //@ts-ignore - testing if it works even with null
-            impersonate: null,
+            // testing if it works even with null
+            impersonate: null as any,
             functionName: "",
         };
 
@@ -1207,8 +1228,8 @@ describe("RequestUtility.composeHeaders -", function () {
         expect(result).to.deep.equal({});
 
         dwaRequest = {
-            //@ts-ignore - testing if it works even with null
-            impersonateAAD: null,
+            // testing if it works even with null
+            impersonateAAD: null as any,
         };
 
         result = composeHeaders(dwaRequest, {});
@@ -1234,7 +1255,8 @@ describe("RequestUtility.composeHeaders -", function () {
         expect(result).to.deep.equal({});
 
         dwaRequest = {
-            includeAnnotations: null,
+            // testing if it works even with null
+            includeAnnotations: null as any,
             functionName: "",
         };
 
@@ -1340,8 +1362,8 @@ describe("RequestUtility.composeHeaders -", function () {
 
     it("duplicateDetection null", function () {
         let dwaRequest: InternalRequest = {
-            //@ts-ignore - testing if it works even with null
-            duplicateDetection: null,
+            // testing if it works even with null
+            duplicateDetection: null as any,
             functionName: "",
         };
 
@@ -1371,7 +1393,8 @@ describe("RequestUtility.composeHeaders -", function () {
 
     it("bypassCustomPluginExecution null", function () {
         let dwaRequest: InternalRequest = {
-            bypassCustomPluginExecution: null,
+            // testing if it works even with null
+            bypassCustomPluginExecution: null as any,
             functionName: "",
         };
 
@@ -1709,8 +1732,8 @@ describe("RequestUtility.compose -", function () {
     it("collection, key empty", function () {
         let dwaRequest: InternalRequest = {
             collection: "cols",
-            //@ts-ignore - testing if it works even with null
-            key: null,
+            // testing if it works even with null
+            key: null as any,
         };
 
         var result = composeRequest(dwaRequest, {});
@@ -1849,8 +1872,8 @@ describe("RequestUtility.compose -", function () {
     it("async - throw error", function () {
         let dwaRequest: InternalRequest = {
             collection: "some",
-            //@ts-ignore - testing if the wrong parameter type thrown an error
-            async: "something",
+            // testing if the wrong parameter type thrown an error
+            async: "something" as any,
         };
 
         var test = function () {
@@ -2083,6 +2106,13 @@ describe("dateReviver", function () {
     it("returns the same value when its type is not String", function () {
         var result = dateReviver("any", 54);
         expect(result).to.equal(54);
+    });
+});
+
+describe("findCollectionName", function () {
+    it("returns null when the entityNames map is null", function () {
+        var result = findCollectionName("account");
+        expect(result).to.be.null;
     });
 });
 

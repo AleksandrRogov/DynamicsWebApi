@@ -21,9 +21,15 @@ export const deleteRecord = async (request: DeleteRequest, client: IDataverseCli
     internalRequest.method = "DELETE";
     internalRequest.responseParameters = { valueIfEmpty: true };
 
+    if (client.config.propagateErrors) {
+        const response = await client.makeRequest(internalRequest);
+        return response?.data;
+    }
+
     //copy locally
     const ifmatch = internalRequest.ifmatch;
 
+    // todo: legacy error handling - to be removed in a future major release
     try {
         const response = await client.makeRequest(internalRequest);
         return response?.data;

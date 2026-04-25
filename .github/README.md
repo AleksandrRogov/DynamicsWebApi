@@ -28,7 +28,7 @@ Browser-compiled script and type definitions can be found in a v2 [dist](https:/
 - **CRUD operations**. Including Fetch XML, Actions and Functions in Microsoft Dataverse Web API.
 - **Table Definitions (Entity Metadata)**. Query and modify Table, Column, Choice (Option Set) and Relationship definitions.
 - **File Fields**. Upload, Download and Delete data stored in the File Fields.
-- **Abort Signal and Abort Controller** (Browser and Node.js 15+). Abort requests when they are no longer need to be completed.
+- **Abort Signal and Abort Controller** (Browser and Node.js 15+). Abort requests when they no longer need to be completed.
 - **Node.js and a Browser** support.
 - **Proxy Configuration** support.
 - **Background Operations** support. `v2.3.0+`
@@ -49,7 +49,7 @@ Also, please check [suggestions and contributions](#contributions) section to le
 Check out [Dataverse Terminology](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/understand-terminology). Microsoft has done some changes in the namings of the objects and components of D365 and since DynamicsWebApi has been developing for many years there may be _conflicting_ naming, such as: `createEntity` - which _right now_ means "Create a Table Definition". Dataverse SDK terminology is what the library has been based on. I have no plans on changing that (except in documentation), mainly because Microsoft may change the namings again in the future which will lead to naming issues ...again.
 
 > [!NOTE]
-> "Dynamics 365" in this readme refers to Microsoft Dataverse (formerly known as Microsoft Common Data Service) / Microsoft Dynamics 365 Customer Engagement / Micorosft Dynamics CRM. **NOT** Microsoft Dynamics 365 Finance and Operations.
+> "Dynamics 365" in this readme refers to Microsoft Dataverse (formerly known as Microsoft Common Data Service) / Microsoft Dynamics 365 Customer Engagement / Microsoft Dynamics CRM. **NOT** Microsoft Dynamics 365 Finance and Operations.
 
 ## Table of Contents
 
@@ -116,7 +116,7 @@ v2 breaking changes are [here](/.github/BREAKING_CHANGES_V2.md). List of new fea
     * [Download file](#download-file)
     * [Delete file](#delete-file)
 * [Work with Dataverse Search API](#work-with-dataverse-search-api)
-    * [Query (previosly known as Search)](#query)
+    * [Query (previously known as Search)](#query)
     * [Suggest](#suggest)
     * [Autocomplete](#autocomplete)
 * [Retrieve CSDL $metadata document](#retrieve-csdl-metadata-document)
@@ -193,7 +193,7 @@ Authorization tokens can be acquired using [Microsoft Authentication Library for
 Here is an example using `@azure/msal-node`:
 
 ```ts
-//app configuraiton must be stored in a safe place
+//app configuration must be stored in a safe place
 import { Config } from './config.ts';
 import { DynamicsWebApi } from 'dynamics-web-api';
 import * as MSAL from '@azure/msal-node';
@@ -287,8 +287,9 @@ impersonate | `string` | Impersonates a user based on their systemuserid by addi
 impersonateAAD | `string` | Impersonates a user based on their Azure Active Directory (AAD) object id by passing that value along with the header "CallerObjectId". A String should represent a GUID value. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/impersonate-another-user-web-api)
 includeAnnotations | `string` | Defaults Prefer header with value "odata.include-annotations=" and the specified annotation. Annotations provide additional information about lookups, options sets and other complex attribute types.
 maxPageSize | `number` | Defaults the odata.maxpagesize preference. Use to set the number of entities returned in the response.
-onTokenRefresh | `Function` | A callback function that triggered when DynamicsWebApi requests a new OAuth token. (At this moment it is done before each call to Dynamics 365, as [recommended by Microsoft](https://msdn.microsoft.com/en-ca/library/gg327838.aspx#Anchor_2)).
+onTokenRefresh | `Function` | A callback function that is triggered when DynamicsWebApi requests a new OAuth token. (At this moment it is done before each call to Dynamics 365, as [recommended by Microsoft](https://msdn.microsoft.com/en-ca/library/gg327838.aspx#Anchor_2)).
 organizationUrl | `string` | Dynamics 365 Web Api organization URL. It is required when used in Node.js application (outside web resource). Example: "https://myorg.api.crm.dynamics.com/".
+propagateErrors | `boolean` | `v2.5.0+` When true, the library does not catch request errors in convenience wrappers and lets errors propagate to a caller. It is used for disabling legacy error handling in `update`, `upsert` and `deleteRecord` operations. **Note!** This option is temporary and will be removed in the next major version. [More info](https://github.com/AleksandrRogov/DynamicsWebApi/issues/203)
 proxy | `Object` | Proxy configuration object. [More Info](#using-proxy)
 returnRepresentation | `boolean` | Defaults Prefer header with value "return=representation". Use this property to return just created or updated entity in a single request.
 searchApi | `ApiConfig` | Configuration object for Dataverse Search API. The name is based on the url path `search`.
@@ -300,7 +301,7 @@ useEntityNames | `boolean` | Indicates whether to use entity logical names inste
 > `serverUrl` and `onTokenRefresh` are required when DynamicsWebApi is used in a Node.js application.
 
 > [!IMPORTANT]
-> If you are using `DynamicsWebApi` **outside Microsoft Dynamics 365** and set `useEntityNames` to `true` **the first request** to Web Api will fetch `LogicalCollectionName` and `LogicalName` from `EntityMetadata` for all entities. It does not happen when `DynamicsWebApi` is used in Microsoft Dynamics 365 Web Resources (there is no additional request, no impact on perfomance).
+> If you are using `DynamicsWebApi` **outside Microsoft Dynamics 365** and set `useEntityNames` to `true` **the first request** to Web Api will fetch `LogicalCollectionName` and `LogicalName` from `EntityMetadata` for all entities. It does not happen when `DynamicsWebApi` is used in Microsoft Dynamics 365 Web Resources (there is no additional request, no impact on performance).
 
 **ApiConfig** Properties:
 
@@ -362,10 +363,10 @@ addAnnotations | `boolean` | `retrieveCsdlMetadata` | If set to `true` the docum
 apply | `string` | `retrieveMultiple`, `retrieveAll` | Sets the $apply system query option to aggregate and group your data dynamically. [More Info](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/query/aggregate-data)
 async | `boolean` | All | **XHR requests only!** Indicates whether the requests should be made synchronously or asynchronously. Default value is `true` (asynchronously).
 backgroundOperationCallbackUrl | `string` | `callAction` | `v2.3.0+` Background operation callback URL. [More Info](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/background-operations?tabs=webapi#request-a-callback)
-bypassCustomPluginExecution | `boolean` | `create`, `update`, `upsert`, `delete` | If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/data-platform/bypass-custom-business-logic)
+bypassCustomPluginExecution | `boolean` | `create`, `update`, `upsert`, `delete` | If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsoft Docs. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/data-platform/bypass-custom-business-logic)
 collection | `string` | All | Entity Collection name.
 contentId | `string` | `create`, `update`, `upsert`, `deleteRecord`, `associate`, `associateSingleValued` | **BATCH REQUESTS ONLY!** Sets Content-ID header or references request in a Change Set. [More Info](https://www.odata.org/documentation/odata-version-3-0/batch-processing/)
-continueOnError | `boolean` | `executeBatch` | **BATCH REQUESTS ONLY!** Sets Prefer header to `odata.continue-on-error` that allows more requests be processed when errors occur. The batch request will return `200 OK` and individual response errors will be returned in the batch response body. [More Info](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/execute-batch-operations-using-web-api#handling-errors)
+continueOnError | `boolean` | `executeBatch` | **BATCH REQUESTS ONLY!** Sets Prefer header to `odata.continue-on-error` that allows more requests to be processed when errors occur. The batch request will return `200 OK` and individual response errors will be returned in the batch response body. [More Info](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/execute-batch-operations-using-web-api#handling-errors)
 count | `boolean` | `retrieveMultiple`, `retrieveAll` | Boolean that sets the $count system query option with a value of true to include a count of entities that match the filter criteria up to 5000 (per page). Do not use $top with $count!
 data | `Object` or `ArrayBuffer` / `Buffer` (for node.js) | `create`, `update`, `upsert`, `uploadFile` | A JavaScript object that represents Dynamics 365 entity, action, metadata and etc. 
 duplicateDetection | `boolean` | `create`, `update`, `upsert` | **D365 Web API v9+** Boolean that enables duplicate detection. [More Info](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/webapi/update-delete-entities-using-web-api#check-for-duplicate-records)
@@ -375,7 +376,7 @@ fieldName | `string` | `uploadFile`, `downloadFile`, `deleteRecord` | **D365 Web
 fileName | `string` | `uploadFile` | **D365 Web API v9.1+** Specifies the name of the file
 filter | String | `retrieve`, `retrieveMultiple`, `retrieveAll`, `callFunction` | Use the $filter system query option to set criteria for which entities will be returned.
 functionName | `string` | `callFunction` | **Deprecated from v2.1.3** Use `name` instead. Name of a D365 Web Api function.
-headers | `Object` | All | `v2.1+` Custom headers to supply with a request. These headers will override configuraiton headers if the identical ones were set. For example: `{ "my-header": "value", "another-header": "another-value" }`.
+headers | `Object` | All | `v2.1+` Custom headers to supply with a request. These headers will override configuration headers if the identical ones were set. For example: `{ "my-header": "value", "another-header": "another-value" }`.
 ifmatch | `string` | `retrieve`, `update`, `upsert`, `deleteRecord` | Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests. [More Info](https://msdn.microsoft.com/en-us/library/mt607711.aspx)
 ifnonematch | `string` | `retrieve`, `upsert` | Sets If-None-Match header value that enables to use conditional retrieval in applicable requests. [More Info](https://msdn.microsoft.com/en-us/library/mt607711.aspx).
 impersonate | `string` | All | Impersonates a user based on their systemuserid by adding a "MSCRMCallerID" header. A String representing the GUID value for the Dynamics 365 systemuserid. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/impersonate-another-user-web-api)
@@ -421,7 +422,7 @@ select | `string[]` | An Array (of strings) representing the $select OData Syste
 top | `number` | Limit the number of results returned by using the $top system query option.
 
 All requests to Web API that have long URLs (more than 2000 characters) are automatically converted to a Batch Request.
-This feature is very convenient when you make a call with big Fetch XMLs. No special parameters needed to do a convertation.
+This feature is very convenient when you make a call with big Fetch XMLs. No special parameters are needed to do a conversion.
 
 > [!NOTE]
 > This feature may cause an issue in Microsoft Power Pages because Batch Requests are not supported there out of the box. Please keep your requests short :)
@@ -455,7 +456,7 @@ const request: DynamicsWebApi.CreateRequest = {
 
 //call dynamicsWebApi.create function
 //let's use Lead here because we set returnRepresentation to `true`
-//if the type was ommitted here then the result would be of type `any`
+//if the type was omitted here then the result would be of type `any`
 const result = await dynamicsWebApi.create<Lead>(request);
 
 //do something with a record here
@@ -525,7 +526,7 @@ const request: DynamicsWebApi.UpdateRequest = {
 
 //call dynamicsWebApi.update function
 //let's use Lead here because we set returnRepresentation to `true`
-//if the type was ommitted here then the result would be of type `any`
+//if the type was omitted here then the result would be of type `any`
 const result = await dynamicsWebApi.update<Lead>(request);
 
 //do something with a fullname of a recently updated entity record
@@ -545,7 +546,7 @@ const request: DynamicsWebApi.UpdateSinglePropertyRequest = {
 //perform an update single property operation
 await dynamicsWebApi.updateSingleProperty(request);
 
-//do something after a succesful operation
+//do something after a successful operation
 ```
 
 ### Upsert a table row
@@ -627,7 +628,7 @@ const request: DynamicsWebApi.RetrieveRequest = {
 };
 
 //call dynamicsWebApi.retrieve function
-//if the Lead type was ommitted here then the result would be of type `any`
+//if the Lead type was omitted here then the result would be of type `any`
 const result = await dynamicsWebApi.retrieve<Lead>(request);
 
 //do something with a retrieved record
@@ -798,7 +799,7 @@ by default.
 const accountId = "00000000-0000-0000-0000-000000000001";
 const leadId = "00000000-0000-0000-0000-000000000002";
 
-//associate lead reacord to account
+//associate lead record to account
 const request: DynamicsWebApi.AssociateRequest = {
     collection: "accounts",
     primaryKey: accountId,
@@ -923,7 +924,7 @@ request.pageNumber = page2.PagingInfo.nextPage;
 request.pagingCookie = page2.PagingInfo.cookie;
 
 const page3 = await dynamicsWebApi.fetch<Account>(request);
-//and so on... or use a recoursive loop.
+//and so on... or use a recursive loop.
 ```
 
 #### Fetch All records
@@ -1076,7 +1077,7 @@ Batch Operations bundle multiple requests into a single one and have the followi
 
 * Reduces a number of requests sent to the Web API server. `Each user is allowed up to 6,000 API requests, per organization instance, within 5-minute sliding window.` [More Info](https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/api-limits)
 * Provides a way to run multiple operations in a single transaction. If any operation that changes data (within a single changeset) fails all completed ones will be rolled back.
-* All operations within a batch request run consequently (FIFO).
+* All operations within a batch request run sequentially (FIFO).
 
 DynamicsWebApi provides a straightforward way to execute Batch Operations which may not always be simple to compose.
 
@@ -1487,7 +1488,7 @@ const schemaName = entityMetadata.SchemaName;
 
 ### Update Table Definitions
 
-Microsoft recommends to make changes in the entity metadata that has been priorly retrieved to avoid any mistake. I would also recommend to read information about **MSCRM.MergeLabels** header prior updating metadata. More information about the header can be found [here](https://msdn.microsoft.com/en-us/library/mt593078.aspx#Anchor_2).
+Microsoft recommends making changes in the entity metadata that has been previously retrieved to avoid any mistake. I would also recommend reading information about **MSCRM.MergeLabels** header prior to updating metadata. More information about the header can be found [here](https://msdn.microsoft.com/en-us/library/mt593078.aspx#Anchor_2).
 
 > [!IMPORTANT]
 > Make sure you set **`MetadataId`** property when you update the metadata, DynamicsWebApi uses it as a primary key for the EntityDefinition record.
@@ -1610,7 +1611,7 @@ const schemaName = attributeMetadata.SchemaName;
 > [!IMPORTANT]
 > Make sure you set **`MetadataId`** property when you update the metadata, DynamicsWebApi use it as a primary key for the EntityDefinition record.
 
-The following example will update only common properties availible in [AttributeMetadata](https://msdn.microsoft.com/en-us/library/mt607551.aspx) entity. If you need to update specific properties of Attributes with type that inherit from the AttributeMetadata you will need to cast the attribute to the specific type. [More Info](https://msdn.microsoft.com/en-us/library/mt607522.aspx#Anchor_4)
+The following example will update only common properties available in [AttributeMetadata](https://msdn.microsoft.com/en-us/library/mt607551.aspx) entity. If you need to update specific properties of Attributes with type that inherit from the AttributeMetadata you will need to cast the attribute to the specific type. [More Info](https://msdn.microsoft.com/en-us/library/mt607522.aspx#Anchor_4)
 
 ```ts
 const entityKey = "LogicalName='my_accountname'";
@@ -2635,7 +2636,7 @@ customerNavigationProperty = response._customerid_value_NavigationProperty;
 
 If you still want to use old properties you can do so, they are not removed from the response, so it does not break your existing functionality.
 
-As you have already noticed formatted and lookup data values are accesed by adding a particular suffix to a property name, 
+As you have already noticed formatted and lookup data values are accessed by adding a particular suffix to a property name, 
 the following table summarizes it.
 
 OData Annotation | Property Suffix
@@ -2660,7 +2661,7 @@ const record = await dynamicsWebApi.retrieveRequest(request);
 ## Making requests using Entity Logical Names
 
 It is possible to make requests using Entity Logical Names (for example: `account`, instead of `accounts`).
-There's a small perfomance impact when this feature is used **outside CRM/D365 Web Resources**: DynamicsWebApi makes a request to
+There's a small performance impact when this feature is used **outside CRM/D365 Web Resources**: DynamicsWebApi makes a request to
 Entity Metadata and retrieves LogicalCollectionName and LogicalName for all entities during **the first call to Web Api** on the page.
 
 To enable this feature set `useEntityNames: true` in DynamicsWebApi config.
@@ -2785,7 +2786,7 @@ export as namespace DynamicsWebApi;
 
 `DynamicsWebApi` will now be a global object.
 
-If you need to access other types that `DynamicsWebApi` exports, you will have to create an additional `d.ts` file, unfortunately. I could not find a way to do this in a single file (mostly because of `export =` which cannot be combined with any other exports except for "as namespace"). If anyone knows a way to do that - let me know. Here's an example with a seprate file:
+If you need to access other types that `DynamicsWebApi` exports, you will have to create an additional `d.ts` file, unfortunately. I could not find a way to do this in a single file (mostly because of `export =` which cannot be combined with any other exports except for "as namespace"). If anyone knows a way to do that - let me know. Here's an example with a separate file:
 
 ```ts
 //dynamics-web-api.types.umd.d.ts
@@ -2810,7 +2811,7 @@ const createRequest: Dwa.CreateRequest<Account> = {
 const id = await dynamicsWebApi.create(createRequest) as string;
 ```
 
-**DynamicsWebApi as an external library.** For those who use bundlers, but want to keep DynamicsWebApi as an external library (meaning that you don't want to bundle the library but reference it separately in a script tag somewhere): 1. you will have to make sure that your bundler supports `externals` configuraiton. 2. you will need to set the replacement for the import of `dynamics-web-api` with `_dynamicsWebApiExports`. For example, in webpack's case, you will have something like this:
+**DynamicsWebApi as an external library.** For those who use bundlers, but want to keep DynamicsWebApi as an external library (meaning that you don't want to bundle the library but reference it separately in a script tag somewhere): 1. you will have to make sure that your bundler supports `externals` configuration. 2. you will need to set the replacement for the import of `dynamics-web-api` with `_dynamicsWebApiExports`. For example, in webpack's case, you will have something like this:
 ```json
 {
     //...your bundle configuration
@@ -2862,13 +2863,13 @@ the config option "formatted" will enable developers to retrieve all information
 - [X] Support Microsoft Power Pages. `Added in v2.1.0`
 - [X] Background Operations for custom actions. `Added in v2.3.0`
 - [X] Support Search API 2.0 [#174](https://github.com/AleksandrRogov/DynamicsWebApi/issues/174). `Added in v2.3.0`
-- [ ] [Session token](https://learn.microsoft.com/en-ca/power-apps/developer/data-platform/use-elastic-tables?tabs=webapi#work-with-the-session-token) support. `Coming in v2.3.x`
+- [ ] [Session token](https://learn.microsoft.com/en-ca/power-apps/developer/data-platform/use-elastic-tables?tabs=webapi#work-with-the-session-token) support. `Coming in v2.x`
 - [ ] Support for a custom logger + a console fallback debug logging.
 - [ ] Custom requests.
 
 Many more features to come!
 
-Thank you for your patience and for using DynamcisWebApi!
+Thank you for your patience and for using DynamicsWebApi!
 
 ## Contributions
 

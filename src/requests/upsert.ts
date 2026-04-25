@@ -14,9 +14,16 @@ export const upsert = async <TData = any, TResponse = TData>(request: UpsertRequ
     internalRequest.method = "PATCH";
     internalRequest.functionName = FUNCTION_NAME;
 
+    if (client.config.propagateErrors) {
+        const response = await client.makeRequest(internalRequest);
+        return response?.data;
+    }
+
     //copy locally
     const ifnonematch = internalRequest.ifnonematch;
     const ifmatch = internalRequest.ifmatch;
+
+    // todo: legacy error handling - to be removed in a future major release
     try {
         const response = await client.makeRequest(internalRequest);
         return response?.data;

@@ -1177,6 +1177,11 @@ export interface Config {
     impersonateAAD?: string | null;
     /**A function that is called when a security token needs to be refreshed. */
     onTokenRefresh?: (() => Promise<AccessToken | string | null>) | null;
+    /** 
+     * When true, the library does not catch request errors in convenience wrappers; lets errors propagate to a caller. Useful for disabling legacy error handling in update, upsert and delete operations. 
+     * NOTE! This option is temporary and will be removed in the next major version. 
+     */
+    propagateErrors?: boolean | null;
     /**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types.*/
     includeAnnotations?: string | null;
     /**Sets the odata.maxpagesize preference value to request the number of entities returned in the response. */

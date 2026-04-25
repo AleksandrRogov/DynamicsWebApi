@@ -12,7 +12,7 @@ export function setDownloadChunkSize(size: number): void {
     downloadChunkSize = size;
 }
 
-function formatParameterValue(value: any): string {
+export function formatParameterValue(value: any): string {
     if (value == null) return "";
 
     if (typeof value === "string" && !value.startsWith("Microsoft.Dynamics.CRM") && !isUuid(value)) {
@@ -24,7 +24,7 @@ function formatParameterValue(value: any): string {
     return value.toString();
 }
 
-function processParameters(parameters: { [key: string]: any }): { key: string; queryParams: string[] } {
+export function processParameters(parameters: { [key: string]: any }): { key: string; queryParams: string[] } {
     const parameterNames = Object.keys(parameters);
     const functionParams: string[] = [];
     const urlQuery: string[] = [];
