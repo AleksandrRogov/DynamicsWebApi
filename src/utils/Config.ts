@@ -122,6 +122,11 @@ export function mergeConfig(internalConfig: InternalConfig, config?: Config): vo
         internalConfig.useEntityNames = config.useEntityNames;
     }
 
+    if (config?.propagateErrors != null) {
+        ErrorHelper.boolParameterCheck(config.propagateErrors, FUNCTION_NAME, "config.propagateErrors");
+        internalConfig.propagateErrors = config.propagateErrors;
+    }
+
     if (config?.headers) {
         internalConfig.headers = config.headers;
     }

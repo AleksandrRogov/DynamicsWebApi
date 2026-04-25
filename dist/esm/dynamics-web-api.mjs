@@ -1,4 +1,4 @@
-/*! dynamics-web-api v2.4.0 (c) 2025 Aleksandr Rogov. License: MIT */
+/*! dynamics-web-api v2.5.0 (c) 2026 Aleksandr Rogov. License: MIT */
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -951,6 +951,10 @@ function mergeConfig(internalConfig, config) {
     ErrorHelper.boolParameterCheck(config.useEntityNames, FUNCTION_NAME, "config.useEntityNames");
     internalConfig.useEntityNames = config.useEntityNames;
   }
+  if ((config == null ? void 0 : config.propagateErrors) != null) {
+    ErrorHelper.boolParameterCheck(config.propagateErrors, FUNCTION_NAME, "config.propagateErrors");
+    internalConfig.propagateErrors = config.propagateErrors;
+  }
   if (config == null ? void 0 : config.headers) {
     internalConfig.headers = config.headers;
   }
@@ -1388,31 +1392,31 @@ init_parseBatchResponse();
 init_parseResponse();
 
 // src/client/request/processData.ts
+var replaceEntityNameWithCollectionName = (value) => {
+  const valueParts = SEARCH_FOR_ENTITY_NAME_REGEX.exec(value);
+  if (valueParts && valueParts.length > 2) {
+    const collectionName = findCollectionName(valueParts[1]);
+    if (!isNull(collectionName)) {
+      return value.replace(SEARCH_FOR_ENTITY_NAME_REGEX, `${collectionName}$2`);
+    }
+  }
+  return value;
+};
+var addFullWebApiUrl = (config, key, value) => {
+  if (!value.startsWith(config.dataApi.url)) {
+    if (key.endsWith("@odata.bind")) {
+      if (!value.startsWith("/")) {
+        value = `/${value}`;
+      }
+    } else {
+      value = `${config.dataApi.url}${removeLeadingSlash(value)}`;
+    }
+  }
+  return value;
+};
 var processData = (data, config) => {
   if (!data) return null;
   if (data instanceof Uint8Array || data instanceof Uint16Array || data instanceof Uint32Array) return data;
-  const replaceEntityNameWithCollectionName = (value) => {
-    const valueParts = SEARCH_FOR_ENTITY_NAME_REGEX.exec(value);
-    if (valueParts && valueParts.length > 2) {
-      const collectionName = findCollectionName(valueParts[1]);
-      if (!isNull(collectionName)) {
-        return value.replace(SEARCH_FOR_ENTITY_NAME_REGEX, `${collectionName}$2`);
-      }
-    }
-    return value;
-  };
-  const addFullWebApiUrl = (key, value) => {
-    if (!value.startsWith(config.dataApi.url)) {
-      if (key.endsWith("@odata.bind")) {
-        if (!value.startsWith("/")) {
-          value = `/${value}`;
-        }
-      } else {
-        value = `${config.dataApi.url}${removeLeadingSlash(value)}`;
-      }
-    }
-    return value;
-  };
   const stringifiedData = JSON.stringify(data, (key, value) => {
     if (key === "@odata.id" || key.endsWith("@odata.bind")) {
       if (typeof value === "string" && !value.startsWith("$")) {
@@ -1421,7 +1425,7 @@ var processData = (data, config) => {
           value = replaceEntityNameWithCollectionName(value);
         }
         if (key !== "@odata.id") {
-          value = addFullWebApiUrl(key, value);
+          value = addFullWebApiUrl(config, key, value);
         }
       }
     } else if (key.startsWith("oData") || key.endsWith("_Formatted") || key.endsWith("_NavigationProperty") || key.endsWith("_LogicalName")) {
@@ -2018,6 +2022,10 @@ var update = async (request, client) => {
   internalRequest.method ?? (internalRequest.method = getUpdateMethod(internalRequest.collection));
   internalRequest.responseParameters = { valueIfEmpty: true };
   internalRequest.ifmatch ?? (internalRequest.ifmatch = "*");
+  if (client.config.propagateErrors) {
+    const response = await client.makeRequest(internalRequest);
+    return response == null ? void 0 : response.data;
+  }
   const ifmatch = internalRequest.ifmatch;
   try {
     const response = await client.makeRequest(internalRequest);
@@ -2060,6 +2068,10 @@ var upsert = async (request, client) => {
   const internalRequest = copyRequest(request);
   internalRequest.method = "PATCH";
   internalRequest.functionName = FUNCTION_NAME18;
+  if (client.config.propagateErrors) {
+    const response = await client.makeRequest(internalRequest);
+    return response == null ? void 0 : response.data;
+  }
   const ifnonematch = internalRequest.ifnonematch;
   const ifmatch = internalRequest.ifmatch;
   try {
@@ -2089,6 +2101,10 @@ var deleteRecord = async (request, client) => {
   } else internalRequest = request;
   internalRequest.method = "DELETE";
   internalRequest.responseParameters = { valueIfEmpty: true };
+  if (client.config.propagateErrors) {
+    const response = await client.makeRequest(internalRequest);
+    return response == null ? void 0 : response.data;
+  }
   const ifmatch = internalRequest.ifmatch;
   try {
     const response = await client.makeRequest(internalRequest);

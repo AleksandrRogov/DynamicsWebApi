@@ -23,9 +23,15 @@ export const update = async <TData = any, TResponse = TData>(request: UpdateRequ
     internalRequest.responseParameters = { valueIfEmpty: true };
     internalRequest.ifmatch ??= "*"; //to prevent upsert
 
+    if (client.config.propagateErrors) {
+        const response = await client.makeRequest(internalRequest);
+        return response?.data;
+    }
+
     //copy locally
     const ifmatch = internalRequest.ifmatch;
 
+    // todo: legacy error handling - to be removed in a future major release
     try {
         const response = await client.makeRequest(internalRequest);
         return response?.data;

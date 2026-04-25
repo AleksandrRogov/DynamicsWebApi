@@ -84,6 +84,17 @@ describe("Regex.", () => {
             expect(result).to.equal("PATCH");
         });
     });
+
+    describe("escapeUnicodeSymbols -", function () {
+        it("string with unicode symbols", function () {
+            const result = Regex.escapeUnicodeSymbols("test😀");
+            expect(result).to.equal("test\\ud83d\\ude00");
+        });
+        it("string without unicode symbols", function () {
+            const result = Regex.escapeUnicodeSymbols("test");
+            expect(result).to.equal("test");
+        });
+    });
 });
 
 describe("RequestClient.sendRequest", () => {
@@ -300,6 +311,37 @@ describe("RequestUtility.", () => {
             expect(result).to.be.eq(`{"@odata.id":"contacts(${guid})"}`);
         });
     });
+
+    describe("addFullWebApiUrl", () => {
+        const config = {
+            serverUrl: mocks.serverUrl,
+            dataApi: {
+                url: "data",
+                version: "9.2",
+            },
+            searchApi: {
+                url: "search",
+                version: "9.2",
+            },
+            serviceApi: {
+                url: "service",
+            },
+        };
+
+        it("addFullWebApiUrl - adds full Web API URL when the value does not start with it", () => {
+            const result = RequestUtility.addFullWebApiUrl(config, "key", "value");
+
+            expect(result).to.be.eq("datavalue");
+        });
+    });
+
+    describe("replaceEntityNameWithCollectionName ", () => {
+        it("replaceEntityNameWithCollectionName - if entity not found returns input value", () => {
+            const result = RequestUtility.replaceEntityNameWithCollectionName("value");
+
+            expect(result).to.be.eq("value");
+        });
+    });
 });
 
 describe("Composers.composeHeaders -", () => {
@@ -459,6 +501,30 @@ describe("Config.merge -", () => {
     it("getApiUrl. serverUrl + path, version", () => {
         const url = ConfigurationUtility.getApiUrl("https://test.com", { path: "test", version: "1.0" });
         expect(url).to.be.eq("https://test.com/api/test/v1.0/");
+    });
+
+    it("propagateErrors. null -> true", () => {
+        const internalConfig: InternalConfig = {
+            ...defaultConfig,
+        };
+
+        ConfigurationUtility.mergeConfig(internalConfig, {
+            propagateErrors: true,
+        });
+
+        expect(internalConfig.propagateErrors).to.be.true;
+    });
+
+    it("propagateErrors. wrong type - throws error", () => {
+        const internalConfig: InternalConfig = {
+            ...defaultConfig,
+        };
+
+        expect(() =>
+            ConfigurationUtility.mergeConfig(internalConfig, {
+                propagateErrors: "true" as any,
+            }),
+        ).to.throw();
     });
 });
 

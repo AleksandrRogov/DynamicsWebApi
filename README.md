@@ -18,7 +18,7 @@ As well as Microsoft Dynamics 365 CE (online), Microsoft Dynamics 365 CE (on-pre
 - **CRUD operations**. Including Fetch XML, Actions and Functions in Microsoft Dataverse Web API.
 - **Table Definitions (Entity Metadata)**. Query and modify Table, Column, Choice (Option Set) and Relationship definitions.
 - **File Fields**. Upload, Download and Delete data stored in the File Fields.
-- **Abort Signal and Abort Controller** (Browser and Node.js 15+). Abort requests when they are no longer need to be completed.
+- **Abort Signal and Abort Controller** (Browser and Node.js 15+). Abort requests when they no longer need to be completed.
 - **Node.js and a Browser** support.
 - **Proxy Configuration** support.
 - **Background Operations** support. `v2.3.0+`
@@ -28,11 +28,11 @@ Browser-compiled script and type definitions can be found in a v2 [dist](https:/
 
 Changelog can be found [here](/.github/CHANGELOG.md).
 
-**NOTE!** "Dynamics 365" in this readme refers to Microsoft Dataverse (formerly known as Microsoft Common Data Service) / Microsoft Dynamics 365 Customer Engagement / Micorosft Dynamics CRM. **NOT** Microsoft Dynamics 365 Finance and Operations.
+**NOTE!** "Dynamics 365" in this readme refers to Microsoft Dataverse (formerly known as Microsoft Common Data Service) / Microsoft Dynamics 365 Customer Engagement / Microsoft Dynamics CRM. **NOT** Microsoft Dynamics 365 Finance and Operations.
 
 ## Usage examples
 
-### For a full documentation please check [DynamicsWebApi on GitHub](https://github.com/AleksandrRogov/DynamicsWebApi).
+### For full documentation please check [DynamicsWebApi on GitHub](https://github.com/AleksandrRogov/DynamicsWebApi).
 
 ### Dynamics 365 Web Resource
 To use DynamicsWebApi inside Dynamics 365 you need to download a browser version of the library, it can be found in v2 [dist](https://github.com/AleksandrRogov/DynamicsWebApi/tree/v2/dist) folder.
@@ -110,7 +110,7 @@ const contactId = responses[0];
 const salesorderId = responses[1];
 ```
 
-### For a full documentation please check [DynamicsWebApi on GitHub](https://github.com/AleksandrRogov/DynamicsWebApi).
+### For full documentation please check [DynamicsWebApi on GitHub](https://github.com/AleksandrRogov/DynamicsWebApi).
 
 ## Contributions
 
