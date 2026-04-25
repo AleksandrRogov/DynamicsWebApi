@@ -1,3 +1,20 @@
+<a name="v2.5.0"></a>
+# [v2.5.0](https://github.com/AleksandrRogov/DynamicsWebApi/releases/tag/v2.5.0) - 25 Apr 2026
+
+This release adds a new config property `propagateErrors`. 
+
+### ⚠️ Deprecations
+Error handling of 404 and 412 errors is now treated as legacy and will be removed in `update`, `upsert` and `deleteRecord` operations to standardize the request behavior. For more information refer to [#204](https://github.com/AleksandrRogov/DynamicsWebApi/issues/204) and [#203](https://github.com/AleksandrRogov/DynamicsWebApi/issues/203) .
+
+## What's Changed
+* feat: new config property `propagateErrors` by [@AleksandrRogov](https://github.com/AleksandrRogov) in https://github.com/AleksandrRogov/DynamicsWebApi/pull/204
+
+
+**Full Changelog**: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.4.0...v2.5.0
+
+[Changes][v2.5.0]
+
+
 <a name="v2.4.0"></a>
 # [v2.4.0](https://github.com/AleksandrRogov/DynamicsWebApi/releases/tag/v2.4.0) - 28 Oct 2025
 
@@ -1154,6 +1171,7 @@ Added:
 [Changes][v1.2.0]
 
 
+[v2.5.0]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.4.0...v2.5.0
 [v2.4.0]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.3.2...v2.4.0
 [v2.3.2]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.3.1...v2.3.2
 [v2.3.1]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.3.0...v2.3.1
