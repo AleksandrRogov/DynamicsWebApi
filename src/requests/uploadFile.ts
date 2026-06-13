@@ -1,9 +1,9 @@
-import { LIBRARY_NAME } from "./constants";
-import type { IDataverseClient } from "../client/dataverse";
-import type { UploadRequest } from "../dynamics-web-api";
-import { ErrorHelper } from "../helpers/ErrorHelper";
-import type { InternalRequest } from "../types";
-import { copyRequest, setFileChunk } from "../utils/Utility";
+import { LIBRARY_NAME } from "./constants.js";
+import type { IDataverseClient } from "../client/dataverse.js";
+import type { UploadRequest } from "../dynamics-web-api.js";
+import { ErrorHelper } from "../helpers/ErrorHelper.js";
+import type { InternalRequest } from "../types.js";
+import { copyRequest, setFileChunk } from "../utils/Utility.js";
 
 const FUNCTION_NAME = "uploadFile";
 const REQUEST_NAME = `${LIBRARY_NAME}.${FUNCTION_NAME}`;

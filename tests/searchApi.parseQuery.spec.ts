@@ -1,9 +1,9 @@
 import { expect } from "chai";
 
-import { parseQueryResponse, type QueryResponseInternal } from "../src/requests/search/responseParsers/parseQueryResponse";
-import { parseSuggestResponse, type SuggestResponseInternal } from "../src/requests/search/responseParsers/parseSuggestResponse";
-import { type AutocompleteResponseInternal, parseAutocompleteResponse } from "../src/requests/search/responseParsers/parseAutocompleteResponse";
-import type { AutocompleteResponse, QueryResponse, SuggestResponse } from "../src/dynamics-web-api";
+import { parseQueryResponse, type QueryResponseInternal } from "../src/requests/search/responseParsers/parseQueryResponse.js";
+import { parseSuggestResponse, type SuggestResponseInternal } from "../src/requests/search/responseParsers/parseSuggestResponse.js";
+import { type AutocompleteResponseInternal, parseAutocompleteResponse } from "../src/requests/search/responseParsers/parseAutocompleteResponse.js";
+import type { AutocompleteResponse, QueryResponse, SuggestResponse } from "../src/dynamics-web-api.js";
 
 describe("parseQueryResponse", () => {
     it("returns undefined if response is undefined", () => {

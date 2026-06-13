@@ -1,6 +1,6 @@
-import { dateReviver } from "../../../client/helpers";
-import type { AutocompleteResponse } from "../../../dynamics-web-api";
-import type { InternalApiConfig } from "../../../utils/Config";
+import { dateReviver } from "../../../client/helpers/index.js";
+import type { AutocompleteResponse } from "../../../dynamics-web-api.js";
+import type { InternalApiConfig } from "../../../utils/Config.js";
 
 export interface AutocompleteResponseInternal extends Omit<AutocompleteResponse, "response"> {
     response: string;

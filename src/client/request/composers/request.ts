@@ -1,7 +1,7 @@
-import { composeHeaders, composeUrl } from ".";
-import { ErrorHelper } from "../../../helpers/ErrorHelper";
-import type { InternalRequest } from "../../../types";
-import type { InternalConfig } from "../../../utils/Config";
+import { composeHeaders, composeUrl } from "./index.js";
+import { ErrorHelper } from "../../../helpers/ErrorHelper.js";
+import type { InternalRequest } from "../../../types.js";
+import type { InternalConfig } from "../../../utils/Config.js";
 
 /**
  * Converts a request object to URL link

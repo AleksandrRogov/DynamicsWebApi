@@ -1,7 +1,7 @@
-import type { Config } from "../../../dynamics-web-api";
-import type { InternalRequest } from "../../../types";
-import { ErrorHelper } from "../../../helpers/ErrorHelper";
-import { extractPreferCallbackUrl, removeDoubleQuotes } from "../../../helpers/Regex";
+import type { Config } from "../../../dynamics-web-api.js";
+import type { InternalRequest } from "../../../types.js";
+import { ErrorHelper } from "../../../helpers/ErrorHelper.js";
+import { extractPreferCallbackUrl, removeDoubleQuotes } from "../../../helpers/Regex.js";
 
 type PreferOptions = {
     returnRepresentation?: boolean | null;

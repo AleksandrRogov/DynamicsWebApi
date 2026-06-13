@@ -1,8 +1,8 @@
-import { ErrorHelper } from "../../../helpers/ErrorHelper";
-import { InternalRequest } from "../../../types";
-import { safelyRemoveCurlyBracketsFromUrl } from "../../../helpers/Regex";
-import { Config } from "../../../dynamics-web-api";
-import { isNull } from "../../../utils/Utility";
+import { ErrorHelper } from "../../../helpers/ErrorHelper.js";
+import { InternalRequest } from "../../../types.js";
+import { safelyRemoveCurlyBracketsFromUrl } from "../../../helpers/Regex.js";
+import { Config } from "../../../dynamics-web-api.js";
+import { isNull } from "../../../utils/Utility.js";
 
 /**
  * Converts optional parameters of the request to URL. If expand parameter exists this function is called recursively.

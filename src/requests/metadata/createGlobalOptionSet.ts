@@ -1,8 +1,8 @@
-import type { IDataverseClient } from "../../client/dataverse";
-import type { CreateGlobalOptionSetRequest, CreateRequest } from "../../dynamics-web-api";
-import { copyRequest } from "../../utils/Utility";
-import { ErrorHelper } from "../../helpers/ErrorHelper";
-import { create } from "../create";
+import type { IDataverseClient } from "../../client/dataverse.js";
+import type { CreateGlobalOptionSetRequest, CreateRequest } from "../../dynamics-web-api.js";
+import { copyRequest } from "../../utils/Utility.js";
+import { ErrorHelper } from "../../helpers/ErrorHelper.js";
+import { create } from "../create.js";
 
 const FUNCTION_NAME = "createGlobalOptionSet";
 const REQUEST_NAME = `DynamicsWebApi.${FUNCTION_NAME}`;

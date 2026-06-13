@@ -1,6 +1,6 @@
 ﻿//<cookie pagenumber="2" pagingcookie="<cookie page="1"><accountid last="{EF72AE29-B3DE-E611-8102-5065F38A7BF1}" first="{475B158C-541C-E511-80D3-3863BB347BA8}" /></cookie>" istracking="False" />
 
-import { AutocompleteResponse, BackgroundOperationResponse, BackgroundOperationStatusResponse, QueryResponse, SuggestResponse } from "../src/dynamics-web-api";
+import type { AutocompleteResponse, BackgroundOperationResponse, BackgroundOperationStatusResponse, QueryResponse, SuggestResponse } from "../src/dynamics-web-api.js";
 
 //<cookie pagenumber="2" pagingcookie="<cookie page="2"><accountid last="{F972AE29-B3DE-E611-8102-5065F38A7BF1}" first="{F172AE29-B3DE-E611-8102-5065F38A7BF1}" /></cookie>" istracking="False" />
 const serverUrl = "http://testorg.crm.dynamics.com";

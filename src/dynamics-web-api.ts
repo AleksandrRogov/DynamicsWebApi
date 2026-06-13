@@ -1,7 +1,7 @@
-﻿import { DataverseClient, type IDataverseClient } from "./client/dataverse";
-import { getCollectionName } from "./client/RequestClient";
-import * as Dataverse from "./requests";
-import { toAbsoluteUrl } from "./utils/Utility";
+﻿import { DataverseClient, type IDataverseClient } from "./client/dataverse.js";
+import { getCollectionName } from "./client/RequestClient.js";
+import * as Dataverse from "./requests/index.js";
+import { toAbsoluteUrl } from "./utils/Utility.js";
 
 /**
  * Microsoft Dataverse Web API helper library for Node.js and Browser.

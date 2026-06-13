@@ -1,9 +1,9 @@
-import type { IDataverseClient } from "../client/dataverse";
-import type { DownloadRequest, DownloadResponse } from "../dynamics-web-api";
-import { ErrorHelper } from "../helpers/ErrorHelper";
-import type { InternalRequest } from "../types";
-import { convertToFileBuffer, copyRequest, downloadChunkSize } from "../utils/Utility";
-import { LIBRARY_NAME } from "./constants";
+import type { IDataverseClient } from "../client/dataverse.js";
+import type { DownloadRequest, DownloadResponse } from "../dynamics-web-api.js";
+import { ErrorHelper } from "../helpers/ErrorHelper.js";
+import type { InternalRequest } from "../types.js";
+import { convertToFileBuffer, copyRequest, downloadChunkSize } from "../utils/Utility.js";
+import { LIBRARY_NAME } from "./constants.js";
 
 const FUNCTION_NAME = "downloadFile";
 const REQUEST_NAME = `${LIBRARY_NAME}.${FUNCTION_NAME}`;

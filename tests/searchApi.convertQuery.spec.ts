@@ -1,8 +1,8 @@
 import { expect } from "chai";
 
-import { Query, Suggest } from "../src/dynamics-web-api";
-import { convertEntitiesProperty, convertQuery, convertSearchQuery, convertSuggestOrAutocompleteQuery } from "../src/requests/search/convertSearchQuery";
-import { InternalApiConfig } from "../src/utils/Config";
+import type { Query, Suggest } from "../src/dynamics-web-api.js";
+import { convertEntitiesProperty, convertQuery, convertSearchQuery, convertSuggestOrAutocompleteQuery } from "../src/requests/search/convertSearchQuery.js";
+import type { InternalApiConfig } from "../src/utils/Config.js";
 
 describe("convertEntitiesProperty", () => {
     it("returns undefined if entities is undefined", () => {

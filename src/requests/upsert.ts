@@ -1,8 +1,8 @@
-import type { IDataverseClient } from "../client/dataverse";
-import type { UpsertRequest } from "../dynamics-web-api";
-import { ErrorHelper } from "../helpers/ErrorHelper";
-import { copyRequest } from "../utils/Utility";
-import { LIBRARY_NAME } from "./constants";
+import type { IDataverseClient } from "../client/dataverse.js";
+import type { UpsertRequest } from "../dynamics-web-api.js";
+import { ErrorHelper } from "../helpers/ErrorHelper.js";
+import { copyRequest } from "../utils/Utility.js";
+import { LIBRARY_NAME } from "./constants.js";
 
 const FUNCTION_NAME = "upsert";
 const REQUEST_NAME = `${LIBRARY_NAME}.${FUNCTION_NAME}`;

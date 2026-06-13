@@ -1,9 +1,9 @@
-import type { IDataverseClient } from "../client/dataverse";
-import type { BoundFunctionRequest, UnboundFunctionRequest } from "../dynamics-web-api";
-import { ErrorHelper } from "../helpers/ErrorHelper";
-import type { InternalRequest } from "../types";
-import { buildFunctionParameters, copyObject } from "../utils/Utility";
-import { LIBRARY_NAME } from "./constants";
+import type { IDataverseClient } from "../client/dataverse.js";
+import type { BoundFunctionRequest, UnboundFunctionRequest } from "../dynamics-web-api.js";
+import { ErrorHelper } from "../helpers/ErrorHelper.js";
+import type { InternalRequest } from "../types.js";
+import { buildFunctionParameters, copyObject } from "../utils/Utility.js";
+import { LIBRARY_NAME } from "./constants.js";
 
 const FUNCTION_NAME = "callFunction";
 const REQUEST_NAME = `${LIBRARY_NAME}.${FUNCTION_NAME}`;

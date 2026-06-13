@@ -1,9 +1,9 @@
 import { expect } from "chai";
 import nock from "nock";
-import * as mocks from "./stubs";
+import * as mocks from "./stubs.js";
 
-import { DynamicsWebApi, type RetrieveMultipleRequest } from "../src/dynamics-web-api";
-import { DWA } from "../src/dwa";
+import { DynamicsWebApi, type RetrieveMultipleRequest } from "../src/dynamics-web-api.js";
+import { DWA } from "../src/dwa.js";
 
 const dynamicsWebApiTest = new DynamicsWebApi({
     dataApi: {

@@ -1,5 +1,5 @@
-﻿import { AccessToken } from "../dynamics-web-api";
-import { extractUuid } from "./Regex";
+﻿import { AccessToken } from "../dynamics-web-api.js";
+import { extractUuid } from "./Regex.js";
 
 export interface DynamicsWebApiError extends Error {
     status: number;

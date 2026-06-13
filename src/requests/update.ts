@@ -1,10 +1,10 @@
-import type { IDataverseClient } from "../client/dataverse";
-import type { UpdateRequest } from "../dynamics-web-api";
-import { ErrorHelper } from "../helpers/ErrorHelper";
-import { getUpdateMethod } from "../helpers/Regex";
-import type { InternalRequest } from "../types";
-import { copyRequest } from "../utils/Utility";
-import { LIBRARY_NAME } from "./constants";
+import type { IDataverseClient } from "../client/dataverse.js";
+import type { UpdateRequest } from "../dynamics-web-api.js";
+import { ErrorHelper } from "../helpers/ErrorHelper.js";
+import { getUpdateMethod } from "../helpers/Regex.js";
+import type { InternalRequest } from "../types.js";
+import { copyRequest } from "../utils/Utility.js";
+import { LIBRARY_NAME } from "./constants.js";
 
 const FUNCTION_NAME = "update";
 const REQUEST_NAME = `${LIBRARY_NAME}.${FUNCTION_NAME}`;

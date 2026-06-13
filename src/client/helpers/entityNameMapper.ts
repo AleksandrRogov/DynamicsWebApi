@@ -1,4 +1,4 @@
-import { isNull } from "../../utils/Utility";
+import { isNull } from "../../utils/Utility.js";
 
 export let entityNames: Record<string, string | null> | null = null;
 

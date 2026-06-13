@@ -1,7 +1,7 @@
-import { escapeSearchSpecialCharacters } from "../../helpers/Regex";
-import type { Autocomplete, Suggest, Query, SearchEntity, SearchOptions, SuggestOptions } from "../../dynamics-web-api";
-import type { InternalApiConfig } from "../../utils/Config";
-import type { SearchApiFunction } from "./search.types";
+import { escapeSearchSpecialCharacters } from "../../helpers/Regex.js";
+import type { Autocomplete, Suggest, Query, SearchEntity, SearchOptions, SuggestOptions } from "../../dynamics-web-api.js";
+import type { InternalApiConfig } from "../../utils/Config.js";
+import type { SearchApiFunction } from "./search.types.js";
 
 export function convertSearchQuery(
     query: Query | Suggest | Autocomplete,

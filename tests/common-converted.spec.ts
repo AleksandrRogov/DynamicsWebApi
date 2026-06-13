@@ -1,18 +1,18 @@
 ﻿import { expect } from "chai";
 
-import nock, { cleanAll } from "nock";
+import nock from "nock";
 
-import { DWA } from "../src/dwa";
-import * as Utility from "../src/utils/Utility";
-import { composeUrl, composeRequest, composeHeaders } from "../src/client/request/composers";
-import { ErrorHelper } from "../src/helpers/ErrorHelper";
-import { data as _data, webApiUrl, responses, serviceApiUrl } from "./stubs";
-import { dateReviver } from "../src/client/helpers/dateReviver";
-import * as RequestClient from "../src/client/RequestClient";
-import { parseResponse } from "../src/client/helpers/parseResponse";
-import { InternalRequest } from "../src/types";
-import { InternalConfig } from "../src/utils/Config";
-import { findCollectionName } from "../src/client/helpers";
+import { DWA } from "../src/dwa.js";
+import * as Utility from "../src/utils/Utility.js";
+import { composeUrl, composeRequest, composeHeaders } from "../src/client/request/composers/index.js";
+import { ErrorHelper } from "../src/helpers/ErrorHelper.js";
+import { data as _data, webApiUrl, responses, serviceApiUrl } from "./stubs.js";
+import { dateReviver } from "../src/client/helpers/dateReviver.js";
+import * as RequestClient from "../src/client/RequestClient.js";
+import { parseResponse } from "../src/client/helpers/parseResponse.js";
+import type { InternalRequest } from "../src/types.js";
+import type { InternalConfig } from "../src/utils/Config.js";
+import { findCollectionName } from "../src/client/helpers/index.js";
 
 describe("Utility.", function () {
     describe("buildFunctionParameters - ", function () {
@@ -2164,7 +2164,7 @@ describe("RequestClient.makeRequest", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
             RequestClient._clearTestData();
         });
 
@@ -2212,7 +2212,7 @@ describe("RequestClient.makeRequest", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
             RequestClient._clearTestData();
         });
 
@@ -2275,7 +2275,7 @@ describe("RequestClient.makeRequest", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
             RequestClient._clearTestData();
         });
 
@@ -2321,7 +2321,7 @@ describe("RequestClient.makeRequest", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
             RequestClient._clearTestData();
         });
 
@@ -2363,7 +2363,7 @@ describe("RequestClient.makeRequest", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
             RequestClient._clearTestData();
         });
 
@@ -2404,7 +2404,7 @@ describe("RequestClient.makeRequest", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
             RequestClient._clearTestData();
         });
 
@@ -2444,7 +2444,7 @@ describe("RequestClient.makeRequest", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
             RequestClient._clearTestData();
         });
 
@@ -2485,7 +2485,7 @@ describe("RequestClient.makeRequest", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
             RequestClient._clearTestData();
         });
 
@@ -2548,7 +2548,7 @@ describe("RequestClient.makeRequest", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
             RequestClient._clearTestData();
         });
 
@@ -2594,7 +2594,7 @@ describe("RequestClient.sendRequest", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
             RequestClient._clearTestData();
         });
 
@@ -2628,7 +2628,7 @@ describe("RequestClient.sendRequest", function () {
     //     });
 
     //     after(function () {
-    //         cleanAll();
+    //         nock.cleanAll();
     //         RequestClient._clearTestData();
     //     });
 
@@ -2658,7 +2658,7 @@ describe("RequestClient.sendRequest", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
             RequestClient._clearTestData();
         });
 
@@ -2689,7 +2689,7 @@ describe("RequestClient.sendRequest", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
             RequestClient._clearTestData();
         });
 

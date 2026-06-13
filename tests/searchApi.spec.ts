@@ -1,8 +1,9 @@
 import { expect } from "chai";
 import nock from "nock";
-import * as mocks from "./stubs";
+import * as mocks from "./stubs.js";
 
-import { DynamicsWebApi, Query, Autocomplete, Suggest } from "../src/dynamics-web-api";
+import { DynamicsWebApi } from "../src/dynamics-web-api.js";
+import type { Autocomplete, Query, Suggest } from "../src/dynamics-web-api.js";
 
 const dynamicsWebApiTest = new DynamicsWebApi({
     searchApi: {

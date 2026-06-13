@@ -1,11 +1,11 @@
-import type { IDataverseClient } from "../../client/dataverse";
-import type { QueryRequest, QueryResponse } from "../../dynamics-web-api";
-import { copyObject } from "../../utils/Utility";
-import { ErrorHelper } from "../../helpers/ErrorHelper";
-import { InternalRequest } from "../../types";
-import { LIBRARY_NAME } from "../constants";
-import { convertSearchQuery } from "./convertSearchQuery";
-import { parseQueryResponse } from "./responseParsers/parseQueryResponse";
+import type { IDataverseClient } from "../../client/dataverse.js";
+import type { QueryRequest, QueryResponse } from "../../dynamics-web-api.js";
+import { copyObject } from "../../utils/Utility.js";
+import { ErrorHelper } from "../../helpers/ErrorHelper.js";
+import { InternalRequest } from "../../types.js";
+import { LIBRARY_NAME } from "../constants.js";
+import { convertSearchQuery } from "./convertSearchQuery.js";
+import { parseQueryResponse } from "./responseParsers/parseQueryResponse.js";
 
 const FUNCTION_NAME = "query";
 const REQUEST_NAME = `${LIBRARY_NAME}.${FUNCTION_NAME}`;

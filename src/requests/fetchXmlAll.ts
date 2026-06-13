@@ -1,8 +1,8 @@
-import type { IDataverseClient } from "../client/dataverse";
-import type { FetchAllRequest, FetchXmlRequest, FetchXmlResponse } from "../dynamics-web-api";
-import { ErrorHelper } from "../helpers/ErrorHelper";
-import { LIBRARY_NAME } from "./constants";
-import { fetchXml } from "./fetchXml";
+import type { IDataverseClient } from "../client/dataverse.js";
+import type { FetchAllRequest, FetchXmlRequest, FetchXmlResponse } from "../dynamics-web-api.js";
+import { ErrorHelper } from "../helpers/ErrorHelper.js";
+import { LIBRARY_NAME } from "./constants.js";
+import { fetchXml } from "./fetchXml.js";
 
 const FUNCTION_NAME = "fetchAll";
 const REQUEST_NAME = `${LIBRARY_NAME}.${FUNCTION_NAME}`;

@@ -1,9 +1,9 @@
-import type { IDataverseClient } from "../../client/dataverse";
-import type { RetrieveMultipleRequest, RetrieveAttributesRequest, RetrieveMultipleResponse } from "../../dynamics-web-api";
-import { copyRequest } from "../../utils/Utility";
-import { retrieveMultiple } from "../retrieveMultiple";
-import { LIBRARY_NAME } from "../constants";
-import { ErrorHelper } from "../../helpers/ErrorHelper";
+import type { IDataverseClient } from "../../client/dataverse.js";
+import type { RetrieveMultipleRequest, RetrieveAttributesRequest, RetrieveMultipleResponse } from "../../dynamics-web-api.js";
+import { copyRequest } from "../../utils/Utility.js";
+import { retrieveMultiple } from "../retrieveMultiple.js";
+import { LIBRARY_NAME } from "../constants.js";
+import { ErrorHelper } from "../../helpers/ErrorHelper.js";
 
 const FUNCTION_NAME = "retrieveAttributes";
 const REQUEST_NAME = `${LIBRARY_NAME}.${FUNCTION_NAME}`;
@@ -24,4 +24,4 @@ export const retrieveAttributes = <T = any>(request: RetrieveAttributesRequest, 
     internalRequest.metadataAttributeType = request.castType;
 
     return retrieveMultiple(internalRequest as RetrieveMultipleRequest, client);
-}
+};

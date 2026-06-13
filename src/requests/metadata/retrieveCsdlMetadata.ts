@@ -1,8 +1,8 @@
-import type { IDataverseClient } from "../../client/dataverse";
-import type { CsdlMetadataRequest } from "../../dynamics-web-api";
-import { copyRequest } from "../../utils/Utility";
-import { ErrorHelper } from "../../helpers/ErrorHelper";
-import { InternalRequest } from "../../types";
+import type { IDataverseClient } from "../../client/dataverse.js";
+import type { CsdlMetadataRequest } from "../../dynamics-web-api.js";
+import { copyRequest } from "../../utils/Utility.js";
+import { ErrorHelper } from "../../helpers/ErrorHelper.js";
+import { InternalRequest } from "../../types.js";
 
 const FUNCTION_NAME = "retrieveCsdlMetadata";
 const REQUEST_NAME = `DynamicsWebApi.${FUNCTION_NAME}`;

@@ -1,9 +1,9 @@
 import { expect } from "chai";
-import { IDataverseClient } from "../../src/client/dataverse";
-import { Config } from "../../src/dynamics-web-api";
-import { retrieveGlobalOptionSet } from "../../src/requests";
-import { InternalRequest } from "../../src/types";
-import { defaultConfig } from "../../src/utils/Config";
+import type { IDataverseClient } from "../../src/client/dataverse.js";
+import type { Config } from "../../src/dynamics-web-api.js";
+import { retrieveGlobalOptionSet } from "../../src/requests/index.js";
+import type { InternalRequest } from "../../src/types.js";
+import { defaultConfig } from "../../src/utils/Config.js";
 
 const defaultClient: IDataverseClient = {
     config: defaultConfig(),

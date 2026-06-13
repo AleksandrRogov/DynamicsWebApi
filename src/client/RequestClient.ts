@@ -1,11 +1,11 @@
-import type * as Core from "../types";
-import type { AccessToken } from "../dynamics-web-api";
-import type { InternalConfig } from "../utils/Config";
-import { generateUUID, isRunningWithinPortals, isNull } from "../utils/Utility";
-import * as EntityMapper from "./helpers/entityNameMapper";
-import { executeRequest } from "./helpers/executeRequest";
-import { DynamicsWebApiError, ErrorHelper } from "../helpers/ErrorHelper";
-import { composeRequest, convertToBatch, processData, setStandardHeaders } from "./request";
+import type * as Core from "../types.js";
+import type { AccessToken } from "../dynamics-web-api.js";
+import type { InternalConfig } from "../utils/Config.js";
+import { generateUUID, isRunningWithinPortals, isNull } from "../utils/Utility.js";
+import * as EntityMapper from "./helpers/entityNameMapper.js";
+import { executeRequest } from "./helpers/executeRequest.js";
+import { DynamicsWebApiError, ErrorHelper } from "../helpers/ErrorHelper.js";
+import { composeRequest, convertToBatch, processData, setStandardHeaders } from "./request/index.js";
 
 const _addResponseParams = (requestId: string, responseParams: Record<string, any>) => {
     if (_responseParseParams[requestId]) _responseParseParams[requestId].push(responseParams);

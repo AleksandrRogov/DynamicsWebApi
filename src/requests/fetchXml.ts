@@ -1,9 +1,9 @@
-import type { IDataverseClient } from "../client/dataverse";
-import type { FetchXmlRequest, FetchXmlResponse } from "../dynamics-web-api";
-import { ErrorHelper } from "../helpers/ErrorHelper";
-import { FETCH_XML_PAGE_REGEX, FETCH_XML_REPLACE_REGEX, FETCH_XML_TOP_REGEX } from "../helpers/Regex";
-import { copyRequest } from "../utils/Utility";
-import { LIBRARY_NAME } from "./constants";
+import type { IDataverseClient } from "../client/dataverse.js";
+import type { FetchXmlRequest, FetchXmlResponse } from "../dynamics-web-api.js";
+import { ErrorHelper } from "../helpers/ErrorHelper.js";
+import { FETCH_XML_PAGE_REGEX, FETCH_XML_REPLACE_REGEX, FETCH_XML_TOP_REGEX } from "../helpers/Regex.js";
+import { copyRequest } from "../utils/Utility.js";
+import { LIBRARY_NAME } from "./constants.js";
 
 const FUNCTION_NAME = "fetch";
 const REQUEST_NAME = `${LIBRARY_NAME}.${FUNCTION_NAME}`;

@@ -1,9 +1,9 @@
-import type { IDataverseClient } from "../client/dataverse";
-import type { BatchRequest } from "../dynamics-web-api";
-import { copyRequest, generateUUID } from "../utils/Utility";
-import { ErrorHelper } from "../helpers/ErrorHelper";
-import { InternalRequest } from "../types";
-import { LIBRARY_NAME } from "./constants";
+import type { IDataverseClient } from "../client/dataverse.js";
+import type { BatchRequest } from "../dynamics-web-api.js";
+import { copyRequest, generateUUID } from "../utils/Utility.js";
+import { ErrorHelper } from "../helpers/ErrorHelper.js";
+import { InternalRequest } from "../types.js";
+import { LIBRARY_NAME } from "./constants.js";
 
 const FUNCTION_NAME = "executeBatch";
 const REQUEST_NAME = `${LIBRARY_NAME}.${FUNCTION_NAME}`;

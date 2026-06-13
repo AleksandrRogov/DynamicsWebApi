@@ -1,8 +1,8 @@
-import type { IDataverseClient } from "../../client/dataverse";
-import type { RetrieveRelationshipRequest, RetrieveRequest } from "../../dynamics-web-api";
-import { copyRequest } from "../../utils/Utility";
-import { ErrorHelper } from "../../helpers/ErrorHelper";
-import { retrieve } from "../retrieve";
+import type { IDataverseClient } from "../../client/dataverse.js";
+import type { RetrieveRelationshipRequest, RetrieveRequest } from "../../dynamics-web-api.js";
+import { copyRequest } from "../../utils/Utility.js";
+import { ErrorHelper } from "../../helpers/ErrorHelper.js";
+import { retrieve } from "../retrieve.js";
 
 const FUNCTION_NAME = "retrieveRelationship";
 const REQUEST_NAME = `DynamicsWebApi.${FUNCTION_NAME}`;

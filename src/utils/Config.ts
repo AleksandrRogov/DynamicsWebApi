@@ -1,7 +1,7 @@
-import { isRunningWithinPortals, getClientUrl } from "./Utility";
-import { ErrorHelper } from "../helpers/ErrorHelper";
-import { ApiConfig, Config, SearchApiOptions } from "../dynamics-web-api";
-import { LIBRARY_NAME } from "../requests/constants";
+import { isRunningWithinPortals, getClientUrl } from "./Utility.js";
+import { ErrorHelper } from "../helpers/ErrorHelper.js";
+import { ApiConfig, Config, SearchApiOptions } from "../dynamics-web-api.js";
+import { LIBRARY_NAME } from "../requests/constants.js";
 
 type ApiType = "dataApi" | "searchApi" | "serviceApi";
 

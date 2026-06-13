@@ -1,16 +1,16 @@
 import { expect } from "chai";
 import nock from "nock";
-import * as mocks from "./stubs";
+import * as mocks from "./stubs.js";
 
-import * as RequestClient from "../src/client/RequestClient";
-import * as ConfigurationUtility from "../src/utils/Config";
-import type { InternalConfig } from "../src/utils/Config";
-import * as Core from "../src/types";
-import * as Regex from "../src/helpers/Regex";
-import * as RequestUtility from "../src/client/request";
-import { DynamicsWebApiError } from "../src/helpers/ErrorHelper";
-import { composeHeaders } from "../src/client/request/composers";
-import { composePreferHeader } from "../src/client/request/composers/preferHeader";
+import * as RequestClient from "../src/client/RequestClient.js";
+import * as ConfigurationUtility from "../src/utils/Config.js";
+import type { InternalConfig } from "../src/utils/Config.js";
+import * as Core from "../src/types.js";
+import * as Regex from "../src/helpers/Regex.js";
+import * as RequestUtility from "../src/client/request/index.js";
+import type { DynamicsWebApiError } from "../src/helpers/ErrorHelper.js";
+import { composeHeaders } from "../src/client/request/composers/index.js";
+import { composePreferHeader } from "../src/client/request/composers/preferHeader.js";
 
 describe("Regex.", () => {
     describe("isUuid -", () => {

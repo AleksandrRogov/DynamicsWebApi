@@ -1,4 +1,4 @@
-import type { ReferenceObject } from "../types";
+import type { ReferenceObject } from "../types.js";
 
 const UUID = "[0-9a-fA-F]{8}[-]?([0-9a-fA-F]{4}[-]?){3}[0-9a-fA-F]{12}";
 

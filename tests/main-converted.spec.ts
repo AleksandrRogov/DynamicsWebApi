@@ -1,12 +1,12 @@
 ﻿import { expect } from "chai";
-import nock, { cleanAll } from "nock";
+import nock from "nock";
 import { spy } from "sinon";
 
-import { serverUrl as _serverUrl, responses, webApiUrl, data as _data, webApiUrl92, webApiUrl81, webApiUrl90 } from "./stubs";
-import { DWA } from "../src/dwa";
-import { DynamicsWebApi } from "../src/dynamics-web-api";
+import { serverUrl as _serverUrl, responses, webApiUrl, data as _data, webApiUrl92, webApiUrl81, webApiUrl90 } from "./stubs.js";
+import { DWA } from "../src/dwa.js";
+import { DynamicsWebApi } from "../src/dynamics-web-api.js";
 
-import * as Utility from "../src/utils/Utility";
+import * as Utility from "../src/utils/Utility.js";
 Utility.setDownloadChunkSize(15);
 
 var dynamicsWebApiTest = new DynamicsWebApi({ serverUrl: _serverUrl, dataApi: { version: "8.2" } });
@@ -20,7 +20,7 @@ describe("dynamicsWebApi.upsert -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -47,7 +47,7 @@ describe("dynamicsWebApi.upsert -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -81,7 +81,7 @@ describe("dynamicsWebApi.upsert -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -115,7 +115,7 @@ describe("dynamicsWebApi.upsert -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -151,7 +151,7 @@ describe("dynamicsWebApi.upsert -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("[fullname] returns a correct response", function (done) {
@@ -211,7 +211,7 @@ describe("dynamicsWebApi.upsert -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("[fullname] returns a correct response", function (done) {
@@ -265,7 +265,7 @@ describe("dynamicsWebApi.retrieve -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -295,7 +295,7 @@ describe("dynamicsWebApi.retrieve -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -327,7 +327,7 @@ describe("dynamicsWebApi.retrieve -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("[fullname] returns a correct response", function (done) {
@@ -373,7 +373,7 @@ describe("dynamicsWebApi.retrieve -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("[/reference] returns a correct response", function (done) {
@@ -427,7 +427,7 @@ describe("dynamicsWebApi.retrieve -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -457,7 +457,7 @@ describe("dynamicsWebApi.retrieve -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -489,7 +489,7 @@ describe("dynamicsWebApi.retrieve -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("[fullname] returns a correct response", function (done) {
@@ -545,7 +545,7 @@ describe("dynamicsWebApi.retrieve -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("[/reference] returns a correct response", function (done) {
@@ -616,7 +616,7 @@ describe("dynamicsWebApi.count -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -646,7 +646,7 @@ describe("dynamicsWebApi.count -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -678,7 +678,7 @@ describe("dynamicsWebApi.countAll -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -710,7 +710,7 @@ describe("dynamicsWebApi.fetch -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -740,7 +740,7 @@ describe("dynamicsWebApi.fetch -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -771,7 +771,7 @@ describe("dynamicsWebApi.fetch -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -805,7 +805,7 @@ describe("dynamicsWebApi.fetch -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -842,7 +842,7 @@ describe("dynamicsWebApi.fetch -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -880,7 +880,7 @@ describe("dynamicsWebApi.fetchAll -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -916,7 +916,7 @@ describe("dynamicsWebApi.associate -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -957,7 +957,7 @@ describe("dynamicsWebApi.associate -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -1002,7 +1002,7 @@ describe("dynamicsWebApi.associate -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -1040,7 +1040,7 @@ describe("dynamicsWebApi.disassociate -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -1078,7 +1078,7 @@ describe("dynamicsWebApi.disassociate -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -1117,7 +1117,7 @@ describe("dynamicsWebApi.associateSingleValued -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -1158,7 +1158,7 @@ describe("dynamicsWebApi.associateSingleValued -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -1196,7 +1196,7 @@ describe("dynamicsWebApi.disassociateSingleValued -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -1263,7 +1263,7 @@ describe("dynamicsWebApi.callFunction -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("(no parameters) returns a correct response", function (done) {
@@ -1303,7 +1303,7 @@ describe("dynamicsWebApi.callFunction -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("(no parameters) returns a correct response", function (done) {
@@ -1339,7 +1339,7 @@ describe("dynamicsWebApi.callFunction -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("(no parameters) returns a correct response", function (done) {
@@ -1384,7 +1384,7 @@ describe("dynamicsWebApi.callFunction -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("(no parameters) returns a correct response", function (done) {
@@ -1436,7 +1436,7 @@ describe("dynamicsWebApi.callFunction -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("(no parameters) returns a correct response", function (done) {
@@ -1484,7 +1484,7 @@ describe("dynamicsWebApi.callAction -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -1517,7 +1517,7 @@ describe("dynamicsWebApi.callAction -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -1546,7 +1546,7 @@ describe("dynamicsWebApi.callAction -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -1580,7 +1580,7 @@ describe("dynamicsWebApi.callAction -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -1622,7 +1622,7 @@ describe("dynamicsWebApi.update -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -1665,7 +1665,7 @@ describe("dynamicsWebApi.update -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -1727,7 +1727,7 @@ describe("dynamicsWebApi.update -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -1769,7 +1769,7 @@ describe("dynamicsWebApi.update -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -1811,7 +1811,7 @@ describe("dynamicsWebApi.update -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("catches the error", function (done) {
@@ -1860,7 +1860,7 @@ describe("dynamicsWebApi.upsert -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("(update) returns a correct response", function (done) {
@@ -1909,7 +1909,7 @@ describe("dynamicsWebApi.upsert -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("(update) returns a correct response", function (done) {
@@ -1988,7 +1988,7 @@ describe("dynamicsWebApi.upsert -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("(create prevented) returns a correct response", function (done) {
@@ -2063,7 +2063,7 @@ describe("dynamicsWebApi.upsert -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("(update prevented) returns a correct response", function (done) {
@@ -2123,7 +2123,7 @@ describe("dynamicsWebApi.retrieve -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -2166,7 +2166,7 @@ describe("dynamicsWebApi.retrieve -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -2209,7 +2209,7 @@ describe("dynamicsWebApi.retrieve -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -2248,7 +2248,7 @@ describe("dynamicsWebApi.retrieveMultiple -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -2280,7 +2280,7 @@ describe("dynamicsWebApi.retrieveMultiple -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("[fullname] returns a correct response", function (done) {
@@ -2324,7 +2324,7 @@ describe("dynamicsWebApi.retrieveMultiple -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -2373,7 +2373,7 @@ describe("dynamicsWebApi.retrieveMultiple -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -2432,7 +2432,7 @@ describe("dynamicsWebApi.retrieveMultiple -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -2475,7 +2475,7 @@ describe("dynamicsWebApi.retrieveMultiple -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -2515,7 +2515,7 @@ describe("dynamicsWebApi.retrieveMultiple -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -2558,7 +2558,7 @@ describe("dynamicsWebApi.retrieveMultiple -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -2598,7 +2598,7 @@ describe("dynamicsWebApi.retrieveMultiple -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -2641,7 +2641,7 @@ describe("dynamicsWebApi.retrieveMultiple -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -2684,7 +2684,7 @@ describe("dynamicsWebApi.retrieveAll -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -2737,7 +2737,7 @@ describe("dynamicsWebApi.retrieveAll -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -2783,7 +2783,7 @@ describe("dynamicsWebApi.retrieveAll -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -2825,7 +2825,7 @@ describe("dynamicsWebApi.deleteRecord -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -2861,7 +2861,7 @@ describe("dynamicsWebApi.deleteRecord -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -2902,7 +2902,7 @@ describe("dynamicsWebApi.deleteRecord -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("(pre-condition approved) returns a correct response", function (done) {
@@ -2979,7 +2979,7 @@ describe("dynamicsWebApi.createEntity -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -3015,7 +3015,7 @@ describe("dynamicsWebApi.updateEntity -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -3050,7 +3050,7 @@ describe("dynamicsWebApi.updateEntity -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -3080,7 +3080,7 @@ describe("dynamicsWebApi.retrieveEntity -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -3110,7 +3110,7 @@ describe("dynamicsWebApi.retrieveEntity -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -3142,7 +3142,7 @@ describe("dynamicsWebApi.retrieveEntity -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("[LogicalName] returns a correct response", function (done) {
@@ -3184,7 +3184,7 @@ describe("dynamicsWebApi.retrieveEntities -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -3216,7 +3216,7 @@ describe("dynamicsWebApi.createAttribute -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -3252,7 +3252,7 @@ describe("dynamicsWebApi.updateAttribute -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -3287,7 +3287,7 @@ describe("dynamicsWebApi.updateAttribute -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -3321,7 +3321,7 @@ describe("dynamicsWebApi.updateAttribute -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -3356,7 +3356,7 @@ describe("dynamicsWebApi.updateAttribute -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -3393,7 +3393,7 @@ describe("dynamicsWebApi.retrieveAttributes -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -3423,7 +3423,7 @@ describe("dynamicsWebApi.retrieveAttributes -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -3455,7 +3455,7 @@ describe("dynamicsWebApi.retrieveAttribute -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -3485,7 +3485,7 @@ describe("dynamicsWebApi.retrieveAttribute -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -3515,7 +3515,7 @@ describe("dynamicsWebApi.retrieveAttribute -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -3547,7 +3547,7 @@ describe("dynamicsWebApi.createRelationship -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -3583,7 +3583,7 @@ describe("dynamicsWebApi.updateRelationship -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -3617,7 +3617,7 @@ describe("dynamicsWebApi.updateRelationship -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -3652,7 +3652,7 @@ describe("dynamicsWebApi.updateRelationship -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -3682,7 +3682,7 @@ describe("dynamicsWebApi.deleteRelationship -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -3712,7 +3712,7 @@ describe("dynamicsWebApi.retrieveRelationship -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -3744,7 +3744,7 @@ describe("dynamicsWebApi.retrieveRelationship -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("[LogicalName] returns a correct response", function (done) {
@@ -3788,7 +3788,7 @@ describe("dynamicsWebApi.retrieveRelationship -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("[LogicalName] returns a correct response", function (done) {
@@ -3830,7 +3830,7 @@ describe("dynamicsWebApi.retrieveRelationships -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -3862,7 +3862,7 @@ describe("dynamicsWebApi.retrieveRelationships -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("[LogicalName] returns a correct response", function (done) {
@@ -3906,7 +3906,7 @@ describe("dynamicsWebApi.createGlobalOptionSet -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -3942,7 +3942,7 @@ describe("dynamicsWebApi.updateGlobalOptionSet -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -3977,7 +3977,7 @@ describe("dynamicsWebApi.updateGlobalOptionSet -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -4007,7 +4007,7 @@ describe("dynamicsWebApi.deleteGlobalOptionSet -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -4037,7 +4037,7 @@ describe("dynamicsWebApi.retrieveGlobalOptionSet -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -4069,7 +4069,7 @@ describe("dynamicsWebApi.retrieveGlobalOptionSet -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("[LogicalName] returns a correct response", function (done) {
@@ -4111,7 +4111,7 @@ describe("dynamicsWebApi.retrieveGlobalOptionSets -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -4143,7 +4143,7 @@ describe("dynamicsWebApi.retrieveGlobalOptionSets -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("[LogicalName] returns a correct response", function (done) {
@@ -4204,7 +4204,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -4262,7 +4262,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -4320,7 +4320,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -4378,7 +4378,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -4436,7 +4436,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -4494,7 +4494,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -4578,7 +4578,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -4640,7 +4640,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -4696,7 +4696,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -4765,7 +4765,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -4821,7 +4821,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -4877,7 +4877,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -4933,7 +4933,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -4998,7 +4998,7 @@ describe("dynamicsWebApi.executeBatch -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -5088,7 +5088,7 @@ describe("dynamicsWebApi.uploadFile -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -5138,7 +5138,7 @@ describe("dynamicsWebApi.downloadFile -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -5181,7 +5181,7 @@ describe("dynamicsWebApi.retrieveCsdlMetadata -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -5216,7 +5216,7 @@ describe("dynamicsWebApi.retrieveCsdlMetadata -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -5249,7 +5249,7 @@ describe("dynamicsWebApi.constructor -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("it makes a correct request and returns a correct response", function (done) {
@@ -5284,7 +5284,7 @@ describe("dynamicsWebApi.constructor -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("it makes a correct request and returns a correct response", function (done) {
@@ -5318,7 +5318,7 @@ describe("dynamicsWebApi.constructor -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("sends the request to the right end point and returns a response", function (done) {
@@ -5363,7 +5363,7 @@ describe("dynamicsWebApi.constructor -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("sends the request to the right end point and returns a response", async () => {
@@ -5406,7 +5406,7 @@ describe("dynamicsWebApi.constructor -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("sends the request to the right end point and returns a response", function (done) {
@@ -5460,7 +5460,7 @@ describe("dynamicsWebApi.constructor -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         let i = 0;
@@ -5516,7 +5516,7 @@ describe("dynamicsWebApi.constructor -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         const getToken = spy(async function any() {
@@ -5560,7 +5560,7 @@ describe("dynamicsWebApi.constructor -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("it makes a correct request and returns a correct response", function (done) {
@@ -5595,7 +5595,7 @@ describe("dynamicsWebApi.constructor -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("it makes a correct request and returns a correct response", function (done) {
@@ -5636,7 +5636,7 @@ describe("dynamicsWebApi.constructor -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -5681,7 +5681,7 @@ describe("dynamicsWebApi.constructor -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -5727,7 +5727,7 @@ describe("dynamicsWebApi.constructor -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -5763,7 +5763,7 @@ describe("dynamicsWebApi.constructor -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("returns a correct response", function (done) {
@@ -5808,7 +5808,7 @@ describe("dynamicsWebApi.setConfig -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("it makes a correct request and returns a correct response", function (done) {
@@ -5844,7 +5844,7 @@ describe("dynamicsWebApi.setConfig -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("sends the request to the right end point with a correct MSCRMCallerID header", function (done) {
@@ -5882,7 +5882,7 @@ describe("dynamicsWebApi.setConfig -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("it makes a correct request and returns a correct response", function (done) {
@@ -5918,7 +5918,7 @@ describe("dynamicsWebApi.setConfig -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("sends the request to the right end point with a correct CallerObjectId header", function (done) {
@@ -5955,7 +5955,7 @@ describe("dynamicsWebApi.setConfig -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("sends the request to the right end point and returns a response", function (done) {
@@ -5992,7 +5992,7 @@ describe("dynamicsWebApi.setConfig -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("sends the request to the right end point and returns a response", function (done) {
@@ -6029,7 +6029,7 @@ describe("dynamicsWebApi.setConfig -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("sends the request to the right end point and returns a response", function (done) {
@@ -6069,7 +6069,7 @@ describe("dynamicsWebApi.initializeInstance -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("sends the request to the right end point", function (done) {
@@ -6101,7 +6101,7 @@ describe("dynamicsWebApi.initializeInstance -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("sends the request to the right end point", function (done) {
@@ -6141,7 +6141,7 @@ describe("dynamicsWebApi proxy -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("sends the request to the right end point", function (done) {
@@ -6180,7 +6180,7 @@ describe("dynamicsWebApi proxy -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("sends the request to the right end point", function (done) {
@@ -6215,7 +6215,7 @@ describe("dynamicsWebApi proxy -", function () {
         });
 
         after(function () {
-            cleanAll();
+            nock.cleanAll();
         });
 
         it("sends the request to the right end point", function (done) {

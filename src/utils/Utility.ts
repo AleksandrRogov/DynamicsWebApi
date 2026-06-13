@@ -1,7 +1,7 @@
-﻿import type * as Core from "../types";
-import { getCrypto } from "../helpers/Crypto";
-import { isUuid, extractUuid, parsePagingCookie, removeLeadingSlash } from "../helpers/Regex";
-import { IDataverseClient } from "../client/dataverse";
+﻿import type * as Core from "../types.js";
+import { getCrypto } from "../helpers/Crypto.js";
+import { isUuid, extractUuid, parsePagingCookie, removeLeadingSlash } from "../helpers/Regex.js";
+import { IDataverseClient } from "../client/dataverse.js";
 
 declare var GetGlobalContext: any;
 declare var Xrm: any;

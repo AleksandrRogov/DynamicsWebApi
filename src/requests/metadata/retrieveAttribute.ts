@@ -1,9 +1,9 @@
-import type { IDataverseClient } from "../../client/dataverse";
-import type { RetrieveRequest, RetrieveAttributeRequest } from "../../dynamics-web-api";
-import { copyRequest } from "../../utils/Utility";
-import { retrieve } from "../retrieve";
-import { LIBRARY_NAME } from "../constants";
-import { ErrorHelper } from "../../helpers/ErrorHelper";
+import type { IDataverseClient } from "../../client/dataverse.js";
+import type { RetrieveRequest, RetrieveAttributeRequest } from "../../dynamics-web-api.js";
+import { copyRequest } from "../../utils/Utility.js";
+import { retrieve } from "../retrieve.js";
+import { LIBRARY_NAME } from "../constants.js";
+import { ErrorHelper } from "../../helpers/ErrorHelper.js";
 
 const FUNCTION_NAME = "retrieveAttributes";
 const REQUEST_NAME = `${LIBRARY_NAME}.${FUNCTION_NAME}`;

@@ -1,8 +1,8 @@
-import type { IDataverseClient } from "../client/dataverse";
-import type { AllResponse, RetrieveMultipleRequest } from "../dynamics-web-api";
-import { ErrorHelper } from "../helpers/ErrorHelper";
-import { LIBRARY_NAME } from "./constants";
-import { retrieveMultiple } from "./retrieveMultiple";
+import type { IDataverseClient } from "../client/dataverse.js";
+import type { AllResponse, RetrieveMultipleRequest } from "../dynamics-web-api.js";
+import { ErrorHelper } from "../helpers/ErrorHelper.js";
+import { LIBRARY_NAME } from "./constants.js";
+import { retrieveMultiple } from "./retrieveMultiple.js";
 
 const FUNCTION_NAME = "retrieveAll";
 const REQUEST_NAME = `${LIBRARY_NAME}.${FUNCTION_NAME}`;

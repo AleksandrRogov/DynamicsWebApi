@@ -1,9 +1,9 @@
-﻿import { DWA } from "../../dwa";
-import { getHeader, hasHeader, getFetchXmlPagingCookie } from "../../utils/Utility";
-import { dateReviver } from "./dateReviver";
-import type * as Core from "../../types";
-import { convertToReferenceObject, extractUuidFromUrl } from "../../helpers/Regex";
-import { parseBatchResponse } from "./parseBatchResponse";
+﻿import { DWA } from "../../dwa.js";
+import { getHeader, hasHeader, getFetchXmlPagingCookie } from "../../utils/Utility.js";
+import { dateReviver } from "./dateReviver.js";
+import type * as Core from "../../types.js";
+import { convertToReferenceObject, extractUuidFromUrl } from "../../helpers/Regex.js";
+import { parseBatchResponse } from "./parseBatchResponse.js";
 
 function getFormattedKeyValue(keyName: string, value: any): any[] {
     let newKey: string | null = null;

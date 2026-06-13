@@ -1,7 +1,7 @@
-import { processData, setStandardHeaders } from ".";
-import { InternalConfig } from "../../utils/Config";
-import { generateUUID } from "../../utils/Utility";
-import type { InternalBatchRequest, InternalRequest } from "../../types";
+import { processData, setStandardHeaders } from "./index.js";
+import { InternalConfig } from "../../utils/Config.js";
+import { generateUUID } from "../../utils/Utility.js";
+import type { InternalBatchRequest, InternalRequest } from "../../types.js";
 
 export const convertToBatch = (requests: InternalRequest[], config: InternalConfig, batchRequest?: InternalRequest): InternalBatchRequest => {
     const batchBoundary = `dwa_batch_${generateUUID()}`;

@@ -1,8 +1,8 @@
-import type { IDataverseClient } from "../../client/dataverse";
-import type { RetrieveEntitiesRequest, RetrieveMultipleResponse, RetrieveMultipleRequest } from "../../dynamics-web-api";
-import type { InternalRequest } from "../../types";
-import { copyRequest } from "../../utils/Utility";
-import { retrieveMultiple } from "../retrieveMultiple";
+import type { IDataverseClient } from "../../client/dataverse.js";
+import type { RetrieveEntitiesRequest, RetrieveMultipleResponse, RetrieveMultipleRequest } from "../../dynamics-web-api.js";
+import type { InternalRequest } from "../../types.js";
+import { copyRequest } from "../../utils/Utility.js";
+import { retrieveMultiple } from "../retrieveMultiple.js";
 
 const FUNCTION_NAME = "retrieveEntities";
 

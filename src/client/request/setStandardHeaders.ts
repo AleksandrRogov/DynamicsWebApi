@@ -1,4 +1,4 @@
-import type { HeaderCollection } from "../../dynamics-web-api";
+import type { HeaderCollection } from "../../dynamics-web-api.js";
 
 export const setStandardHeaders = (headers: HeaderCollection = {}, data?: any): HeaderCollection => {
     if (!headers["Accept"]) headers["Accept"] = "application/json";

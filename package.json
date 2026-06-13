@@ -1,6 +1,7 @@
 {
     "name": "dynamics-web-api",
     "version": "2.5.0",
+    "type": "module",
     "description": "DynamicsWebApi is a Microsoft Dataverse Web API helper library",
     "keywords": [
         "dataverse",
@@ -16,19 +17,18 @@
         "dynamics-crm-webapi",
         "dynamics-crm-online"
     ],
-    "main": "dist/cjs/dynamics-web-api.js",
-    "types": "./dist/dynamics-web-api.d.ts",
+    "main": "./dist/esm/dynamics-web-api.js",
     "exports": {
-        "types": "./dist/dynamics-web-api.d.ts",
-        "browser": {
-            "import": "./dist/browser/esm/dynamics-web-api.js",
-            "require": "./dist/browser/esm/dynamics-web-api.js",
-            "default": "./dist/dynamics-web-api.js"
+        ".": {
+            "types": "./dist/dynamics-web-api.d.ts",
+            "import": "./dist/esm/dynamics-web-api.js"
         },
-        "default": {
-            "import": "./dist/esm/dynamics-web-api.mjs",
-            "require": "./dist/cjs/dynamics-web-api.js"
-        }
+        "./browser": {
+            "types": "./dist/browser/esm/dynamics-web-api.d.ts",
+            "import": "./dist/browser/esm/dynamics-web-api.js",
+            "default": "./dist/browser/esm/dynamics-web-api.js"
+        },
+        "./package.json": "./package.json"
     },
     "files": [
         "dist/**/*.js",
@@ -65,6 +65,9 @@
         "https-proxy-agent": "^5.0.1"
     },
     "license": "MIT",
+    "engines": {
+        "node": ">=20.0.0"
+    },
     "scripts": {
         "test:clean": "rimraf lib coverage .nyc_output",
         "test:build": "tsc",

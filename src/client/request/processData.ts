@@ -1,7 +1,7 @@
-import { escapeUnicodeSymbols, removeCurlyBracketsFromUuid, removeLeadingSlash, SEARCH_FOR_ENTITY_NAME_REGEX } from "../../helpers/Regex";
-import type { InternalConfig } from "../../utils/Config";
-import { isNull } from "../../utils/Utility";
-import { findCollectionName } from "../helpers";
+import { escapeUnicodeSymbols, removeCurlyBracketsFromUuid, removeLeadingSlash, SEARCH_FOR_ENTITY_NAME_REGEX } from "../../helpers/Regex.js";
+import type { InternalConfig } from "../../utils/Config.js";
+import { isNull } from "../../utils/Utility.js";
+import { findCollectionName } from "../helpers/index.js";
 
 export const replaceEntityNameWithCollectionName = (value: string): string => {
     const valueParts = SEARCH_FOR_ENTITY_NAME_REGEX.exec(value);

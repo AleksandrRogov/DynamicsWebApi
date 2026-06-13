@@ -1,7 +1,7 @@
-import type { Config, HeaderCollection } from "../../../dynamics-web-api";
-import { ErrorHelper } from "../../../helpers/ErrorHelper";
-import type { InternalRequest } from "../../../types";
-import { composePreferHeader } from "./preferHeader";
+import type { Config, HeaderCollection } from "../../../dynamics-web-api.js";
+import { ErrorHelper } from "../../../helpers/ErrorHelper.js";
+import type { InternalRequest } from "../../../types.js";
+import { composePreferHeader } from "./preferHeader.js";
 
 export const composeHeaders = (request: InternalRequest, config: Config): HeaderCollection => {
     const headers: HeaderCollection = { ...config.headers, ...request.userHeaders };

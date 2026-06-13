@@ -1,6 +1,6 @@
-import { dateReviver } from "../../../client/helpers";
-import type { SuggestResponse, SuggestResponseValue } from "../../../dynamics-web-api";
-import type { InternalApiConfig } from "../../../utils/Config";
+import { dateReviver } from "../../../client/helpers/index.js";
+import type { SuggestResponse, SuggestResponseValue } from "../../../dynamics-web-api.js";
+import type { InternalApiConfig } from "../../../utils/Config.js";
 
 export interface SuggestResponseInternal extends Omit<SuggestResponse, "response"> {
     response: string;

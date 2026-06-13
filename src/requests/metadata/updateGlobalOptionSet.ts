@@ -1,8 +1,8 @@
-import type { IDataverseClient } from "../../client/dataverse";
-import type { UpdateGlobalOptionSetRequest, UpdateRequest } from "../../dynamics-web-api";
-import { copyRequest } from "../../utils/Utility";
-import { ErrorHelper } from "../../helpers/ErrorHelper";
-import { update } from "../update";
+import type { IDataverseClient } from "../../client/dataverse.js";
+import type { UpdateGlobalOptionSetRequest, UpdateRequest } from "../../dynamics-web-api.js";
+import { copyRequest } from "../../utils/Utility.js";
+import { ErrorHelper } from "../../helpers/ErrorHelper.js";
+import { update } from "../update.js";
 
 const FUNCTION_NAME = "updateGlobalOptionSet";
 const REQUEST_NAME = `DynamicsWebApi.${FUNCTION_NAME}`;

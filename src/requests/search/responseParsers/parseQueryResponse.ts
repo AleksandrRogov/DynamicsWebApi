@@ -1,6 +1,6 @@
-import { dateReviver } from "../../../client/helpers";
-import type { QueryResponse } from "../../../dynamics-web-api";
-import type { InternalApiConfig } from "../../../utils/Config";
+import { dateReviver } from "../../../client/helpers/index.js";
+import type { QueryResponse } from "../../../dynamics-web-api.js";
+import type { InternalApiConfig } from "../../../utils/Config.js";
 
 export interface QueryResponseInternal extends Omit<QueryResponse, "response"> {
     response: string;

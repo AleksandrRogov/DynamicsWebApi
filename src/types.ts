@@ -1,5 +1,5 @@
-﻿import type { ProxyConfig, Expand, RequestError, HeaderCollection } from "./dynamics-web-api";
-import type { InternalApiConfig } from "./utils/Config";
+﻿import type { ProxyConfig, Expand, RequestError, HeaderCollection } from "./dynamics-web-api.js";
+import type { InternalApiConfig } from "./utils/Config.js";
 
 export interface RequestOptions {
     method: RequestMethod;

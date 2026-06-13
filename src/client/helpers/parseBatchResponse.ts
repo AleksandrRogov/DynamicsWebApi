@@ -1,4 +1,4 @@
-import { DynamicsWebApiError, ErrorHelper } from "../../helpers/ErrorHelper";
+import { DynamicsWebApiError, ErrorHelper } from "../../helpers/ErrorHelper.js";
 import {
     BATCH_RESPONSE_HEADERS_REGEX,
     LINE_ENDING_REGEX,
@@ -7,8 +7,8 @@ import {
     CONTENT_TYPE_PLAIN_REGEX,
     ODATA_ENTITYID_REGEX,
     extractUuidFromUrl,
-} from "../../helpers/Regex";
-import { handleJsonResponse, handlePlainResponse } from "./parseResponse";
+} from "../../helpers/Regex.js";
+import { handleJsonResponse, handlePlainResponse } from "./parseResponse.js";
 
 //partially taken from http://olingo.apache.org/doc/javascript/apidoc/batch.js.html
 function parseBatchHeaders(text: string): any {

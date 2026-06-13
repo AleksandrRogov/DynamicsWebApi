@@ -1,7 +1,7 @@
-﻿import type * as Core from "../types";
-import { ErrorHelper } from "./../helpers/ErrorHelper";
-import { parseResponse } from "./helpers/parseResponse";
-import { parseResponseHeaders } from "./helpers/parseResponseHeaders";
+﻿import type * as Core from "../types.js";
+import { ErrorHelper } from "./../helpers/ErrorHelper.js";
+import { parseResponse } from "./helpers/parseResponse.js";
+import { parseResponseHeaders } from "./helpers/parseResponseHeaders.js";
 
 export function executeRequest(options: Core.RequestOptions): Promise<Core.WebApiResponse> {
     return new Promise((resolve, reject) => {

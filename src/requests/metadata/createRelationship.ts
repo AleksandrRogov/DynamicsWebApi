@@ -1,9 +1,9 @@
-import type { IDataverseClient } from "../../client/dataverse";
-import type { CreateRequest, CreateRelationshipRequest } from "../../dynamics-web-api";
-import { copyRequest } from "../../utils/Utility";
-import { create } from "../create";
-import { LIBRARY_NAME } from "../constants";
-import { ErrorHelper } from "../../helpers/ErrorHelper";
+import type { IDataverseClient } from "../../client/dataverse.js";
+import type { CreateRequest, CreateRelationshipRequest } from "../../dynamics-web-api.js";
+import { copyRequest } from "../../utils/Utility.js";
+import { create } from "../create.js";
+import { LIBRARY_NAME } from "../constants.js";
+import { ErrorHelper } from "../../helpers/ErrorHelper.js";
 
 const FUNCTION_NAME = "createRelationship";
 const REQUEST_NAME = `${LIBRARY_NAME}.${FUNCTION_NAME}`;

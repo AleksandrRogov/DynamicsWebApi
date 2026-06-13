@@ -1,4 +1,4 @@
-﻿import { DATE_FORMAT_REGEX } from "../../helpers/Regex";
+﻿import { DATE_FORMAT_REGEX } from "../../helpers/Regex.js";
 
 export function dateReviver(key: string, value: any): Date {
     if (typeof value === "string") {

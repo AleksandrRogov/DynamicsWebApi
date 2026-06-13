@@ -9,9 +9,6 @@ var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __typeError = (msg) => {
   throw TypeError(msg);
 };
-var __esm = (fn, res) => function __init() {
-  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
-};
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, { get: all[name], enumerable: true });
@@ -38,33 +35,31 @@ var __privateGet = (obj, member, getter) => (__accessCheck(obj, member, "read fr
 var __privateAdd = (obj, member, value) => member.has(obj) ? __typeError("Cannot add the same private member more than once") : member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
 var __privateSet = (obj, member, value, setter) => (__accessCheck(obj, member, "write to private field"), setter ? setter.call(obj, value) : member.set(obj, value), value);
 
-// src/helpers/crypto/node.ts
-var node_exports = {};
-__export(node_exports, {
-  getCrypto: () => getCrypto
+// src/dynamics-web-api.ts
+var dynamics_web_api_exports = {};
+__export(dynamics_web_api_exports, {
+  DynamicsWebApi: () => DynamicsWebApi
 });
+module.exports = __toCommonJS(dynamics_web_api_exports);
+
+// src/helpers/crypto/node.ts
+var import_node_crypto = __toESM(require("crypto"), 1);
 function getCrypto() {
   return import_node_crypto.default;
 }
-var import_node_crypto;
-var init_node = __esm({
-  "src/helpers/crypto/node.ts"() {
-    "use strict";
-    import_node_crypto = __toESM(require("crypto"));
-  }
-});
 
 // src/helpers/Crypto.ts
 function getCrypto2() {
-  return false ? global.window.crypto : (init_node(), __toCommonJS(node_exports)).getCrypto();
+  return false ? global.window.crypto : getCrypto();
 }
-var init_Crypto = __esm({
-  "src/helpers/Crypto.ts"() {
-    "use strict";
-  }
-});
 
 // src/helpers/Regex.ts
+var UUID = "[0-9a-fA-F]{8}[-]?([0-9a-fA-F]{4}[-]?){3}[0-9a-fA-F]{12}";
+var UUID_REGEX = new RegExp(UUID, "i");
+var EXTRACT_UUID_REGEX = new RegExp("^{?(" + UUID + ")}?$", "i");
+var EXTRACT_UUID_FROM_URL_REGEX = new RegExp("(" + UUID + ")\\)$", "i");
+var REMOVE_BRACKETS_FROM_UUID_REGEX = new RegExp(`{(${UUID})}`, "g");
+var ENTITY_UUID_REGEX = new RegExp(`\\/(\\w+)\\((${UUID})`, "i");
 function isUuid(value) {
   const match = UUID_REGEX.exec(value);
   return !!match;
@@ -81,6 +76,7 @@ function extractUuidFromUrl(url) {
 function removeCurlyBracketsFromUuid(value) {
   return value.replace(REMOVE_BRACKETS_FROM_UUID_REGEX, (_match, p1) => p1);
 }
+var QUOTATION_MARK_REGEX = /(["'].*?["'])/;
 function safelyRemoveCurlyBracketsFromUrl(url) {
   const parts = url.split(QUOTATION_MARK_REGEX);
   return parts.map((part, index) => {
@@ -94,6 +90,8 @@ function convertToReferenceObject(responseData) {
   const result = ENTITY_UUID_REGEX.exec(responseData["@odata.id"]);
   return { id: result[2], collection: result[1], oDataContext: responseData["@odata.context"] };
 }
+var PAGING_COOKIE_REGEX = /pagingcookie="(<cookie page="(\d+)".+<\/cookie>)/;
+var SPECIAL_CHARACTER_REGEX = /[<>"']/g;
 function parsePagingCookie(pagingCookie) {
   const info = PAGING_COOKIE_REGEX.exec(pagingCookie);
   if (!info) return null;
@@ -114,55 +112,41 @@ function sanitizeCookie(cookie) {
 function removeLeadingSlash(value) {
   return value.startsWith("/") ? value.slice(1) : value;
 }
+var UNICODE_SYMBOLS_REGEX = /[\u007F-\uFFFF]/g;
 function escapeUnicodeSymbols(value) {
   return value.replace(UNICODE_SYMBOLS_REGEX, (chr) => `\\u${("0000" + chr.charCodeAt(0).toString(16)).slice(-4)}`);
 }
+var DOUBLE_QUOTE_REGEX = /"/g;
 function removeDoubleQuotes(value) {
   return value.replace(DOUBLE_QUOTE_REGEX, "");
 }
+var BATCH_RESPONSE_HEADERS_REGEX = /^([^()<>@,;:\\"\/[\]?={} \t]+)\s?:\s?(.*)/;
+var HTTP_STATUS_REGEX = /HTTP\/?\s*[\d.]*\s+(\d{3})\s+([\w\s]*)$/m;
+var CONTENT_TYPE_PLAIN_REGEX = /Content-Type: text\/plain/i;
+var ODATA_ENTITYID_REGEX = /OData-EntityId.+/i;
+var TEXT_REGEX = /\w+$/g;
+var LINE_ENDING_REGEX = /\r?\n/;
+var SEARCH_FOR_ENTITY_NAME_REGEX = /(\w+)(\([\d\w-]+\))$/;
+var SPECIAL_COLLECTION_FOR_UPDATE_REGEX = /EntityDefinitions|RelationshipDefinitions|GlobalOptionSetDefinitions/;
 function getUpdateMethod(collection) {
   return SPECIAL_COLLECTION_FOR_UPDATE_REGEX.test(collection ?? "") ? "PUT" : "PATCH";
 }
+var FETCH_XML_TOP_REGEX = /^<fetch.+top=/;
+var FETCH_XML_PAGE_REGEX = /^<fetch.+page=/;
+var FETCH_XML_REPLACE_REGEX = /^(<fetch)/;
+var DATE_FORMAT_REGEX = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:Z|[-+]\d{2}:\d{2})$/;
+var SEARCH_SPECIAL_CHARACTERS_REGEX = /[+\-&|!(){}[\]^"~*?:\\\/]/g;
 function escapeSearchSpecialCharacters(value) {
   return value.replace(SEARCH_SPECIAL_CHARACTERS_REGEX, "\\$&");
 }
+var PREFER_CALLBACK_URL_REGEX = /^odata\.callback;\s*url=["']?(.+?)["']?$/;
 function extractPreferCallbackUrl(value) {
   const match = PREFER_CALLBACK_URL_REGEX.exec(value);
   return match ? match[1] : null;
 }
-var UUID, UUID_REGEX, EXTRACT_UUID_REGEX, EXTRACT_UUID_FROM_URL_REGEX, REMOVE_BRACKETS_FROM_UUID_REGEX, ENTITY_UUID_REGEX, QUOTATION_MARK_REGEX, PAGING_COOKIE_REGEX, SPECIAL_CHARACTER_REGEX, UNICODE_SYMBOLS_REGEX, DOUBLE_QUOTE_REGEX, BATCH_RESPONSE_HEADERS_REGEX, HTTP_STATUS_REGEX, CONTENT_TYPE_PLAIN_REGEX, ODATA_ENTITYID_REGEX, TEXT_REGEX, LINE_ENDING_REGEX, SEARCH_FOR_ENTITY_NAME_REGEX, SPECIAL_COLLECTION_FOR_UPDATE_REGEX, FETCH_XML_TOP_REGEX, FETCH_XML_PAGE_REGEX, FETCH_XML_REPLACE_REGEX, DATE_FORMAT_REGEX, SEARCH_SPECIAL_CHARACTERS_REGEX, PREFER_CALLBACK_URL_REGEX;
-var init_Regex = __esm({
-  "src/helpers/Regex.ts"() {
-    "use strict";
-    UUID = "[0-9a-fA-F]{8}[-]?([0-9a-fA-F]{4}[-]?){3}[0-9a-fA-F]{12}";
-    UUID_REGEX = new RegExp(UUID, "i");
-    EXTRACT_UUID_REGEX = new RegExp("^{?(" + UUID + ")}?$", "i");
-    EXTRACT_UUID_FROM_URL_REGEX = new RegExp("(" + UUID + ")\\)$", "i");
-    REMOVE_BRACKETS_FROM_UUID_REGEX = new RegExp(`{(${UUID})}`, "g");
-    ENTITY_UUID_REGEX = new RegExp(`\\/(\\w+)\\((${UUID})`, "i");
-    QUOTATION_MARK_REGEX = /(["'].*?["'])/;
-    PAGING_COOKIE_REGEX = /pagingcookie="(<cookie page="(\d+)".+<\/cookie>)/;
-    SPECIAL_CHARACTER_REGEX = /[<>"']/g;
-    UNICODE_SYMBOLS_REGEX = /[\u007F-\uFFFF]/g;
-    DOUBLE_QUOTE_REGEX = /"/g;
-    BATCH_RESPONSE_HEADERS_REGEX = /^([^()<>@,;:\\"\/[\]?={} \t]+)\s?:\s?(.*)/;
-    HTTP_STATUS_REGEX = /HTTP\/?\s*[\d.]*\s+(\d{3})\s+([\w\s]*)$/m;
-    CONTENT_TYPE_PLAIN_REGEX = /Content-Type: text\/plain/i;
-    ODATA_ENTITYID_REGEX = /OData-EntityId.+/i;
-    TEXT_REGEX = /\w+$/g;
-    LINE_ENDING_REGEX = /\r?\n/;
-    SEARCH_FOR_ENTITY_NAME_REGEX = /(\w+)(\([\d\w-]+\))$/;
-    SPECIAL_COLLECTION_FOR_UPDATE_REGEX = /EntityDefinitions|RelationshipDefinitions|GlobalOptionSetDefinitions/;
-    FETCH_XML_TOP_REGEX = /^<fetch.+top=/;
-    FETCH_XML_PAGE_REGEX = /^<fetch.+page=/;
-    FETCH_XML_REPLACE_REGEX = /^(<fetch)/;
-    DATE_FORMAT_REGEX = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:Z|[-+]\d{2}:\d{2})$/;
-    SEARCH_SPECIAL_CHARACTERS_REGEX = /[+\-&|!(){}[\]^"~*?:\\\/]/g;
-    PREFER_CALLBACK_URL_REGEX = /^odata\.callback;\s*url=["']?(.+?)["']?$/;
-  }
-});
 
 // src/utils/Utility.ts
+var downloadChunkSize = 4194304;
 function formatParameterValue(value) {
   if (value == null) return "";
   if (typeof value === "string" && !value.startsWith("Microsoft.Dynamics.CRM") && !isUuid(value)) {
@@ -291,15 +275,6 @@ function convertToFileBuffer(binaryString) {
 function toAbsoluteUrl(client, value) {
   return `${client.config.dataApi.url}${removeLeadingSlash(value)}`;
 }
-var downloadChunkSize;
-var init_Utility = __esm({
-  "src/utils/Utility.ts"() {
-    "use strict";
-    init_Crypto();
-    init_Regex();
-    downloadChunkSize = 4194304;
-  }
-});
 
 // src/helpers/ErrorHelper.ts
 function throwParameterError(functionName, parameterName, type) {
@@ -307,142 +282,280 @@ function throwParameterError(functionName, parameterName, type) {
     type ? `${functionName} requires a ${parameterName} parameter to be of type ${type}.` : `${functionName} requires a ${parameterName} parameter.`
   );
 }
-var ErrorHelper;
-var init_ErrorHelper = __esm({
-  "src/helpers/ErrorHelper.ts"() {
-    "use strict";
-    init_Regex();
-    ErrorHelper = class _ErrorHelper {
-      static handleErrorResponse(req) {
-        throw new Error(`Error: ${req.status}: ${req.message}`);
-      }
-      static parameterCheck(parameter, functionName, parameterName, type) {
-        if (typeof parameter === "undefined" || parameter === null || parameter === "") {
-          throwParameterError(functionName, parameterName, type);
-        }
-      }
-      static stringParameterCheck(parameter, functionName, parameterName) {
-        if (typeof parameter !== "string") {
-          throwParameterError(functionName, parameterName, "String");
-        }
-      }
-      static maxLengthStringParameterCheck(parameter, functionName, parameterName, maxLength) {
-        if (!parameter) return;
-        if (parameter.length > maxLength) {
-          throw new Error(`${parameterName} has a ${maxLength} character limit.`);
-        }
-      }
-      static arrayParameterCheck(parameter, functionName, parameterName) {
-        if (parameter.constructor !== Array) {
-          throwParameterError(functionName, parameterName, "Array");
-        }
-      }
-      static stringOrArrayParameterCheck(parameter, functionName, parameterName) {
-        if (parameter.constructor !== Array && typeof parameter !== "string") {
-          throwParameterError(functionName, parameterName, "String or Array");
-        }
-      }
-      static numberParameterCheck(parameter, functionName, parameterName) {
-        if (typeof parameter != "number") {
-          if (typeof parameter === "string" && parameter) {
-            if (!isNaN(parseInt(parameter))) {
-              return;
-            }
-          }
-          throwParameterError(functionName, parameterName, "Number");
-        }
-      }
-      static batchIsEmpty() {
-        return [
-          new Error(
-            "Payload of the batch operation is empty. Please make that you have other operations in between startBatch() and executeBatch() to successfuly build a batch payload."
-          )
-        ];
-      }
-      static handleHttpError(parsedError, parameters) {
-        const error = new Error();
-        Object.keys(parsedError).forEach((k) => {
-          error[k] = parsedError[k];
-        });
-        if (parameters) {
-          Object.keys(parameters).forEach((k) => {
-            error[k] = parameters[k];
-          });
-        }
-        return error;
-      }
-      static boolParameterCheck(parameter, functionName, parameterName) {
-        if (typeof parameter != "boolean") {
-          throwParameterError(functionName, parameterName, "Boolean");
-        }
-      }
-      /**
-       * Private function used to check whether required parameter is a valid GUID
-       * @param parameter The GUID parameter to check
-       * @param functionName
-       * @param parameterName
-       * @returns
-       */
-      static guidParameterCheck(parameter, functionName, parameterName) {
-        const match = extractUuid(parameter);
-        if (!match) throwParameterError(functionName, parameterName, "GUID String");
-        return match;
-      }
-      static keyParameterCheck(parameter, functionName, parameterName) {
-        try {
-          _ErrorHelper.stringParameterCheck(parameter, functionName, parameterName);
-          const match = extractUuid(parameter);
-          if (match) return match;
-          const alternateKeys = parameter.split(",");
-          if (alternateKeys.length) {
-            for (let i = 0; i < alternateKeys.length; i++) {
-              alternateKeys[i] = alternateKeys[i].trim().replace(/"/g, "'");
-              /^[\w\d\_]+\=(.+)$/i.exec(alternateKeys[i])[0];
-            }
-          }
-          return alternateKeys.join(",");
-        } catch (error) {
-          throwParameterError(functionName, parameterName, "String representing GUID or Alternate Key");
-        }
-      }
-      static callbackParameterCheck(callbackParameter, functionName, parameterName) {
-        if (typeof callbackParameter != "function") {
-          throwParameterError(functionName, parameterName, "Function");
-        }
-      }
-      static throwBatchIncompatible(functionName, isBatch) {
-        if (isBatch) {
-          isBatch = false;
-          throw new Error(functionName + " cannot be used in a BATCH request.");
-        }
-      }
-      static throwBatchNotStarted(isBatch) {
-        if (!isBatch) {
-          throw new Error(
-            "Batch operation has not been started. Please call a DynamicsWebApi.startBatch() function prior to calling DynamicsWebApi.executeBatch() to perform a batch request correctly."
-          );
-        }
-      }
-    };
+var ErrorHelper = class _ErrorHelper {
+  static handleErrorResponse(req) {
+    throw new Error(`Error: ${req.status}: ${req.message}`);
   }
-});
+  static parameterCheck(parameter, functionName, parameterName, type) {
+    if (typeof parameter === "undefined" || parameter === null || parameter === "") {
+      throwParameterError(functionName, parameterName, type);
+    }
+  }
+  static stringParameterCheck(parameter, functionName, parameterName) {
+    if (typeof parameter !== "string") {
+      throwParameterError(functionName, parameterName, "String");
+    }
+  }
+  static maxLengthStringParameterCheck(parameter, functionName, parameterName, maxLength) {
+    if (!parameter) return;
+    if (parameter.length > maxLength) {
+      throw new Error(`${parameterName} has a ${maxLength} character limit.`);
+    }
+  }
+  static arrayParameterCheck(parameter, functionName, parameterName) {
+    if (parameter.constructor !== Array) {
+      throwParameterError(functionName, parameterName, "Array");
+    }
+  }
+  static stringOrArrayParameterCheck(parameter, functionName, parameterName) {
+    if (parameter.constructor !== Array && typeof parameter !== "string") {
+      throwParameterError(functionName, parameterName, "String or Array");
+    }
+  }
+  static numberParameterCheck(parameter, functionName, parameterName) {
+    if (typeof parameter != "number") {
+      if (typeof parameter === "string" && parameter) {
+        if (!isNaN(parseInt(parameter))) {
+          return;
+        }
+      }
+      throwParameterError(functionName, parameterName, "Number");
+    }
+  }
+  static batchIsEmpty() {
+    return [
+      new Error(
+        "Payload of the batch operation is empty. Please make that you have other operations in between startBatch() and executeBatch() to successfuly build a batch payload."
+      )
+    ];
+  }
+  static handleHttpError(parsedError, parameters) {
+    const error = new Error();
+    Object.keys(parsedError).forEach((k) => {
+      error[k] = parsedError[k];
+    });
+    if (parameters) {
+      Object.keys(parameters).forEach((k) => {
+        error[k] = parameters[k];
+      });
+    }
+    return error;
+  }
+  static boolParameterCheck(parameter, functionName, parameterName) {
+    if (typeof parameter != "boolean") {
+      throwParameterError(functionName, parameterName, "Boolean");
+    }
+  }
+  /**
+   * Private function used to check whether required parameter is a valid GUID
+   * @param parameter The GUID parameter to check
+   * @param functionName
+   * @param parameterName
+   * @returns
+   */
+  static guidParameterCheck(parameter, functionName, parameterName) {
+    const match = extractUuid(parameter);
+    if (!match) throwParameterError(functionName, parameterName, "GUID String");
+    return match;
+  }
+  static keyParameterCheck(parameter, functionName, parameterName) {
+    try {
+      _ErrorHelper.stringParameterCheck(parameter, functionName, parameterName);
+      const match = extractUuid(parameter);
+      if (match) return match;
+      const alternateKeys = parameter.split(",");
+      if (alternateKeys.length) {
+        for (let i = 0; i < alternateKeys.length; i++) {
+          alternateKeys[i] = alternateKeys[i].trim().replace(/"/g, "'");
+          /^[\w\d\_]+\=(.+)$/i.exec(alternateKeys[i])[0];
+        }
+      }
+      return alternateKeys.join(",");
+    } catch (error) {
+      throwParameterError(functionName, parameterName, "String representing GUID or Alternate Key");
+    }
+  }
+  static callbackParameterCheck(callbackParameter, functionName, parameterName) {
+    if (typeof callbackParameter != "function") {
+      throwParameterError(functionName, parameterName, "Function");
+    }
+  }
+  static throwBatchIncompatible(functionName, isBatch) {
+    if (isBatch) {
+      isBatch = false;
+      throw new Error(functionName + " cannot be used in a BATCH request.");
+    }
+  }
+  static throwBatchNotStarted(isBatch) {
+    if (!isBatch) {
+      throw new Error(
+        "Batch operation has not been started. Please call a DynamicsWebApi.startBatch() function prior to calling DynamicsWebApi.executeBatch() to perform a batch request correctly."
+      );
+    }
+  }
+};
+
+// src/requests/constants.ts
+var LIBRARY_NAME = "DynamicsWebApi";
+
+// src/utils/Config.ts
+var FUNCTION_NAME = `${LIBRARY_NAME}.setConfig`;
+var apiConfigs = ["dataApi", "searchApi", "serviceApi"];
+var getApiUrl = (serverUrl, apiConfig) => {
+  if (isRunningWithinPortals()) {
+    return new URL("_api", global.window.location.origin).toString() + "/";
+  } else {
+    if (!serverUrl) serverUrl = getClientUrl();
+    let url = "api";
+    if (apiConfig.path) {
+      url += `/${apiConfig.path}`;
+    }
+    if (apiConfig.version) {
+      url += `/v${apiConfig.version}`;
+    }
+    return new URL(url, serverUrl).toString() + "/";
+  }
+};
+var mergeSearchApiOptions = (internalApiConfig, options) => {
+  if (!options) return;
+  if (options.escapeSpecialCharacters != null) {
+    ErrorHelper.boolParameterCheck(options.escapeSpecialCharacters, FUNCTION_NAME, `config.searchApi.options.escapeSpecialCharacters`);
+    internalApiConfig.escapeSpecialCharacters = options.escapeSpecialCharacters;
+  }
+  if (options.enableResponseCompatibility != null) {
+    ErrorHelper.boolParameterCheck(options.enableResponseCompatibility, FUNCTION_NAME, `config.searchApi.options.enableResponseCompatibility`);
+    internalApiConfig.enableSearchApiResponseCompatibility = options.enableResponseCompatibility;
+  }
+};
+var mergeApiConfig = (internalConfig, apiType, config) => {
+  const internalApiConfig = internalConfig[apiType];
+  const apiConfig = config == null ? void 0 : config[apiType];
+  if (apiConfig == null ? void 0 : apiConfig.version) {
+    ErrorHelper.stringParameterCheck(apiConfig.version, FUNCTION_NAME, `config.${apiType}.version`);
+    internalApiConfig.version = apiConfig.version;
+  }
+  if (apiConfig == null ? void 0 : apiConfig.path) {
+    ErrorHelper.stringParameterCheck(apiConfig.path, FUNCTION_NAME, `config.${apiType}.path`);
+    internalApiConfig.path = apiConfig.path;
+  }
+  if (apiType === "searchApi") {
+    mergeSearchApiOptions(internalApiConfig, apiConfig == null ? void 0 : apiConfig.options);
+  }
+  internalApiConfig.url = getApiUrl(internalConfig.serverUrl, internalApiConfig);
+};
+function mergeConfig(internalConfig, config) {
+  if (config == null ? void 0 : config.serverUrl) {
+    ErrorHelper.stringParameterCheck(config.serverUrl, FUNCTION_NAME, "config.serverUrl");
+    internalConfig.serverUrl = config.serverUrl;
+  }
+  apiConfigs.forEach((apiType) => {
+    mergeApiConfig(internalConfig, apiType, config);
+  });
+  if (config == null ? void 0 : config.impersonate) {
+    internalConfig.impersonate = ErrorHelper.guidParameterCheck(config.impersonate, FUNCTION_NAME, "config.impersonate");
+  }
+  if (config == null ? void 0 : config.impersonateAAD) {
+    internalConfig.impersonateAAD = ErrorHelper.guidParameterCheck(config.impersonateAAD, FUNCTION_NAME, "config.impersonateAAD");
+  }
+  if (config == null ? void 0 : config.onTokenRefresh) {
+    ErrorHelper.callbackParameterCheck(config.onTokenRefresh, FUNCTION_NAME, "config.onTokenRefresh");
+    internalConfig.onTokenRefresh = config.onTokenRefresh;
+  }
+  if (config == null ? void 0 : config.includeAnnotations) {
+    ErrorHelper.stringParameterCheck(config.includeAnnotations, FUNCTION_NAME, "config.includeAnnotations");
+    internalConfig.includeAnnotations = config.includeAnnotations;
+  }
+  if (config == null ? void 0 : config.timeout) {
+    ErrorHelper.numberParameterCheck(config.timeout, FUNCTION_NAME, "config.timeout");
+    internalConfig.timeout = config.timeout;
+  }
+  if (config == null ? void 0 : config.maxPageSize) {
+    ErrorHelper.numberParameterCheck(config.maxPageSize, FUNCTION_NAME, "config.maxPageSize");
+    internalConfig.maxPageSize = config.maxPageSize;
+  }
+  if ((config == null ? void 0 : config.returnRepresentation) != null) {
+    ErrorHelper.boolParameterCheck(config.returnRepresentation, FUNCTION_NAME, "config.returnRepresentation");
+    internalConfig.returnRepresentation = config.returnRepresentation;
+  }
+  if ((config == null ? void 0 : config.useEntityNames) != null) {
+    ErrorHelper.boolParameterCheck(config.useEntityNames, FUNCTION_NAME, "config.useEntityNames");
+    internalConfig.useEntityNames = config.useEntityNames;
+  }
+  if ((config == null ? void 0 : config.propagateErrors) != null) {
+    ErrorHelper.boolParameterCheck(config.propagateErrors, FUNCTION_NAME, "config.propagateErrors");
+    internalConfig.propagateErrors = config.propagateErrors;
+  }
+  if (config == null ? void 0 : config.headers) {
+    internalConfig.headers = config.headers;
+  }
+  if (config == null ? void 0 : config.proxy) {
+    ErrorHelper.parameterCheck(config.proxy, FUNCTION_NAME, "config.proxy");
+    if (config.proxy.url) {
+      ErrorHelper.stringParameterCheck(config.proxy.url, FUNCTION_NAME, "config.proxy.url");
+      if (config.proxy.auth) {
+        ErrorHelper.parameterCheck(config.proxy.auth, FUNCTION_NAME, "config.proxy.auth");
+        ErrorHelper.stringParameterCheck(config.proxy.auth.username, FUNCTION_NAME, "config.proxy.auth.username");
+        ErrorHelper.stringParameterCheck(config.proxy.auth.password, FUNCTION_NAME, "config.proxy.auth.password");
+      }
+    }
+    internalConfig.proxy = config.proxy;
+  }
+}
+function defaultConfig() {
+  return {
+    serverUrl: null,
+    impersonate: null,
+    impersonateAAD: null,
+    onTokenRefresh: null,
+    includeAnnotations: null,
+    maxPageSize: null,
+    returnRepresentation: null,
+    proxy: null,
+    dataApi: {
+      path: "data",
+      version: "9.2",
+      url: ""
+    },
+    searchApi: {
+      path: "search",
+      version: "1.0",
+      url: ""
+    },
+    serviceApi: {
+      url: ""
+    }
+  };
+}
+
+// src/client/helpers/entityNameMapper.ts
+var entityNames = null;
+var setEntityNames = (newEntityNames) => {
+  entityNames = newEntityNames;
+};
+var findCollectionName = (entityName) => {
+  if (isNull(entityNames)) return null;
+  const collectionName = entityNames[entityName];
+  if (!collectionName) {
+    for (const key in entityNames) {
+      if (entityNames[key] === entityName) {
+        return entityName;
+      }
+    }
+  }
+  return collectionName;
+};
 
 // src/dwa.ts
-var _a, _b, _DWA, DWA;
-var init_dwa = __esm({
-  "src/dwa.ts"() {
-    "use strict";
-    _DWA = class _DWA {
-    };
-    _DWA.Prefer = (_b = class {
-      static get(annotation) {
-        return `${_DWA.Prefer.IncludeAnnotations}="${annotation}"`;
-      }
-    }, _b.ReturnRepresentation = "return=representation", _b.Annotations = (_a = class {
-    }, _a.AssociatedNavigationProperty = "Microsoft.Dynamics.CRM.associatednavigationproperty", _a.LookupLogicalName = "Microsoft.Dynamics.CRM.lookuplogicalname", _a.All = "*", _a.FormattedValue = "OData.Community.Display.V1.FormattedValue", _a.FetchXmlPagingCookie = "Microsoft.Dynamics.CRM.fetchxmlpagingcookie", _a), _b.IncludeAnnotations = "odata.include-annotations", _b);
-    DWA = _DWA;
+var _a, _b;
+var _DWA = class _DWA {
+};
+_DWA.Prefer = (_b = class {
+  static get(annotation) {
+    return `${_DWA.Prefer.IncludeAnnotations}="${annotation}"`;
   }
-});
+}, _b.ReturnRepresentation = "return=representation", _b.Annotations = (_a = class {
+}, _a.AssociatedNavigationProperty = "Microsoft.Dynamics.CRM.associatednavigationproperty", _a.LookupLogicalName = "Microsoft.Dynamics.CRM.lookuplogicalname", _a.All = "*", _a.FormattedValue = "OData.Community.Display.V1.FormattedValue", _a.FetchXmlPagingCookie = "Microsoft.Dynamics.CRM.fetchxmlpagingcookie", _a), _b.IncludeAnnotations = "odata.include-annotations", _b);
+var DWA = _DWA;
 
 // src/client/helpers/dateReviver.ts
 function dateReviver(key, value) {
@@ -454,12 +567,6 @@ function dateReviver(key, value) {
   }
   return value;
 }
-var init_dateReviver = __esm({
-  "src/client/helpers/dateReviver.ts"() {
-    "use strict";
-    init_Regex();
-  }
-});
 
 // src/client/helpers/parseBatchResponse.ts
 function parseBatchHeaders(text) {
@@ -557,14 +664,6 @@ function parseBatchResponse(response, parseParams, requestNumber = 0) {
   }
   return result;
 }
-var init_parseBatchResponse = __esm({
-  "src/client/helpers/parseBatchResponse.ts"() {
-    "use strict";
-    init_ErrorHelper();
-    init_Regex();
-    init_parseResponse();
-  }
-});
 
 // src/client/helpers/parseResponse.ts
 function getFormattedKeyValue(keyName, value) {
@@ -720,22 +819,39 @@ function parseResponse(response, responseHeaders, parseParams) {
   }
   return handlePlainResponse(response);
 }
-var init_parseResponse = __esm({
-  "src/client/helpers/parseResponse.ts"() {
-    "use strict";
-    init_dwa();
-    init_Utility();
-    init_dateReviver();
-    init_Regex();
-    init_parseBatchResponse();
-  }
-});
 
 // src/client/http.ts
-var http_exports = {};
-__export(http_exports, {
-  executeRequest: () => executeRequest
-});
+var import_node_http = __toESM(require("http"), 1);
+var import_node_https = __toESM(require("https"), 1);
+var import_http_proxy_agent = __toESM(require("http-proxy-agent"), 1);
+var import_https_proxy_agent = __toESM(require("https-proxy-agent"), 1);
+var agents = {};
+var getAgent = (options, protocol) => {
+  const isHttp = protocol === "http";
+  const proxy = options.proxy;
+  const agentName = proxy ? proxy.url : protocol;
+  if (!agents[agentName]) {
+    if (proxy) {
+      const parsedProxyUrl = new URL(proxy.url);
+      const proxyAgent = isHttp ? import_http_proxy_agent.default.HttpProxyAgent : import_https_proxy_agent.default.HttpsProxyAgent;
+      const proxyOptions = {
+        host: parsedProxyUrl.hostname,
+        port: parsedProxyUrl.port,
+        protocol: parsedProxyUrl.protocol
+      };
+      if (proxy.auth) proxyOptions.auth = proxy.auth.username + ":" + proxy.auth.password;
+      else if (parsedProxyUrl.username && parsedProxyUrl.password) proxyOptions.auth = `${parsedProxyUrl.username}:${parsedProxyUrl.password}`;
+      agents[agentName] = new proxyAgent(proxyOptions);
+    } else {
+      const protocolInterface = isHttp ? import_node_http.default : import_node_https.default;
+      agents[agentName] = new protocolInterface.Agent({
+        keepAlive: true,
+        maxSockets: Infinity
+      });
+    }
+  }
+  return agents[agentName];
+};
 function executeRequest(options) {
   return new Promise((resolve, reject) => {
     _executeRequest(options, resolve, reject);
@@ -758,7 +874,7 @@ function _executeRequest(options, successCallback, errorCallback) {
   }
   const parsedUrl = new URL(options.uri);
   const protocol = ((_a2 = parsedUrl.protocol) == null ? void 0 : _a2.slice(0, -1)) || "https";
-  const protocolInterface = protocol === "http" ? http : https;
+  const protocolInterface = protocol === "http" ? import_node_http.default : import_node_https.default;
   const internalOptions = {
     hostname: parsedUrl.hostname,
     port: parsedUrl.port,
@@ -833,223 +949,13 @@ function _executeRequest(options, successCallback, errorCallback) {
   }
   request.end();
 }
-var http, https, import_http_proxy_agent, import_https_proxy_agent, agents, getAgent;
-var init_http = __esm({
-  "src/client/http.ts"() {
-    "use strict";
-    http = __toESM(require("http"));
-    https = __toESM(require("https"));
-    import_http_proxy_agent = __toESM(require("http-proxy-agent"));
-    import_https_proxy_agent = __toESM(require("https-proxy-agent"));
-    init_ErrorHelper();
-    init_parseResponse();
-    agents = {};
-    getAgent = (options, protocol) => {
-      const isHttp = protocol === "http";
-      const proxy = options.proxy;
-      const agentName = proxy ? proxy.url : protocol;
-      if (!agents[agentName]) {
-        if (proxy) {
-          const parsedProxyUrl = new URL(proxy.url);
-          const proxyAgent = isHttp ? import_http_proxy_agent.default.HttpProxyAgent : import_https_proxy_agent.default.HttpsProxyAgent;
-          const proxyOptions = {
-            host: parsedProxyUrl.hostname,
-            port: parsedProxyUrl.port,
-            protocol: parsedProxyUrl.protocol
-          };
-          if (proxy.auth) proxyOptions.auth = proxy.auth.username + ":" + proxy.auth.password;
-          else if (parsedProxyUrl.username && parsedProxyUrl.password) proxyOptions.auth = `${parsedProxyUrl.username}:${parsedProxyUrl.password}`;
-          agents[agentName] = new proxyAgent(proxyOptions);
-        } else {
-          const protocolInterface = isHttp ? http : https;
-          agents[agentName] = new protocolInterface.Agent({
-            keepAlive: true,
-            maxSockets: Infinity
-          });
-        }
-      }
-      return agents[agentName];
-    };
-  }
-});
-
-// src/dynamics-web-api.ts
-var dynamics_web_api_exports = {};
-__export(dynamics_web_api_exports, {
-  DynamicsWebApi: () => DynamicsWebApi
-});
-module.exports = __toCommonJS(dynamics_web_api_exports);
-
-// src/utils/Config.ts
-init_Utility();
-init_ErrorHelper();
-
-// src/requests/constants.ts
-var LIBRARY_NAME = "DynamicsWebApi";
-
-// src/utils/Config.ts
-var FUNCTION_NAME = `${LIBRARY_NAME}.setConfig`;
-var apiConfigs = ["dataApi", "searchApi", "serviceApi"];
-var getApiUrl = (serverUrl, apiConfig) => {
-  if (isRunningWithinPortals()) {
-    return new URL("_api", global.window.location.origin).toString() + "/";
-  } else {
-    if (!serverUrl) serverUrl = getClientUrl();
-    let url = "api";
-    if (apiConfig.path) {
-      url += `/${apiConfig.path}`;
-    }
-    if (apiConfig.version) {
-      url += `/v${apiConfig.version}`;
-    }
-    return new URL(url, serverUrl).toString() + "/";
-  }
-};
-var mergeSearchApiOptions = (internalApiConfig, options) => {
-  if (!options) return;
-  if (options.escapeSpecialCharacters != null) {
-    ErrorHelper.boolParameterCheck(options.escapeSpecialCharacters, FUNCTION_NAME, `config.searchApi.options.escapeSpecialCharacters`);
-    internalApiConfig.escapeSpecialCharacters = options.escapeSpecialCharacters;
-  }
-  if (options.enableResponseCompatibility != null) {
-    ErrorHelper.boolParameterCheck(options.enableResponseCompatibility, FUNCTION_NAME, `config.searchApi.options.enableResponseCompatibility`);
-    internalApiConfig.enableSearchApiResponseCompatibility = options.enableResponseCompatibility;
-  }
-};
-var mergeApiConfig = (internalConfig, apiType, config) => {
-  const internalApiConfig = internalConfig[apiType];
-  const apiConfig = config == null ? void 0 : config[apiType];
-  if (apiConfig == null ? void 0 : apiConfig.version) {
-    ErrorHelper.stringParameterCheck(apiConfig.version, FUNCTION_NAME, `config.${apiType}.version`);
-    internalApiConfig.version = apiConfig.version;
-  }
-  if (apiConfig == null ? void 0 : apiConfig.path) {
-    ErrorHelper.stringParameterCheck(apiConfig.path, FUNCTION_NAME, `config.${apiType}.path`);
-    internalApiConfig.path = apiConfig.path;
-  }
-  if (apiType === "searchApi") {
-    mergeSearchApiOptions(internalApiConfig, apiConfig == null ? void 0 : apiConfig.options);
-  }
-  internalApiConfig.url = getApiUrl(internalConfig.serverUrl, internalApiConfig);
-};
-function mergeConfig(internalConfig, config) {
-  if (config == null ? void 0 : config.serverUrl) {
-    ErrorHelper.stringParameterCheck(config.serverUrl, FUNCTION_NAME, "config.serverUrl");
-    internalConfig.serverUrl = config.serverUrl;
-  }
-  apiConfigs.forEach((apiType) => {
-    mergeApiConfig(internalConfig, apiType, config);
-  });
-  if (config == null ? void 0 : config.impersonate) {
-    internalConfig.impersonate = ErrorHelper.guidParameterCheck(config.impersonate, FUNCTION_NAME, "config.impersonate");
-  }
-  if (config == null ? void 0 : config.impersonateAAD) {
-    internalConfig.impersonateAAD = ErrorHelper.guidParameterCheck(config.impersonateAAD, FUNCTION_NAME, "config.impersonateAAD");
-  }
-  if (config == null ? void 0 : config.onTokenRefresh) {
-    ErrorHelper.callbackParameterCheck(config.onTokenRefresh, FUNCTION_NAME, "config.onTokenRefresh");
-    internalConfig.onTokenRefresh = config.onTokenRefresh;
-  }
-  if (config == null ? void 0 : config.includeAnnotations) {
-    ErrorHelper.stringParameterCheck(config.includeAnnotations, FUNCTION_NAME, "config.includeAnnotations");
-    internalConfig.includeAnnotations = config.includeAnnotations;
-  }
-  if (config == null ? void 0 : config.timeout) {
-    ErrorHelper.numberParameterCheck(config.timeout, FUNCTION_NAME, "config.timeout");
-    internalConfig.timeout = config.timeout;
-  }
-  if (config == null ? void 0 : config.maxPageSize) {
-    ErrorHelper.numberParameterCheck(config.maxPageSize, FUNCTION_NAME, "config.maxPageSize");
-    internalConfig.maxPageSize = config.maxPageSize;
-  }
-  if ((config == null ? void 0 : config.returnRepresentation) != null) {
-    ErrorHelper.boolParameterCheck(config.returnRepresentation, FUNCTION_NAME, "config.returnRepresentation");
-    internalConfig.returnRepresentation = config.returnRepresentation;
-  }
-  if ((config == null ? void 0 : config.useEntityNames) != null) {
-    ErrorHelper.boolParameterCheck(config.useEntityNames, FUNCTION_NAME, "config.useEntityNames");
-    internalConfig.useEntityNames = config.useEntityNames;
-  }
-  if ((config == null ? void 0 : config.propagateErrors) != null) {
-    ErrorHelper.boolParameterCheck(config.propagateErrors, FUNCTION_NAME, "config.propagateErrors");
-    internalConfig.propagateErrors = config.propagateErrors;
-  }
-  if (config == null ? void 0 : config.headers) {
-    internalConfig.headers = config.headers;
-  }
-  if (config == null ? void 0 : config.proxy) {
-    ErrorHelper.parameterCheck(config.proxy, FUNCTION_NAME, "config.proxy");
-    if (config.proxy.url) {
-      ErrorHelper.stringParameterCheck(config.proxy.url, FUNCTION_NAME, "config.proxy.url");
-      if (config.proxy.auth) {
-        ErrorHelper.parameterCheck(config.proxy.auth, FUNCTION_NAME, "config.proxy.auth");
-        ErrorHelper.stringParameterCheck(config.proxy.auth.username, FUNCTION_NAME, "config.proxy.auth.username");
-        ErrorHelper.stringParameterCheck(config.proxy.auth.password, FUNCTION_NAME, "config.proxy.auth.password");
-      }
-    }
-    internalConfig.proxy = config.proxy;
-  }
-}
-function defaultConfig() {
-  return {
-    serverUrl: null,
-    impersonate: null,
-    impersonateAAD: null,
-    onTokenRefresh: null,
-    includeAnnotations: null,
-    maxPageSize: null,
-    returnRepresentation: null,
-    proxy: null,
-    dataApi: {
-      path: "data",
-      version: "9.2",
-      url: ""
-    },
-    searchApi: {
-      path: "search",
-      version: "1.0",
-      url: ""
-    },
-    serviceApi: {
-      url: ""
-    }
-  };
-}
-
-// src/client/RequestClient.ts
-init_Utility();
-
-// src/client/helpers/entityNameMapper.ts
-init_Utility();
-var entityNames = null;
-var setEntityNames = (newEntityNames) => {
-  entityNames = newEntityNames;
-};
-var findCollectionName = (entityName) => {
-  if (isNull(entityNames)) return null;
-  const collectionName = entityNames[entityName];
-  if (!collectionName) {
-    for (const key in entityNames) {
-      if (entityNames[key] === entityName) {
-        return entityName;
-      }
-    }
-  }
-  return collectionName;
-};
 
 // src/client/helpers/executeRequest.ts
-async function executeRequest2(options) {
-  return false ? null.executeRequest(options) : (init_http(), __toCommonJS(http_exports)).executeRequest(options);
+async function executeRequest3(options) {
+  return false ? executeRequest2(options) : executeRequest(options);
 }
 
-// src/client/RequestClient.ts
-init_ErrorHelper();
-
 // src/client/request/composers/url.ts
-init_ErrorHelper();
-init_Regex();
-init_Utility();
 var composeUrl = (request, config, url = "", joinSymbol = "&") => {
   var _a2, _b2, _c;
   const queryArray = [];
@@ -1195,12 +1101,7 @@ var composeUrl = (request, config, url = "", joinSymbol = "&") => {
   return url + queryArray.join(joinSymbol);
 };
 
-// src/client/request/composers/headers.ts
-init_ErrorHelper();
-
 // src/client/request/composers/preferHeader.ts
-init_ErrorHelper();
-init_Regex();
 var composePreferHeader = (request, config) => {
   var _a2, _b2;
   const functionName = `DynamicsWebApi.${request.functionName}`;
@@ -1359,7 +1260,6 @@ var composeHeaders = (request, config) => {
 };
 
 // src/client/request/composers/request.ts
-init_ErrorHelper();
 var composeRequest = (request, config) => {
   request.path = "";
   request.functionName = request.functionName || "";
@@ -1400,15 +1300,6 @@ var composeRequest = (request, config) => {
   request.headers = composeHeaders(request, config);
   return request;
 };
-
-// src/client/request/processData.ts
-init_Regex();
-init_Utility();
-
-// src/client/helpers/index.ts
-init_dateReviver();
-init_parseBatchResponse();
-init_parseResponse();
 
 // src/client/request/processData.ts
 var replaceEntityNameWithCollectionName = (value) => {
@@ -1466,7 +1357,6 @@ var setStandardHeaders = (headers = {}, data) => {
 };
 
 // src/client/request/convertToBatch.ts
-init_Utility();
 var convertToBatch = (requests, config, batchRequest) => {
   const batchBoundary = `dwa_batch_${generateUUID()}`;
   const batchBody = [];
@@ -1653,7 +1543,7 @@ var sendRequest = async (request, config) => {
     request.headers["__RequestVerificationToken"] = await global.window.shell.getTokenDeferred();
   }
   const url = request.apiConfig ? request.apiConfig.url : config.dataApi.url;
-  return await executeRequest2({
+  return await executeRequest3({
     method: request.method,
     uri: url.toString() + request.path,
     data: processedData,
@@ -1732,8 +1622,6 @@ _isBatch = new WeakMap();
 _batchRequestId = new WeakMap();
 
 // src/requests/associate.ts
-init_ErrorHelper();
-init_Utility();
 var FUNCTION_NAME2 = "associate";
 var REQUEST_NAME = `${LIBRARY_NAME}.${FUNCTION_NAME2}`;
 var associate = async (request, client) => {
@@ -1757,8 +1645,6 @@ var associate = async (request, client) => {
 };
 
 // src/requests/associateSingleValued.ts
-init_ErrorHelper();
-init_Utility();
 var FUNCTION_NAME3 = "associateSingleValued";
 var REQUEST_NAME2 = `${LIBRARY_NAME}.${FUNCTION_NAME3}`;
 var associateSingleValued = async (request, client) => {
@@ -1782,8 +1668,6 @@ var associateSingleValued = async (request, client) => {
 };
 
 // src/requests/callAction.ts
-init_ErrorHelper();
-init_Utility();
 var FUNCTION_NAME4 = "callAction";
 var REQUEST_NAME3 = `${LIBRARY_NAME}.${FUNCTION_NAME4}`;
 var callAction = async (request, client) => {
@@ -1800,8 +1684,6 @@ var callAction = async (request, client) => {
 };
 
 // src/requests/callFunction.ts
-init_ErrorHelper();
-init_Utility();
 var FUNCTION_NAME5 = "callFunction";
 var REQUEST_NAME4 = `${LIBRARY_NAME}.${FUNCTION_NAME5}`;
 var callFunction = async (request, client) => {
@@ -1823,8 +1705,6 @@ var callFunction = async (request, client) => {
 };
 
 // src/requests/create.ts
-init_ErrorHelper();
-init_Utility();
 var FUNCTION_NAME6 = "create";
 var REQUEST_NAME5 = `${LIBRARY_NAME}.${FUNCTION_NAME6}`;
 var create = async (request, client) => {
@@ -1840,8 +1720,6 @@ var create = async (request, client) => {
 };
 
 // src/requests/count.ts
-init_ErrorHelper();
-init_Utility();
 var FUNCTION_NAME7 = "count";
 var REQUEST_NAME6 = `${LIBRARY_NAME}.${FUNCTION_NAME7}`;
 var count = async (request, client) => {
@@ -1860,15 +1738,7 @@ var count = async (request, client) => {
   return response == null ? void 0 : response.data;
 };
 
-// src/requests/countAll.ts
-init_ErrorHelper();
-
-// src/requests/retrieveAll.ts
-init_ErrorHelper();
-
 // src/requests/retrieveMultiple.ts
-init_ErrorHelper();
-init_Utility();
 var FUNCTION_NAME8 = "retrieveMultiple";
 var REQUEST_NAME7 = `${LIBRARY_NAME}.${FUNCTION_NAME8}`;
 var retrieveMultiple = async (request, client, nextPageLink) => {
@@ -1920,8 +1790,6 @@ var countAll = async (request, client) => {
 };
 
 // src/requests/disassociate.ts
-init_ErrorHelper();
-init_Utility();
 var FUNCTION_NAME11 = "disassociate";
 var REQUEST_NAME10 = `${LIBRARY_NAME}.${FUNCTION_NAME11}`;
 var disassociate = async (request, client) => {
@@ -1938,8 +1806,6 @@ var disassociate = async (request, client) => {
 };
 
 // src/requests/disassociateSingleValued.ts
-init_ErrorHelper();
-init_Utility();
 var FUNCTION_NAME12 = "disassociateSingleValued";
 var REQUEST_NAME11 = `${LIBRARY_NAME}.${FUNCTION_NAME12}`;
 var disassociateSingleValued = async (request, client) => {
@@ -1955,8 +1821,6 @@ var disassociateSingleValued = async (request, client) => {
 };
 
 // src/requests/retrieve.ts
-init_ErrorHelper();
-init_Utility();
 var FUNCTION_NAME13 = "retrieve";
 var REQUEST_NAME12 = `${LIBRARY_NAME}.${FUNCTION_NAME13}`;
 var retrieve = async (request, client) => {
@@ -1976,9 +1840,6 @@ var retrieve = async (request, client) => {
 };
 
 // src/requests/fetchXml.ts
-init_ErrorHelper();
-init_Regex();
-init_Utility();
 var FUNCTION_NAME14 = "fetch";
 var REQUEST_NAME13 = `${LIBRARY_NAME}.${FUNCTION_NAME14}`;
 var fetchXml = async (request, client) => {
@@ -2006,7 +1867,6 @@ var fetchXml = async (request, client) => {
 };
 
 // src/requests/fetchXmlAll.ts
-init_ErrorHelper();
 var FUNCTION_NAME15 = "fetchAll";
 var REQUEST_NAME14 = `${LIBRARY_NAME}.${FUNCTION_NAME15}`;
 var executeFetchXmlAll = async (request, client, records = []) => {
@@ -2026,9 +1886,6 @@ var fetchXmlAll = async (request, client) => {
 };
 
 // src/requests/update.ts
-init_ErrorHelper();
-init_Regex();
-init_Utility();
 var FUNCTION_NAME16 = "update";
 var REQUEST_NAME15 = `${LIBRARY_NAME}.${FUNCTION_NAME16}`;
 var update = async (request, client) => {
@@ -2058,8 +1915,6 @@ var update = async (request, client) => {
 };
 
 // src/requests/updateSingleProperty.ts
-init_ErrorHelper();
-init_Utility();
 var FUNCTION_NAME17 = "updateSingleProperty";
 var REQUEST_NAME16 = `${LIBRARY_NAME}.${FUNCTION_NAME17}`;
 var updateSingleProperty = async (request, client) => {
@@ -2078,8 +1933,6 @@ var updateSingleProperty = async (request, client) => {
 };
 
 // src/requests/upsert.ts
-init_ErrorHelper();
-init_Utility();
 var FUNCTION_NAME18 = "upsert";
 var REQUEST_NAME17 = `${LIBRARY_NAME}.${FUNCTION_NAME18}`;
 var upsert = async (request, client) => {
@@ -2107,8 +1960,6 @@ var upsert = async (request, client) => {
 };
 
 // src/requests/delete.ts
-init_ErrorHelper();
-init_Utility();
 var FUNCTION_NAME19 = "deleteRecord";
 var REQUEST_NAME18 = `${LIBRARY_NAME}.${FUNCTION_NAME19}`;
 var deleteRecord = async (request, client) => {
@@ -2137,8 +1988,6 @@ var deleteRecord = async (request, client) => {
 };
 
 // src/requests/uploadFile.ts
-init_ErrorHelper();
-init_Utility();
 var FUNCTION_NAME20 = "uploadFile";
 var REQUEST_NAME19 = `${LIBRARY_NAME}.${FUNCTION_NAME20}`;
 var _uploadFileChunk = async (request, client, fileBytes, chunkSize, offset = 0) => {
@@ -2166,8 +2015,6 @@ var uploadFile = async (request, client) => {
 };
 
 // src/requests/downloadFile.ts
-init_ErrorHelper();
-init_Utility();
 var FUNCTION_NAME21 = "downloadFile";
 var REQUEST_NAME20 = `${LIBRARY_NAME}.${FUNCTION_NAME21}`;
 var downloadFileChunk = async (request, client, bytesDownloaded = 0, data = "") => {
@@ -2197,8 +2044,6 @@ var downloadFile = (request, client) => {
 };
 
 // src/requests/executeBatch.ts
-init_Utility();
-init_ErrorHelper();
 var FUNCTION_NAME22 = "executeBatch";
 var REQUEST_NAME21 = `${LIBRARY_NAME}.${FUNCTION_NAME22}`;
 async function executeBatch(request, client) {
@@ -2219,8 +2064,6 @@ function startBatch(client) {
 }
 
 // src/requests/metadata/createEntity.ts
-init_ErrorHelper();
-init_Utility();
 var FUNCTION_NAME23 = "createEntity";
 var REQUEST_NAME22 = `${LIBRARY_NAME}.${FUNCTION_NAME23}`;
 var createEntity = async (request, client) => {
@@ -2233,8 +2076,6 @@ var createEntity = async (request, client) => {
 };
 
 // src/requests/metadata/updateEntity.ts
-init_ErrorHelper();
-init_Utility();
 var FUNCTION_NAME24 = "updateEntity";
 var REQUEST_NAME23 = `${LIBRARY_NAME}.${FUNCTION_NAME24}`;
 var updateEntity = async (request, client) => {
@@ -2249,8 +2090,6 @@ var updateEntity = async (request, client) => {
 };
 
 // src/requests/metadata/retrieveEntity.ts
-init_ErrorHelper();
-init_Utility();
 var FUNCTION_NAME25 = "retrieveEntity";
 var REQUEST_NAME24 = `${LIBRARY_NAME}.${FUNCTION_NAME25}`;
 var retrieveEntity = async (request, client) => {
@@ -2263,7 +2102,6 @@ var retrieveEntity = async (request, client) => {
 };
 
 // src/requests/metadata/retrieveEntities.ts
-init_Utility();
 var FUNCTION_NAME26 = "retrieveEntities";
 var retrieveEntities = (client, request) => {
   const internalRequest = !request ? {} : copyRequest(request);
@@ -2273,8 +2111,6 @@ var retrieveEntities = (client, request) => {
 };
 
 // src/requests/metadata/createAttribute.ts
-init_Utility();
-init_ErrorHelper();
 var FUNCTION_NAME27 = "createAttribute";
 var REQUEST_NAME25 = `${LIBRARY_NAME}.${FUNCTION_NAME27}`;
 var createAttribute = (request, client) => {
@@ -2290,8 +2126,6 @@ var createAttribute = (request, client) => {
 };
 
 // src/requests/metadata/updateAttribute.ts
-init_Utility();
-init_ErrorHelper();
 var FUNCTION_NAME28 = "updateAttribute";
 var REQUEST_NAME26 = `${LIBRARY_NAME}.${FUNCTION_NAME28}`;
 var updateAttribute = (request, client) => {
@@ -2311,8 +2145,6 @@ var updateAttribute = (request, client) => {
 };
 
 // src/requests/metadata/retrieveAttributes.ts
-init_Utility();
-init_ErrorHelper();
 var FUNCTION_NAME29 = "retrieveAttributes";
 var REQUEST_NAME27 = `${LIBRARY_NAME}.${FUNCTION_NAME29}`;
 var retrieveAttributes = (request, client) => {
@@ -2331,8 +2163,6 @@ var retrieveAttributes = (request, client) => {
 };
 
 // src/requests/metadata/retrieveAttribute.ts
-init_Utility();
-init_ErrorHelper();
 var FUNCTION_NAME30 = "retrieveAttributes";
 var REQUEST_NAME28 = `${LIBRARY_NAME}.${FUNCTION_NAME30}`;
 var retrieveAttribute = (request, client) => {
@@ -2353,8 +2183,6 @@ var retrieveAttribute = (request, client) => {
 };
 
 // src/requests/metadata/createRelationship.ts
-init_Utility();
-init_ErrorHelper();
 var FUNCTION_NAME31 = "createRelationship";
 var REQUEST_NAME29 = `${LIBRARY_NAME}.${FUNCTION_NAME31}`;
 var createRelationship = (request, client) => {
@@ -2367,8 +2195,6 @@ var createRelationship = (request, client) => {
 };
 
 // src/requests/metadata/updateRelationship.ts
-init_Utility();
-init_ErrorHelper();
 var FUNCTION_NAME32 = "updateRelationship";
 var REQUEST_NAME30 = `${LIBRARY_NAME}.${FUNCTION_NAME32}`;
 function updateRelationship(request, client) {
@@ -2388,8 +2214,6 @@ function updateRelationship(request, client) {
 }
 
 // src/requests/metadata/deleteRelationship.ts
-init_Utility();
-init_ErrorHelper();
 var FUNCTION_NAME33 = "deleteRelationship";
 var REQUEST_NAME31 = `${LIBRARY_NAME}.${FUNCTION_NAME33}`;
 async function deleteRelationship(request, client) {
@@ -2402,8 +2226,6 @@ async function deleteRelationship(request, client) {
 }
 
 // src/requests/metadata/retrieveRelationships.ts
-init_Utility();
-init_ErrorHelper();
 var FUNCTION_NAME34 = "retrieveRelationships";
 var REQUEST_NAME32 = `DynamicsWebApi.${FUNCTION_NAME34}`;
 async function retrieveRelationships(request, client) {
@@ -2420,8 +2242,6 @@ async function retrieveRelationships(request, client) {
 }
 
 // src/requests/metadata/retrieveRelationship.ts
-init_Utility();
-init_ErrorHelper();
 var FUNCTION_NAME35 = "retrieveRelationship";
 var REQUEST_NAME33 = `DynamicsWebApi.${FUNCTION_NAME35}`;
 async function retrieveRelationship(request, client) {
@@ -2438,8 +2258,6 @@ async function retrieveRelationship(request, client) {
 }
 
 // src/requests/metadata/createGlobalOptionSet.ts
-init_Utility();
-init_ErrorHelper();
 var FUNCTION_NAME36 = "createGlobalOptionSet";
 var REQUEST_NAME34 = `DynamicsWebApi.${FUNCTION_NAME36}`;
 async function createGlobalOptionSet(request, client) {
@@ -2452,8 +2270,6 @@ async function createGlobalOptionSet(request, client) {
 }
 
 // src/requests/metadata/updateGlobalOptionSet.ts
-init_Utility();
-init_ErrorHelper();
 var FUNCTION_NAME37 = "updateGlobalOptionSet";
 var REQUEST_NAME35 = `DynamicsWebApi.${FUNCTION_NAME37}`;
 async function updateGlobalOptionSet(request, client) {
@@ -2472,8 +2288,6 @@ async function updateGlobalOptionSet(request, client) {
 }
 
 // src/requests/metadata/deleteGlobalOptionSet.ts
-init_Utility();
-init_ErrorHelper();
 var FUNCTION_NAME38 = "deleteGlobalOptionSet";
 var REQUEST_NAME36 = `DynamicsWebApi.${FUNCTION_NAME38}`;
 async function deleteGlobalOptionSet(request, client) {
@@ -2485,8 +2299,6 @@ async function deleteGlobalOptionSet(request, client) {
 }
 
 // src/requests/metadata/retrieveGlobalOptionSet.ts
-init_Utility();
-init_ErrorHelper();
 var FUNCTION_NAME39 = "retrieveGlobalOptionSet";
 var REQUEST_NAME37 = `DynamicsWebApi.${FUNCTION_NAME39}`;
 async function retrieveGlobalOptionSet(request, client) {
@@ -2502,8 +2314,6 @@ async function retrieveGlobalOptionSet(request, client) {
 }
 
 // src/requests/metadata/retrieveGlobalOptionSets.ts
-init_Utility();
-init_ErrorHelper();
 var FUNCTION_NAME40 = "retrieveGlobalOptionSets";
 var REQUEST_NAME38 = `DynamicsWebApi.${FUNCTION_NAME40}`;
 async function retrieveGlobalOptionSets(request, client) {
@@ -2518,8 +2328,6 @@ async function retrieveGlobalOptionSets(request, client) {
 }
 
 // src/requests/metadata/retrieveCsdlMetadata.ts
-init_Utility();
-init_ErrorHelper();
 var FUNCTION_NAME41 = "retrieveCsdlMetadata";
 var REQUEST_NAME39 = `DynamicsWebApi.${FUNCTION_NAME41}`;
 async function retrieveCsdlMetadata(request, client) {
@@ -2534,12 +2342,7 @@ async function retrieveCsdlMetadata(request, client) {
   return response == null ? void 0 : response.data;
 }
 
-// src/requests/search/query.ts
-init_Utility();
-init_ErrorHelper();
-
 // src/requests/search/convertSearchQuery.ts
-init_Regex();
 function convertSearchQuery(query2, functionName, config) {
   var _a2;
   if (!query2) return query2;
@@ -2762,10 +2565,6 @@ async function query(request, client) {
   return parseQueryResponse(response.data, client.config.searchApi);
 }
 
-// src/requests/search/suggest.ts
-init_Utility();
-init_ErrorHelper();
-
 // src/requests/search/responseParsers/parseSuggestResponse.ts
 function parseSuggestResponse(queryResponse, config) {
   if (!queryResponse) return queryResponse;
@@ -2831,10 +2630,6 @@ async function suggest(request, client) {
   return parseSuggestResponse(response.data, client.config.searchApi);
 }
 
-// src/requests/search/autocomplete.ts
-init_Utility();
-init_ErrorHelper();
-
 // src/requests/search/responseParsers/parseAutocompleteResponse.ts
 function parseAutocompleteResponse(queryResponse, config) {
   if (!queryResponse) return queryResponse;
@@ -2887,7 +2682,6 @@ async function autocomplete(request, client) {
 }
 
 // src/requests/backgroundOperation/getStatus.ts
-init_ErrorHelper();
 var FUNCTION_NAME45 = "getBackgroundOperationStatus";
 var REQUEST_NAME43 = `${LIBRARY_NAME}.${FUNCTION_NAME45}`;
 async function getBackgroundOperationStatus(backgroundOperationId, client) {
@@ -2910,7 +2704,6 @@ async function getBackgroundOperationStatus(backgroundOperationId, client) {
 }
 
 // src/requests/backgroundOperation/cancel.ts
-init_ErrorHelper();
 var FUNCTION_NAME46 = "cancelBackgroundOperation";
 var REQUEST_NAME44 = `${LIBRARY_NAME}.${FUNCTION_NAME46}`;
 async function cancelBackgroundOperation(backgroundOperationId, client) {
@@ -2932,7 +2725,6 @@ async function cancelBackgroundOperation(backgroundOperationId, client) {
 }
 
 // src/dynamics-web-api.ts
-init_Utility();
 var _client;
 var _DynamicsWebApi = class _DynamicsWebApi {
   /**

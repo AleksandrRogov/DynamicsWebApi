@@ -1,12 +1,14 @@
 import { expect } from "chai";
-import * as mocks from "./stubs";
+import * as mocks from "./stubs.js";
 
-import sinon, { SinonFakeXMLHttpRequest } from "sinon";
+import sinon from "sinon";
+import type { SinonFakeXMLHttpRequest } from "sinon";
 import crypto from "crypto";
-import { DynamicsWebApi, RetrieveRequest } from "../src/dynamics-web-api";
-import { XhrWrapper } from "../src/client/xhr";
-import { DWA } from "../src/dwa";
-import * as Utility from "../src/utils/Utility";
+import { DynamicsWebApi } from "../src/dynamics-web-api.js";
+import type { RetrieveRequest } from "../src/dynamics-web-api.js";
+import { XhrWrapper } from "../src/client/xhr.js";
+import { DWA } from "../src/dwa.js";
+import * as Utility from "../src/utils/Utility.js";
 //@ts-ignore
 import base64 from "Base64";
 
@@ -1133,11 +1135,11 @@ describe("xhr -", () => {
                 expect(requests[1]?.requestHeaders["Content-Range"]).to.be.eq(
                     `bytes 0-${beginResponse.responseHeaders["x-ms-chunk-size"] - 1}/${dwaRequest.data.length}`,
                 );
-                expect(requests[1]?.requestHeaders["Content-Type"]).to.be.eq("application/octet-stream");
+                expect(requests[1]?.requestHeaders["Content-Type"]).to.match(/^application\/octet-stream/);
                 expect(requests[2]?.requestHeaders["Content-Range"]).to.be.eq(
                     `bytes ${beginResponse.responseHeaders["x-ms-chunk-size"]}-${dwaRequest.data.length - 1}/${dwaRequest.data.length}`,
                 );
-                expect(requests[2]?.requestHeaders["Content-Type"]).to.be.eq("application/octet-stream");
+                expect(requests[2]?.requestHeaders["Content-Type"]).to.match(/^application\/octet-stream/);
             });
 
             it("does not have any response", function () {

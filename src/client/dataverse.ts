@@ -1,7 +1,7 @@
-import { Config } from "../dynamics-web-api";
-import type { InternalRequest, WebApiResponse } from "../types";
-import { defaultConfig, mergeConfig, type InternalConfig } from "../utils/Config";
-import { makeRequest } from "./RequestClient";
+import { Config } from "../dynamics-web-api.js";
+import type { InternalRequest, WebApiResponse } from "../types.js";
+import { defaultConfig, mergeConfig, type InternalConfig } from "../utils/Config.js";
+import { makeRequest } from "./RequestClient.js";
 
 // module is in development; multiple changes might be made here
 

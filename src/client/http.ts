@@ -1,10 +1,10 @@
-﻿import * as http from "http";
-import * as https from "https";
+﻿import http from "node:http";
+import https from "node:https";
 import HttpProxyAgent from "http-proxy-agent";
 import HttpsProxyAgent from "https-proxy-agent";
-import type * as Core from "../types";
-import { ErrorHelper } from "./../helpers/ErrorHelper";
-import { parseResponse } from "./helpers/parseResponse";
+import type * as Core from "../types.js";
+import { ErrorHelper } from "./../helpers/ErrorHelper.js";
+import { parseResponse } from "./helpers/parseResponse.js";
 
 const agents: { [key: string]: http.Agent } = {};
 
