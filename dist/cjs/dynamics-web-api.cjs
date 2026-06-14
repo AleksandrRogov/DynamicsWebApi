@@ -43,7 +43,7 @@ __export(dynamics_web_api_exports, {
 module.exports = __toCommonJS(dynamics_web_api_exports);
 
 // src/helpers/crypto/node.ts
-var import_node_crypto = __toESM(require("crypto"), 1);
+var import_node_crypto = __toESM(require("node:crypto"), 1);
 function getCrypto() {
   return import_node_crypto.default;
 }
@@ -187,9 +187,9 @@ function getFetchXmlPagingCookie(pageCookies = "", currentPageNumber = 1) {
   pageCookies = decodeURIComponent(decodeURIComponent(pageCookies));
   const result = parsePagingCookie(pageCookies);
   return {
-    cookie: (result == null ? void 0 : result.sanitizedCookie) || "",
-    page: (result == null ? void 0 : result.page) || currentPageNumber,
-    nextPage: (result == null ? void 0 : result.page) ? result.page + 1 : currentPageNumber + 1
+    cookie: result?.sanitizedCookie || "",
+    page: result?.page || currentPageNumber,
+    nextPage: result?.page ? result.page + 1 : currentPageNumber + 1
   };
 }
 function isNull(value) {
@@ -231,7 +231,7 @@ function isObject(obj) {
 function copyObject(src, excludeProps) {
   let target = {};
   for (let prop in src) {
-    if (src.hasOwnProperty(prop) && !(excludeProps == null ? void 0 : excludeProps.includes(prop))) {
+    if (src.hasOwnProperty(prop) && !excludeProps?.includes(prop)) {
       if (isObject(src[prop])) {
         target[prop] = copyObject(src[prop]);
       } else if (Array.isArray(src[prop])) {
@@ -429,66 +429,66 @@ var mergeSearchApiOptions = (internalApiConfig, options) => {
 };
 var mergeApiConfig = (internalConfig, apiType, config) => {
   const internalApiConfig = internalConfig[apiType];
-  const apiConfig = config == null ? void 0 : config[apiType];
-  if (apiConfig == null ? void 0 : apiConfig.version) {
+  const apiConfig = config?.[apiType];
+  if (apiConfig?.version) {
     ErrorHelper.stringParameterCheck(apiConfig.version, FUNCTION_NAME, `config.${apiType}.version`);
     internalApiConfig.version = apiConfig.version;
   }
-  if (apiConfig == null ? void 0 : apiConfig.path) {
+  if (apiConfig?.path) {
     ErrorHelper.stringParameterCheck(apiConfig.path, FUNCTION_NAME, `config.${apiType}.path`);
     internalApiConfig.path = apiConfig.path;
   }
   if (apiType === "searchApi") {
-    mergeSearchApiOptions(internalApiConfig, apiConfig == null ? void 0 : apiConfig.options);
+    mergeSearchApiOptions(internalApiConfig, apiConfig?.options);
   }
   internalApiConfig.url = getApiUrl(internalConfig.serverUrl, internalApiConfig);
 };
 function mergeConfig(internalConfig, config) {
-  if (config == null ? void 0 : config.serverUrl) {
+  if (config?.serverUrl) {
     ErrorHelper.stringParameterCheck(config.serverUrl, FUNCTION_NAME, "config.serverUrl");
     internalConfig.serverUrl = config.serverUrl;
   }
   apiConfigs.forEach((apiType) => {
     mergeApiConfig(internalConfig, apiType, config);
   });
-  if (config == null ? void 0 : config.impersonate) {
+  if (config?.impersonate) {
     internalConfig.impersonate = ErrorHelper.guidParameterCheck(config.impersonate, FUNCTION_NAME, "config.impersonate");
   }
-  if (config == null ? void 0 : config.impersonateAAD) {
+  if (config?.impersonateAAD) {
     internalConfig.impersonateAAD = ErrorHelper.guidParameterCheck(config.impersonateAAD, FUNCTION_NAME, "config.impersonateAAD");
   }
-  if (config == null ? void 0 : config.onTokenRefresh) {
+  if (config?.onTokenRefresh) {
     ErrorHelper.callbackParameterCheck(config.onTokenRefresh, FUNCTION_NAME, "config.onTokenRefresh");
     internalConfig.onTokenRefresh = config.onTokenRefresh;
   }
-  if (config == null ? void 0 : config.includeAnnotations) {
+  if (config?.includeAnnotations) {
     ErrorHelper.stringParameterCheck(config.includeAnnotations, FUNCTION_NAME, "config.includeAnnotations");
     internalConfig.includeAnnotations = config.includeAnnotations;
   }
-  if (config == null ? void 0 : config.timeout) {
+  if (config?.timeout) {
     ErrorHelper.numberParameterCheck(config.timeout, FUNCTION_NAME, "config.timeout");
     internalConfig.timeout = config.timeout;
   }
-  if (config == null ? void 0 : config.maxPageSize) {
+  if (config?.maxPageSize) {
     ErrorHelper.numberParameterCheck(config.maxPageSize, FUNCTION_NAME, "config.maxPageSize");
     internalConfig.maxPageSize = config.maxPageSize;
   }
-  if ((config == null ? void 0 : config.returnRepresentation) != null) {
+  if (config?.returnRepresentation != null) {
     ErrorHelper.boolParameterCheck(config.returnRepresentation, FUNCTION_NAME, "config.returnRepresentation");
     internalConfig.returnRepresentation = config.returnRepresentation;
   }
-  if ((config == null ? void 0 : config.useEntityNames) != null) {
+  if (config?.useEntityNames != null) {
     ErrorHelper.boolParameterCheck(config.useEntityNames, FUNCTION_NAME, "config.useEntityNames");
     internalConfig.useEntityNames = config.useEntityNames;
   }
-  if ((config == null ? void 0 : config.propagateErrors) != null) {
+  if (config?.propagateErrors != null) {
     ErrorHelper.boolParameterCheck(config.propagateErrors, FUNCTION_NAME, "config.propagateErrors");
     internalConfig.propagateErrors = config.propagateErrors;
   }
-  if (config == null ? void 0 : config.headers) {
+  if (config?.headers) {
     internalConfig.headers = config.headers;
   }
-  if (config == null ? void 0 : config.proxy) {
+  if (config?.proxy) {
     ErrorHelper.parameterCheck(config.proxy, FUNCTION_NAME, "config.proxy");
     if (config.proxy.url) {
       ErrorHelper.stringParameterCheck(config.proxy.url, FUNCTION_NAME, "config.proxy.url");
@@ -544,6 +544,12 @@ var findCollectionName = (entityName) => {
   }
   return collectionName;
 };
+
+// src/client/http.ts
+var import_node_http = __toESM(require("node:http"), 1);
+var import_node_https = __toESM(require("node:https"), 1);
+var import_http_proxy_agent = require("http-proxy-agent");
+var import_https_proxy_agent = require("https-proxy-agent");
 
 // src/dwa.ts
 var _a, _b;
@@ -609,19 +615,18 @@ function getHttpStatus(response) {
 function getPlainContent(response) {
   HTTP_STATUS_REGEX.lastIndex = 0;
   const textReg = TEXT_REGEX.exec(response.trim());
-  return (textReg == null ? void 0 : textReg.length) ? textReg[0] : void 0;
+  return textReg?.length ? textReg[0] : void 0;
 }
 function handlePlainContent(batchResponse, parseParams, requestNumber) {
   const plainContent = getPlainContent(batchResponse);
   return handlePlainResponse(plainContent);
 }
 function handleEmptyContent(batchResponse, parseParams, requestNumber) {
-  var _a2;
-  if (((_a2 = parseParams == null ? void 0 : parseParams[requestNumber]) == null ? void 0 : _a2.valueIfEmpty) !== void 0) {
+  if (parseParams?.[requestNumber]?.valueIfEmpty !== void 0) {
     return parseParams[requestNumber].valueIfEmpty;
   } else {
     const entityUrl = ODATA_ENTITYID_REGEX.exec(batchResponse);
-    return extractUuidFromUrl(entityUrl == null ? void 0 : entityUrl[0]) ?? void 0;
+    return extractUuidFromUrl(entityUrl?.[0]) ?? void 0;
   }
 }
 function processBatchPart(batchResponse, parseParams, requestNumber) {
@@ -746,7 +751,7 @@ function base64ToString(base64) {
 }
 function parseFileResponse(response, responseHeaders, parseParams) {
   let data = response;
-  if (parseParams == null ? void 0 : parseParams.hasOwnProperty("parse")) {
+  if (parseParams?.hasOwnProperty("parse")) {
     data = JSON.parse(data).value;
     data = base64ToString(data);
   }
@@ -767,11 +772,11 @@ function isFileResponse(responseHeaders) {
 }
 function isJsonResponse(responseHeaders) {
   const contentType = getHeader(responseHeaders, "Content-Type");
-  return (contentType == null ? void 0 : contentType.startsWith("application/json")) == true;
+  return contentType?.startsWith("application/json") == true;
 }
 function handleBatchResponse(response, parseParams) {
   const batch = parseBatchResponse(response, parseParams);
-  return (parseParams == null ? void 0 : parseParams[0].convertedToBatch) ? batch[0] : batch;
+  return parseParams?.[0].convertedToBatch ? batch[0] : batch;
 }
 function handleFileResponse(response, responseHeaders, parseParams) {
   return parseFileResponse(response, responseHeaders, parseParams[0]);
@@ -784,8 +789,7 @@ function handlePlainResponse(response) {
   return isFinite(numberResponse) ? numberResponse : response;
 }
 function handleEmptyResponse(responseHeaders, parseParams) {
-  var _a2;
-  if (((_a2 = parseParams == null ? void 0 : parseParams[0]) == null ? void 0 : _a2.valueIfEmpty) !== void 0) {
+  if (parseParams?.[0]?.valueIfEmpty !== void 0) {
     return parseParams[0].valueIfEmpty;
   }
   const entityUrl = getHeader(responseHeaders, "OData-EntityId");
@@ -821,10 +825,6 @@ function parseResponse(response, responseHeaders, parseParams) {
 }
 
 // src/client/http.ts
-var import_node_http = __toESM(require("http"), 1);
-var import_node_https = __toESM(require("https"), 1);
-var import_http_proxy_agent = __toESM(require("http-proxy-agent"), 1);
-var import_https_proxy_agent = __toESM(require("https-proxy-agent"), 1);
 var agents = {};
 var getAgent = (options, protocol) => {
   const isHttp = protocol === "http";
@@ -832,16 +832,16 @@ var getAgent = (options, protocol) => {
   const agentName = proxy ? proxy.url : protocol;
   if (!agents[agentName]) {
     if (proxy) {
-      const parsedProxyUrl = new URL(proxy.url);
-      const proxyAgent = isHttp ? import_http_proxy_agent.default.HttpProxyAgent : import_https_proxy_agent.default.HttpsProxyAgent;
-      const proxyOptions = {
-        host: parsedProxyUrl.hostname,
-        port: parsedProxyUrl.port,
-        protocol: parsedProxyUrl.protocol
-      };
-      if (proxy.auth) proxyOptions.auth = proxy.auth.username + ":" + proxy.auth.password;
-      else if (parsedProxyUrl.username && parsedProxyUrl.password) proxyOptions.auth = `${parsedProxyUrl.username}:${parsedProxyUrl.password}`;
-      agents[agentName] = new proxyAgent(proxyOptions);
+      const proxyUrl = new URL(proxy.url);
+      if (proxy.auth) {
+        proxyUrl.username = proxy.auth.username;
+        proxyUrl.password = proxy.auth.password;
+      }
+      const proxyAgent = isHttp ? import_http_proxy_agent.HttpProxyAgent : import_https_proxy_agent.HttpsProxyAgent;
+      agents[agentName] = new proxyAgent(proxyUrl, {
+        keepAlive: true,
+        maxSockets: Infinity
+      });
     } else {
       const protocolInterface = isHttp ? import_node_http.default : import_node_https.default;
       agents[agentName] = new protocolInterface.Agent({
@@ -858,7 +858,6 @@ function executeRequest(options) {
   });
 }
 function _executeRequest(options, successCallback, errorCallback) {
-  var _a2;
   const data = options.data;
   const headers = options.headers;
   const responseParams = options.responseParams;
@@ -873,7 +872,7 @@ function _executeRequest(options, successCallback, errorCallback) {
     httpHeaders[key] = headers[key];
   }
   const parsedUrl = new URL(options.uri);
-  const protocol = ((_a2 = parsedUrl.protocol) == null ? void 0 : _a2.slice(0, -1)) || "https";
+  const protocol = parsedUrl.protocol?.slice(0, -1) || "https";
   const protocolInterface = protocol === "http" ? import_node_http.default : import_node_https.default;
   const internalOptions = {
     hostname: parsedUrl.hostname,
@@ -910,23 +909,23 @@ function _executeRequest(options, successCallback, errorCallback) {
         };
         successCallback(response);
       } else {
-        let crmError;
+        let dataverseError;
         try {
           var errorParsed = parseResponse(rawData, res.headers, responseParams[options.requestId]);
           if (Array.isArray(errorParsed)) {
             errorCallback(errorParsed);
             return;
           }
-          crmError = errorParsed.hasOwnProperty("error") && errorParsed.error ? errorParsed.error : { message: errorParsed.Message };
+          dataverseError = errorParsed.hasOwnProperty("error") && errorParsed.error ? errorParsed.error : { message: errorParsed.Message };
         } catch (e) {
           if (rawData.length > 0) {
-            crmError = { message: rawData };
+            dataverseError = { message: rawData };
           } else {
-            crmError = { message: "Unexpected Error" };
+            dataverseError = { message: "Unexpected Error" };
           }
         }
         errorCallback(
-          ErrorHelper.handleHttpError(crmError, {
+          ErrorHelper.handleHttpError(dataverseError, {
             status: res.statusCode,
             statusText: "",
             statusMessage: res.statusMessage,
@@ -951,13 +950,12 @@ function _executeRequest(options, successCallback, errorCallback) {
 }
 
 // src/client/helpers/executeRequest.ts
-async function executeRequest3(options) {
-  return false ? executeRequest2(options) : executeRequest(options);
+async function executeRequest2(options) {
+  return false ? (void 0)(options) : executeRequest(options);
 }
 
 // src/client/request/composers/url.ts
 var composeUrl = (request, config, url = "", joinSymbol = "&") => {
-  var _a2, _b2, _c;
   const queryArray = [];
   if (request) {
     if (request.navigationProperty) {
@@ -978,7 +976,7 @@ var composeUrl = (request, config, url = "", joinSymbol = "&") => {
         }
       }
     }
-    if ((_a2 = request.select) == null ? void 0 : _a2.length) {
+    if (request.select?.length) {
       ErrorHelper.arrayParameterCheck(request.select, `DynamicsWebApi.${request.functionName}`, "request.select");
       if (request.functionName == "retrieve" && request.select.length == 1 && request.select[0].endsWith("/$ref")) {
         url += "/" + request.select[0];
@@ -1043,7 +1041,7 @@ var composeUrl = (request, config, url = "", joinSymbol = "&") => {
       ErrorHelper.stringParameterCheck(request.tag, `DynamicsWebApi.${request.functionName}`, "request.tag");
       queryArray.push("tag=" + encodeURIComponent(request.tag));
     }
-    if ((_b2 = request.queryParams) == null ? void 0 : _b2.length) {
+    if (request.queryParams?.length) {
       ErrorHelper.arrayParameterCheck(request.queryParams, `DynamicsWebApi.${request.functionName}`, "request.queryParams");
       queryArray.push(request.queryParams.join("&"));
     }
@@ -1068,7 +1066,7 @@ var composeUrl = (request, config, url = "", joinSymbol = "&") => {
     if (request.timeout) {
       ErrorHelper.numberParameterCheck(request.timeout, `DynamicsWebApi.${request.functionName}`, "request.timeout");
     }
-    if ((_c = request.expand) == null ? void 0 : _c.length) {
+    if (request.expand?.length) {
       ErrorHelper.stringOrArrayParameterCheck(request.expand, `DynamicsWebApi.${request.functionName}`, "request.expand");
       if (typeof request.expand === "string") {
         queryArray.push("$expand=" + request.expand);
@@ -1103,19 +1101,18 @@ var composeUrl = (request, config, url = "", joinSymbol = "&") => {
 
 // src/client/request/composers/preferHeader.ts
 var composePreferHeader = (request, config) => {
-  var _a2, _b2;
   const functionName = `DynamicsWebApi.${request.functionName}`;
   const options = {
     respondAsync: request.respondAsync,
-    backgroundOperationCallbackUrl: request.backgroundOperationCallbackUrl ?? (config == null ? void 0 : config.backgroundOperationCallbackUrl),
-    returnRepresentation: request.returnRepresentation ?? (config == null ? void 0 : config.returnRepresentation),
-    includeAnnotations: request.includeAnnotations ?? (config == null ? void 0 : config.includeAnnotations),
-    maxPageSize: request.maxPageSize ?? (config == null ? void 0 : config.maxPageSize),
+    backgroundOperationCallbackUrl: request.backgroundOperationCallbackUrl ?? config?.backgroundOperationCallbackUrl,
+    returnRepresentation: request.returnRepresentation ?? config?.returnRepresentation,
+    includeAnnotations: request.includeAnnotations ?? config?.includeAnnotations,
+    maxPageSize: request.maxPageSize ?? config?.maxPageSize,
     trackChanges: request.trackChanges,
     continueOnError: request.continueOnError
   };
   const prefer = /* @__PURE__ */ new Set();
-  if ((_a2 = request.prefer) == null ? void 0 : _a2.length) {
+  if (request.prefer?.length) {
     ErrorHelper.stringOrArrayParameterCheck(request.prefer, functionName, "request.prefer");
     const preferArray = typeof request.prefer === "string" ? request.prefer.split(",") : request.prefer;
     for (const item of preferArray) {
@@ -1142,7 +1139,7 @@ var composePreferHeader = (request, config) => {
   for (const key in options) {
     const optionFactory = preferOptionsFactory[key];
     if (optionFactory && options[key]) {
-      (_b2 = optionFactory.validator) == null ? void 0 : _b2.call(optionFactory, options[key], functionName, `request.${key}`);
+      optionFactory.validator?.(options[key], functionName, `request.${key}`);
       if (optionFactory.condition(options[key], options)) {
         prefer.add(optionFactory.formatter(options[key], options));
       }
@@ -1369,9 +1366,8 @@ var convertToBatch = (requests, config, batchRequest) => {
     }
   };
   requests.forEach((internalRequest) => {
-    var _a2;
     internalRequest.functionName = "executeBatch";
-    if ((batchRequest == null ? void 0 : batchRequest.inChangeSet) === false) internalRequest.inChangeSet = false;
+    if (batchRequest?.inChangeSet === false) internalRequest.inChangeSet = false;
     const inChangeSet = internalRequest.method === "GET" ? false : !!internalRequest.inChangeSet;
     if (!inChangeSet && currentChangeSet) {
       batchBody.push(`\r
@@ -1397,7 +1393,7 @@ var convertToBatch = (requests, config, batchRequest) => {
       const contentIdValue = internalRequest.headers.hasOwnProperty("Content-ID") ? internalRequest.headers["Content-ID"] : ++contentId;
       batchBody.push(`Content-ID: ${contentIdValue}`);
     }
-    if (!((_a2 = internalRequest.path) == null ? void 0 : _a2.startsWith("$"))) {
+    if (!internalRequest.path?.startsWith("$")) {
       batchBody.push(`\r
 ${internalRequest.method} ${config.dataApi.url}${internalRequest.path} HTTP/1.1`);
     } else {
@@ -1424,7 +1420,7 @@ ${processData(internalRequest.data, config)}`);
   batchBody.push(`\r
 --${batchBoundary}--\r
 `);
-  const headers = setStandardHeaders(batchRequest == null ? void 0 : batchRequest.userHeaders, batchRequest == null ? void 0 : batchRequest.data);
+  const headers = setStandardHeaders(batchRequest?.userHeaders, batchRequest?.data);
   headers["Content-Type"] = `multipart/mixed;boundary=${batchBoundary}`;
   return { headers, body: batchBody.join("\r\n") };
 };
@@ -1505,13 +1501,12 @@ var _checkCollectionName = async (entityName, config) => {
   }
 };
 var sendRequest = async (request, config) => {
-  var _a2;
   request.headers = request.headers || {};
   request.responseParameters = request.responseParameters || {};
   request.requestId = request.requestId || generateUUID();
   _addResponseParams(request.requestId, request.responseParameters);
   let processedData = null;
-  const isBatchConverted = (_a2 = request.responseParameters) == null ? void 0 : _a2.convertedToBatch;
+  const isBatchConverted = request.responseParameters?.convertedToBatch;
   if (request.path === "$batch" && !isBatchConverted) {
     const batchRequest = _batchRequestCollection[request.requestId];
     if (!batchRequest) throw ErrorHelper.batchIsEmpty();
@@ -1543,7 +1538,7 @@ var sendRequest = async (request, config) => {
     request.headers["__RequestVerificationToken"] = await global.window.shell.getTokenDeferred();
   }
   const url = request.apiConfig ? request.apiConfig.url : config.dataApi.url;
-  return await executeRequest3({
+  return await executeRequest2({
     method: request.method,
     uri: url.toString() + request.path,
     data: processedData,
@@ -1680,7 +1675,7 @@ var callAction = async (request, client) => {
   internalRequest._isUnboundRequest = !internalRequest.collection;
   internalRequest.data = request.action;
   const response = await client.makeRequest(internalRequest);
-  return response == null ? void 0 : response.data;
+  return response?.data;
 };
 
 // src/requests/callFunction.ts
@@ -1701,7 +1696,7 @@ var callFunction = async (request, client) => {
   internalRequest._isUnboundRequest = !internalRequest.collection;
   internalRequest.functionName = FUNCTION_NAME5;
   const response = await client.makeRequest(internalRequest);
-  return response == null ? void 0 : response.data;
+  return response?.data;
 };
 
 // src/requests/create.ts
@@ -1716,26 +1711,25 @@ var create = async (request, client) => {
   } else internalRequest = request;
   internalRequest.method = "POST";
   const response = await client.makeRequest(internalRequest);
-  return response == null ? void 0 : response.data;
+  return response?.data;
 };
 
 // src/requests/count.ts
 var FUNCTION_NAME7 = "count";
 var REQUEST_NAME6 = `${LIBRARY_NAME}.${FUNCTION_NAME7}`;
 var count = async (request, client) => {
-  var _a2;
   ErrorHelper.parameterCheck(request, REQUEST_NAME6, "request");
   const internalRequest = copyRequest(request);
   internalRequest.method = "GET";
   internalRequest.functionName = FUNCTION_NAME7;
-  if ((_a2 = internalRequest.filter) == null ? void 0 : _a2.length) {
+  if (internalRequest.filter?.length) {
     internalRequest.count = true;
   } else {
     internalRequest.navigationProperty = "$count";
   }
   internalRequest.responseParameters = { toCount: internalRequest.count };
   const response = await client.makeRequest(internalRequest);
-  return response == null ? void 0 : response.data;
+  return response?.data;
 };
 
 // src/requests/retrieveMultiple.ts
@@ -1754,7 +1748,7 @@ var retrieveMultiple = async (request, client, nextPageLink) => {
     internalRequest.url = nextPageLink;
   }
   const response = await client.makeRequest(internalRequest);
-  return response == null ? void 0 : response.data;
+  return response?.data;
 };
 
 // src/requests/retrieveAll.ts
@@ -1824,7 +1818,6 @@ var disassociateSingleValued = async (request, client) => {
 var FUNCTION_NAME13 = "retrieve";
 var REQUEST_NAME12 = `${LIBRARY_NAME}.${FUNCTION_NAME13}`;
 var retrieve = async (request, client) => {
-  var _a2;
   ErrorHelper.parameterCheck(request, REQUEST_NAME12, "request");
   let internalRequest;
   if (!request.functionName) {
@@ -1833,10 +1826,10 @@ var retrieve = async (request, client) => {
   } else internalRequest = request;
   internalRequest.method = "GET";
   internalRequest.responseParameters = {
-    isRef: ((_a2 = internalRequest.select) == null ? void 0 : _a2.length) === 1 && internalRequest.select[0].endsWith("/$ref")
+    isRef: internalRequest.select?.length === 1 && internalRequest.select[0].endsWith("/$ref")
   };
   const response = await client.makeRequest(internalRequest);
-  return response == null ? void 0 : response.data;
+  return response?.data;
 };
 
 // src/requests/fetchXml.ts
@@ -1863,7 +1856,7 @@ var fetchXml = async (request, client) => {
   }
   internalRequest.responseParameters = { pageNumber: internalRequest.pageNumber };
   const response = await client.makeRequest(internalRequest);
-  return response == null ? void 0 : response.data;
+  return response?.data;
 };
 
 // src/requests/fetchXmlAll.ts
@@ -1900,12 +1893,12 @@ var update = async (request, client) => {
   internalRequest.ifmatch ?? (internalRequest.ifmatch = "*");
   if (client.config.propagateErrors) {
     const response = await client.makeRequest(internalRequest);
-    return response == null ? void 0 : response.data;
+    return response?.data;
   }
   const ifmatch = internalRequest.ifmatch;
   try {
     const response = await client.makeRequest(internalRequest);
-    return response == null ? void 0 : response.data;
+    return response?.data;
   } catch (error) {
     if (ifmatch && error.status === 412) {
       return false;
@@ -1929,7 +1922,7 @@ var updateSingleProperty = async (request, client) => {
   internalRequest.method = "PUT";
   delete internalRequest["fieldValuePair"];
   const response = await client.makeRequest(internalRequest);
-  return response == null ? void 0 : response.data;
+  return response?.data;
 };
 
 // src/requests/upsert.ts
@@ -1942,13 +1935,13 @@ var upsert = async (request, client) => {
   internalRequest.functionName = FUNCTION_NAME18;
   if (client.config.propagateErrors) {
     const response = await client.makeRequest(internalRequest);
-    return response == null ? void 0 : response.data;
+    return response?.data;
   }
   const ifnonematch = internalRequest.ifnonematch;
   const ifmatch = internalRequest.ifmatch;
   try {
     const response = await client.makeRequest(internalRequest);
-    return response == null ? void 0 : response.data;
+    return response?.data;
   } catch (error) {
     if (ifnonematch && error.status === 412) {
       return null;
@@ -1973,12 +1966,12 @@ var deleteRecord = async (request, client) => {
   internalRequest.responseParameters = { valueIfEmpty: true };
   if (client.config.propagateErrors) {
     const response = await client.makeRequest(internalRequest);
-    return response == null ? void 0 : response.data;
+    return response?.data;
   }
   const ifmatch = internalRequest.ifmatch;
   try {
     const response = await client.makeRequest(internalRequest);
-    return response == null ? void 0 : response.data;
+    return response?.data;
   } catch (error) {
     if (ifmatch && error.status === 412) {
       return false;
@@ -2006,12 +1999,12 @@ var uploadFile = async (request, client) => {
   internalRequest.functionName = FUNCTION_NAME20;
   internalRequest.transferMode = "chunked";
   const response = await client.makeRequest(internalRequest);
-  internalRequest.url = response == null ? void 0 : response.data.location;
+  internalRequest.url = response?.data.location;
   delete internalRequest.transferMode;
   delete internalRequest.fieldName;
   delete internalRequest.property;
   delete internalRequest.fileName;
-  return _uploadFileChunk(internalRequest, client, request.data, response == null ? void 0 : response.data.chunkSize);
+  return _uploadFileChunk(internalRequest, client, request.data, response?.data.chunkSize);
 };
 
 // src/requests/downloadFile.ts
@@ -2021,15 +2014,15 @@ var downloadFileChunk = async (request, client, bytesDownloaded = 0, data = "") 
   request.range = "bytes=" + bytesDownloaded + "-" + (bytesDownloaded + downloadChunkSize - 1);
   request.downloadSize = "full";
   const response = await client.makeRequest(request);
-  request.url = response == null ? void 0 : response.data.location;
-  data += response == null ? void 0 : response.data.value;
+  request.url = response?.data.location;
+  data += response?.data.value;
   bytesDownloaded += downloadChunkSize;
-  if (bytesDownloaded <= (response == null ? void 0 : response.data.fileSize)) {
+  if (bytesDownloaded <= response?.data.fileSize) {
     return downloadFileChunk(request, client, bytesDownloaded, data);
   }
   return {
-    fileName: response == null ? void 0 : response.data.fileName,
-    fileSize: response == null ? void 0 : response.data.fileSize,
+    fileName: response?.data.fileName,
+    fileSize: response?.data.fileSize,
     data: convertToFileBuffer(data)
   };
 };
@@ -2056,7 +2049,7 @@ async function executeBatch(request, client) {
   client.batchRequestId = null;
   client.isBatch = false;
   const response = await client.makeRequest(internalRequest);
-  return response == null ? void 0 : response.data;
+  return response?.data;
 }
 function startBatch(client) {
   client.isBatch = true;
@@ -2320,7 +2313,7 @@ async function retrieveGlobalOptionSets(request, client) {
   const internalRequest = !request ? {} : copyRequest(request);
   internalRequest.collection = "GlobalOptionSetDefinitions";
   internalRequest.functionName = FUNCTION_NAME40;
-  if (request == null ? void 0 : request.castType) {
+  if (request?.castType) {
     ErrorHelper.stringParameterCheck(request.castType, REQUEST_NAME38, "request.castType");
     internalRequest.navigationProperty = request.castType;
   }
@@ -2334,30 +2327,29 @@ async function retrieveCsdlMetadata(request, client) {
   const internalRequest = !request ? {} : copyRequest(request);
   internalRequest.collection = "$metadata";
   internalRequest.functionName = FUNCTION_NAME41;
-  if (request == null ? void 0 : request.addAnnotations) {
+  if (request?.addAnnotations) {
     ErrorHelper.boolParameterCheck(request.addAnnotations, REQUEST_NAME39, "request.addAnnotations");
     internalRequest.includeAnnotations = "*";
   }
   const response = await client.makeRequest(internalRequest);
-  return response == null ? void 0 : response.data;
+  return response?.data;
 }
 
 // src/requests/search/convertSearchQuery.ts
 function convertSearchQuery(query2, functionName, config) {
-  var _a2;
   if (!query2) return query2;
-  if ((config == null ? void 0 : config.escapeSpecialCharacters) === true) {
+  if (config?.escapeSpecialCharacters === true) {
     query2.search = escapeSearchSpecialCharacters(query2.search);
   }
-  if ((_a2 = query2.entities) == null ? void 0 : _a2.length) {
-    query2.entities = convertEntitiesProperty(query2.entities, config == null ? void 0 : config.version);
+  if (query2.entities?.length) {
+    query2.entities = convertEntitiesProperty(query2.entities, config?.version);
   }
   switch (functionName) {
     case "query":
-      convertQuery(query2, config == null ? void 0 : config.version);
+      convertQuery(query2, config?.version);
       break;
     default:
-      convertSuggestOrAutocompleteQuery(query2, config == null ? void 0 : config.version);
+      convertSuggestOrAutocompleteQuery(query2, config?.version);
       break;
   }
   return query2;
@@ -2541,7 +2533,7 @@ function parseQueryResponse(queryResponse, config) {
     }
     return toReturn;
   };
-  return (config == null ? void 0 : config.version) === "2.0" ? toV1() : toV2();
+  return config?.version === "2.0" ? toV1() : toV2();
 }
 
 // src/requests/search/query.ts
@@ -2569,10 +2561,9 @@ async function query(request, client) {
 function parseSuggestResponse(queryResponse, config) {
   if (!queryResponse) return queryResponse;
   const toV1 = () => {
-    var _a2;
     const responseValue = JSON.parse(queryResponse.response, dateReviver);
     if (config.enableSearchApiResponseCompatibility) {
-      (_a2 = responseValue.Value) == null ? void 0 : _a2.forEach((item) => {
+      responseValue.Value?.forEach((item) => {
         item.document = item.Document;
         item.text = item.Text;
       });
@@ -2588,9 +2579,8 @@ function parseSuggestResponse(queryResponse, config) {
     return toReturn;
   };
   const toV2 = () => {
-    var _a2;
     if (config.enableSearchApiResponseCompatibility) {
-      (_a2 = queryResponse.value) == null ? void 0 : _a2.forEach((item) => {
+      queryResponse.value?.forEach((item) => {
         item.Document = item.document;
         item.Text = item.text;
       });
@@ -2607,7 +2597,7 @@ function parseSuggestResponse(queryResponse, config) {
     }
     return toReturn;
   };
-  return (config == null ? void 0 : config.version) === "2.0" ? toV1() : toV2();
+  return config?.version === "2.0" ? toV1() : toV2();
 }
 
 // src/requests/search/suggest.ts
@@ -2658,7 +2648,7 @@ function parseAutocompleteResponse(queryResponse, config) {
     }
     return toReturn;
   };
-  return (config == null ? void 0 : config.version) === "2.0" ? toV1() : toV2();
+  return config?.version === "2.0" ? toV1() : toV2();
 }
 
 // src/requests/search/autocomplete.ts
@@ -2700,7 +2690,7 @@ async function getBackgroundOperationStatus(backgroundOperationId, client) {
     _isUnboundRequest: true
   };
   const response = await client.makeRequest(internalRequest);
-  return response == null ? void 0 : response.data;
+  return response?.data;
 }
 
 // src/requests/backgroundOperation/cancel.ts
@@ -2721,7 +2711,7 @@ async function cancelBackgroundOperation(backgroundOperationId, client) {
     _isUnboundRequest: true
   };
   const response = await client.makeRequest(internalRequest);
-  return response == null ? void 0 : response.data;
+  return response?.data;
 }
 
 // src/dynamics-web-api.ts
@@ -3150,4 +3140,4 @@ var DynamicsWebApi = _DynamicsWebApi;
 0 && (module.exports = {
   DynamicsWebApi
 });
-//# sourceMappingURL=dynamics-web-api.js.map
+//# sourceMappingURL=dynamics-web-api.cjs.map

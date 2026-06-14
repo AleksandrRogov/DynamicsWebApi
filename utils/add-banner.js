@@ -1,6 +1,6 @@
 import { readFileSync, writeFile } from "fs";
 
-import { getBanner } from "./banner.mjs";
+import { getBanner } from "./banner.js";
 const banner = `/*! ` + getBanner() + " */\n";
 
 const files = ["./dist/dynamics-web-api.d.ts"];
