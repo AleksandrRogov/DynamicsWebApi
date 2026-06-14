@@ -1,4 +1,4 @@
-/*! dynamics-web-api v2.5.0 (c) 2026 Aleksandr Rogov. License: MIT */
+/*! dynamics-web-api v3.0.0 (c) 2026 Aleksandr Rogov. License: MIT */
 "use strict";
 var _dynamicsWebApiExports = (() => {
   var __defProp = Object.defineProperty;

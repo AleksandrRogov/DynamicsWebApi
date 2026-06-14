@@ -48,6 +48,7 @@ for (const [folder, config] of Object.entries(builds)) {
             packages: isBrowser ? undefined : "external",
             external: external,
             plugins: isBrowser ? [browserPlugin] : [nodePlugin],
+            logOverride: { "import-is-undefined": "silent" },
         };
 
         if (isBrowser) {
