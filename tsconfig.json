@@ -1,25 +1,47 @@
 {
     "compilerOptions": {
-        "noImplicitAny": false,
+        // Project Structure
+        "rootDir": "./src",
+        "outDir": "lib",
+
+        // Output
         "declaration": true,
         "declarationMap": true,
         "sourceMap": true,
-        "noEmitOnError": true,
         "removeComments": false,
-        "isolatedModules": true,
-        "forceConsistentCasingInFileNames": true,
-        "allowJs": false,
-        "skipLibCheck": true,
-        "noUnusedLocals": false,
-        "noUnusedParameters": false,
-        "moduleResolution": "NodeNext",
-        "module": "NodeNext",
-        "outDir": "lib",
+        "noEmitOnError": true,
+
+        // Runtime Target
         "target": "ES2020",
         "lib": ["ESNext", "DOM"],
+
+        // Modules
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+
+        // Type Checking
         "strict": true,
+        "noImplicitAny": false,
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
+
+        // Module Safety
+        "isolatedModules": true,
+        "forceConsistentCasingInFileNames": true,
+
+        // JavaScript Interop
+        "allowJs": false,
+
+        // Performance
+        "skipLibCheck": true,
+
+        // Global Types
         "types": ["node", "mocha", "chai", "sinon", "xrm"]
     },
+
+    // Source Files
     "include": ["./src/**/*"],
+
+    // Excluded Files
     "exclude": ["node_modules", "typesold", "./tests/"]
 }

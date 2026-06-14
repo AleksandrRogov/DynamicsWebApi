@@ -1,7 +1,7 @@
 ﻿import http from "node:http";
 import https from "node:https";
-import HttpProxyAgent from "http-proxy-agent";
-import HttpsProxyAgent from "https-proxy-agent";
+import { HttpProxyAgent } from "http-proxy-agent";
+import { HttpsProxyAgent } from "https-proxy-agent";
 import type * as Core from "../types.js";
 import { ErrorHelper } from "./../helpers/ErrorHelper.js";
 import { parseResponse } from "./helpers/parseResponse.js";
@@ -15,21 +15,18 @@ const getAgent = (options: Core.RequestOptions, protocol: string): http.Agent =>
 
     if (!agents[agentName]) {
         if (proxy) {
-            const parsedProxyUrl = new URL(proxy.url);
-            const proxyAgent = isHttp ? HttpProxyAgent.HttpProxyAgent : HttpsProxyAgent.HttpsProxyAgent;
+            const proxyUrl = new URL(proxy.url);
 
-            const proxyOptions: HttpProxyAgent.HttpProxyAgentOptions | HttpsProxyAgent.HttpsProxyAgentOptions = {
-                host: parsedProxyUrl.hostname,
-                port: parsedProxyUrl.port,
-                protocol: parsedProxyUrl.protocol,
-            };
+            if (proxy.auth) {
+                proxyUrl.username = proxy.auth.username;
+                proxyUrl.password = proxy.auth.password;
+            }
 
-            if (proxy.auth) proxyOptions.auth = proxy.auth.username + ":" + proxy.auth.password;
-            else if (parsedProxyUrl.username && parsedProxyUrl.password) proxyOptions.auth = `${parsedProxyUrl.username}:${parsedProxyUrl.password}`;
-
-            //todo: proxy agent package will need to be updated to latest version. this is going to be a breaking change
-            //since the lowest node version will not be supported anymore
-            agents[agentName] = new proxyAgent(proxyOptions) as unknown as http.Agent;
+            const proxyAgent = isHttp ? HttpProxyAgent : HttpsProxyAgent;
+            agents[agentName] = new proxyAgent(proxyUrl, {
+                keepAlive: true,
+                maxSockets: Infinity,
+            });
         } else {
             const protocolInterface = isHttp ? http : https;
 
@@ -124,7 +121,7 @@ function _executeRequest(
                 successCallback(response);
             } else {
                 // All other statuses are error cases.
-                let crmError;
+                let dataverseError: Record<string, string>;
                 try {
                     var errorParsed = parseResponse(rawData, res.headers as Record<string, string>, responseParams[options.requestId]);
 
@@ -133,17 +130,17 @@ function _executeRequest(
                         return;
                     }
 
-                    crmError = errorParsed.hasOwnProperty("error") && errorParsed.error ? errorParsed.error : { message: errorParsed.Message };
+                    dataverseError = errorParsed.hasOwnProperty("error") && errorParsed.error ? errorParsed.error : { message: errorParsed.Message };
                 } catch (e) {
                     if (rawData.length > 0) {
-                        crmError = { message: rawData };
+                        dataverseError = { message: rawData };
                     } else {
-                        crmError = { message: "Unexpected Error" };
+                        dataverseError = { message: "Unexpected Error" };
                     }
                 }
 
                 errorCallback(
-                    ErrorHelper.handleHttpError(crmError, {
+                    ErrorHelper.handleHttpError(dataverseError, {
                         status: res.statusCode,
                         statusText: "",
                         statusMessage: res.statusMessage,
