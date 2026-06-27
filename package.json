@@ -21,40 +21,42 @@
     "exports": {
         ".": {
             "types": "./dist/dynamics-web-api.d.ts",
-            "import": "./dist/esm/dynamics-web-api.js"
+            "import": "./dist/esm/dynamics-web-api.js",
+            "require": "./dist/cjs/dynamics-web-api.cjs",
+            "default": "./dist/cjs/dynamics-web-api.cjs"
         },
         "./browser": {
-            "types": "./dist/browser/esm/dynamics-web-api.d.ts",
+            "types": "./dist/dynamics-web-api.d.ts",
             "import": "./dist/browser/esm/dynamics-web-api.js",
+            "require": "./dist/browser/esm/dynamics-web-api.js",
             "default": "./dist/browser/esm/dynamics-web-api.js"
         },
         "./package.json": "./package.json"
     },
     "files": [
         "dist/**/*.js",
-        "dist/**/*.mjs",
+        "dist/**/*.cjs",
         "dist/**/*.d.ts"
     ],
     "author": {
         "name": "Aleksandr Rogov"
     },
     "devDependencies": {
-        "@types/chai": "^4.3.20",
+        "@types/chai": "^5.2.3",
         "@types/mocha": "^10.0.10",
-        "@types/node": "^25.9.3",
-        "@types/sinon": "^17.0.4",
+        "@types/node": "^26.0.1",
+        "@types/sinon": "^17.0.3",
         "@types/xrm": "^9.0.94",
         "Base64": "^1.3.0",
-        "chai": "^4.5.0",
+        "chai": "^6.2.2",
         "copyfiles": "^2.4.1",
         "esbuild": "^0.28.1",
         "glob": "^13.0.6",
+        "c8": "^10.1.3",
         "mocha": "^11.7.6",
-        "mocha-lcov-reporter": "^1.3.0",
-        "nock": "^14.0.15",
+        "nock": "^14.0.16",
         "npm-run-all": "^4.1.5",
-        "nyc": "^17.1.0",
-        "prettier": "^3.8.4",
+        "prettier": "^3.9.0",
         "rimraf": "^6.1.3",
         "sinon": "^19.0.5",
         "ts-node": "^10.9.2",
@@ -66,22 +68,22 @@
     },
     "license": "MIT",
     "engines": {
-        "node": ">=20.0.0"
+        "node": ">=22.0.0"
     },
     "scripts": {
-        "test:clean": "rimraf lib coverage .nyc_output",
-        "test:build": "tsc",
+        "test:clean": "rimraf lib coverage",
+        "test:build": "tsc -p tsconfig.build.json",
         "test:mocha": "mocha",
         "test": "run-s test:*",
-        "tsc": "tsc --noEmit",
-        "coverage": "run-s coverage:clean test:build coverage:nyc:*",
+        "tsc": "tsc -p tsconfig.build.json --noEmit",
+        "coverage": "run-s coverage:clean test:build coverage:c8:*",
         "coverage:clean": "rimraf coverage",
-        "coverage:nyc:test": "nyc mocha",
-        "coverage:nyc:report": "nyc report --reporter=lcov",
+        "coverage:c8:test": "c8 --clean --src src --all mocha",
+        "coverage:c8:report": "c8 report --reporter=lcov",
         "clean": "rimraf dist lib coverage .nyc_output",
         "off-build:ts": "node ./utils/build.js",
         "build:bundle": "node ./utils/bundle.js",
-        "build:types": "tsc --emitDeclarationOnly",
+        "build:types": "tsc -p tsconfig.build.json --emitDeclarationOnly",
         "build": "run-s clean build:*",
         "postbuild": "run-s copyfiles add-banner",
         "copyfiles": "copyfiles --flat ./lib/dynamics-web-api.d.ts ./dist/",

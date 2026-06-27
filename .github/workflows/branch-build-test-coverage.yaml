@@ -17,7 +17,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18.x, 20.x, 22.x, 24.x]
+        node-version: [22.x, 24.x, 26.x]
+        include:
+          - node-version: 22.x
+            experimental: false
+          - node-version: 24.x
+            experimental: false
+          - node-version: 26.x
+            experimental: true
 
     steps:
       - uses: actions/checkout@v4
@@ -29,10 +36,10 @@ jobs:
       - run: npm ci
       - run: npm test
       - name: Prepare coverage
-        if: ${{ matrix.node-version == '22.x' }}
+        if: ${{ matrix.node-version == '24.x' }}
         run: npm run coverage
       - name: Publish to Coveralls
-        if: ${{ matrix.node-version == '22.x' }}
+        if: ${{ matrix.node-version == '24.x' }}
         uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
