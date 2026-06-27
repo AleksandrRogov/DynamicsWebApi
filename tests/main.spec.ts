@@ -1132,7 +1132,7 @@ describe("dynamicsWebApi.callFunction -", () => {
         });
     });
 
-    describe("unbound - functionName still works", function () {
+    describe("unbound - callFunction with name", function () {
         let scope: nock.Scope;
         before(function () {
             const response = mocks.responses.response200;
@@ -1148,8 +1148,7 @@ describe("dynamicsWebApi.callFunction -", () => {
         it("(composite, with parameters) returns a correct response", async () => {
             try {
                 const object = await dynamicsWebApiTest.callFunction({
-                    name: "",
-                    functionName: "FUN",
+                    name: "FUN",
                     parameters: { param1: "value1", param2: 2 },
                     select: ["field1", "field2"],
                     filter: "field1 eq 1",

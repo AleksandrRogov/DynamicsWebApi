@@ -760,31 +760,9 @@ describe("RequestUtility.composeUrl -", function () {
         expect(result).to.equal("/nav");
     });
 
-    //todo: delete in the future
-    it("fieldName", function () {
-        const dwaRequest = {
-            fieldName: "property",
-            functionName: "",
-        };
-
-        const result = composeUrl(dwaRequest, null, stubUrl);
-        expect(result).to.equal(stubUrl + "/property");
-    });
-
     it("property", function () {
         const dwaRequest = {
             property: "property",
-            functionName: "",
-        };
-
-        const result = composeUrl(dwaRequest, null, stubUrl);
-        expect(result).to.equal(stubUrl + "/property");
-    });
-
-    it("fieldName must be replaced by property", function () {
-        const dwaRequest = {
-            property: "property",
-            fieldName: "fieldName",
             functionName: "",
         };
 

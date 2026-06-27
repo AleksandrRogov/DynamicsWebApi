@@ -102,10 +102,6 @@ export interface InternalRequest {
     top?: number;
     /**Sets Prefer header with value 'odata.track-changes' to request that a delta link be returned which can subsequently be used to retrieve entity changes. */
     trackChanges?: boolean;
-    /**v.1.7.0+ Web API v9.1+ only! Use this option to specify the name of the file attribute in Dynamics 365.
-     * @deprecated use property
-     */
-    fieldName?: string;
     /**v.1.7.0+ Web API v9.1+ only! Specifies the name of the file */
     fileName?: string;
     /**v.1.7.7+ A unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. */

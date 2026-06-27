@@ -54,7 +54,7 @@ describe("dynamicsWebApi.query -", () => {
 
         it("returns a correct response", async () => {
             try {
-                const object = await dynamicsWebApiTest.search({
+                const object = await dynamicsWebApiTest.query({
                     query: searchQuery,
                 });
                 expect(object).to.deep.equal(mocks.data.searchMultiple);
@@ -87,7 +87,7 @@ describe("dynamicsWebApi.query -", () => {
 
         it("returns a correct response", async () => {
             try {
-                const object = await dynamicsWebApiTest.search(searchQuery.search);
+                const object = await dynamicsWebApiTest.query(searchQuery.search);
                 expect(object).to.deep.equal(mocks.data.searchMultiple);
             } catch (object) {
                 console.error(object);

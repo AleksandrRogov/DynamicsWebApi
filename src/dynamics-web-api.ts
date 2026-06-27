@@ -404,16 +404,6 @@ export class DynamicsWebApi {
     retrieveCsdlMetadata = async (request?: CsdlMetadataRequest): Promise<string> => Dataverse.retrieveCsdlMetadata(request, this.#client);
 
     /**
-     * @deprecated Use "query" instead.
-     * Provides a search results page.
-     * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise<SearchResponse<TValue>>} Search result.
-     */
-    search: SearchFunction = async <TValue = any>(request: string | SearchRequest): Promise<SearchResponse<TValue>> =>
-        //@ts-ignore Ignoring the type error issue, because SearchFunction is deprecated and it will return what needs to return with a conversion.
-        Dataverse.query(request, this.#client);
-
-    /**
      * The query operation returns search results based on a search term.
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise<QueryResponse>} Query result.
@@ -675,11 +665,6 @@ export interface DeleteRequest extends CRUDRequest {
     ifmatch?: string;
     /**BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */
     contentId?: string;
-    /**
-     * Field name that needs to be cleared (for example File Field)
-     * @deprecated Use "property".
-     */
-    fieldName?: string;
     /**Single property that needs to be cleared (including the File property) */
     property?: string;
 }
@@ -797,16 +782,11 @@ export interface UnboundFunctionRequest extends BaseRequest {
      * Name of the function.
      */
     name?: string;
-    /**
-     * Name of the function.
-     * @deprecated Use "name" parameter.
-     */
-    functionName?: string;
     /**Function's input parameters. Example: { param1: "test", param2: 3 }. */
     parameters?: any;
     /**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
     select?: string[];
-    /**Use the $filter system query option to set criteria for which entities will be returned. */
+    /**Use the $filter system query option to set criteria which entities will be returned. */
     filter?: string;
 }
 
@@ -992,21 +972,11 @@ export interface UploadRequest extends CRUDRequest {
     fileName: string;
     /**The name of File Column (field) */
     property?: string;
-    /**
-     * File Field Name
-     * @deprecated Use "property".
-     */
-    fieldName?: string;
 }
 
 export interface DownloadRequest extends CRUDRequest {
     /**The name of File Column (field) */
     property?: string;
-    /**
-     * File Field Name
-     * @deprecated Use "property".
-     */
-    fieldName?: string;
 }
 
 export interface CsdlMetadataRequest extends BaseRequest {
@@ -1094,9 +1064,6 @@ export interface Query extends SearchQueryBase {
     searchType?: SearchType;
 }
 
-/**@deprecated Use Query instead */
-export interface Search extends Query {}
-
 export interface Suggest extends SearchQueryBase {
     /**Use fuzzy search to aid with misspellings. The default is false. */
     fuzzy?: boolean;
@@ -1127,9 +1094,6 @@ export interface QueryRequest extends BaseRequest {
     /**Search query object */
     query: Query;
 }
-
-/**@deprecated Use QueryRequest instead. */
-export interface SearchRequest extends QueryRequest {}
 
 export interface SuggestRequest extends BaseRequest {
     /**Suggestion query object */
@@ -1304,13 +1268,12 @@ export interface DownloadResponse {
     data: Uint8Array | Buffer;
 }
 
-/**@deprecated Use QueryResponse instead */
-export interface SearchResponse<TValue = any> {
-    /**
+export interface QueryResponse  {
+ /**
      * A collection of matching records.
      * @deprecated Use "response.Value" instead.
      */
-    value: TValue[];
+    value: SearchQueryResult[];
     /**
      * If facets were requested in the query, a dictionary of facet values.
      * @deprecated Use "response.Facets" instead.
@@ -1326,9 +1289,7 @@ export interface SearchResponse<TValue = any> {
      * @deprecated Use "response.QueryContext" instead.
      */
     querycontext: any | null;
-}
 
-export interface QueryResponse extends SearchResponse<SearchQueryResult> {
     /** Query response */
     response: {
         /**
@@ -1467,22 +1428,6 @@ type CallAction = {
      * @returns {Promise} D365 Web Api Response
      */
     <TResponse = any, TAction = any>(request: UnboundActionRequest<TAction>): Promise<TResponse>;
-};
-
-/**@deprecated Use "QueryFunction" instead */
-type SearchFunction = {
-    /**
-     * Provides a search results page.
-     * @param term - The term to be searched for and has a max 100-character limit.
-     * @returns {Promise<SearchResponse>} Search result
-     */
-    (term: string): Promise<SearchResponse>;
-    /**
-     * Provides a search results page.
-     * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise<SearchResponse<TValue>>} Search result
-     */
-    <TValue = any>(request: QueryRequest): Promise<SearchResponse<TValue>>;
 };
 
 type QueryFunction = {
@@ -1631,18 +1576,14 @@ export interface SuggestResponseValue<TDocument = any> {
      * @deprecated Use "Text" instead.
      */
     text: string;
-    /**
-     * Provides the suggested text.
-     */
+    /** Provides the suggested text. */
     Text: string;
     /**
      * The document.
      * @deprecated Use "Document" instead.
      */
     document: TDocument;
-    /**
-     * The document.
-     */
+    /** The document. */
     Document: TDocument;
 }
 

@@ -1002,11 +1002,6 @@ var _dynamicsWebApiExports = (() => {
         const filterResult = safelyRemoveCurlyBracketsFromUrl(request.filter);
         queryArray.push("$filter=" + encodeURIComponent(filterResult));
       }
-      if (request.fieldName) {
-        ErrorHelper.stringParameterCheck(request.fieldName, `DynamicsWebApi.${request.functionName}`, "request.fieldName");
-        if (!request.property) request.property = request.fieldName;
-        delete request.fieldName;
-      }
       if (request.property) {
         ErrorHelper.stringParameterCheck(request.property, `DynamicsWebApi.${request.functionName}`, "request.property");
         url += "/" + request.property;
@@ -1687,7 +1682,7 @@ ${processData(internalRequest.data, config)}`);
   var REQUEST_NAME4 = `${LIBRARY_NAME}.${FUNCTION_NAME5}`;
   var callFunction = async (request, client) => {
     ErrorHelper.parameterCheck(request, REQUEST_NAME4, "request");
-    const getFunctionName = (request2) => request2.name || request2.functionName;
+    const getFunctionName = (request2) => request2.name;
     const isObject2 = typeof request !== "string";
     const functionName = isObject2 ? getFunctionName(request) : request;
     const parameterName = isObject2 ? "request.name" : "name";
@@ -2005,7 +2000,6 @@ ${processData(internalRequest.data, config)}`);
     const response = await client.makeRequest(internalRequest);
     internalRequest.url = response?.data.location;
     delete internalRequest.transferMode;
-    delete internalRequest.fieldName;
     delete internalRequest.property;
     delete internalRequest.fileName;
     return _uploadFileChunk(internalRequest, client, request.data, response?.data.chunkSize);
@@ -3062,16 +3056,6 @@ ${processData(internalRequest.data, config)}`);
        * @returns {Promise<string>} A raw CSDL $metadata document.
        */
       this.retrieveCsdlMetadata = async (request) => retrieveCsdlMetadata(request, __privateGet(this, _client));
-      /**
-       * @deprecated Use "query" instead.
-       * Provides a search results page.
-       * @param request - An object that represents all possible options for a current request.
-       * @returns {Promise<SearchResponse<TValue>>} Search result.
-       */
-      this.search = async (request) => (
-        //@ts-ignore Ignoring the type error issue, because SearchFunction is deprecated and it will return what needs to return with a conversion.
-        query(request, __privateGet(this, _client))
-      );
       /**
        * The query operation returns search results based on a search term.
        * @param request - An object that represents all possible options for a current request.

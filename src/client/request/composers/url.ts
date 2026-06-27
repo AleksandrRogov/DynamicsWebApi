@@ -64,13 +64,6 @@ export const composeUrl = (request: InternalRequest | null, config: Config | nul
             queryArray.push("$filter=" + encodeURIComponent(filterResult));
         }
 
-        //todo: delete in v2.5
-        if (request.fieldName) {
-            ErrorHelper.stringParameterCheck(request.fieldName, `DynamicsWebApi.${request.functionName}`, "request.fieldName");
-            if (!request.property) request.property = request.fieldName;
-            delete request.fieldName;
-        }
-
         if (request.property) {
             ErrorHelper.stringParameterCheck(request.property, `DynamicsWebApi.${request.functionName}`, "request.property");
             url += "/" + request.property;

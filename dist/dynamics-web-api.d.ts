@@ -346,13 +346,6 @@ export declare class DynamicsWebApi {
      */
     retrieveCsdlMetadata: (request?: CsdlMetadataRequest) => Promise<string>;
     /**
-     * @deprecated Use "query" instead.
-     * Provides a search results page.
-     * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise<SearchResponse<TValue>>} Search result.
-     */
-    search: SearchFunction;
-    /**
      * The query operation returns search results based on a search term.
      * @param request - An object that represents all possible options for a current request.
      * @returns {Promise<QueryResponse>} Query result.
@@ -585,11 +578,6 @@ export interface DeleteRequest extends CRUDRequest {
     ifmatch?: string;
     /**BATCH REQUESTS ONLY! Sets Content-ID header or references request in a Change Set. */
     contentId?: string;
-    /**
-     * Field name that needs to be cleared (for example File Field)
-     * @deprecated Use "property".
-     */
-    fieldName?: string;
     /**Single property that needs to be cleared (including the File property) */
     property?: string;
 }
@@ -700,16 +688,11 @@ export interface UnboundFunctionRequest extends BaseRequest {
      * Name of the function.
      */
     name?: string;
-    /**
-     * Name of the function.
-     * @deprecated Use "name" parameter.
-     */
-    functionName?: string;
     /**Function's input parameters. Example: { param1: "test", param2: 3 }. */
     parameters?: any;
     /**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
     select?: string[];
-    /**Use the $filter system query option to set criteria for which entities will be returned. */
+    /**Use the $filter system query option to set criteria which entities will be returned. */
     filter?: string;
 }
 export interface BoundFunctionRequest extends UnboundFunctionRequest, Request {
@@ -873,20 +856,10 @@ export interface UploadRequest extends CRUDRequest {
     fileName: string;
     /**The name of File Column (field) */
     property?: string;
-    /**
-     * File Field Name
-     * @deprecated Use "property".
-     */
-    fieldName?: string;
 }
 export interface DownloadRequest extends CRUDRequest {
     /**The name of File Column (field) */
     property?: string;
-    /**
-     * File Field Name
-     * @deprecated Use "property".
-     */
-    fieldName?: string;
 }
 export interface CsdlMetadataRequest extends BaseRequest {
     /**If set to "true" the document will include many different kinds of annotations that can be useful. Most annotations are not included by default because they increase the total size of the document. */
@@ -939,13 +912,10 @@ export interface SearchQueryBase {
 export interface Query extends SearchQueryBase {
     /**V2. Specify true to return the total record count; otherwise false. The default is false. */
     count?: boolean;
+    /**V1. Specify true to return the total record count; otherwise false. The default is false. */
+    returnTotalRecordCount?: boolean;
     /**Facets support the ability to drill down into data results after they've been retrieved. */
     facets?: string | string[];
-    /**
-     * V1. Specify true to return the total record count; otherwise false. The default is false.
-     * @deprecated Use "count".
-     */
-    returnTotalRecordCount?: boolean;
     /**Specifies the number of search results to skip. */
     skip?: number;
     /**Specifies the number of search results to retrieve. The default is 50, and the maximum value is 100. */
@@ -954,27 +924,15 @@ export interface Query extends SearchQueryBase {
     orderBy?: string | string[];
     /**V2. Options are settings configured to search a search term. */
     options?: string | SearchOptions;
-    /**
-     * V1. Specifies whether any or all the search terms must be matched to count the document as a match. The default is 'any'.
-     * @deprecated Use "options.searchmode".
-     */
+    /**V1. Specifies whether any or all the search terms must be matched to count the document as a match. The default is 'any'. */
     searchMode?: SearchMode;
-    /**
-     * V1. The search type specifies the syntax of a search query. Using 'simple' selects simple query syntax and 'full' selects Lucene query syntax. The default is 'simple'.
-     * @deprecated Use "options.querytype".
-     */
+    /**V1. The search type specifies the syntax of a search query. Using 'simple' selects simple query syntax and 'full' selects Lucene query syntax. The default is 'simple'. */
     searchType?: SearchType;
-}
-/**@deprecated Use Query instead */
-export interface Search extends Query {
 }
 export interface Suggest extends SearchQueryBase {
     /**Use fuzzy search to aid with misspellings. The default is false. */
     fuzzy?: boolean;
-    /**
-     * Use fuzzy search to aid with misspellings. The default is false.
-     * @deprecated Use "fuzzy".
-     */
+    /**V1. Use fuzzy search to aid with misspellings. The default is false. */
     useFuzzy?: boolean;
     /**V2. Options are settings configured to search a search term. */
     options?: string | SuggestOptions;
@@ -986,18 +944,12 @@ export interface Suggest extends SearchQueryBase {
 export interface Autocomplete extends SearchQueryBase {
     /**Use fuzzy search to aid with misspellings. The default is false. */
     fuzzy?: boolean;
-    /**
-     * Use fuzzy search to aid with misspellings. The default is false.
-     * @deprecated Use "fuzzy".
-     */
+    /**V1. Use fuzzy search to aid with misspellings. The default is false. */
     useFuzzy?: boolean;
 }
 export interface QueryRequest extends BaseRequest {
     /**Search query object */
     query: Query;
-}
-/**@deprecated Use QueryRequest instead. */
-export interface SearchRequest extends QueryRequest {
 }
 export interface SuggestRequest extends BaseRequest {
     /**Suggestion query object */
@@ -1154,30 +1106,15 @@ export interface DownloadResponse {
     /**File Data */
     data: Uint8Array | Buffer;
 }
-/**@deprecated Use QueryResponse instead */
-export interface SearchResponse<TValue = any> {
-    /**
-     * A collection of matching records.
-     * @deprecated Use "response.Value" instead.
-     */
-    value: TValue[];
-    /**
-     * If facets were requested in the query, a dictionary of facet values.
-     * @deprecated Use "response.Facets" instead.
-     */
-    facets: any | null;
-    /**
-     * If "Count": true is included in the body of the request, the count of all documents that match the search, ignoring top and skip.
-     * @deprecated Use "response.Count" instead.
-     */
+export interface QueryResponse {
+    /** A collection of matching records. */
+    value: SearchQueryResult[];
+    /** If facets were requested in the query, a dictionary of facet values. */
+    facets: Record<string, SearchFacetResult[]> | null;
+    /** If "Count": true is included in the body of the request, the count of all documents that match the search, ignoring top and skip. */
     totalrecordcount: number;
-    /**
-     * This property is used for backend search. It's included for future feature releases and isn't currently used.
-     * @deprecated Use "response.QueryContext" instead.
-     */
-    querycontext: any | null;
-}
-export interface QueryResponse extends SearchResponse<SearchQueryResult> {
+    /** This property is used for backend search. It's included for future feature releases and isn't currently used. */
+    querycontext: SearchQueryContext | null;
     /** Query response */
     response: {
         /**
@@ -1204,15 +1141,9 @@ export interface QueryResponse extends SearchResponse<SearchQueryResult> {
     "@odata.context": string;
 }
 export interface SuggestResponse<TValueDocument = any> {
-    /**
-     * A collection of matching records.
-     * @deprecated Use "response.Value" instead.
-     */
+    /** A collection of matching records. */
     value: SuggestResponseValue<TValueDocument>[];
-    /**
-     * Suggestions query context
-     * @deprecated Use "response.QueryContext" instead.
-     */
+    /** Suggestions query context. */
     querycontext: any | null;
     /** Suggestion response. */
     response: {
@@ -1229,15 +1160,9 @@ export interface SuggestResponse<TValueDocument = any> {
     "@odata.context": string;
 }
 export interface AutocompleteResponse {
-    /**
-     * Autocomplete text result.
-     * @deprecated Use "response.Value" instead.
-     */
+    /** Autocomplete text result. */
     value: string | null;
-    /**
-     * This property is used for backend search. It's included for future feature releases and isn't currently used.
-     * @deprecated Use "response.QueryContext" instead.
-     */
+    /** This property is used for backend search. It's included for future feature releases and isn't currently used. */
     querycontext: any | null;
     /** Autocomplete response. */
     response: {
@@ -1310,21 +1235,6 @@ type CallAction = {
      * @returns {Promise} D365 Web Api Response
      */
     <TResponse = any, TAction = any>(request: UnboundActionRequest<TAction>): Promise<TResponse>;
-};
-/**@deprecated Use "QueryFunction" instead */
-type SearchFunction = {
-    /**
-     * Provides a search results page.
-     * @param term - The term to be searched for and has a max 100-character limit.
-     * @returns {Promise<SearchResponse>} Search result
-     */
-    (term: string): Promise<SearchResponse>;
-    /**
-     * Provides a search results page.
-     * @param request - An object that represents all possible options for a current request.
-     * @returns {Promise<SearchResponse<TValue>>} Search result
-     */
-    <TValue = any>(request: QueryRequest): Promise<SearchResponse<TValue>>;
 };
 type QueryFunction = {
     /**
@@ -1460,23 +1370,13 @@ export type SearchQueryResult = {
     Score: number;
 };
 export interface SuggestResponseValue<TDocument = any> {
-    /**
-     * Provides the suggested text.
-     * @deprecated Use "Text" instead.
-     */
+    /** Provides the suggested text. */
     text: string;
-    /**
-     * Provides the suggested text.
-     */
+    /** Provides the suggested text. */
     Text: string;
-    /**
-     * The document.
-     * @deprecated Use "Document" instead.
-     */
+    /** The document. */
     document: TDocument;
-    /**
-     * The document.
-     */
+    /** The document. */
     Document: TDocument;
 }
 export type BackgroundOperationStatusResponse = Record<string, any> & {

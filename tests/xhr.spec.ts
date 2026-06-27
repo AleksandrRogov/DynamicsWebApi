@@ -1069,7 +1069,7 @@ describe("xhr -", () => {
                 key: mocks.data.testEntityId,
                 collection: "tests",
                 fileName: "test.json",
-                fieldName: "dwa_file",
+                property: "dwa_file",
                 data: Buffer.from("Welcome to DynamicsWebApi!", "utf-8"),
             };
 
@@ -1107,7 +1107,7 @@ describe("xhr -", () => {
 
             it("sends the request to the right end point", function () {
                 expect(requests[0]?.url).to.equal(
-                    mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, "") + `/${dwaRequest.fieldName}?x-ms-file-name=${dwaRequest.fileName}`,
+                    mocks.webApiUrl + mocks.responses.testEntityUrl.replace(/^\/|\/$/g, "") + `/${dwaRequest.property}?x-ms-file-name=${dwaRequest.fileName}`,
                 );
                 expect(requests[1]?.url).to.equal(beginResponse.responseHeaders.Location);
                 expect(requests[2]?.url).to.equal(beginResponse.responseHeaders.Location);

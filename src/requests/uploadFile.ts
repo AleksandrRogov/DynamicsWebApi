@@ -39,7 +39,6 @@ export const uploadFile = async (request: UploadRequest, client: IDataverseClien
 
     internalRequest.url = response?.data.location;
     delete internalRequest.transferMode;
-    delete internalRequest.fieldName;
     delete internalRequest.property;
     delete internalRequest.fileName;
     return _uploadFileChunk(internalRequest, client, request.data, response?.data.chunkSize);

@@ -11,7 +11,7 @@ const REQUEST_NAME = `${LIBRARY_NAME}.${FUNCTION_NAME}`;
 export const callFunction = async <TData = any>(request: string | BoundFunctionRequest | UnboundFunctionRequest, client: IDataverseClient): Promise<TData> => {
     ErrorHelper.parameterCheck(request, REQUEST_NAME, "request");
 
-    const getFunctionName = (request: BoundFunctionRequest | UnboundFunctionRequest) => request.name || request.functionName;
+    const getFunctionName = (request: BoundFunctionRequest | UnboundFunctionRequest) => request.name;
 
     const isObject = typeof request !== "string";
     const functionName = isObject ? getFunctionName(request) : request;
