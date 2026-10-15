@@ -885,6 +885,124 @@ describe("dynamicsWebApi.executeBatch -", () => {
             expect(scope.isDone()).to.be.true;
         });
     });
+
+    describe("create / create / count (filtered)", function () {
+        let scope: nock.Scope;
+        const rBody = mocks.data.batchCreateCreateCountFiltered;
+        const rBodys = rBody.split("\r\n");
+        let checkBody = "";
+        for (let i = 0; i < rBodys.length; i++) {
+            checkBody += rBodys[i];
+        }
+        before(function () {
+            const response = mocks.responses.batchCreateCreateCountFiltered;
+            scope = nock(mocks.webApiUrl)
+                .filteringRequestBody((body) => {
+                    body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
+                    body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "changeset_XXX");
+                    const bodys = body.split("\r\n");
+
+                    let resultBody = "";
+                    for (let i = 0; i < bodys.length; i++) {
+                        resultBody += bodys[i];
+                    }
+
+                    return resultBody;
+                })
+                .post("/$batch", checkBody)
+                .reply(response.status, response.responseText, response.responseHeaders);
+        });
+
+        after(function () {
+            nock.cleanAll();
+        });
+
+        it("returns a correct response", async () => {
+            dynamicsWebApiTest.startBatch();
+
+            dynamicsWebApiTest.create({ collection: "records", data: { firstname: "Test", lastname: "Batch!" } });
+            dynamicsWebApiTest.create({ collection: "records", data: { firstname: "Test1", lastname: "Batch!" } });
+            dynamicsWebApiTest.count({ collection: "records", filter: "statecode eq 0" });
+
+            try {
+                const object = await dynamicsWebApiTest.executeBatch();
+
+                expect(object.length).to.be.eq(3);
+
+                expect(object[0]).to.be.eq(mocks.data.testEntityId);
+                expect(object[1]).to.be.eq(mocks.data.testEntityId2);
+                expect(object[2]).to.be.eq(2);
+            } catch (error) {
+                console.error(error);
+                throw error;
+            }
+        });
+
+        it("all requests have been made", () => {
+            expect(scope.isDone()).to.be.true;
+        });
+    });
+
+    describe("create / create (failed change set) / count (filtered) - continueOnError", function () {
+        let scope: nock.Scope;
+        const rBody = mocks.data.batchCreateCreateCountFiltered;
+        const rBodys = rBody.split("\r\n");
+        let checkBody = "";
+        for (let i = 0; i < rBodys.length; i++) {
+            checkBody += rBodys[i];
+        }
+        before(function () {
+            const response = mocks.responses.batchChangeSetErrorCountFiltered;
+            scope = nock(mocks.webApiUrl, {
+                reqheaders: {
+                    Prefer: "odata.continue-on-error",
+                },
+            })
+                .filteringRequestBody((body) => {
+                    body = body.replace(/dwa_batch_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "dwa_batch_XXX");
+                    body = body.replace(/changeset_[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}/g, "changeset_XXX");
+                    const bodys = body.split("\r\n");
+
+                    let resultBody = "";
+                    for (let i = 0; i < bodys.length; i++) {
+                        resultBody += bodys[i];
+                    }
+
+                    return resultBody;
+                })
+                .post("/$batch", checkBody)
+                .reply(response.status, response.responseText, response.responseHeaders);
+        });
+
+        after(function () {
+            nock.cleanAll();
+        });
+
+        it("returns a correct response", async () => {
+            dynamicsWebApiTest.startBatch();
+
+            dynamicsWebApiTest.create({ collection: "records", data: { firstname: "Test", lastname: "Batch!" } });
+            dynamicsWebApiTest.create({ collection: "records", data: { firstname: "Test1", lastname: "Batch!" } });
+            dynamicsWebApiTest.count({ collection: "records", filter: "statecode eq 0" });
+
+            try {
+                const object = await dynamicsWebApiTest.executeBatch({ continueOnError: true });
+
+                expect(object.length).to.be.eq(2);
+
+                expect(object[0].status).to.be.eq(400);
+                expect(object[0].error).to.deep.equal({ code: "0x0", message: "error" });
+                expect(object[1]).to.be.eq(2);
+            } catch (error) {
+                console.error(error);
+                throw error;
+            }
+        });
+
+        it("all requests have been made", () => {
+            expect(scope.isDone()).to.be.true;
+        });
+    });
 });
 
 describe("dynamicsWebApi: custom headers - ", () => {
