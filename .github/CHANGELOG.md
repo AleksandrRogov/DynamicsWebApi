@@ -1,3 +1,17 @@
+<a name="v2.5.1"></a>
+# [v2.5.1](https://github.com/AleksandrRogov/DynamicsWebApi/releases/tag/v2.5.1) - 15 Oct 2026
+
+## What's Changed
+* fix(executeBatch): use correct parse parameters after a change set by [@shyrack](https://github.com/shyrack) in https://github.com/AleksandrRogov/DynamicsWebApi/pull/217
+
+## New Contributors
+* [@shyrack](https://github.com/shyrack) made their first contribution in https://github.com/AleksandrRogov/DynamicsWebApi/pull/217
+
+**Full Changelog**: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.5.0...v2.5.1
+
+[Changes][v2.5.1]
+
+
 <a name="v2.5.0"></a>
 # [v2.5.0](https://github.com/AleksandrRogov/DynamicsWebApi/releases/tag/v2.5.0) - 25 Apr 2026
 
@@ -1171,6 +1185,7 @@ Added:
 [Changes][v1.2.0]
 
 
+[v2.5.1]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.5.0...v2.5.1
 [v2.5.0]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.4.0...v2.5.0
 [v2.4.0]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.3.2...v2.4.0
 [v2.3.2]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.3.1...v2.3.2

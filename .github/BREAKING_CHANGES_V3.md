@@ -1,4 +1,4 @@
-# Breaking Changes in v3 (v2.5 -> v3)
+# Breaking Changes in v3 (v2 -> v3)
 
 ### 1. `DynamicsWebApi.search()` method removed
 
