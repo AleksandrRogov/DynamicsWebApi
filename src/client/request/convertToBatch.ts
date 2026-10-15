@@ -8,6 +8,7 @@ export const convertToBatch = (requests: InternalRequest[], config: InternalConf
 
     const batchBody: string[] = [];
     let currentChangeSet: string | null = null;
+    let changeSetResponseParams: any = null;
     let contentId = 100000;
 
     const addHeaders = (headers: Record<string, string>, batchBody: string[]) => {
@@ -36,11 +37,14 @@ export const convertToBatch = (requests: InternalRequest[], config: InternalConf
             if (inChangeSet) {
                 currentChangeSet = `changeset_${generateUUID()}`;
                 batchBody.push("Content-Type: multipart/mixed;boundary=" + currentChangeSet);
+                changeSetResponseParams = internalRequest.responseParameters;
+                changeSetResponseParams.changeSetSize = 0;
             }
         }
 
         if (inChangeSet) {
             batchBody.push(`\r\n--${currentChangeSet}`);
+            changeSetResponseParams.changeSetSize++;
         }
 
         batchBody.push("Content-Type: application/http");
