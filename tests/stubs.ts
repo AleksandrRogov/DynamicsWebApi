@@ -857,6 +857,46 @@ const dataStubs = {
         "\r\n" +
         "--changeset_XXX\r\n" +
         "--dwa_batch_XXX--\r\n",
+    batchCreateCreateCountFiltered:
+        "--dwa_batch_XXX\r\n" +
+        "Content-Type: multipart/mixed;boundary=changeset_XXX\r\n" +
+        "\r\n" +
+        "--changeset_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "Content-ID: 100001\r\n" +
+        "\r\n" +
+        "POST " +
+        webApiUrl +
+        "records HTTP/1.1\r\n" +
+        "Content-Type: application/json\r\n" +
+        "\r\n" +
+        '{"firstname":"Test","lastname":"Batch!"}\r\n' +
+        "\r\n" +
+        "--changeset_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "Content-ID: 100002\r\n" +
+        "\r\n" +
+        "POST " +
+        webApiUrl +
+        "records HTTP/1.1\r\n" +
+        "Content-Type: application/json\r\n" +
+        "\r\n" +
+        '{"firstname":"Test1","lastname":"Batch!"}\r\n' +
+        "\r\n" +
+        "--changeset_XXX--\r\n" +
+        "\r\n" +
+        "--dwa_batch_XXX\r\n" +
+        "Content-Type: application/http\r\n" +
+        "Content-Transfer-Encoding: binary\r\n" +
+        "\r\n" +
+        "GET " +
+        webApiUrl +
+        "records?$filter=statecode%20eq%200&$count=true HTTP/1.1\r\n" +
+        "Accept: application/json\r\n" +
+        "\r\n" +
+        "--dwa_batch_XXX--\r\n",
     fetchXmls: {
         cookiePage1:
             "%253Ccookie%2520pagenumber%253D%25222%2522%2520pagingcookie%253D%2522%253Ccookie%2520page%253D%25221%2522%253E%253Caccountid%2520last%253D%2522%257BEF72AE29-B3DE-E611-8102-5065F38A7BF1%257D%2522%2520first%253D%2522%257B475B158C-541C-E511-80D3-3863BB347BA8%257D%2522%2520/%253E%253C/cookie%253E%2522%2520istracking%253D%2522False%2522%2520/%253E",
@@ -1435,6 +1475,82 @@ const responseStubs = {
             "--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae--",
         // @ts-ignore
         responseHeaders: dataStubs.defaultTextPlainResponseHeadersseHeaders,
+    },
+    batchCreateCreateCountFiltered: {
+        status: 200,
+        responseText:
+            "--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae\r\n" +
+            "Content-Type: multipart/mixed; boundary=changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n" +
+            "\r\n" +
+            "--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n" +
+            "Content-Type: application/http\r\n" +
+            "Content-Transfer-Encoding: binary\r\n" +
+            "Content-ID: 100001\r\n" +
+            "\r\n" +
+            "HTTP/1.1 204 No Content\r\n" +
+            "OData-Version: 4.0\r\n" +
+            "Location: https://url.com/api/data/v8.2/records(" +
+            dataStubs.testEntityId +
+            ")\r\n" +
+            "OData-EntityId: https://url.com/api/data/v8.2/records(" +
+            dataStubs.testEntityId +
+            ")\r\n" +
+            "\r\n" +
+            "\r\n" +
+            "--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n" +
+            "Content-Type: application/http\r\n" +
+            "Content-Transfer-Encoding: binary\r\n" +
+            "Content-ID: 100002\r\n" +
+            "\r\n" +
+            "HTTP/1.1 204 No Content\r\n" +
+            "OData-Version: 4.0\r\n" +
+            "Location: https://url.com/api/data/v8.2/records(" +
+            dataStubs.testEntityId2 +
+            ")\r\n" +
+            "OData-EntityId: https://url.com/api/data/v8.2/records(" +
+            dataStubs.testEntityId2 +
+            ")\r\n" +
+            "\r\n" +
+            "\r\n" +
+            "--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd--\r\n" +
+            "--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae\r\n" +
+            "Content-Type: application/http\r\n" +
+            "Content-Transfer-Encoding: binary\r\n" +
+            "\r\n" +
+            "HTTP/1.1 200 OK\r\n" +
+            "Content-Type: application/json; odata.metadata=minimal\r\n" +
+            "OData-Version: 4.0\r\n" +
+            "\r\n" +
+            JSON.stringify(dataStubs.multipleWithCount) +
+            "\r\n" +
+            "--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae--",
+        responseHeaders: dataStubs.defaultTextPlainResponseHeaders,
+    },
+    batchChangeSetErrorCountFiltered: {
+        status: 200,
+        responseText:
+            "--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae\r\n" +
+            "Content-Type: application/http\r\n" +
+            "Content-Transfer-Encoding: binary\r\n" +
+            "\r\n" +
+            "HTTP/1.1 400 Bad Request\r\n" +
+            "REQ_ID: 5fe339e5-c75e-4dad-9597-b257ebce666b\r\n" +
+            "Content-Type: application/json; odata.metadata=minimal\r\n" +
+            "OData-Version: 4.0\r\n" +
+            "\r\n" +
+            '{"error":{"code":"0x0","message":"error"}}\r\n' +
+            "--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae\r\n" +
+            "Content-Type: application/http\r\n" +
+            "Content-Transfer-Encoding: binary\r\n" +
+            "\r\n" +
+            "HTTP/1.1 200 OK\r\n" +
+            "Content-Type: application/json; odata.metadata=minimal\r\n" +
+            "OData-Version: 4.0\r\n" +
+            "\r\n" +
+            JSON.stringify(dataStubs.multipleWithCount) +
+            "\r\n" +
+            "--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae--",
+        responseHeaders: dataStubs.defaultTextPlainResponseHeaders,
     },
     fetchXmlResponsePage1Cookie: {
         status: 200,

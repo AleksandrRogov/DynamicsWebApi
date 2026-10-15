@@ -119,9 +119,15 @@ function processBatchPart(batchResponse: string, parseParams: any, requestNumber
  * @param {string} response - response that needs to be parsed
  * @param {Array} parseParams - parameters for parsing the response
  * @param {Number} [requestNumber] - number of the request
+ * @param {boolean} [isChangeSet] - true if the response is the content of a change set
  * @returns {any} parsed batch response
  */
-export function parseBatchResponse(response: string, parseParams: any, requestNumber: number = 0): (string | undefined | DynamicsWebApiError | Number)[] {
+export function parseBatchResponse(
+    response: string,
+    parseParams: any,
+    requestNumber: number = 0,
+    isChangeSet: boolean = false,
+): (string | undefined | DynamicsWebApiError | Number)[] {
     // Not the same delimiter in the response as we specify ourselves in the request,
     // so we have to extract it.
     const delimiter = response.substring(0, response.search(LINE_ENDING_REGEX));
@@ -133,14 +139,19 @@ export function parseBatchResponse(response: string, parseParams: any, requestNu
 
     let result: (string | undefined | DynamicsWebApiError | Number)[] = [];
     for (let part of batchResponseParts) {
+        //a change set uses one parse parameter per request, even if it failed and returned a single response
+        const requestCount = isChangeSet ? 1 : (parseParams?.[requestNumber]?.changeSetSize ?? 1);
+
         if (part.indexOf("--changesetresponse_") === -1) {
-            result.push(processBatchPart(part, parseParams, requestNumber++));
+            result.push(processBatchPart(part, parseParams, requestNumber));
+            requestNumber += requestCount;
             continue;
         }
 
         part = part.trim();
         const batchToProcess = part.substring(part.search(LINE_ENDING_REGEX) + 1).trim();
-        result = result.concat(parseBatchResponse(batchToProcess, parseParams, requestNumber++));
+        result = result.concat(parseBatchResponse(batchToProcess, parseParams, requestNumber, true));
+        requestNumber += requestCount;
     }
 
     return result;
