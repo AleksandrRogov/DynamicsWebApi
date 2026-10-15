@@ -1,6 +1,6 @@
 {
     "name": "dynamics-web-api",
-    "version": "2.5.0",
+    "version": "2.5.1",
     "description": "DynamicsWebApi is a Microsoft Dataverse Web API helper library",
     "keywords": [
         "dataverse",
@@ -87,8 +87,8 @@
         "preversion": "npm test",
         "version": "npm run build && git add -A dist",
         "postversion": "git push && git push --tags",
-        "release-patch": "npm version patch -m \"Release v%s\"",
-        "release-minor": "npm version minor -m \"Release v%s\""
+        "release-patch": "npm version patch -m \"chore(release): v%s\"",
+        "release-minor": "npm version minor -m \"chore(release): v%s\""
     },
     "repository": {
         "type": "git",

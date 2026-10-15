@@ -1,4 +1,4 @@
-/*! dynamics-web-api v2.5.0 (c) 2026 Aleksandr Rogov. License: MIT */
+/*! dynamics-web-api v2.5.1 (c) 2026 Aleksandr Rogov. License: MIT */
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -512,20 +512,23 @@ function processBatchPart(batchResponse, parseParams, requestNumber) {
     headers: responseHeaders
   });
 }
-function parseBatchResponse(response, parseParams, requestNumber = 0) {
+function parseBatchResponse(response, parseParams, requestNumber = 0, isChangeSet = false) {
   const delimiter = response.substring(0, response.search(LINE_ENDING_REGEX));
   const batchResponseParts = response.split(delimiter);
   batchResponseParts.shift();
   batchResponseParts.pop();
   let result = [];
   for (let part of batchResponseParts) {
+    const requestCount = isChangeSet ? 1 : parseParams?.[requestNumber]?.changeSetSize ?? 1;
     if (part.indexOf("--changesetresponse_") === -1) {
-      result.push(processBatchPart(part, parseParams, requestNumber++));
+      result.push(processBatchPart(part, parseParams, requestNumber));
+      requestNumber += requestCount;
       continue;
     }
     part = part.trim();
     const batchToProcess = part.substring(part.search(LINE_ENDING_REGEX) + 1).trim();
-    result = result.concat(parseBatchResponse(batchToProcess, parseParams, requestNumber++));
+    result = result.concat(parseBatchResponse(batchToProcess, parseParams, requestNumber, true));
+    requestNumber += requestCount;
   }
   return result;
 }
@@ -1462,6 +1465,7 @@ var convertToBatch = (requests, config, batchRequest) => {
   const batchBoundary = `dwa_batch_${generateUUID()}`;
   const batchBody = [];
   let currentChangeSet = null;
+  let changeSetResponseParams = null;
   let contentId = 1e5;
   const addHeaders = (headers2, batchBody2) => {
     for (const key in headers2) {
@@ -1485,11 +1489,14 @@ var convertToBatch = (requests, config, batchRequest) => {
       if (inChangeSet) {
         currentChangeSet = `changeset_${generateUUID()}`;
         batchBody.push("Content-Type: multipart/mixed;boundary=" + currentChangeSet);
+        changeSetResponseParams = internalRequest.responseParameters;
+        changeSetResponseParams.changeSetSize = 0;
       }
     }
     if (inChangeSet) {
       batchBody.push(`\r
 --${currentChangeSet}`);
+      changeSetResponseParams.changeSetSize++;
     }
     batchBody.push("Content-Type: application/http");
     batchBody.push("Content-Transfer-Encoding: binary");
