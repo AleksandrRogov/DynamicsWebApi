@@ -1,4 +1,4 @@
-/*! dynamics-web-api v2.5.1 (c) 2026 Aleksandr Rogov. License: MIT */
+/*! dynamics-web-api v2.6.0 (c) 2026 Aleksandr Rogov. License: MIT */
 /**
  * Microsoft Dataverse Web API helper library for Node.js and Browser.
  * It is compatible with: Dataverse, Dynamics 365 (online), Dynamics 365 (on-premise), Dynamics CRM 2016, Dynamics CRM Online.
@@ -695,6 +695,7 @@ export interface DisassociateSingleValuedRequest extends Request {
     /**Navigation property name. */
     navigationProperty: string;
 }
+export type FunctionParameterType = "string" | "guid" | "raw";
 export interface UnboundFunctionRequest extends BaseRequest {
     /**
      * Name of the function.
@@ -707,6 +708,8 @@ export interface UnboundFunctionRequest extends BaseRequest {
     functionName?: string;
     /**Function's input parameters. Example: { param1: "test", param2: 3 }. */
     parameters?: any;
+    /** Overrides the inferred OData type for named function parameters. */
+    parameterTypes?: Record<string, FunctionParameterType>;
     /**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
     select?: string[];
     /**Use the $filter system query option to set criteria for which entities will be returned. */
@@ -1045,6 +1048,11 @@ export interface Config {
      * NOTE! This option is temporary and will be removed in the next major version.
      */
     propagateErrors?: boolean | null;
+    /**
+     * Opt in to OData function parameter serialization.
+     * NOTE! This option is temporary and will be removed in the next major version.
+     */
+    useODataFunctionParameterSerialization?: boolean | null;
     /**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types.*/
     includeAnnotations?: string | null;
     /**Sets the odata.maxpagesize preference value to request the number of entities returned in the response. */

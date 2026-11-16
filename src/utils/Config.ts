@@ -127,6 +127,11 @@ export function mergeConfig(internalConfig: InternalConfig, config?: Config): vo
         internalConfig.propagateErrors = config.propagateErrors;
     }
 
+    if (config?.useODataFunctionParameterSerialization != null) {
+        ErrorHelper.boolParameterCheck(config.useODataFunctionParameterSerialization, FUNCTION_NAME, "config.useODataFunctionParameterSerialization");
+        internalConfig.useODataFunctionParameterSerialization = config.useODataFunctionParameterSerialization;
+    }
+
     if (config?.headers) {
         internalConfig.headers = config.headers;
     }

@@ -1,3 +1,20 @@
+# v2.6.0 (unreleased)
+
+* Add `useODataFunctionParameterSerialization` to opt in to corrected `callFunction` string escaping, URL encoding, and GUID detection, with optional `parameterTypes` overrides. 
+Existing v2 behavior remains the default. Fixes [#218](https://github.com/AleksandrRogov/DynamicsWebApi/issues/218).
+* When enabling the option, remove manual apostrophe escaping and URL-encoding workarounds. This option is temporary; corrected behavior will be standard in v3.
+
+<a name="v2.5.1"></a>
+# [v2.5.1](https://github.com/AleksandrRogov/DynamicsWebApi/releases/tag/v2.5.1) - 15 Oct 2026
+
+## What's Changed
+* fix(executeBatch): use correct parse parameters after a change set by @shyrack in https://github.com/AleksandrRogov/DynamicsWebApi/pull/217
+
+## New Contributors
+* @shyrack made their first contribution in https://github.com/AleksandrRogov/DynamicsWebApi/pull/217
+
+**Full Changelog**: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.5.0...v2.5.1
+
 <a name="v2.5.0"></a>
 # [v2.5.0](https://github.com/AleksandrRogov/DynamicsWebApi/releases/tag/v2.5.0) - 25 Apr 2026
 

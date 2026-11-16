@@ -16,11 +16,12 @@ export const callFunction = async <TData = any>(request: string | BoundFunctionR
     const isObject = typeof request !== "string";
     const functionName = isObject ? getFunctionName(request) : request;
     const parameterName = isObject ? "request.name" : "name";
-    const internalRequest: InternalRequest = isObject ? copyObject(request, ["name"]) : { functionName: functionName };
-
     ErrorHelper.stringParameterCheck(functionName, REQUEST_NAME, parameterName);
 
-    const functionParameters = buildFunctionParameters(internalRequest.parameters);
+    const functionParameters = isObject
+        ? buildFunctionParameters(request.parameters, request.parameterTypes, !!client.config.useODataFunctionParameterSerialization)
+        : buildFunctionParameters();
+    const internalRequest: InternalRequest = isObject ? copyObject(request, ["name", "parameterTypes"]) : { functionName: functionName };
 
     internalRequest.method = "GET";
     internalRequest.addPath = functionName + functionParameters.key;

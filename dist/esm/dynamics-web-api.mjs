@@ -1,4 +1,4 @@
-/*! dynamics-web-api v2.5.1 (c) 2026 Aleksandr Rogov. License: MIT */
+/*! dynamics-web-api v2.6.0 (c) 2026 Aleksandr Rogov. License: MIT */
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -151,31 +151,56 @@ var init_Regex = __esm({
 });
 
 // src/utils/Utility.ts
-function formatParameterValue(value) {
+function formatParameterValue(value, type) {
   if (value == null) return "";
-  if (typeof value === "string" && !value.startsWith("Microsoft.Dynamics.CRM") && !isUuid(value)) {
-    return `'${value}'`;
-  } else if (typeof value === "object") {
-    return JSON.stringify(value);
+  if (type && typeof value !== "string") throw new Error(`Invalid ${type} value`);
+  switch (type) {
+    case "guid": {
+      const guid = extractUuid(value);
+      if (!guid) throw new Error("Invalid GUID");
+      return guid;
+    }
+    case "raw":
+      if (!value.trim()) throw new Error("Invalid raw value");
+      return value;
+    case "string":
+      return quoteParameterString(value);
   }
-  return value.toString();
+  if (typeof value !== "string") return typeof value === "object" ? JSON.stringify(value) : value.toString();
+  return extractUuid(value) || (value.startsWith("Microsoft.Dynamics.CRM") ? value : quoteParameterString(value));
 }
-function processParameters(parameters) {
-  const parameterNames = Object.keys(parameters);
+function quoteParameterString(value) {
+  return `'${value.replace(/'/g, "''")}'`;
+}
+function validateParameterTypes(parameters, parameterTypes) {
+  if (parameterTypes === void 0) return;
+  if (parameterTypes === null || typeof parameterTypes !== "object" || Array.isArray(parameterTypes)) throw new Error("Invalid parameterTypes map");
+  for (const name of Object.keys(parameterTypes)) {
+    if (!Object.prototype.hasOwnProperty.call(parameters, name)) throw new Error(`Unknown function parameter: ${name}`);
+    if (!["string", "guid", "raw"].includes(parameterTypes[name])) throw new Error(`Invalid type for function parameter: ${name}`);
+  }
+}
+function processParameters(parameters, parameterTypes) {
+  validateParameterTypes(parameters, parameterTypes);
   const functionParams = [];
   const urlQuery = [];
-  parameterNames.forEach((parameterName, index) => {
-    let value = parameters[parameterName];
+  Object.keys(parameters).forEach((name, index) => {
+    const value = parameters[name];
     if (value == null) return;
-    value = formatParameterValue(value);
-    const paramIndex = index + 1;
-    functionParams.push(`${parameterName}=@p${paramIndex}`);
-    urlQuery.push(`@p${paramIndex}=${extractUuid(value) || value}`);
+    let formatted;
+    try {
+      formatted = formatParameterValue(
+        value,
+        parameterTypes && Object.prototype.hasOwnProperty.call(parameterTypes, name) ? parameterTypes[name] : void 0
+      );
+    } catch (error) {
+      throw new Error(`Invalid function parameter ${name}: ${error.message}`);
+    }
+    const alias = `@p${index + 1}`;
+    functionParams.push(`${name}=${alias}`);
+    urlQuery.push(`${alias}=${encodeURIComponent(formatted).replace(/'/g, "%27")}`);
   });
-  return {
-    key: `(${functionParams.join(",")})`,
-    queryParams: urlQuery
-  };
+  return { key: `(${functionParams.join(",")})`, queryParams: urlQuery };
 }
 function hasHeader(headers, name) {
   return headers.hasOwnProperty(name) || headers.hasOwnProperty(name.toLowerCase());
@@ -184,8 +209,28 @@ function getHeader(headers, name) {
   if (headers[name]) return headers[name];
   return headers[name.toLowerCase()];
 }
-function buildFunctionParameters(parameters) {
-  return parameters ? processParameters(parameters) : { key: "()" };
+function buildFunctionParameters(parameters, parameterTypes, useODataSerialization = false) {
+  if (useODataSerialization) return parameters || parameterTypes !== void 0 ? processParameters(parameters || {}, parameterTypes) : { key: "()" };
+  if (parameterTypes !== void 0) throw new Error("parameterTypes requires useODataFunctionParameterSerialization");
+  return parameters ? processParameters_obsolete(parameters) : { key: "()" };
+}
+function processParameters_obsolete(parameters) {
+  const functionParams = [];
+  const queryParams = [];
+  Object.keys(parameters).forEach((name, index) => {
+    const value = parameters[name];
+    if (value == null) return;
+    let formatted;
+    if (typeof value === "string" && !value.startsWith("Microsoft.Dynamics.CRM") && !isUuid(value)) {
+      formatted = `'${value}'`;
+    } else {
+      formatted = typeof value === "object" ? JSON.stringify(value) : value.toString();
+    }
+    const alias = `@p${index + 1}`;
+    functionParams.push(`${name}=${alias}`);
+    queryParams.push(`${alias}=${extractUuid(formatted) || formatted}`);
+  });
+  return { key: `(${functionParams.join(",")})`, queryParams };
 }
 function getFetchXmlPagingCookie(pageCookies = "", currentPageNumber = 1) {
   pageCookies = decodeURIComponent(decodeURIComponent(pageCookies));
@@ -958,6 +1003,10 @@ function mergeConfig(internalConfig, config) {
   if ((config == null ? void 0 : config.propagateErrors) != null) {
     ErrorHelper.boolParameterCheck(config.propagateErrors, FUNCTION_NAME, "config.propagateErrors");
     internalConfig.propagateErrors = config.propagateErrors;
+  }
+  if ((config == null ? void 0 : config.useODataFunctionParameterSerialization) != null) {
+    ErrorHelper.boolParameterCheck(config.useODataFunctionParameterSerialization, FUNCTION_NAME, "config.useODataFunctionParameterSerialization");
+    internalConfig.useODataFunctionParameterSerialization = config.useODataFunctionParameterSerialization;
   }
   if (config == null ? void 0 : config.headers) {
     internalConfig.headers = config.headers;
@@ -1799,9 +1848,9 @@ var callFunction = async (request, client) => {
   const isObject2 = typeof request !== "string";
   const functionName = isObject2 ? getFunctionName(request) : request;
   const parameterName = isObject2 ? "request.name" : "name";
-  const internalRequest = isObject2 ? copyObject(request, ["name"]) : { functionName };
   ErrorHelper.stringParameterCheck(functionName, REQUEST_NAME4, parameterName);
-  const functionParameters = buildFunctionParameters(internalRequest.parameters);
+  const functionParameters = isObject2 ? buildFunctionParameters(request.parameters, request.parameterTypes, !!client.config.useODataFunctionParameterSerialization) : buildFunctionParameters();
+  const internalRequest = isObject2 ? copyObject(request, ["name", "parameterTypes"]) : { functionName };
   internalRequest.method = "GET";
   internalRequest.addPath = functionName + functionParameters.key;
   internalRequest.queryParams = functionParameters.queryParams;

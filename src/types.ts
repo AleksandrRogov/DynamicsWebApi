@@ -1,4 +1,4 @@
-﻿import type { ProxyConfig, Expand, RequestError, HeaderCollection } from "./dynamics-web-api";
+﻿import type { ProxyConfig, Expand, RequestError, HeaderCollection, FunctionParameterType } from "./dynamics-web-api";
 import type { InternalApiConfig } from "./utils/Config";
 
 export interface RequestOptions {
@@ -116,6 +116,7 @@ export interface InternalRequest {
     contentRange?: string;
     url?: string;
     parameters?: Record<string, any>;
+    parameterTypes?: Record<string, FunctionParameterType>;
     _isUnboundRequest?: boolean;
     /**Sets an additional URL path after collection (EntitySet name), key and contentId if those are set */
     addPath?: string;
