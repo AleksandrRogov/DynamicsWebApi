@@ -1,5 +1,7 @@
 # v2.6.0 (unreleased)
 
+* Add `encodeFileNames` to opt in to URL encoding upload filenames. It defaults to `false` in v2; remove manual filename encoding when enabling it.
+
 * Fix `partitionId` query parameter casing and URL-encode its unquoted value.
 
 * Add `useODataFunctionParameterSerialization` to opt in to corrected `callFunction` string escaping, URL encoding, and GUID detection, with optional `parameterTypes` overrides. 
