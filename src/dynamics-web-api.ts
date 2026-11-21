@@ -1193,6 +1193,8 @@ export interface Config {
      * NOTE! This option is temporary and will be removed in the next major version. 
      */
     useODataFunctionParameterSerialization?: boolean | null;
+    /**URL-encode file names during upload. Defaults to false in v2 for compatibility. */
+    encodeFileNames?: boolean | null;
     /**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types.*/
     includeAnnotations?: string | null;
     /**Sets the odata.maxpagesize preference value to request the number of entities returned in the response. */

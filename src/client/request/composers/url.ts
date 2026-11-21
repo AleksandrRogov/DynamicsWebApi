@@ -126,7 +126,7 @@ export const composeUrl = (request: InternalRequest | null, config: Config | nul
 
         if (request.fileName) {
             ErrorHelper.stringParameterCheck(request.fileName, `DynamicsWebApi.${request.functionName}`, "request.fileName");
-            queryArray.push("x-ms-file-name=" + request.fileName);
+            queryArray.push("x-ms-file-name=" + (config?.encodeFileNames ? encodeURIComponent(request.fileName) : request.fileName));
         }
 
         if (request.data) {

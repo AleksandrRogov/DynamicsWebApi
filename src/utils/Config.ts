@@ -132,6 +132,11 @@ export function mergeConfig(internalConfig: InternalConfig, config?: Config): vo
         internalConfig.useODataFunctionParameterSerialization = config.useODataFunctionParameterSerialization;
     }
 
+    if (config?.encodeFileNames != null) {
+        ErrorHelper.boolParameterCheck(config.encodeFileNames, FUNCTION_NAME, "config.encodeFileNames");
+        internalConfig.encodeFileNames = config.encodeFileNames;
+    }
+
     if (config?.headers) {
         internalConfig.headers = config.headers;
     }
@@ -162,6 +167,7 @@ export function defaultConfig(): InternalConfig {
         includeAnnotations: null,
         maxPageSize: null,
         returnRepresentation: null,
+        encodeFileNames: false,
         proxy: null,
         dataApi: {
             path: "data",

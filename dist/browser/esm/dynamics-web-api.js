@@ -1018,6 +1018,10 @@ function mergeConfig(internalConfig, config) {
     ErrorHelper.boolParameterCheck(config.useODataFunctionParameterSerialization, FUNCTION_NAME, "config.useODataFunctionParameterSerialization");
     internalConfig.useODataFunctionParameterSerialization = config.useODataFunctionParameterSerialization;
   }
+  if (config?.encodeFileNames != null) {
+    ErrorHelper.boolParameterCheck(config.encodeFileNames, FUNCTION_NAME, "config.encodeFileNames");
+    internalConfig.encodeFileNames = config.encodeFileNames;
+  }
   if (config?.headers) {
     internalConfig.headers = config.headers;
   }
@@ -1043,6 +1047,7 @@ function defaultConfig() {
     includeAnnotations: null,
     maxPageSize: null,
     returnRepresentation: null,
+    encodeFileNames: false,
     proxy: null,
     dataApi: {
       path: "data",
@@ -1186,7 +1191,7 @@ var composeUrl = (request, config, url = "", joinSymbol = "&") => {
     }
     if (request.fileName) {
       ErrorHelper.stringParameterCheck(request.fileName, `DynamicsWebApi.${request.functionName}`, "request.fileName");
-      queryArray.push("x-ms-file-name=" + request.fileName);
+      queryArray.push("x-ms-file-name=" + (config?.encodeFileNames ? encodeURIComponent(request.fileName) : request.fileName));
     }
     if (request.data) {
       ErrorHelper.parameterCheck(request.data, `DynamicsWebApi.${request.functionName}`, "request.data");

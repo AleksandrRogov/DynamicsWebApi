@@ -282,6 +282,7 @@ Property Name | Type | Description
 ------------ | ------------- | -------------
 backgroundOperationCallbackUrl | `string` | `v2.3.0+` Background operation callback URL. [More Info](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/background-operations?tabs=webapi#request-a-callback)
 dataApi | `ApiConfig` | Configuration object for Dataverse Web API. The name is based on the url path `data`.
+encodeFileNames | `boolean` | `v2.6.0+` Opt in to URL encoding filenames during upload. Defaults to `false` for v2 compatibility. See [Filename Encoding](#filename-encoding)
 headers | `Object` | `v2.1.0+` Custom default headers to supply with each request. For example: `{ "my-header": "value", "another-header": "another-value" }`.
 impersonate | `string` | Impersonates a user based on their systemuserid by adding a "MSCRMCallerID" header. A String representing the GUID value for the Dynamics 365 systemuserid. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/impersonate-another-user-web-api)
 impersonateAAD | `string` | Impersonates a user based on their Azure Active Directory (AAD) object id by passing that value along with the header "CallerObjectId". A String should represent a GUID value. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/webapi/impersonate-another-user-web-api)
@@ -2199,6 +2200,16 @@ fs.readFile(filename, (err, data) => {
         //catch error here	
     });
 });
+```
+
+### Filename Encoding
+
+`v2.6.0+`
+
+By default, v2 sends `fileName` without URL encoding. Set `encodeFileNames: true` in the global configuration to automatically encode filenames in upload request URLs. When enabled, pass the original filename and remove manual URL encoding to avoid encoding it twice. The flag is temporary; automatic filename encoding is intended to become the default in v3.
+
+```ts
+const dynamicsWebApi = new DynamicsWebApi({ encodeFileNames: true });
 ```
 
 ### Download file
