@@ -26,25 +26,25 @@ describe("Utility.", function () {
         });
         it("1 parameter", function () {
             const result = Utility.buildFunctionParameters({ param1: "value1" });
-            expect(result).to.deep.equal({ key: "(param1=@p1)", queryParams: ["@p1='value1'"] });
+            expect(result).to.deep.equal({ key: "(param1=@p1)", queryParams: ["@p1=%27value1%27"] });
         });
         it("2 parameters", function () {
             const result = Utility.buildFunctionParameters({ param1: "value1", param2: 2 });
-            expect(result).to.deep.equal({ key: "(param1=@p1,param2=@p2)", queryParams: ["@p1='value1'", "@p2=2"] });
+            expect(result).to.deep.equal({ key: "(param1=@p1,param2=@p2)", queryParams: ["@p1=%27value1%27", "@p2=2"] });
         });
         it("3 parameters", function () {
             const result = Utility.buildFunctionParameters({ param1: "value1", param2: 2, param3: "value2" });
-            expect(result).to.deep.equal({ key: "(param1=@p1,param2=@p2,param3=@p3)", queryParams: ["@p1='value1'", "@p2=2", "@p3='value2'"] });
+            expect(result).to.deep.equal({ key: "(param1=@p1,param2=@p2,param3=@p3)", queryParams: ["@p1=%27value1%27", "@p2=2", "@p3=%27value2%27"] });
         });
         it("object parameter", function () {
             const result = Utility.buildFunctionParameters({ param1: { test1: "value", "@odata.type": "account" } });
-            expect(result).to.deep.equal({ key: "(param1=@p1)", queryParams: ['@p1={"test1":"value","@odata.type":"account"}'] });
+            expect(result).to.deep.equal({ key: "(param1=@p1)", queryParams: ["@p1=%7B%22test1%22%3A%22value%22%2C%22%40odata.type%22%3A%22account%22%7D"] });
         });
         it("Microsoft.Dynamics.CRM namespace parameter", function () {
             const result = Utility.buildFunctionParameters({ param1: "Microsoft.Dynamics.CRM.Enum'Type'", param2: 2, param3: "value2" });
             expect(result).to.deep.equal({
                 key: "(param1=@p1,param2=@p2,param3=@p3)",
-                queryParams: ["@p1=Microsoft.Dynamics.CRM.Enum'Type'", "@p2=2", "@p3='value2'"],
+                queryParams: ["@p1=Microsoft.Dynamics.CRM.Enum%27Type%27", "@p2=2", "@p3=%27value2%27"],
             });
         });
         it("Guid parameter", function () {
@@ -56,7 +56,7 @@ describe("Utility.", function () {
             });
             expect(result).to.deep.equal({
                 key: "(param1=@p1,param2=@p2,param3=@p3,param4=@p4)",
-                queryParams: ["@p1=Microsoft.Dynamics.CRM.Enum'Type'", "@p2=2", "@p3='value2'", "@p4=fb15ee32-524d-41be-b6a0-7d0f28055d52"],
+                queryParams: ["@p1=Microsoft.Dynamics.CRM.Enum%27Type%27", "@p2=2", "@p3=%27value2%27", "@p4=fb15ee32-524d-41be-b6a0-7d0f28055d52"],
             });
         });
     });
@@ -158,7 +158,7 @@ describe("Utility.", function () {
                         getClientUrl: function () {
                             return "http://testorg.crm.dynamics.com";
                         },
-                    } as any ,
+                    } as any,
                 } as any,
             } as any;
         });
@@ -237,12 +237,12 @@ describe("Utility.", function () {
     });
 
     describe("formatParameterValue", function () {
-        it ("returns empty string for null", function () {
+        it("returns empty string for null", function () {
             let result = Utility.formatParameterValue(null);
             expect(result).to.be.eq("");
         });
 
-        it ("returns empty string for undefined", function () {
+        it("returns empty string for undefined", function () {
             let result = Utility.formatParameterValue(undefined);
             expect(result).to.be.eq("");
         });
@@ -982,7 +982,7 @@ describe("RequestUtility.composeUrl -", function () {
         };
 
         var result = composeUrl(dwaRequest, null, stubUrl);
-        expect(result).to.deep.equal(stubUrl + "?partitionid='partition1'");
+        expect(result).to.deep.equal(stubUrl + "?partitionId=partition1");
     });
 
     it("tag", function () {

@@ -99,7 +99,7 @@ export const composeUrl = (request: InternalRequest | null, config: Config | nul
 
         if (request.partitionId) {
             ErrorHelper.stringParameterCheck(request.partitionId, `DynamicsWebApi.${request.functionName}`, "request.partitionId");
-            queryArray.push("partitionid='" + request.partitionId + "'");
+            queryArray.push("partitionId=" + encodeURIComponent(request.partitionId));
         }
 
         if (request.downloadSize) {
@@ -119,7 +119,7 @@ export const composeUrl = (request: InternalRequest | null, config: Config | nul
 
         if (request.fileName) {
             ErrorHelper.stringParameterCheck(request.fileName, `DynamicsWebApi.${request.functionName}`, "request.fileName");
-            queryArray.push("x-ms-file-name=" + request.fileName);
+            queryArray.push("x-ms-file-name=" + encodeURIComponent(request.fileName));
         }
 
         if (request.data) {

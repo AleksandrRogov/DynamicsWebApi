@@ -8,7 +8,6 @@ import { ErrorHelper } from "../../helpers/ErrorHelper.js";
 const FUNCTION_NAME = "updateRelationship";
 const REQUEST_NAME = `${LIBRARY_NAME}.${FUNCTION_NAME}`;
 
-
 export function updateRelationship<T = any>(request: UpdateRelationshipRequest, client: IDataverseClient): Promise<T> {
     ErrorHelper.parameterCheck(request, REQUEST_NAME, "request");
     ErrorHelper.parameterCheck(request.data, REQUEST_NAME, "request.data");

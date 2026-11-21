@@ -103,7 +103,7 @@ function processBatchPart(batchResponse: string, parseParams: any, requestNumber
 
     //handle error
     const responseHeaders = parseBatchHeaders(
-        batchResponse.substring(batchResponse.indexOf(httpStatusString) + httpStatusString.length + 1, batchResponse.indexOf("{"))
+        batchResponse.substring(batchResponse.indexOf(httpStatusString) + httpStatusString.length + 1, batchResponse.indexOf("{")),
     );
 
     return ErrorHelper.handleHttpError(parsedResponse, {

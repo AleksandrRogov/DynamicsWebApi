@@ -590,7 +590,6 @@ describe("convertSearchQuery", () => {
                         convertSuggestOrAutocompleteQuery(suggestQuery, "1.0");
                     }).to.throw("The 'query.orderBy' property must be a valid JSON string.");
                 });
-                
             });
         });
     });

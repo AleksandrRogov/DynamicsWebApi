@@ -1,6 +1,7 @@
 ﻿import type * as Core from "../types.js";
 import { getCrypto } from "../helpers/Crypto.js";
-import { isUuid, extractUuid, parsePagingCookie, removeLeadingSlash } from "../helpers/Regex.js";
+import { extractUuid, parsePagingCookie, removeLeadingSlash } from "../helpers/Regex.js";
+import type { FunctionParameterType } from "../dynamics-web-api.js";
 import { IDataverseClient } from "../client/dataverse.js";
 
 declare var GetGlobalContext: any;
@@ -12,38 +13,62 @@ export function setDownloadChunkSize(size: number): void {
     downloadChunkSize = size;
 }
 
-export function formatParameterValue(value: any): string {
+export function formatParameterValue(value: any, type?: FunctionParameterType): string {
     if (value == null) return "";
-
-    if (typeof value === "string" && !value.startsWith("Microsoft.Dynamics.CRM") && !isUuid(value)) {
-        return `'${value}'`;
-    } else if (typeof value === "object") {
-        return JSON.stringify(value);
+    if (type && typeof value !== "string") throw new Error(`Invalid ${type} value`);
+    switch (type) {
+        case "guid": {
+            const guid = extractUuid(value);
+            if (!guid) throw new Error("Invalid GUID");
+            return guid;
+        }
+        case "raw":
+            if (!value.trim()) throw new Error("Invalid raw value");
+            return value;
+        case "string":
+            return quoteParameterString(value);
     }
-
-    return value.toString();
+    if (typeof value !== "string") return typeof value === "object" ? JSON.stringify(value) : value.toString();
+    return extractUuid(value) || (value.startsWith("Microsoft.Dynamics.CRM") ? value : quoteParameterString(value));
 }
 
-export function processParameters(parameters: { [key: string]: any }): { key: string; queryParams: string[] } {
-    const parameterNames = Object.keys(parameters);
+function quoteParameterString(value: string): string {
+    return `'${value.replace(/'/g, "''")}'`;
+}
+
+function validateParameterTypes(parameters: Record<string, any>, parameterTypes?: Record<string, FunctionParameterType>): void {
+    if (parameterTypes === undefined) return;
+    if (parameterTypes === null || typeof parameterTypes !== "object" || Array.isArray(parameterTypes)) throw new Error("Invalid parameterTypes map");
+    for (const name of Object.keys(parameterTypes)) {
+        if (!Object.prototype.hasOwnProperty.call(parameters, name)) throw new Error(`Unknown function parameter: ${name}`);
+        if (!["string", "guid", "raw"].includes(parameterTypes[name])) throw new Error(`Invalid type for function parameter: ${name}`);
+    }
+}
+
+export function processParameters(
+    parameters: { [key: string]: any },
+    parameterTypes?: Record<string, FunctionParameterType>,
+): { key: string; queryParams: string[] } {
+    validateParameterTypes(parameters, parameterTypes);
     const functionParams: string[] = [];
     const urlQuery: string[] = [];
-
-    parameterNames.forEach((parameterName, index) => {
-        let value = parameters[parameterName];
+    Object.keys(parameters).forEach((name, index) => {
+        const value = parameters[name];
         if (value == null) return;
-
-        value = formatParameterValue(value);
-
-        const paramIndex = index + 1;
-        functionParams.push(`${parameterName}=@p${paramIndex}`);
-        urlQuery.push(`@p${paramIndex}=${extractUuid(value) || value}`);
+        let formatted: string;
+        try {
+            formatted = formatParameterValue(
+                value,
+                parameterTypes && Object.prototype.hasOwnProperty.call(parameterTypes, name) ? parameterTypes[name] : undefined,
+            );
+        } catch (error) {
+            throw new Error(`Invalid function parameter ${name}: ${(error as Error).message}`);
+        }
+        const alias = `@p${index + 1}`;
+        functionParams.push(`${name}=${alias}`);
+        urlQuery.push(`${alias}=${encodeURIComponent(formatted).replace(/'/g, "%27")}`);
     });
-
-    return {
-        key: `(${functionParams.join(",")})`,
-        queryParams: urlQuery,
-    };
+    return { key: `(${functionParams.join(",")})`, queryParams: urlQuery };
 }
 
 export function hasHeader(headers: Record<string, string>, name: string): boolean {
@@ -62,8 +87,8 @@ export function getHeader(headers: Record<string, string>, name: string): string
  * @param {Object} [parameters] - Function's input parameters. Example: { param1: "test", param2: 3 }.
  * @returns {string}
  */
-export function buildFunctionParameters(parameters?: any): Core.FunctionParameters {
-    return parameters ? processParameters(parameters) : { key: "()" };
+export function buildFunctionParameters(parameters?: any, parameterTypes?: Record<string, FunctionParameterType>): Core.FunctionParameters {
+    return parameters || parameterTypes !== undefined ? processParameters(parameters || {}, parameterTypes) : { key: "()" };
 }
 
 /**

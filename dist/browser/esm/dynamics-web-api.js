@@ -21,10 +21,6 @@
   var EXTRACT_UUID_FROM_URL_REGEX = new RegExp("(" + UUID + ")\\)$", "i");
   var REMOVE_BRACKETS_FROM_UUID_REGEX = new RegExp(`{(${UUID})}`, "g");
   var ENTITY_UUID_REGEX = new RegExp(`\\/(\\w+)\\((${UUID})`, "i");
-  function isUuid(value) {
-    const match = UUID_REGEX.exec(value);
-    return !!match;
-  }
   function extractUuid(value) {
     const match = EXTRACT_UUID_REGEX.exec(value);
     return match ? match[1] : null;
@@ -108,31 +104,56 @@
 
   // src/utils/Utility.ts
   var downloadChunkSize = 4194304;
-  function formatParameterValue(value) {
+  function formatParameterValue(value, type) {
     if (value == null) return "";
-    if (typeof value === "string" && !value.startsWith("Microsoft.Dynamics.CRM") && !isUuid(value)) {
-      return `'${value}'`;
-    } else if (typeof value === "object") {
-      return JSON.stringify(value);
+    if (type && typeof value !== "string") throw new Error(`Invalid ${type} value`);
+    switch (type) {
+      case "guid": {
+        const guid = extractUuid(value);
+        if (!guid) throw new Error("Invalid GUID");
+        return guid;
+      }
+      case "raw":
+        if (!value.trim()) throw new Error("Invalid raw value");
+        return value;
+      case "string":
+        return quoteParameterString(value);
     }
-    return value.toString();
+    if (typeof value !== "string") return typeof value === "object" ? JSON.stringify(value) : value.toString();
+    return extractUuid(value) || (value.startsWith("Microsoft.Dynamics.CRM") ? value : quoteParameterString(value));
   }
-  function processParameters(parameters) {
-    const parameterNames = Object.keys(parameters);
+  function quoteParameterString(value) {
+    return `'${value.replace(/'/g, "''")}'`;
+  }
+  function validateParameterTypes(parameters, parameterTypes) {
+    if (parameterTypes === void 0) return;
+    if (parameterTypes === null || typeof parameterTypes !== "object" || Array.isArray(parameterTypes)) throw new Error("Invalid parameterTypes map");
+    for (const name of Object.keys(parameterTypes)) {
+      if (!Object.prototype.hasOwnProperty.call(parameters, name)) throw new Error(`Unknown function parameter: ${name}`);
+      if (!["string", "guid", "raw"].includes(parameterTypes[name])) throw new Error(`Invalid type for function parameter: ${name}`);
+    }
+  }
+  function processParameters(parameters, parameterTypes) {
+    validateParameterTypes(parameters, parameterTypes);
     const functionParams = [];
     const urlQuery = [];
-    parameterNames.forEach((parameterName, index) => {
-      let value = parameters[parameterName];
+    Object.keys(parameters).forEach((name, index) => {
+      const value = parameters[name];
       if (value == null) return;
-      value = formatParameterValue(value);
-      const paramIndex = index + 1;
-      functionParams.push(`${parameterName}=@p${paramIndex}`);
-      urlQuery.push(`@p${paramIndex}=${extractUuid(value) || value}`);
+      let formatted;
+      try {
+        formatted = formatParameterValue(
+          value,
+          parameterTypes && Object.prototype.hasOwnProperty.call(parameterTypes, name) ? parameterTypes[name] : void 0
+        );
+      } catch (error) {
+        throw new Error(`Invalid function parameter ${name}: ${error.message}`);
+      }
+      const alias = `@p${index + 1}`;
+      functionParams.push(`${name}=${alias}`);
+      urlQuery.push(`${alias}=${encodeURIComponent(formatted).replace(/'/g, "%27")}`);
     });
-    return {
-      key: `(${functionParams.join(",")})`,
-      queryParams: urlQuery
-    };
+    return { key: `(${functionParams.join(",")})`, queryParams: urlQuery };
   }
   function hasHeader(headers, name) {
     return headers.hasOwnProperty(name) || headers.hasOwnProperty(name.toLowerCase());
@@ -141,8 +162,8 @@
     if (headers[name]) return headers[name];
     return headers[name.toLowerCase()];
   }
-  function buildFunctionParameters(parameters) {
-    return parameters ? processParameters(parameters) : { key: "()" };
+  function buildFunctionParameters(parameters, parameterTypes) {
+    return parameters || parameterTypes !== void 0 ? processParameters(parameters || {}, parameterTypes) : { key: "()" };
   }
   function getFetchXmlPagingCookie(pageCookies = "", currentPageNumber = 1) {
     pageCookies = decodeURIComponent(decodeURIComponent(pageCookies));
@@ -607,20 +628,23 @@
       headers: responseHeaders
     });
   }
-  function parseBatchResponse(response, parseParams, requestNumber = 0) {
+  function parseBatchResponse(response, parseParams, requestNumber = 0, isChangeSet = false) {
     const delimiter = response.substring(0, response.search(LINE_ENDING_REGEX));
     const batchResponseParts = response.split(delimiter);
     batchResponseParts.shift();
     batchResponseParts.pop();
     let result = [];
     for (let part of batchResponseParts) {
+      const requestCount = isChangeSet ? 1 : parseParams?.[requestNumber]?.changeSetSize ?? 1;
       if (part.indexOf("--changesetresponse_") === -1) {
-        result.push(processBatchPart(part, parseParams, requestNumber++));
+        result.push(processBatchPart(part, parseParams, requestNumber));
+        requestNumber += requestCount;
         continue;
       }
       part = part.trim();
       const batchToProcess = part.substring(part.search(LINE_ENDING_REGEX) + 1).trim();
-      result = result.concat(parseBatchResponse(batchToProcess, parseParams, requestNumber++));
+      result = result.concat(parseBatchResponse(batchToProcess, parseParams, requestNumber, true));
+      requestNumber += requestCount;
     }
     return result;
   }
@@ -1007,7 +1031,7 @@
       }
       if (request.partitionId) {
         ErrorHelper.stringParameterCheck(request.partitionId, `DynamicsWebApi.${request.functionName}`, "request.partitionId");
-        queryArray.push("partitionid='" + request.partitionId + "'");
+        queryArray.push("partitionId=" + encodeURIComponent(request.partitionId));
       }
       if (request.downloadSize) {
         ErrorHelper.stringParameterCheck(request.downloadSize, `DynamicsWebApi.${request.functionName}`, "request.downloadSize");
@@ -1023,7 +1047,7 @@
       }
       if (request.fileName) {
         ErrorHelper.stringParameterCheck(request.fileName, `DynamicsWebApi.${request.functionName}`, "request.fileName");
-        queryArray.push("x-ms-file-name=" + request.fileName);
+        queryArray.push("x-ms-file-name=" + encodeURIComponent(request.fileName));
       }
       if (request.data) {
         ErrorHelper.parameterCheck(request.data, `DynamicsWebApi.${request.functionName}`, "request.data");
@@ -1334,6 +1358,7 @@
     const batchBoundary = `dwa_batch_${generateUUID()}`;
     const batchBody = [];
     let currentChangeSet = null;
+    let changeSetResponseParams = null;
     let contentId = 1e5;
     const addHeaders = (headers2, batchBody2) => {
       for (const key in headers2) {
@@ -1357,11 +1382,14 @@
         if (inChangeSet) {
           currentChangeSet = `changeset_${generateUUID()}`;
           batchBody.push("Content-Type: multipart/mixed;boundary=" + currentChangeSet);
+          changeSetResponseParams = internalRequest.responseParameters;
+          changeSetResponseParams.changeSetSize = 0;
         }
       }
       if (inChangeSet) {
         batchBody.push(`\r
 --${currentChangeSet}`);
+        changeSetResponseParams.changeSetSize++;
       }
       batchBody.push("Content-Type: application/http");
       batchBody.push("Content-Transfer-Encoding: binary");
@@ -1663,9 +1691,9 @@ ${processData(internalRequest.data, config)}`);
     const isObject2 = typeof request !== "string";
     const functionName = isObject2 ? getFunctionName(request) : request;
     const parameterName = isObject2 ? "request.name" : "name";
-    const internalRequest = isObject2 ? copyObject(request, ["name"]) : { functionName };
+    const internalRequest = isObject2 ? copyObject(request, ["name", "parameterTypes"]) : { functionName };
     ErrorHelper.stringParameterCheck(functionName, REQUEST_NAME4, parameterName);
-    const functionParameters = buildFunctionParameters(internalRequest.parameters);
+    const functionParameters = isObject2 ? buildFunctionParameters(request.parameters, request.parameterTypes) : buildFunctionParameters();
     internalRequest.method = "GET";
     internalRequest.addPath = functionName + functionParameters.key;
     internalRequest.queryParams = functionParameters.queryParams;

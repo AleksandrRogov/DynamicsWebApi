@@ -2,6 +2,6 @@
 //because esbuild does not support external require in esm format
 import nCrypto from "node:crypto";
 
-export function getCrypto () {
+export function getCrypto() {
     return nCrypto;
 }

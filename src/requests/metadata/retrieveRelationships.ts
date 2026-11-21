@@ -8,7 +8,10 @@ import { InternalRequest } from "../../types.js";
 const FUNCTION_NAME = "retrieveRelationships";
 const REQUEST_NAME = `DynamicsWebApi.${FUNCTION_NAME}`;
 
-export async function retrieveRelationships<T = any>(request: RetrieveRelationshipsRequest | undefined, client: IDataverseClient): Promise<RetrieveMultipleResponse<T>> {
+export async function retrieveRelationships<T = any>(
+    request: RetrieveRelationshipsRequest | undefined,
+    client: IDataverseClient,
+): Promise<RetrieveMultipleResponse<T>> {
     const internalRequest: InternalRequest = !request ? {} : copyRequest(request);
 
     internalRequest.collection = "RelationshipDefinitions";

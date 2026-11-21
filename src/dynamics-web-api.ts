@@ -477,7 +477,7 @@ export class DynamicsWebApi {
          * @param value The value to modify.
          * @returns The absolute URL.
          */
-        toAbsoluteUrl: (value: string): string => toAbsoluteUrl(this.#client,value),
+        toAbsoluteUrl: (value: string): string => toAbsoluteUrl(this.#client, value),
     };
 }
 
@@ -659,6 +659,8 @@ export interface UpsertRequest<T = any> extends UpdateRequestBase<T> {
 }
 
 export interface DeleteRequest extends CRUDRequest {
+    /**Partition ID of the elastic-table row to delete. */
+    partitionId?: string;
     /**If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. */
     bypassCustomPluginExecution?: boolean;
     /**Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests.*/
@@ -777,6 +779,8 @@ export interface DisassociateSingleValuedRequest extends Request {
     navigationProperty: string;
 }
 
+export type FunctionParameterType = "string" | "guid" | "raw";
+
 export interface UnboundFunctionRequest extends BaseRequest {
     /**
      * Name of the function.
@@ -784,6 +788,8 @@ export interface UnboundFunctionRequest extends BaseRequest {
     name?: string;
     /**Function's input parameters. Example: { param1: "test", param2: 3 }. */
     parameters?: any;
+    /** Overrides the inferred OData type for named function parameters. */
+    parameterTypes?: Record<string, FunctionParameterType>;
     /**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
     select?: string[];
     /**Use the $filter system query option to set criteria which entities will be returned. */
@@ -1141,9 +1147,9 @@ export interface Config {
     impersonateAAD?: string | null;
     /**A function that is called when a security token needs to be refreshed. */
     onTokenRefresh?: (() => Promise<AccessToken | string | null>) | null;
-    /** 
-     * When true, the library does not catch request errors in convenience wrappers; lets errors propagate to a caller. Useful for disabling legacy error handling in update, upsert and delete operations. 
-     * NOTE! This option is temporary and will be removed in the next major version. 
+    /**
+     * When true, the library does not catch request errors in convenience wrappers; lets errors propagate to a caller. Useful for disabling legacy error handling in update, upsert and delete operations.
+     * NOTE! This option is temporary and will be removed in the next major version.
      */
     propagateErrors?: boolean | null;
     /**Sets Prefer header with value "odata.include-annotations=" and the specified annotation.Annotations provide additional information about lookups, options sets and other complex attribute types.*/
@@ -1268,8 +1274,8 @@ export interface DownloadResponse {
     data: Uint8Array | Buffer;
 }
 
-export interface QueryResponse  {
- /**
+export interface QueryResponse {
+    /**
      * A collection of matching records.
      * @deprecated Use "response.Value" instead.
      */
