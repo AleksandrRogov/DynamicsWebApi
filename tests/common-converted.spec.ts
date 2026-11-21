@@ -1004,7 +1004,7 @@ describe("RequestUtility.composeUrl -", function () {
         };
 
         var result = composeUrl(dwaRequest, null, stubUrl);
-        expect(result).to.deep.equal(stubUrl + "?partitionid='partition1'");
+        expect(result).to.deep.equal(stubUrl + "?partitionId=partition1");
     });
 
     it("tag", function () {

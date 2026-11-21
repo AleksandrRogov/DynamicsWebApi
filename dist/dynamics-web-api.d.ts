@@ -579,6 +579,8 @@ export interface UpsertRequest<T = any> extends UpdateRequestBase<T> {
     ifnonematch?: string;
 }
 export interface DeleteRequest extends CRUDRequest {
+    /**Partition ID of the elastic-table row to delete. */
+    partitionId?: string;
     /**If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. */
     bypassCustomPluginExecution?: boolean;
     /**Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests.*/
