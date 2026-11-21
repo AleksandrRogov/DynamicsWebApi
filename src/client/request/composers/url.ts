@@ -106,7 +106,7 @@ export const composeUrl = (request: InternalRequest | null, config: Config | nul
 
         if (request.partitionId) {
             ErrorHelper.stringParameterCheck(request.partitionId, `DynamicsWebApi.${request.functionName}`, "request.partitionId");
-            queryArray.push("partitionid='" + request.partitionId + "'");
+            queryArray.push("partitionId=" + encodeURIComponent(request.partitionId));
         }
 
         if (request.downloadSize) {

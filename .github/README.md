@@ -396,7 +396,7 @@ orderBy | `string[]` | `retrieveMultiple`, `retrieveAll` | An array (of strings)
 pageNumber | `number` | `fetch` | Sets a page number for Fetch XML request ONLY!
 pagingCookie | `string` | `fetch` | Sets a paging cookie for Fetch XML request ONLY!
 parameters | `Object` | `callFunction` | Function's input parameters. Example: `{ param1: "test", param2: 3 }`. 
-partitionId | `string` | `create`, `update`, `upsert`, `delete`, `retrieve`, `retrieveMultiple` | Sets a unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. [More Info](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/azure-storage-partitioning)
+partitionId | `string` | `deleteRecord`, `retrieve` | Specifies the partition ID when retrieving or deleting an elastic-table row. It is URL-encoded automatically. For other operations, see the [elastic table guidance](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/use-elastic-tables#specify-partitionid).
 property | `string` | `uploadFile`, `downloadFile`, `deleteRecord` | `v2.1.6+` **D365 Web API v9.1+.** Use this option to specify the name of the column or of the file attribute in Dynamics 365. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/file-attributes)
 queryParams | `string[]` | All | Custom query parameters. Can also be used to set the [parameter aliases](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/query-data-web-api#use-parameter-aliases-with-system-query-options) for "$filter" and "$orderBy". **Important!** These parameters ARE NOT URI encoded!
 respondAsync | `boolean` | `callAction` | `v2.3.0+` Specifies that the request should be processed asynchronously. [More Info](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/background-operations?tabs=webapi).
@@ -2704,6 +2704,25 @@ const request = {
 const record = await dynamicsWebApi.retrieveRequest(request);
 //do something with a record
 ```
+
+### Escaping Alternate Key Values
+
+When using alternate keys, escape apostrophes by doubling them and URL-encode individual string values, not the entire key expression.
+
+```js
+const rowId = "142a7a62-bee5-f111-84ea-6045bdf9d579";
+const partitionId = "test'quote";
+const encodedPartitionId = encodeURIComponent(partitionId.replace(/'/g, "''"));
+
+const record = await dynamicsWebApi.retrieve({
+    collection: "vlbsi_partitiontests",
+    key: `vlbsi_partitiontestid=${rowId},partitionid='${encodedPartitionId}'`
+});
+```
+
+> [!NOTE]
+> Dataverse does not support certain special characters in alternate-key URLs, even when URL-encoded. See [Microsoft's alternate-key documentation](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/use-alternate-key-reference-record#exceptions-when-using-alternate-keys-with-the-web-api).
+
 ## Making requests using Entity Logical Names
 
 It is possible to make requests using Entity Logical Names (for example: `account`, instead of `accounts`).

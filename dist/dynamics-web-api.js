@@ -1178,7 +1178,7 @@ var _dynamicsWebApiExports = (() => {
       }
       if (request.partitionId) {
         ErrorHelper.stringParameterCheck(request.partitionId, `DynamicsWebApi.${request.functionName}`, "request.partitionId");
-        queryArray.push("partitionid='" + request.partitionId + "'");
+        queryArray.push("partitionId=" + encodeURIComponent(request.partitionId));
       }
       if (request.downloadSize) {
         ErrorHelper.stringParameterCheck(request.downloadSize, `DynamicsWebApi.${request.functionName}`, "request.downloadSize");
