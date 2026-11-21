@@ -289,7 +289,6 @@ includeAnnotations | `string` | Defaults Prefer header with value "odata.include
 maxPageSize | `number` | Defaults the odata.maxpagesize preference. Use to set the number of entities returned in the response.
 onTokenRefresh | `Function` | A callback function that is triggered when DynamicsWebApi requests a new OAuth token. (At this moment it is done before each call to Dynamics 365, as [recommended by Microsoft](https://msdn.microsoft.com/en-ca/library/gg327838.aspx#Anchor_2)).
 organizationUrl | `string` | Dynamics 365 Web Api organization URL. It is required when used in Node.js application (outside web resource). Example: "https://myorg.api.crm.dynamics.com/".
-useODataFunctionParameterSerialization | `boolean` | `v2.6.0+` Opt in to OData function parameter serialization. Defaults to `false` for v2 compatibility. This temporary option will be removed in v3 when the corrected behavior becomes standard.
 propagateErrors | `boolean` | `v2.5.0+` When true, the library does not catch request errors in convenience wrappers and lets errors propagate to a caller. It is used for disabling legacy error handling in `update`, `upsert` and `deleteRecord` operations. **Note!** This option is temporary and will be removed in the next major version. [More info](https://github.com/AleksandrRogov/DynamicsWebApi/issues/203)
 proxy | `Object` | Proxy configuration object. [More Info](#using-proxy)
 returnRepresentation | `boolean` | Defaults Prefer header with value "return=representation". Use this property to return just created or updated entity in a single request.
@@ -297,6 +296,7 @@ searchApi | `ApiConfig` | Configuration object for Dataverse Search API. The nam
 serverUrl | `string` | The url to Dataverse API server, for example: https://contoso.api.crm.dynamics.com/. It is required when used in Node.js application.
 timeout | `number` | Sets a number of milliseconds before a request times out.
 useEntityNames | `boolean` | Indicates whether to use entity logical names instead of collection logical names during requests.
+useODataFunctionParameterSerialization | `boolean` | `v2.6.0+` Opt in to OData function parameter serialization. Defaults to `false` for v2 compatibility. This temporary option will be removed in v3 when the corrected behavior becomes standard. [More info](#odata-function-parameter-serialization)
 
 > [!NOTE]
 > `serverUrl` and `onTokenRefresh` are required when DynamicsWebApi is used in a Node.js application.
@@ -1004,13 +1004,29 @@ const result = await dynamicsWebApi.callFunction<GetTimeZoneCodeByLocalizedNameR
 const timeZoneCode = result.TimeZoneCode;
 ```
 
+Unbound Web API functions can also be called using a short form (in case there are no parameters), for example:
+
+```ts
+const whoAmIResult = await dynamicsWebApi.callFunction("WhoAmI");
+```
+
+#### OData Function Parameter Serialization
+
 `v2.6.0+`
 
-Starting with v2.6.0, improved OData string escaping, URL encoding, and GUID detection are available through the global `useODataFunctionParameterSerialization: true` option. The original v2 behavior remains the default for backward compatibility.
+Starting with v2.6.0, improved OData string escaping, URL encoding, and GUID detection can be enabled through the global configuration:
 
-**This behavior will become the default in v3, and the option will be removed.**
+```js
+const dynamicsWebApi = new DynamicsWebApi({
+    useODataFunctionParameterSerialization: true
+});
+```
 
-When enabled, valid GUID strings are treated as GUIDs, and strings starting with `Microsoft.Dynamics.CRM` as OData expressions. Use `parameterTypes` to override the detected type:
+The option defaults to `false` in v2 for backward compatibility. In v3, the improved behavior will become the default and the option will be removed.
+
+When enabled, the library automatically escapes and URL-encodes parameter values. Complete GUID strings are treated as GUIDs, while strings starting with `Microsoft.Dynamics.CRM` are treated as OData expressions.
+
+Use `parameterTypes` to override the detected type for individual parameters:
 
 ```js
 await dynamicsWebApi.callFunction({
@@ -1032,18 +1048,12 @@ Supported overrides:
 
 - `string` — Escaped OData string literal.
 - `guid` — Validated GUID with optional braces removed.
-- `raw` — OData literal without escaping, such as an enum expression.
+- `raw` — Complete OData literal without escaping, such as an enum expression.
 
-All parameter values are URL-encoded automatically, including `raw` values. Objects and arrays continue to be serialized as JSON.
+All parameter values are URL-encoded automatically, including `raw` values. Objects and arrays continue to be serialized as JSON. `parameterTypes` applies only to top-level parameters and requires the option to be enabled.
 
-> [!IMPORTANT] 
-> When enabling this option, remove any manual escaping or URL-encoding previously applied to function parameters.
-
-Unbound Web API functions can also be called using a short form (in case there are no parameters), for example:
-
-```ts
-const whoAmIResult = await dynamicsWebApi.callFunction("WhoAmI");
-```
+> [!IMPORTANT]
+> If your application uses manual apostrophe escaping or URL-encoding as a workaround for the original v2 behavior, remove these workarounds when enabling this option to avoid incorrect parameter values.
 
 ### Execute Web API actions
 
