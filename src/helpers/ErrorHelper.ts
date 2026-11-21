@@ -11,7 +11,7 @@ export interface DynamicsWebApiError extends Error {
 
 function throwParameterError(functionName: string, parameterName: string, type: string | null | undefined): never {
     throw new Error(
-        type ? `${functionName} requires a ${parameterName} parameter to be of type ${type}.` : `${functionName} requires a ${parameterName} parameter.`
+        type ? `${functionName} requires a ${parameterName} parameter to be of type ${type}.` : `${functionName} requires a ${parameterName} parameter.`,
     );
 }
 
@@ -66,7 +66,7 @@ export class ErrorHelper {
     static batchIsEmpty(): Error[] {
         return [
             new Error(
-                "Payload of the batch operation is empty. Please make that you have other operations in between startBatch() and executeBatch() to successfuly build a batch payload."
+                "Payload of the batch operation is empty. Please make that you have other operations in between startBatch() and executeBatch() to successfuly build a batch payload.",
             ),
         ];
     }
@@ -147,7 +147,7 @@ export class ErrorHelper {
     static throwBatchNotStarted(isBatch: boolean): void {
         if (!isBatch) {
             throw new Error(
-                "Batch operation has not been started. Please call a DynamicsWebApi.startBatch() function prior to calling DynamicsWebApi.executeBatch() to perform a batch request correctly."
+                "Batch operation has not been started. Please call a DynamicsWebApi.startBatch() function prior to calling DynamicsWebApi.executeBatch() to perform a batch request correctly.",
             );
         }
     }

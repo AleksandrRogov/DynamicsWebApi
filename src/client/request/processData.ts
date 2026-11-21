@@ -14,7 +14,7 @@ export const replaceEntityNameWithCollectionName = (value: string): string => {
     return value;
 };
 
-export const addFullWebApiUrl = (config: InternalConfig,key: string, value: string): string => {
+export const addFullWebApiUrl = (config: InternalConfig, key: string, value: string): string => {
     if (!value.startsWith(config.dataApi.url)) {
         if (key.endsWith("@odata.bind")) {
             if (!value.startsWith("/")) {

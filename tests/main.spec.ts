@@ -1454,12 +1454,12 @@ describe("dynamicsWebApi.getBackgroundOperationStatus -", () => {
 
 describe("dynamicsWebApi.Utility.toAbsoluteUrl -", () => {
     it("prepends web API URL to provided value", () => {
-        const value = "accounts(key='value')"
+        const value = "accounts(key='value')";
         const absoluteUrl = dynamicsWebApiTest.Utility.toAbsoluteUrl(value);
         expect(absoluteUrl).to.equal(`${mocks.webApiUrl}${value}`);
 
         //should remove slash at the beginning
-        const value2 = "/accounts(key='value')"
+        const value2 = "/accounts(key='value')";
         const absoluteUrl2 = dynamicsWebApiTest.Utility.toAbsoluteUrl(value2);
         expect(absoluteUrl2).to.equal(`${mocks.webApiUrl}${value}`);
     });

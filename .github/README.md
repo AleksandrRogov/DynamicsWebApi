@@ -396,7 +396,7 @@ orderBy | `string[]` | `retrieveMultiple`, `retrieveAll` | An array (of strings)
 pageNumber | `number` | `fetch` | Sets a page number for Fetch XML request ONLY!
 pagingCookie | `string` | `fetch` | Sets a paging cookie for Fetch XML request ONLY!
 parameters | `Object` | `callFunction` | Function's input parameters. Example: `{ param1: "test", param2: 3 }`. 
-partitionId | `string` | `create`, `update`, `upsert`, `delete`, `retrieve`, `retrieveMultiple` | Sets a unique partition key value of a logical partition for non-relational custom entity data stored in NoSql tables of Azure heterogenous storage. [More Info](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/azure-storage-partitioning)
+partitionId | `string` | `deleteRecord`, `retrieve` | Specifies the partition ID when retrieving or deleting an elastic-table row. Pass the original value; it is URL-encoded automatically. [More Info](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/use-elastic-tables#specify-partitionid)
 property | `string` | `uploadFile`, `downloadFile`, `deleteRecord` | `v2.1.6+` **D365 Web API v9.1+.** Use this option to specify the name of the column or of the file attribute in Dynamics 365. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/file-attributes)
 queryParams | `string[]` | All | Custom query parameters. Can also be used to set the [parameter aliases](https://docs.microsoft.com/en-us/power-apps/developer/data-platform/webapi/query-data-web-api#use-parameter-aliases-with-system-query-options) for "$filter" and "$orderBy". **Important!** These parameters ARE NOT URI encoded!
 respondAsync | `boolean` | `callAction` | `v2.3.0+` Specifies that the request should be processed asynchronously. [More Info](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/background-operations?tabs=webapi).
@@ -1009,6 +1009,36 @@ Unbound Web API functions can also be called using a short form (in case there a
 ```ts
 const whoAmIResult = await dynamicsWebApi.callFunction("WhoAmI");
 ```
+
+#### Function Parameter Types and Encoding
+
+Function parameters are automatically formatted as OData literals and URL-encoded. Complete GUID strings are treated as GUIDs, while strings starting with `Microsoft.Dynamics.CRM` are treated as OData expressions.
+
+Use `parameterTypes` to override the detected type for individual parameters:
+
+```ts
+await dynamicsWebApi.callFunction({
+    name: "MyFunction",
+    parameters: {
+        text: "3f2504e0-4f89-11d3-9a0c-0305e82c3301",
+        id: "{3f2504e0-4f89-11d3-9a0c-0305e82c3301}",
+        enum: "Microsoft.Dynamics.CRM.SomeEnum'SomeValue'"
+    },
+    parameterTypes: {
+        text: "string",
+        id: "guid",
+        enum: "raw"
+    }
+});
+```
+
+Supported overrides:
+
+- `string` - Escaped OData string literal.
+- `guid` - Validated GUID with optional braces removed.
+- `raw` - Complete OData literal without string escaping, such as an enum expression.
+
+All parameter values are URL-encoded automatically, including `raw` values. Objects and arrays are serialized as JSON.
 
 ### Execute Web API actions
 
@@ -2155,6 +2185,8 @@ fs.readFile(filename, (err, data) => {
     });
 });
 ```
+
+Filenames passed to `uploadFile` are URL-encoded automatically. Pass the original filename without manual URL encoding.
 
 ### Download file
 

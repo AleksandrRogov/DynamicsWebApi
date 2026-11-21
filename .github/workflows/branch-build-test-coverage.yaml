@@ -1,46 +1,46 @@
 name: Branch CI (feature/bugfix/hotfix)
 
 on:
-  push:
-    branches:
-      - 'feature/**'
-      - 'bugfix/**'
-      - 'hotfix/**'
-  pull_request:
-    branches:
-      - 'feature/**'
-      - 'bugfix/**'
-      - 'hotfix/**'
+    push:
+        branches:
+            - "feature/**"
+            - "bugfix/**"
+            - "hotfix/**"
+    pull_request:
+        branches:
+            - "feature/**"
+            - "bugfix/**"
+            - "hotfix/**"
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [22.x, 24.x, 26.x]
-        include:
-          - node-version: 22.x
-            experimental: false
-          - node-version: 24.x
-            experimental: false
-          - node-version: 26.x
-            experimental: true
+    build:
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                node-version: [22.x, 24.x, 26.x]
+                include:
+                    - node-version: 22.x
+                      experimental: false
+                    - node-version: 24.x
+                      experimental: false
+                    - node-version: 26.x
+                      experimental: true
 
-    steps:
-      - uses: actions/checkout@v4
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-      - run: npm ci
-      - run: npm test
-      - name: Prepare coverage
-        if: ${{ matrix.node-version == '24.x' }}
-        run: npm run coverage
-      - name: Publish to Coveralls
-        if: ${{ matrix.node-version == '24.x' }}
-        uses: coverallsapp/github-action@v2
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
+        steps:
+            - uses: actions/checkout@v4
+            - name: Use Node.js ${{ matrix.node-version }}
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ matrix.node-version }}
+                  cache: "npm"
+            - run: npm ci
+            - run: npm test
+            - name: Prepare coverage
+              if: ${{ matrix.node-version == '24.x' }}
+              run: npm run coverage
+            - name: Publish to Coveralls
+              if: ${{ matrix.node-version == '24.x' }}
+              uses: coverallsapp/github-action@v2
+              with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+              continue-on-error: true

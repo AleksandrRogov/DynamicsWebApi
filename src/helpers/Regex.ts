@@ -121,7 +121,7 @@ export const SEARCH_FOR_ENTITY_NAME_REGEX = /(\w+)(\([\d\w-]+\))$/;
 export const SPECIAL_COLLECTION_FOR_UPDATE_REGEX = /EntityDefinitions|RelationshipDefinitions|GlobalOptionSetDefinitions/;
 
 /**Metadata definitions cannot be updated using "PATCH" method */
-export function getUpdateMethod(collection: string | undefined | null){
+export function getUpdateMethod(collection: string | undefined | null) {
     return SPECIAL_COLLECTION_FOR_UPDATE_REGEX.test(collection ?? "") ? "PUT" : "PATCH";
 }
 

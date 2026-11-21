@@ -572,6 +572,8 @@ export interface UpsertRequest<T = any> extends UpdateRequestBase<T> {
     ifnonematch?: string;
 }
 export interface DeleteRequest extends CRUDRequest {
+    /**Partition ID of the elastic-table row to delete. */
+    partitionId?: string;
     /**If set to true, the request bypasses custom business logic, all synchronous plug-ins and real-time workflows are disabled. Check for special exceptions in Microsft Docs. */
     bypassCustomPluginExecution?: boolean;
     /**Sets If-Match header value that enables to use conditional retrieval or optimistic concurrency in applicable requests.*/
@@ -683,6 +685,7 @@ export interface DisassociateSingleValuedRequest extends Request {
     /**Navigation property name. */
     navigationProperty: string;
 }
+export type FunctionParameterType = "string" | "guid" | "raw";
 export interface UnboundFunctionRequest extends BaseRequest {
     /**
      * Name of the function.
@@ -690,6 +693,8 @@ export interface UnboundFunctionRequest extends BaseRequest {
     name?: string;
     /**Function's input parameters. Example: { param1: "test", param2: 3 }. */
     parameters?: any;
+    /** Overrides the inferred OData type for named function parameters. */
+    parameterTypes?: Record<string, FunctionParameterType>;
     /**An Array(of Strings) representing the $select OData System Query Option to control which attributes will be returned. */
     select?: string[];
     /**Use the $filter system query option to set criteria which entities will be returned. */
@@ -912,10 +917,13 @@ export interface SearchQueryBase {
 export interface Query extends SearchQueryBase {
     /**V2. Specify true to return the total record count; otherwise false. The default is false. */
     count?: boolean;
-    /**V1. Specify true to return the total record count; otherwise false. The default is false. */
-    returnTotalRecordCount?: boolean;
     /**Facets support the ability to drill down into data results after they've been retrieved. */
     facets?: string | string[];
+    /**
+     * V1. Specify true to return the total record count; otherwise false. The default is false.
+     * @deprecated Use "count".
+     */
+    returnTotalRecordCount?: boolean;
     /**Specifies the number of search results to skip. */
     skip?: number;
     /**Specifies the number of search results to retrieve. The default is 50, and the maximum value is 100. */
@@ -924,15 +932,24 @@ export interface Query extends SearchQueryBase {
     orderBy?: string | string[];
     /**V2. Options are settings configured to search a search term. */
     options?: string | SearchOptions;
-    /**V1. Specifies whether any or all the search terms must be matched to count the document as a match. The default is 'any'. */
+    /**
+     * V1. Specifies whether any or all the search terms must be matched to count the document as a match. The default is 'any'.
+     * @deprecated Use "options.searchmode".
+     */
     searchMode?: SearchMode;
-    /**V1. The search type specifies the syntax of a search query. Using 'simple' selects simple query syntax and 'full' selects Lucene query syntax. The default is 'simple'. */
+    /**
+     * V1. The search type specifies the syntax of a search query. Using 'simple' selects simple query syntax and 'full' selects Lucene query syntax. The default is 'simple'.
+     * @deprecated Use "options.querytype".
+     */
     searchType?: SearchType;
 }
 export interface Suggest extends SearchQueryBase {
     /**Use fuzzy search to aid with misspellings. The default is false. */
     fuzzy?: boolean;
-    /**V1. Use fuzzy search to aid with misspellings. The default is false. */
+    /**
+     * Use fuzzy search to aid with misspellings. The default is false.
+     * @deprecated Use "fuzzy".
+     */
     useFuzzy?: boolean;
     /**V2. Options are settings configured to search a search term. */
     options?: string | SuggestOptions;
@@ -944,7 +961,10 @@ export interface Suggest extends SearchQueryBase {
 export interface Autocomplete extends SearchQueryBase {
     /**Use fuzzy search to aid with misspellings. The default is false. */
     fuzzy?: boolean;
-    /**V1. Use fuzzy search to aid with misspellings. The default is false. */
+    /**
+     * Use fuzzy search to aid with misspellings. The default is false.
+     * @deprecated Use "fuzzy".
+     */
     useFuzzy?: boolean;
 }
 export interface QueryRequest extends BaseRequest {
@@ -1107,14 +1127,26 @@ export interface DownloadResponse {
     data: Uint8Array | Buffer;
 }
 export interface QueryResponse {
-    /** A collection of matching records. */
+    /**
+     * A collection of matching records.
+     * @deprecated Use "response.Value" instead.
+     */
     value: SearchQueryResult[];
-    /** If facets were requested in the query, a dictionary of facet values. */
-    facets: Record<string, SearchFacetResult[]> | null;
-    /** If "Count": true is included in the body of the request, the count of all documents that match the search, ignoring top and skip. */
+    /**
+     * If facets were requested in the query, a dictionary of facet values.
+     * @deprecated Use "response.Facets" instead.
+     */
+    facets: any | null;
+    /**
+     * If "Count": true is included in the body of the request, the count of all documents that match the search, ignoring top and skip.
+     * @deprecated Use "response.Count" instead.
+     */
     totalrecordcount: number;
-    /** This property is used for backend search. It's included for future feature releases and isn't currently used. */
-    querycontext: SearchQueryContext | null;
+    /**
+     * This property is used for backend search. It's included for future feature releases and isn't currently used.
+     * @deprecated Use "response.QueryContext" instead.
+     */
+    querycontext: any | null;
     /** Query response */
     response: {
         /**
@@ -1141,9 +1173,15 @@ export interface QueryResponse {
     "@odata.context": string;
 }
 export interface SuggestResponse<TValueDocument = any> {
-    /** A collection of matching records. */
+    /**
+     * A collection of matching records.
+     * @deprecated Use "response.Value" instead.
+     */
     value: SuggestResponseValue<TValueDocument>[];
-    /** Suggestions query context. */
+    /**
+     * Suggestions query context
+     * @deprecated Use "response.QueryContext" instead.
+     */
     querycontext: any | null;
     /** Suggestion response. */
     response: {
@@ -1160,9 +1198,15 @@ export interface SuggestResponse<TValueDocument = any> {
     "@odata.context": string;
 }
 export interface AutocompleteResponse {
-    /** Autocomplete text result. */
+    /**
+     * Autocomplete text result.
+     * @deprecated Use "response.Value" instead.
+     */
     value: string | null;
-    /** This property is used for backend search. It's included for future feature releases and isn't currently used. */
+    /**
+     * This property is used for backend search. It's included for future feature releases and isn't currently used.
+     * @deprecated Use "response.QueryContext" instead.
+     */
     querycontext: any | null;
     /** Autocomplete response. */
     response: {
@@ -1370,11 +1414,17 @@ export type SearchQueryResult = {
     Score: number;
 };
 export interface SuggestResponseValue<TDocument = any> {
-    /** Provides the suggested text. */
+    /**
+     * Provides the suggested text.
+     * @deprecated Use "Text" instead.
+     */
     text: string;
     /** Provides the suggested text. */
     Text: string;
-    /** The document. */
+    /**
+     * The document.
+     * @deprecated Use "Document" instead.
+     */
     document: TDocument;
     /** The document. */
     Document: TDocument;

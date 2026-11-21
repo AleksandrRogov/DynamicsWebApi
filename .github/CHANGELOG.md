@@ -1,3 +1,25 @@
+<a name="v2.6.0"></a>
+# [v2.6.0](https://github.com/AleksandrRogov/DynamicsWebApi/releases/tag/v2.6.0) - 21 Nov 2026
+
+Version 2.6.0 introduces improvements to URL encoding, OData function parameter serialization, and elastic table partition handling.
+
+⚠️ To maintain backward compatibility, the filename encoding and function parameter serialization improvements are **opt-in**. Some applications may have already been handling escaping and encoding manually, so enabling these changes automatically could break existing integrations.
+
+The new `encodeFileNames` and `useODataFunctionParameterSerialization` options allow applications to adopt the improved behavior when ready. **Both options are temporary:** these improvements will become the default in v3, and the options will be removed.
+
+⚠️ Applications using manual encoding or escaping workarounds should review and remove them when enabling the corresponding option.
+
+## What's Changed
+* fix: escape and encode callFunction parameters [#218](https://github.com/AleksandrRogov/DynamicsWebApi/issues/218) by [@AleksandrRogov](https://github.com/AleksandrRogov) in https://github.com/AleksandrRogov/DynamicsWebApi/pull/219
+* fix: partitionId query parameter casing and encoding by [@AleksandrRogov](https://github.com/AleksandrRogov) in https://github.com/AleksandrRogov/DynamicsWebApi/pull/220
+* fix: add opt-in URL encoding for upload filenames by [@AleksandrRogov](https://github.com/AleksandrRogov) in https://github.com/AleksandrRogov/DynamicsWebApi/pull/221
+
+
+**Full Changelog**: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.5.1...v2.6.0
+
+[Changes][v2.6.0]
+
+
 <a name="v2.5.1"></a>
 # [v2.5.1](https://github.com/AleksandrRogov/DynamicsWebApi/releases/tag/v2.5.1) - 15 Oct 2026
 
@@ -1185,6 +1207,7 @@ Added:
 [Changes][v1.2.0]
 
 
+[v2.6.0]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.5.1...v2.6.0
 [v2.5.1]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.5.0...v2.5.1
 [v2.5.0]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.4.0...v2.5.0
 [v2.4.0]: https://github.com/AleksandrRogov/DynamicsWebApi/compare/v2.3.2...v2.4.0
